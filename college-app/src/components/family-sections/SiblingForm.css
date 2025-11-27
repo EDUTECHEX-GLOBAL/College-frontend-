@@ -1,0 +1,132 @@
+/* Sibling Form Specific Styles */
+.sibling-form .form-field {
+  margin-bottom: 32px;
+}
+
+.sibling-count-select {
+  max-width: 200px;
+}
+
+
+
+.count-text {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2C5AA0;
+  margin: 0;
+}
+
+/* Siblings details section */
+.siblings-details-section {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.siblings-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 24px;
+}
+
+/* Sibling form card */
+.sibling-form-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.sibling-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2C5AA0;
+  margin: 0 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.sibling-form-fields {
+  margin-top: 16px;
+}
+
+/* No siblings message */
+.no-siblings-message {
+  background: #f0fff4;
+  border: 1px solid #9ae6b4;
+  border-radius: 6px;
+  padding: 20px;
+  text-align: center;
+  margin: 20px 0;
+}
+
+.no-siblings-message p {
+  margin: 0;
+  color: #276749;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* Sibling form fields layout */
+.sibling-form-fields .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 0;
+}
+
+/* Responsive adjustments for Sibling form */
+@media (max-width: 768px) {
+  .sibling-form-fields .form-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .sibling-form-card {
+    padding: 16px;
+  }
+  
+  .sibling-count-select {
+    max-width: 100%;
+  }
+  
+  .count-text {
+    font-size: 20px;
+  }
+}
+
+/* Animation for sibling forms */
+.sibling-form-card {
+  animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Required field indicator */
+.form-label.required::after {
+  content: " *";
+  color: #e53e3e;
+}
+
+/* Form input focus states */
+.sibling-form-fields .form-input:focus {
+  border-color: #2C5AA0;
+  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+}
+
+/* Sibling card hover effect */
+.sibling-form-card:hover {
+  border-color: #cbd5e0;
+  transition: border-color 0.3s ease;
+}

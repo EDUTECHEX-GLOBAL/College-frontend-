@@ -1,0 +1,208 @@
+/* src/components/education-sections/OtherSchoolsSection.css */
+.other-schools-section {
+  background: white;
+  margin: 20px 40px;
+  padding: 32px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.other-schools-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.other-schools-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a202c;
+  margin-bottom: 8px;
+}
+
+.other-schools-status {
+  font-size: 14px;
+  color: #2C5AA0;
+  font-weight: 500;
+  background: #e8f0fe;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.other-schools-description {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.other-schools-radio-group {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.other-schools-radio-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.other-schools-radio-input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.other-schools-radio-label {
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+}
+
+.other-schools-array-section {
+  margin-top: 24px;
+}
+
+.other-schools-item {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.other-schools-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.other-schools-item-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+}
+
+.other-schools-remove-btn {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.2s ease;
+}
+
+.other-schools-remove-btn:hover {
+  background: #b91c1c;
+}
+
+.other-schools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.other-schools-full-width {
+  grid-column: 1 / -1;
+}
+
+.other-schools-form-group {
+  margin-bottom: 16px;
+}
+
+.other-schools-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.other-schools-required::after {
+  content: " *";
+  color: #dc2626;
+}
+
+.other-schools-input,
+.other-schools-select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.other-schools-input:focus,
+.other-schools-select:focus {
+  outline: none;
+  border-color: #2C5AA0;
+  box-shadow: 0 0 0 2px rgba(44, 90, 160, 0.1);
+}
+
+.other-schools-add-btn {
+  background: #2C5AA0;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s ease;
+  margin-top: 16px;
+}
+
+.other-schools-add-btn:hover {
+  background: #1E3D6F;
+}
+
+.other-schools-add-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .other-schools-section {
+    margin: 15px 20px;
+    padding: 24px;
+  }
+  
+  .other-schools-radio-group {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .other-schools-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .other-schools-section {
+    margin: 10px 15px;
+    padding: 20px;
+  }
+  
+  .other-schools-title {
+    font-size: 18px;
+  }
+  
+  .other-schools-item {
+    padding: 16px;
+  }
+}

@@ -1,0 +1,15 @@
+.my-colleges-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
+}
+
+.my-colleges-list li {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  font-weight: 500;
+  color: #2c5282;
+}

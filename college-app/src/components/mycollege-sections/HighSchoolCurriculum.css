@@ -1,0 +1,521 @@
+/* =========================================
+   High School Curriculum Form - Common App Professional Style
+   ========================================= */
+
+.high-school-curriculum-container {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+  color: #1a1a1a;
+}
+
+/* =============================
+   Header - Common App Style
+   ============================= */
+
+.high-school-curriculum-header {
+  background: white;
+  border-bottom: 1px solid #d1d5db;
+  padding: 0;
+}
+
+.high-school-curriculum-header-nav {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px 24px 0 24px;
+}
+
+.high-school-curriculum-back-button {
+  background: none;
+  border: none;
+  color: #2563eb;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 0;
+  cursor: pointer;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.high-school-curriculum-back-button:hover {
+  color: #1d4ed8;
+}
+
+.high-school-curriculum-header-info {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 24px 32px 24px;
+}
+
+.high-school-curriculum-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+}
+
+.high-school-curriculum-status {
+  margin-bottom: 12px;
+}
+
+.status-indicator {
+  color: #2563eb;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-indicator::before {
+  content: '●';
+  color: #2563eb;
+  font-size: 12px;
+}
+
+.high-school-curriculum-description {
+  font-size: 16px;
+  color: #6b7280;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* =============================
+   Main Content - Professional Layout
+   ============================= */
+
+.high-school-curriculum-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+/* =============================
+   Progress Bar - Common App Style
+   ============================= */
+
+.high-school-curriculum-progress {
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.high-school-curriculum-progress-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.high-school-curriculum-progress-bar {
+  flex: 1;
+  height: 8px;
+  background-color: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.high-school-curriculum-progress-fill {
+  height: 100%;
+  background: #2563eb;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* =============================
+   Form Content Section
+   ============================= */
+
+.high-school-curriculum-form-section {
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.high-school-curriculum-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  padding: 24px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* =============================
+   Question Cards - Professional Style
+   ============================= */
+
+.high-school-curriculum-question-card {
+  padding: 24px;
+  border-bottom: 1px solid #e5e7eb;
+  background: white;
+}
+
+.high-school-curriculum-question-card:last-child {
+  border-bottom: none;
+}
+
+.high-school-curriculum-question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.high-school-curriculum-question-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.high-school-curriculum-question-required {
+  color: #dc2626;
+  font-size: 14px;
+  font-weight: 500;
+  margin-left: 12px;
+  white-space: nowrap;
+}
+
+/* =============================
+   Form Controls - Common App Style
+   ============================= */
+
+.high-school-curriculum-form-select {
+  width: 100%;
+  max-width: 400px;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  background: white;
+  color: #111827;
+  transition: all 0.2s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 8px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+}
+
+.high-school-curriculum-form-select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.high-school-curriculum-form-select:hover {
+  border-color: #9ca3af;
+}
+
+.high-school-curriculum-form-select:disabled {
+  background-color: #f9fafb;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* =============================
+   Radio Groups - Professional Style
+   ============================= */
+
+.high-school-curriculum-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.high-school-curriculum-radio-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 8px 0;
+}
+
+.high-school-curriculum-radio-input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #2563eb;
+}
+
+.high-school-curriculum-radio-label {
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+/* =============================
+   Clear Answer Button
+   ============================= */
+
+.clear-answer-button {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-top: 8px;
+  text-decoration: underline;
+}
+
+.clear-answer-button:hover {
+  color: #374151;
+}
+
+.clear-answer-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* =============================
+   Action Buttons - Common App Style
+   ============================= */
+
+.high-school-curriculum-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+  padding: 24px;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  justify-content: flex-end;
+}
+
+.high-school-curriculum-primary-button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+  height: 40px;
+}
+
+.high-school-curriculum-primary-button:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.high-school-curriculum-primary-button:active {
+  transform: translateY(0);
+}
+
+.high-school-curriculum-primary-button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.high-school-curriculum-secondary-button {
+  background: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+  height: 40px;
+}
+
+.high-school-curriculum-secondary-button:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+  color: #111827;
+}
+
+.high-school-curriculum-secondary-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* =============================
+   Loading State
+   ============================= */
+
+.high-school-curriculum-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.high-school-curriculum-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #f3f4f6;
+  border-top: 3px solid #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* =============================
+   Responsive Design
+   ============================= */
+
+@media (max-width: 768px) {
+  .high-school-curriculum-header-nav,
+  .high-school-curriculum-header-info {
+    padding: 20px 16px;
+  }
+
+  .high-school-curriculum-content {
+    padding: 24px 16px;
+  }
+
+  .high-school-curriculum-question-card {
+    padding: 20px 16px;
+  }
+
+  .high-school-curriculum-section-title {
+    padding: 20px 16px;
+    font-size: 16px;
+  }
+
+  .high-school-curriculum-question-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .high-school-curriculum-question-required {
+    margin-left: 0;
+  }
+
+  .high-school-curriculum-actions {
+    flex-direction: column-reverse;
+    padding: 20px 16px;
+  }
+
+  .high-school-curriculum-primary-button,
+  .high-school-curriculum-secondary-button {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .high-school-curriculum-progress {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .high-school-curriculum-progress-bar {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .high-school-curriculum-content {
+    padding: 16px;
+  }
+
+  .high-school-curriculum-title {
+    font-size: 24px;
+  }
+
+  .high-school-curriculum-form-select {
+    max-width: 100%;
+  }
+}
+
+/* =============================
+   Focus States for Accessibility
+   ============================= */
+
+.high-school-curriculum-radio-input:focus,
+.high-school-curriculum-form-select:focus,
+.high-school-curriculum-primary-button:focus,
+.high-school-curriculum-secondary-button:focus,
+.clear-answer-button:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* =============================
+   Enhanced Visual Improvements
+   ============================= */
+
+.high-school-curriculum-question-card {
+  transition: background-color 0.2s ease;
+}
+
+.high-school-curriculum-question-card:hover {
+  background: #fafafa;
+}
+
+.high-school-curriculum-form-select option {
+  padding: 8px;
+  font-size: 14px;
+}
+
+/* =============================
+   Button Group Alignment
+   ============================= */
+
+.high-school-curriculum-actions {
+  border-radius: 0 0 8px 8px;
+}
+
+/* =============================
+   Improved Typography
+   ============================= */
+
+.high-school-curriculum-question-title {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.high-school-curriculum-radio-label {
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* =============================
+   Professional Spacing
+   ============================= */
+
+.high-school-curriculum-form-section {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.high-school-curriculum-progress {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}

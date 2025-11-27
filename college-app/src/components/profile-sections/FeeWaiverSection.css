@@ -1,0 +1,211 @@
+/* FeeWaiverSection.css - Dedicated styles for Fee Waiver section */
+.fee-waiver-section {
+  background: white;
+  margin: 20px 40px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+}
+
+.fee-waiver-section h2 {
+  background: #f8f9fa;
+  margin: 0;
+  padding: 20px 24px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a202c;
+  border-bottom: 1px solid #e5e7eb;
+  border-radius: 8px 8px 0 0;
+}
+
+.fee-waiver-section .section-status {
+  background: #f0f7ff;
+  padding: 12px 24px;
+  font-size: 14px;
+  color: #2C5AA0;
+  font-weight: 500;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fee-waiver-section .section-status::before {
+  content: "●";
+  color: #2C5AA0;
+  font-size: 16px;
+}
+
+.fee-waiver-section .form-content {
+  padding: 24px;
+  max-width: 100%;
+}
+
+.fee-waiver-section .form-group {
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.fee-waiver-section .form-group:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.fee-waiver-section .form-group p {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.fee-waiver-section .form-group label {
+  display: block;
+  margin-bottom: 12px;
+  font-weight: 600;
+  color: #374151;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.fee-waiver-section .form-group label.required::after {
+  content: " *";
+  color: #dc2626;
+}
+
+/* Checkbox Group Styles */
+.fee-waiver-section .checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.fee-waiver-section .checkbox-group label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-weight: normal;
+  cursor: pointer;
+  margin-bottom: 0;
+  padding: 8px 0;
+  line-height: 1.4;
+}
+
+.fee-waiver-section .checkbox-group input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+/* Radio Group Styles */
+.fee-waiver-section .radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.fee-waiver-section .radio-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: normal;
+  cursor: pointer;
+  margin-bottom: 0;
+  padding: 6px 0;
+}
+
+.fee-waiver-section .radio-group input[type="radio"] {
+  width: auto;
+  margin: 0;
+}
+
+/* Responsive Design for Fee Waiver Section */
+@media (max-width: 1199px) and (min-width: 768px) {
+  .fee-waiver-section {
+    margin: 20px 30px;
+  }
+}
+
+@media (max-width: 767px) {
+  .fee-waiver-section {
+    margin: 15px 20px;
+    border-radius: 6px;
+  }
+  
+  .fee-waiver-section .form-content {
+    padding: 20px;
+  }
+  
+  .fee-waiver-section h2 {
+    padding: 16px 20px;
+    font-size: 18px;
+  }
+  
+  .fee-waiver-section .section-status {
+    padding: 10px 20px;
+  }
+  
+  .fee-waiver-section .form-group {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+  }
+  
+  .fee-waiver-section .form-group p {
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+  
+  .fee-waiver-section .form-group label {
+    margin-bottom: 10px;
+    font-size: 13px;
+  }
+  
+  .fee-waiver-section .checkbox-group,
+  .fee-waiver-section .radio-group {
+    gap: 8px;
+  }
+  
+  .fee-waiver-section .checkbox-group label {
+    padding: 6px 0;
+    font-size: 13px;
+  }
+  
+  .fee-waiver-section .radio-group label {
+    padding: 4px 0;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .fee-waiver-section {
+    margin: 10px 15px;
+  }
+  
+  .fee-waiver-section .form-content {
+    padding: 16px;
+  }
+  
+  .fee-waiver-section .form-group {
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+  }
+  
+  .fee-waiver-section .form-group p {
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+  
+  .fee-waiver-section .checkbox-group label {
+    padding: 4px 0;
+    font-size: 12px;
+  }
+  
+  .fee-waiver-section .radio-group label {
+    padding: 3px 0;
+    font-size: 12px;
+  }
+}

@@ -1,0 +1,170 @@
+/* SATTestsSection.css */
+.sat-tests-section {
+  background: white;
+  margin: 20px 40px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+}
+
+.sat-tests-section h2 {
+  background: #f8f9fa;
+  margin: 0;
+  padding: 20px 24px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a202c;
+  border-bottom: 1px solid #e5e7eb;
+  border-radius: 8px 8px 0 0;
+}
+
+.sat-tests-section .section-status {
+  background: #f0f7ff;
+  padding: 12px 24px;
+  font-size: 14px;
+  color: #2C5AA0;
+  font-weight: 500;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sat-tests-section .section-status::before {
+  content: "●";
+  color: #2C5AA0;
+  font-size: 16px;
+}
+
+.sat-tests-section .form-content {
+  padding: 24px;
+  max-width: 100%;
+}
+
+.sat-tests-section .form-group {
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.sat-tests-section .form-group:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.sat-tests-section .question-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 16px;
+}
+
+.sat-tests-section .select-group {
+  margin-bottom: 12px;
+}
+
+.sat-tests-section .sat-select {
+  width: 200px;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+  background: white;
+}
+
+.sat-tests-section .sat-select:focus {
+  outline: none;
+  border-color: #2C5AA0;
+  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+}
+
+.sat-tests-section .radio-options-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.sat-tests-section .radio-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #374151;
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.sat-tests-section .radio-option:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.sat-tests-section .radio-option input[type="radio"] {
+  margin: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.sat-tests-section .clear-answer-button {
+  background: none;
+  border: 1px solid #d1d5db;
+  color: #6b7280;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sat-tests-section .clear-answer-button:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .sat-tests-section {
+    margin: 15px 20px;
+  }
+  
+  .sat-tests-section .form-content {
+    padding: 20px;
+  }
+  
+  .sat-tests-section .radio-options-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .sat-tests-section .sat-select {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .sat-tests-section {
+    margin: 10px 15px;
+  }
+  
+  .sat-tests-section .form-content {
+    padding: 16px;
+  }
+  
+  .sat-tests-section h2 {
+    padding: 16px 20px;
+    font-size: 18px;
+  }
+  
+  .sat-tests-section .section-status {
+    padding: 10px 20px;
+  }
+  
+  .sat-tests-section .radio-options-grid {
+    grid-template-columns: 1fr;
+  }
+}
