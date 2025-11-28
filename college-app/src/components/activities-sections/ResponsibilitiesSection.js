@@ -147,7 +147,7 @@ const ResponsibilitiesSection = () => {
         }
 
         // Navigate to writing section
-        navigate('/dashboard/writing');
+        navigate('/firstyear/dashboard');
       }
     } catch (error) {
       console.error('Error saving responsibilities data:', error);

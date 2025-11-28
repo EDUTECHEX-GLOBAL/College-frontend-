@@ -45,13 +45,13 @@ const FamilySection = () => {
   // Update active subsection based on route
   useEffect(() => {
     const path = location.pathname;
-    if (path.includes('/household')) {
+    if (path.includes('/firstyear/dashboard/household')) {
       setActiveSubSection('household');
-    } else if (path.includes('/parent1')) {
+    } else if (path.includes('/firstyear/dashboard/parent1')) {
       setActiveSubSection('parent1');
-    } else if (path.includes('/parent2')) {
+    } else if (path.includes('/firstyear/dashboard/parent2')) {
       setActiveSubSection('parent2');
-    } else if (path.includes('/sibling')) {
+    } else if (path.includes('/firstyear/dashboard/sibling')) {
       setActiveSubSection('sibling');
     } else {
       setActiveSubSection('household');

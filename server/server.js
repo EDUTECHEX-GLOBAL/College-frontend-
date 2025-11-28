@@ -17,7 +17,8 @@ import firstResidencyRoutes from "./routes/FirstResidencyRoutes.js";
 import internationalStudentRoutes from "./routes/InternationalStudentRoutes.js";
 import firstReviewRoutes from "./routes/FirstReviewRoutes.js";
 import firstTestingRoutes from "./routes/firstTestingRoutes.js";
-import activitiesRoutes from "./routes/activitiestestRoutes.js"; // ✅ CHANGED to activitiestestRoutes
+import transferActivitiesRoutes from "./routes/activitiestestRoutes.js"; // ✅ RENAMED for transfer
+import firstYearActivitiesRoutes from "./routes/activitiesRoutes.js"; // ✅ RENAMED for first-year
 import responsibilitiesRoutes from "./routes/responsibilitiesRoutes.js";
 import writingRoutes from "./routes/writingRoutes.js";
 
@@ -43,7 +44,6 @@ connectDB();
 const corsOptions = {
   origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:4200"],
   credentials: true,
-  optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 };
@@ -88,7 +88,8 @@ app.use("/api/residency", firstResidencyRoutes);
 app.use("/api/international", internationalStudentRoutes);
 app.use("/api/review", firstReviewRoutes);
 app.use("/api/students/testing", firstTestingRoutes);
-app.use("/api/students", activitiesRoutes); 
+app.use("/api/students", firstYearActivitiesRoutes); // ✅ First-year activities
+app.use("/api/transfer", transferActivitiesRoutes); // ✅ Transfer activities
 app.use("/api/students", responsibilitiesRoutes); 
 app.use("/api/writing", writingRoutes);
 app.use("/api/students/family-dashb", firstfamilydashbRoutes);
@@ -118,7 +119,8 @@ app.get("/", (req, res) => {
       general: "GET /api/general (Protected)",
       academics: "GET /api/academics (Protected)",
       highSchoolCurriculum: "GET /api/high-school-curriculum (Protected)",
-      activities: "GET /api/activities (Protected)", 
+      firstYearActivities: "GET /api/students/activities (Protected)", // ✅ UPDATED
+      transferActivities: "GET /api/transfer/activities (Protected)", // ✅ ADDED
       writing: "GET /api/writing (Protected)", 
       writingPersonalEssay: "PUT /api/writing/personal-essay (Protected)",
       writingAdditionalInfo: "PUT /api/writing/additional-information (Protected)",
@@ -159,7 +161,8 @@ app.get("/api/status", (req, res) => {
       family: "/api/family-background",
       educationTransfer: "/api/education-transfer",
       writing: "/api/writing",
-      activities: "/api/activities",
+      firstYearActivities: "/api/students/activities", // ✅ UPDATED
+      transferActivities: "/api/transfer/activities", // ✅ ADDED
       collegeSearch: "/api/college-search",
       testing: "/api/testing", // ✅ ADDED
       writingTest: "/api/writingtest", // ✅ ADDED
@@ -235,7 +238,8 @@ app.listen(PORT, () => {
    👨‍👩‍👧‍👦 Family:           /api/family-background
    🎓 Education Transfer: /api/education-transfer
    ✍️  Writing:          /api/writing
-   🎯 Activities:       /api/activities
+   🎯 First-Year Activities: /api/students/activities
+   🎯 Transfer Activities: /api/transfer/activities
    🔍 College Search:   /api/college-search
    📝 Testing:          /api/testing
    ✍️  Writing Test:    /api/writingtest

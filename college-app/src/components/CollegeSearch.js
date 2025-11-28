@@ -176,7 +176,7 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
 
   // Handle college name click - navigate to college details
   const handleCollegeClick = (college) => {
-    navigate(`/dashboard/colleges/${college.UNITID}`);
+    navigate(`/firstyear/dashboard/colleges/${college.UNITID}`);
   };
 
   // Load default data and user colleges on component mount

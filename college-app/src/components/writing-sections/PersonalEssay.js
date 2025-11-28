@@ -115,18 +115,31 @@ const PersonalEssay = () => {
         understandingAcknowledged: understood
       };
 
+      console.log('🔐 Frontend - Token from localStorage:', localStorage.getItem('token'));
+      console.log('📤 Frontend - Sending request with headers:', getAuthHeaders());
+      console.log('📦 Frontend - Request data:', essayData);
+
       const response = await axios.put(`${API_URL}/api/writing/personal-essay`, essayData, {
         headers: getAuthHeaders()
       });
+      
+      console.log('✅ Frontend - API Response:', response.data);
       
       if (response.data.success) {
         setSaveStatus('Draft saved successfully!');
         setTimeout(() => setSaveStatus(''), 3000);
       }
     } catch (error) {
-      console.error('Error saving draft:', error);
+      console.error('❌ Frontend - Full error details:');
+      console.error('   Error message:', error.message);
+      console.error('   Error code:', error.code);
+      console.error('   Response status:', error.response?.status);
+      console.error('   Response data:', error.response?.data);
+      
       if (error.response?.data?.message) {
         setSaveStatus(`Error: ${error.response.data.message}`);
+      } else if (error.response?.data?.error) {
+        setSaveStatus(`Error: ${error.response.data.error}`);
       } else {
         setSaveStatus('Error saving draft. Please try again.');
       }
@@ -141,12 +154,6 @@ const PersonalEssay = () => {
       setSaveStatus('Please select an essay prompt');
       return;
     }
-
-    // TEMPORARY: Remove word count validation for testing
-    // if (wordCount < 250) {
-    //   setSaveStatus('Essay must be at least 250 words');
-    //   return;
-    // }
 
     if (wordCount > 650) {
       setSaveStatus('Essay cannot exceed 650 words');
@@ -168,25 +175,34 @@ const PersonalEssay = () => {
         understandingAcknowledged: understood
       };
 
-      console.log('Sending essay data:', essayData);
+      console.log('🔐 Frontend - Token from localStorage:', localStorage.getItem('token'));
+      console.log('📤 Frontend - Sending request with headers:', getAuthHeaders());
+      console.log('📦 Frontend - Request data:', essayData);
 
       const response = await axios.put(`${API_URL}/api/writing/personal-essay`, essayData, {
         headers: getAuthHeaders()
       });
       
-      console.log('API Response:', response.data);
+      console.log('✅ Frontend - API Response:', response.data);
       
       if (response.data.success) {
         setSaveStatus('Saved successfully! Redirecting...');
         // Navigate to Additional Information after a brief delay
         setTimeout(() => {
-          navigate('/dashboard/writing/additional-information');
+          navigate('/firstyear/dashboard/writing/additional-information');
         }, 1000);
       }
     } catch (error) {
-      console.error('Error saving essay:', error);
+      console.error('❌ Frontend - Full error details:');
+      console.error('   Error message:', error.message);
+      console.error('   Error code:', error.code);
+      console.error('   Response status:', error.response?.status);
+      console.error('   Response data:', error.response?.data);
+      
       if (error.response?.data?.message) {
         setSaveStatus(`Error: ${error.response.data.message}`);
+      } else if (error.response?.data?.error) {
+        setSaveStatus(`Error: ${error.response.data.error}`);
       } else {
         setSaveStatus('Error saving essay. Please try again.');
       }
@@ -195,7 +211,6 @@ const PersonalEssay = () => {
     }
   };
 
-  // ... rest of the component JSX remains exactly the same ...
   return (
     <div className="personal-essay">
       <div className="essay-header">

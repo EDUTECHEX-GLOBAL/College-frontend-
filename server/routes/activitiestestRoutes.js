@@ -5,13 +5,13 @@ import { authenticateToken } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// GET /api/activities - Get activities data
-router.get('/', authenticateToken, getCurrentActivities);
+// GET /api/transfer/activities - Get activities data
+router.get('/activities', authenticateToken, getCurrentActivities);
 
-// PUT /api/activities - Update activities data
-router.put('/', authenticateToken, updateCurrentActivities);
+// PUT /api/transfer/activities - Update activities data
+router.put('/activities', authenticateToken, updateCurrentActivities);
 
-// DELETE /api/activities - Delete activities record
-router.delete('/', authenticateToken, deleteActivities);
+// DELETE /api/transfer/activities - Delete activities record
+router.delete('/activities', authenticateToken, deleteActivities);
 
 export default router;

@@ -69,7 +69,7 @@ const ActivitiesForm = () => {
 
       console.log('📥 Fetching activities data...');
       
-      const response = await axiosInstance.get('/api/activities');
+      const response = await axiosInstance.get('/api/transfer/activities');
 
       console.log('✅ Activities data received:', response.data);
 
@@ -166,7 +166,7 @@ const ActivitiesForm = () => {
 
       console.log('💾 Saving activities data...');
 
-      const response = await axiosInstance.put('/api/activities', activitiesData);
+      const response = await axiosInstance.put('/api/transfer/activities', activitiesData);
 
       console.log('✅ Backend response:', response.data);
 
@@ -261,7 +261,7 @@ const ActivitiesForm = () => {
         activitiesCompletion: finalCompletion
       };
 
-      const response = await axiosInstance.put('/api/activities', finalData);
+      const response = await axiosInstance.put('/api/transfer/activities', finalData);
 
       if (response.data.success) {
         setMessage({ 

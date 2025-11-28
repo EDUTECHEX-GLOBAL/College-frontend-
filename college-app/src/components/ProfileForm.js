@@ -390,7 +390,7 @@ const ProfileForm = () => {
       const currentIndex = sections.indexOf(activeSection);
       if (currentIndex < sections.length - 1) {
         // Navigate to next section
-        navigate(`/dashboard/profile/${sections[currentIndex + 1]}`);
+        navigate(`/firstyear/dashboard/profile/${sections[currentIndex + 1]}`);
       } else {
         // Last section - show preview instead of continuing
         setShowPreview(true);
@@ -475,7 +475,7 @@ const ProfileForm = () => {
         
         // Redirect to dashboard after 3 seconds
         setTimeout(() => {
-          navigate('/dashboard');
+          navigate('/firstyear/dashboard');
         }, 3000);
         
       } else {

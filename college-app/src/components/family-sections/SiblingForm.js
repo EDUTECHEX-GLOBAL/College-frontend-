@@ -89,7 +89,7 @@ const SiblingForm = () => {
 
       if (response.data.success) {
         // Navigate back to dashboard
-        navigate('/dashboard');
+        navigate('/firstyear/dashboard');
       }
     } catch (error) {
       console.error('Error saving sibling data:', error);

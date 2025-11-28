@@ -52,7 +52,7 @@ const HouseholdForm = () => {
       });
 
       // Navigate to next section
-      navigate('/dashboard/family/parent1');
+      navigate('/firstyear/dashboard/family/parent1');
     } catch (error) {
       console.error('Error saving household data:', error);
       alert('Error saving household data. Please try again.');

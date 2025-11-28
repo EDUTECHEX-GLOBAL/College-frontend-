@@ -1,5 +1,5 @@
 // controllers/activitiestestController.js
-import Activities from "../models/activitiestestModel.js";
+import TransferActivities from "../models/activitiestestModel.js"; // ✅ Updated import
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -52,7 +52,7 @@ const calculateActivitiesProgress = (activities) => {
 
   const progress = Math.round((completedFields / totalFields) * 100);
 
-  console.log(`📊 Activities progress: ${completedFields}/${totalFields} = ${progress}%`);
+  console.log(`📊 Transfer Activities progress: ${completedFields}/${totalFields} = ${progress}%`);
   console.log(`   Completed sections:`, Object.keys(activities.activitiesCompletion).filter(k => activities.activitiesCompletion[k]));
 
   return progress;
@@ -60,13 +60,13 @@ const calculateActivitiesProgress = (activities) => {
 
 /**
  * 👤 Get Current Student's Activities (using JWT token)
- * GET /api/activities
+ * GET /api/transfer/activities
  */
 export const getCurrentActivities = async (req, res) => {
   try {
     const userId = req.user?.id;
 
-    console.log("📥 Fetching activities data...");
+    console.log("📥 Fetching transfer activities data...");
     console.log("🔑 User ID from token:", userId);
 
     if (!userId) {
@@ -77,12 +77,12 @@ export const getCurrentActivities = async (req, res) => {
       });
     }
 
-    let activities = await Activities.findOne({ studentId: userId });
+    let activities = await TransferActivities.findOne({ studentId: userId }); // ✅ Updated model
 
     // If no activities record exists, create a new one with default values
     if (!activities) {
-      console.log("📝 No activities record found, creating new one...");
-      activities = new Activities({
+      console.log("📝 No transfer activities record found, creating new one...");
+      activities = new TransferActivities({ // ✅ Updated model
         studentId: userId,
         activities: {
           hasActivities: '',
@@ -98,10 +98,10 @@ export const getCurrentActivities = async (req, res) => {
         },
       });
       await activities.save();
-      console.log("✅ New activities record created");
+      console.log("✅ New transfer activities record created");
     }
 
-    console.log("✅ Activities data fetched successfully");
+    console.log("✅ Transfer activities data fetched successfully");
 
     // Calculate activities progress with auto-detection
     const activitiesProgress = calculateActivitiesProgress(activities);
@@ -112,10 +112,10 @@ export const getCurrentActivities = async (req, res) => {
       activitiesProgress: activitiesProgress,
     });
   } catch (error) {
-    console.error("❌ Error fetching activities:", error);
+    console.error("❌ Error fetching transfer activities:", error);
     return res.status(500).json({
       success: false,
-      message: "Error fetching activities data",
+      message: "Error fetching transfer activities data",
       error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
@@ -123,13 +123,13 @@ export const getCurrentActivities = async (req, res) => {
 
 /**
  * 💾 Update Current Student's Activities (using JWT token)
- * PUT /api/activities
+ * PUT /api/transfer/activities
  */
 export const updateCurrentActivities = async (req, res) => {
   try {
     const userId = req.user?.id;
 
-    console.log("💾 Updating activities data...");
+    console.log("💾 Updating transfer activities data...");
     console.log("🔑 User ID from token:", userId);
     console.log("📦 Update data keys:", Object.keys(req.body));
 
@@ -142,11 +142,11 @@ export const updateCurrentActivities = async (req, res) => {
     }
 
     // Find existing activities record or create new one
-    let activities = await Activities.findOne({ studentId: userId });
+    let activities = await TransferActivities.findOne({ studentId: userId }); // ✅ Updated model
 
     if (!activities) {
-      console.log("📝 Creating new activities record...");
-      activities = new Activities({
+      console.log("📝 Creating new transfer activities record...");
+      activities = new TransferActivities({ // ✅ Updated model
         studentId: userId,
         ...req.body,
       });
@@ -163,12 +163,12 @@ export const updateCurrentActivities = async (req, res) => {
     // Save after calculating progress (so activitiesCompletion is updated)
     await activities.save();
 
-    console.log("✅ Activities data updated successfully");
+    console.log("✅ Transfer activities data updated successfully");
     console.log("📊 New progress:", activitiesProgress + "%");
 
     return res.status(200).json({
       success: true,
-      message: "Activities data updated successfully",
+      message: "Transfer activities data updated successfully",
       activities: activities,
       activitiesProgress: activitiesProgress,
       progress: {
@@ -176,11 +176,11 @@ export const updateCurrentActivities = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("❌ Error updating activities:", error);
+    console.error("❌ Error updating transfer activities:", error);
     console.error("   Stack trace:", error.stack);
     return res.status(500).json({
       success: false,
-      message: "Error updating activities data",
+      message: "Error updating transfer activities data",
       error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
@@ -188,13 +188,13 @@ export const updateCurrentActivities = async (req, res) => {
 
 /**
  * 🗑️ Delete Activities Record
- * DELETE /api/activities
+ * DELETE /api/transfer/activities
  */
 export const deleteActivities = async (req, res) => {
   try {
     const userId = req.user?.id;
 
-    console.log("🗑️ Deleting activities record...");
+    console.log("🗑️ Deleting transfer activities record...");
     console.log("🔑 User ID from token:", userId);
 
     if (!userId) {
@@ -205,26 +205,26 @@ export const deleteActivities = async (req, res) => {
       });
     }
 
-    const activities = await Activities.findOneAndDelete({ studentId: userId });
+    const activities = await TransferActivities.findOneAndDelete({ studentId: userId }); // ✅ Updated model
 
     if (!activities) {
       return res.status(404).json({
         success: false,
-        message: "Activities record not found",
+        message: "Transfer activities record not found",
       });
     }
 
-    console.log("✅ Activities record deleted successfully");
+    console.log("✅ Transfer activities record deleted successfully");
 
     return res.status(200).json({
       success: true,
-      message: "Activities record deleted successfully",
+      message: "Transfer activities record deleted successfully",
     });
   } catch (error) {
-    console.error("❌ Error deleting activities:", error);
+    console.error("❌ Error deleting transfer activities:", error);
     return res.status(500).json({
       success: false,
-      message: "Error deleting activities record",
+      message: "Error deleting transfer activities record",
     });
   }
 };

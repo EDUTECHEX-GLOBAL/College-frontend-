@@ -615,7 +615,7 @@ const Dashboard = () => {
         <Route path="/colleges/:collegeId" element={<CollegeDetails />} />
         <Route path="/colleges/:collegeId/:subsection" element={<CollegeSubsection />} />
         <Route path="/profile/*" element={<ProfileForm />} />
-        <Route path="/family" element={<FamilySection />} /> {/* ✅ FamilySection properly imported & used */}
+        <Route path="/family/*" element={<FamilySection />} /> {/* ✅ FamilySection properly imported & used */}
         <Route path="/education/*" element={<EducationForm />} />
         <Route path="/testing/*" element={<TestingForm />} />
         

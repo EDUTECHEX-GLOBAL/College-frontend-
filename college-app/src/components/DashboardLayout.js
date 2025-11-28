@@ -72,6 +72,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
   // Listen for storage changes to force re-render
   useEffect(() => {
     const handleStorageChange = () => {
+      console.log('🔄 Storage changed, forcing sidebar re-render');
       setForceUpdate(prev => prev + 1);
     };
 
@@ -79,6 +80,20 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
+  // Listen for custom testing data updates
+  useEffect(() => {
+    const handleTestingDataUpdate = () => {
+      console.log('🔄 Testing data updated, forcing re-render');
+      setForceUpdate(prev => prev + 1);
+    };
+
+    window.addEventListener('testingDataUpdated', handleTestingDataUpdate);
+    
+    return () => {
+      window.removeEventListener('testingDataUpdated', handleTestingDataUpdate);
     };
   }, []);
 
@@ -119,35 +134,39 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
 
   // Get selected tests from userData or localStorage
   const getSelectedTests = () => {
-    if (userData?.testingData?.testsToReport) {
-      return userData.testingData.testsToReport;
-    }
-    
+    // Always read directly from localStorage for the most current data
     const storedUserData = localStorage.getItem('userData');
     if (storedUserData) {
       try {
         const parsedData = JSON.parse(storedUserData);
-        return parsedData.testingData?.testsToReport || [];
+        const tests = parsedData.testingData?.testsToReport || [];
+        console.log('📋 Current tests in localStorage:', tests);
+        return tests;
       } catch (error) {
         console.error('Error parsing stored user data:', error);
       }
     }
     
+    // Fallback to userData prop
+    if (userData?.testingData?.testsToReport) {
+      return userData.testingData.testsToReport;
+    }
+    
     return [];
   };
 
-  // Test types mapping
+  // Test types mapping - Make sure these match exactly with what's stored in formData.testsToReport
   const testTypes = [
-    { id: 'act-tests', name: 'ACT Tests', route: '/dashboard/testing/act-tests' },
-    { id: 'sat-tests', name: 'SAT Tests', route: '/dashboard/testing/sat-tests' },
-    { id: 'sat-subject-tests', name: 'SAT Subject Tests', route: '/dashboard/testing/sat-subject-tests' },
-    { id: 'ap-subject-tests', name: 'AP Subject Tests', route: '/dashboard/testing/ap-subject-tests' },
-    { id: 'ib-subject-tests', name: 'IB Subject Tests', route: '/dashboard/testing/ib-subject-tests' },
-    { id: 'cambridge', name: 'Cambridge', route: '/dashboard/testing/cambridge' },
-    { id: 'toefl-ibt', name: 'TOEFL iBT', route: '/dashboard/testing/toefl-ibt' },
-    { id: 'pte-academic-tests', name: 'PTE Academic Tests', route: '/dashboard/testing/pte-academic-tests' },
-    { id: 'ielts', name: 'IELTS', route: '/dashboard/testing/ielts' },
-    { id: 'duolingo-english-test', name: 'Duolingo English Test', route: '/dashboard/testing/duolingo-english-test' }
+    { id: 'act-tests', name: 'ACT Tests', route: '/firstyear/dashboard/testing/act-tests' },
+    { id: 'sat-tests', name: 'SAT Tests', route: '/firstyear/dashboard/testing/sat-tests' },
+    { id: 'sat-subject-tests', name: 'SAT Subject Tests', route: '/firstyear/dashboard/testing/sat-subject-tests' },
+    { id: 'ap-subject-tests', name: 'AP Subject Tests', route: '/firstyear/dashboard/testing/ap-subject-tests' },
+    { id: 'ib-subject-tests', name: 'IB Subject Tests', route: '/firstyear/dashboard/testing/ib-subject-tests' },
+    { id: 'cambridge', name: 'Cambridge', route: '/firstyear/dashboard/testing/cambridge' },
+    { id: 'toefl-ibt', name: 'TOEFL iBT', route: '/firstyear/dashboard/testing/toefl-ibt' },
+    { id: 'pte-academic-tests', name: 'PTE Academic Tests', route: '/firstyear/dashboard/testing/pte-academic-tests' },
+    { id: 'ielts', name: 'IELTS', route: '/firstyear/dashboard/testing/ielts' },
+    { id: 'duolingo-english-test', name: 'Duolingo English Test', route: '/firstyear/dashboard/testing/duolingo-english-test' }
   ];
 
   // Filter test types to show only selected ones
@@ -155,6 +174,13 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
   const selectedTestTypes = selectedTests.length > 0 
     ? testTypes.filter(test => selectedTests.includes(test.id))
     : [];
+
+  // Debug: Log the selected tests to see what's actually being stored
+  useEffect(() => {
+    console.log('🔄 DashboardLayout re-rendering, forceUpdate:', forceUpdate);
+    console.log('📋 Selected tests:', selectedTests);
+    console.log('📋 Selected test types:', selectedTestTypes);
+  }, [forceUpdate, selectedTests, selectedTestTypes]);
 
   // CollegeSidebarItem Component with proper active states
   const CollegeSidebarItem = ({ college, isExpanded, onToggle, onNavigate }) => {
@@ -215,7 +241,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
               </div>
               <ul className="nav-application-submenu">
                 {applicationSubsections.map((subsection) => {
-                  const isSubsectionActive = location.pathname === `/dashboard/colleges/${college.collegeId}/${subsection.id}`;
+                  const isSubsectionActive = location.pathname === `/firstyear/dashboard/colleges/${college.collegeId}/${subsection.id}`;
                   
                   return (
                     <li key={subsection.id} className={`nav-application-subitem ${isSubsectionActive ? 'active' : ''}`}>
@@ -234,9 +260,9 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
             </li>
 
             {/* Review Section */}
-            <li className={`nav-college-subitem ${location.pathname === `/dashboard/colleges/${college.collegeId}/review` ? 'active' : ''}`}>
+            <li className={`nav-college-subitem ${location.pathname === `/firstyear/dashboard/colleges/${college.collegeId}/review` ? 'active' : ''}`}>
               <div 
-                className={`nav-content ${location.pathname === `/dashboard/colleges/${college.collegeId}/review` ? 'active' : ''}`}
+                className={`nav-content ${location.pathname === `/firstyear/dashboard/colleges/${college.collegeId}/review` ? 'active' : ''}`}
                 onClick={() => {
                   onNavigate(`college-${college.collegeId}-review`);
                 }}
@@ -257,7 +283,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     const subsection = parts.slice(2).join('-');
     
     // Navigate to the specific subsection
-    navigate(`/dashboard/colleges/${collegeId}/${subsection}`);
+    navigate(`/firstyear/dashboard/colleges/${collegeId}/${subsection}`);
   };
 
   // Determine which sidebar to show based on active section
@@ -313,47 +339,47 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
           <h4 className="nav-section-title">Education</h4>
           <ul className="nav-menu">
             <li className={`nav-item ${location.pathname.includes('/current-school') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate('/dashboard/education/current-school')}>
+              <div className="nav-content" onClick={() => navigate('/firstyear/dashboard/education/current-school')}>
                 <span className="nav-text">Current or Most Recent Secondary/High School</span>
               </div>
             </li>
             <li className={`nav-item ${location.pathname.includes('/other-schools') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate('/dashboard/education/other-schools')}>
+              <div className="nav-content" onClick={() => navigate('/firstyear/dashboard/education/other-schools')}>
                 <span className="nav-text">Other Secondary/High Schools</span>
               </div>
             </li>
-            <li className={`nav-item ${location.pathname.includes('/colleges') && !location.pathname.includes('/dashboard/colleges') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate('/dashboard/education/colleges')}>
+            <li className={`nav-item ${location.pathname.includes('/colleges') && !location.pathname.includes('/firstyear/dashboard/colleges') ? 'active' : ''}`}>
+              <div className="nav-content" onClick={() => navigate('/firstyear/dashboard/education/colleges')}>
                 <span className="nav-text">Colleges & Universities</span>
               </div>
             </li>
             <li className={`nav-item ${location.pathname.includes('/grades') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate('/dashboard/education/grades')}>
+              <div className="nav-content" onClick={() => navigate('/firstyear/dashboard/education/grades')}>
                 <span className="nav-text">Grades</span>
               </div>
             </li>
             <li className={`nav-item ${location.pathname.includes('/current-courses') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate('/dashboard/education/current-courses')}>
+              <div className="nav-content" onClick={() => navigate('/firstyear/dashboard/education/current-courses')}>
                 <span className="nav-text">Current or Most Recent Year Courses</span>
               </div>
             </li>
             <li className={`nav-item ${location.pathname.includes('/honors') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate('/dashboard/education/honors')}>
+              <div className="nav-content" onClick={() => navigate('/firstyear/dashboard/education/honors')}>
                 <span className="nav-text">Honors</span>
               </div>
             </li>
             <li className={`nav-item ${location.pathname.includes('/community-organizations') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate('/dashboard/education/community-organizations')}>
+              <div className="nav-content" onClick={() => navigate('/firstyear/dashboard/education/community-organizations')}>
                 <span className="nav-text">Community-Based Organizations</span>
               </div>
             </li>
             <li className={`nav-item ${location.pathname.includes('/future-plans') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate('/dashboard/education/future-plans')}>
+              <div className="nav-content" onClick={() => navigate('/firstyear/dashboard/education/future-plans')}>
                 <span className="nav-text">Future Plans</span>
               </div>
             </li>
             <li className={`nav-item ${location.pathname.includes('/documents') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate('/dashboard/education/documents')}>
+              <div className="nav-content" onClick={() => navigate('/firstyear/dashboard/education/documents')}>
                 <span className="nav-text">Documents Upload</span>
               </div>
             </li>
@@ -368,12 +394,12 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
           <h4 className="nav-section-title">Writing</h4>
           <ul className="nav-menu">
             <li className={`nav-item ${location.pathname.includes('/personal-essay') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate('/dashboard/writing/personal-essay')}>
+              <div className="nav-content" onClick={() => navigate('/firstyear/dashboard/writing/personal-essay')}>
                 <span className="nav-text">Personal Essay</span>
               </div>
             </li>
             <li className={`nav-item ${location.pathname.includes('/additional-information') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate('/dashboard/writing/additional-information')}>
+              <div className="nav-content" onClick={() => navigate('/firstyear/dashboard/writing/additional-information')}>
                 <span className="nav-text">Additional Information</span>
               </div>
             </li>
@@ -387,13 +413,13 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
         <div className="nav-section">
           <h4 className="nav-section-title">Activities</h4>
           <ul className="nav-menu">
-            <li className={`nav-item ${location.pathname === '/dashboard/activities' ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate('/dashboard/activities')}>
+            <li className={`nav-item ${location.pathname === '/firstyear/dashboard/activities' ? 'active' : ''}`}>
+              <div className="nav-content" onClick={() => navigate('/firstyear/dashboard/activities')}>
                 <span className="nav-text">Activities</span>
               </div>
             </li>
             <li className={`nav-item ${location.pathname.includes('/responsibilities') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate('/dashboard/activities/responsibilities')}>
+              <div className="nav-content" onClick={() => navigate('/firstyear/dashboard/activities/responsibilities')}>
                 <span className="nav-text">Responsibilities</span>
               </div>
             </li>
@@ -434,7 +460,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
             {expandedSections.colleges && (
               <ul className="nav-submenu">
                 {/* Overview Item */}
-                <li className={`nav-subitem ${location.pathname === '/dashboard/colleges' ? 'active' : ''}`}>
+                <li className={`nav-subitem ${location.pathname === '/firstyear/dashboard/colleges' ? 'active' : ''}`}>
                   <div className="nav-content" onClick={() => onSectionChange('colleges')}>
                     <span className="nav-text">Overview</span>
                   </div>
@@ -479,7 +505,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
               <ul className="nav-submenu">
                 {/* Always show Tests Taken */}
                 <li className={`nav-subitem ${location.pathname.includes('/tests-taken') ? 'active' : ''}`}>
-                  <div className="nav-content" onClick={() => navigate('/dashboard/testing/tests-taken')}>
+                  <div className="nav-content" onClick={() => navigate('/firstyear/dashboard/testing/tests-taken')}>
                     <span className="nav-text">Tests Taken</span>
                   </div>
                 </li>
@@ -518,13 +544,14 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
             </div>
             {expandedSections.activities && (
               <ul className="nav-submenu">
-                <li className={`nav-subitem ${location.pathname === '/dashboard/activities' ? 'active' : ''}`}>
-                  <div className="nav-content" onClick={() => navigate('/dashboard/activities')}>
+                {/* FIXED: Corrected the path from '/dashboard/activities' to '/firstyear/dashboard/activities' */}
+                <li className={`nav-subitem ${location.pathname === '/firstyear/dashboard/activities' ? 'active' : ''}`}>
+                  <div className="nav-content" onClick={() => navigate('/firstyear/dashboard/activities')}>
                     <span className="nav-text">Activities</span>
                   </div>
                 </li>
                 <li className={`nav-subitem ${location.pathname.includes('/responsibilities') ? 'active' : ''}`}>
-                  <div className="nav-content" onClick={() => navigate('/dashboard/activities/responsibilities')}>
+                  <div className="nav-content" onClick={() => navigate('/firstyear/dashboard/activities/responsibilities')}>
                     <span className="nav-text">Responsibilities</span>
                   </div>
                 </li>
@@ -544,12 +571,12 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
             {expandedSections.writing && (
               <ul className="nav-submenu">
                 <li className={`nav-subitem ${location.pathname.includes('/personal-essay') ? 'active' : ''}`}>
-                  <div className="nav-content" onClick={() => navigate('/dashboard/writing/personal-essay')}>
+                  <div className="nav-content" onClick={() => navigate('/firstyear/dashboard/writing/personal-essay')}>
                     <span className="nav-text">Personal Essay</span>
                   </div>
                 </li>
                 <li className={`nav-subitem ${location.pathname.includes('/additional-information') ? 'active' : ''}`}>
-                  <div className="nav-content" onClick={() => navigate('/dashboard/writing/additional-information')}>
+                  <div className="nav-content" onClick={() => navigate('/firstyear/dashboard/writing/additional-information')}>
                     <span className="nav-text">Additional Information</span>
                   </div>
                 </li>
@@ -558,7 +585,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
           </li>
 
           <li className={`nav-item ${location.pathname.includes('/college-search') ? 'active' : ''}`}>
-            <div className="nav-content" onClick={() => navigate('/dashboard/college-search')}>
+            <div className="nav-content" onClick={() => navigate('/firstyear/dashboard/college-search')}>
               <span className="nav-text">College Search</span>
             </div>
           </li>

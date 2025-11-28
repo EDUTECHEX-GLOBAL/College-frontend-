@@ -182,7 +182,7 @@ const EducationForm = () => {
   // Set active section based on URL
   useEffect(() => {
     if (!urlSection) {
-      navigate('/dashboard/education/current-school', { replace: true });
+      navigate('/firstyear/dashboard/education/current-school', { replace: true });
     }
   }, [urlSection, navigate]);
 
@@ -398,7 +398,7 @@ const EducationForm = () => {
       if (currentIndex < sections.length - 1) {
         const nextSection = sections[currentIndex + 1];
         const nextUrlSection = REVERSE_SECTION_MAP[nextSection];
-        navigate(`/dashboard/education/${nextUrlSection}`);
+        navigate(`/firstyear/dashboard/education/${nextUrlSection}`);
       } else {
         setShowPreview(true);
       }
@@ -449,7 +449,7 @@ const EducationForm = () => {
 
       // Optionally navigate back to dashboard after successful submission
       setTimeout(() => {
-        navigate('/dashboard');
+        navigate('/firstyear/dashboard');
       }, 3000);
 
     } catch (error) {

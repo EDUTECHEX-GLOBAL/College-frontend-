@@ -164,7 +164,7 @@ const AdditionalInformation = () => {
         setSaveStatus('Additional information saved successfully! Redirecting...');
         // Navigate back to writing overview or dashboard
         setTimeout(() => {
-          navigate('/dashboard/writing');
+          navigate('/firstyear/dashboard/');
         }, 1500);
       }
     } catch (error) {

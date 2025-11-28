@@ -45,7 +45,7 @@ const CollegeDetails = () => {
             'Content-Type': 'application/json'
           }
         });
-        navigate('/dashboard/college-search');
+        navigate('/firstyear/dashboard/college-search');
       } catch (error) {
         console.error("Error removing college:", error);
         alert("Failed to remove college from your list");
@@ -67,7 +67,7 @@ const CollegeDetails = () => {
       <div className="common-app-error">
         <h2>College not found</h2>
         <p>The college you're looking for is not in your list.</p>
-        <button onClick={() => navigate('/dashboard/college-search')}>
+        <button onClick={() => navigate('/firstyear/dashboard/college-search')}>
           Search Colleges
         </button>
       </div>
@@ -79,7 +79,7 @@ const CollegeDetails = () => {
       {/* Header Section */}
       <div className="common-app-header">
         <div className="header-nav">
-          <button className="back-button" onClick={() => navigate('/dashboard/college-search')}>
+          <button className="back-button" onClick={() => navigate('/firstyear/dashboard/college-search')}>
             ← Back to Search
           </button>
         </div>

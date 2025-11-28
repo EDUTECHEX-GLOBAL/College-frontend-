@@ -5,12 +5,12 @@ import {
   saveActivitiesDetails,
   clearHasActivities
 } from "../controllers/activitiesController.js";
-import authMiddleware from "../middleware/authMiddleware.js";
+import authenticateToken  from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 // All routes are protected
-router.use(authMiddleware);
+router.use( authenticateToken );
 
 // GET activities data
 router.get("/activities", getActivities);

@@ -1,7 +1,7 @@
 // models/activitiestestModel.js
 import mongoose from "mongoose";
 
-const activitiesSchema = new mongoose.Schema(
+const transferActivitiesSchema = new mongoose.Schema(
   {
     // Reference to the student
     studentId: {
@@ -89,13 +89,14 @@ const activitiesSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    collection: "activities_records",
+    collection: "transfer_activities_records", // Changed collection name
     strict: false,
   }
 );
 
 // Index for faster queries
-activitiesSchema.index({ studentId: 1 }, { unique: true });
+transferActivitiesSchema.index({ studentId: 1 }, { unique: true });
 
-const Activities = mongoose.model("Activities", activitiesSchema);
-export default Activities;
+// ✅ CHANGED: Use different model name for transfer activities
+const TransferActivities = mongoose.model("TransferActivities", transferActivitiesSchema);
+export default TransferActivities;

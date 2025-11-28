@@ -215,7 +215,7 @@ const ActivitiesSection = () => {
         }
 
         // Navigate to responsibilities section
-        navigate('/dashboard/activities/responsibilities');
+        navigate('/firstyear/dashboard/activities/responsibilities');
       }
     } catch (error) {
       console.error('Error saving activities details:', error);

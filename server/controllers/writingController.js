@@ -6,7 +6,7 @@ import Account from "../models/accountModel.js";
 // ================================
 export const getWritingData = async (req, res) => {
   try {
-    const studentId = req.user.userId;
+    const studentId = req.userId;
 
     const writingData = await Writing.findByStudentId(studentId);
     
@@ -54,14 +54,15 @@ export const getWritingData = async (req, res) => {
 };
 
 // ================================
-// 📝 UPDATE PERSONAL ESSAY (REMOVED WORD COUNT VALIDATION)
+// 📝 UPDATE PERSONAL ESSAY (WITH DUPLICATE KEY HANDLING)
 // ================================
 export const updatePersonalEssay = async (req, res) => {
   try {
-    const studentId = req.user.userId;
+    const studentId = req.userId;
     const { selectedPrompt, essayContent, understandingAcknowledged } = req.body;
 
     console.log("📝 Updating personal essay:", { 
+      studentId,
       selectedPrompt, 
       essayContentLength: essayContent?.length,
       wordCount: essayContent ? essayContent.trim().split(/\s+/).length : 0,
@@ -76,13 +77,42 @@ export const updatePersonalEssay = async (req, res) => {
       });
     }
 
-    // REMOVED word count validation - allow saving with any word count
-    // The frontend will handle the validation warnings
-
-    // Find or create writing document
+    // Find or create writing document with duplicate key handling
     let writingData = await Writing.findByStudentId(studentId);
+    
     if (!writingData) {
-      writingData = new Writing({ studentId });
+      console.log("🔍 No existing data, creating new Writing document...");
+      try {
+        writingData = new Writing({ studentId });
+        // Try to save the new document
+        await writingData.save();
+      } catch (error) {
+        // Handle duplicate key error (E11000)
+        if (error.code === 11000) {
+          console.log("🔄 Duplicate key error detected, finding existing document...");
+          // Try to find the document again (it might have been created by another request)
+          writingData = await Writing.findByStudentId(studentId);
+          if (!writingData) {
+            // If still not found, try to find document with null userId and update it
+            writingData = await Writing.findOne({ studentId: null });
+            if (writingData) {
+              console.log("🔄 Found document with null userId, updating it...");
+              writingData.studentId = studentId;
+              await writingData.save();
+            } else {
+              // Last resort: use findOneAndUpdate with upsert
+              writingData = await Writing.findOneAndUpdate(
+                { studentId },
+                { studentId },
+                { new: true, upsert: true, setDefaultsOnInsert: true }
+              );
+            }
+          }
+        } else {
+          // Re-throw other errors
+          throw error;
+        }
+      }
     }
 
     // Update personal essay
@@ -109,7 +139,18 @@ export const updatePersonalEssay = async (req, res) => {
       progress: writingData.progress,
     });
   } catch (error) {
-    console.error("❌ Error updating personal essay:", error);
+    console.error("❌ Error updating personal essay:");
+    console.error("   Error name:", error.name);
+    console.error("   Error message:", error.message);
+    console.error("   Error code:", error.code);
+    
+    if (error.code === 11000) {
+      return res.status(500).json({
+        success: false,
+        message: "Database conflict. Please try again.",
+      });
+    }
+
     res.status(500).json({
       success: false,
       message: "Server error while saving personal essay",
@@ -122,7 +163,7 @@ export const updatePersonalEssay = async (req, res) => {
 // ================================
 export const updateAdditionalInformation = async (req, res) => {
   try {
-    const studentId = req.user.userId;
+    const studentId = req.userId;
     const { circumstances, qualifications } = req.body;
 
     console.log("📝 Updating additional info:", { circumstances, qualifications });
@@ -186,7 +227,7 @@ export const updateAdditionalInformation = async (req, res) => {
 // ================================
 export const getWritingProgress = async (req, res) => {
   try {
-    const studentId = req.user.userId;
+    const studentId = req.userId;
 
     const writingData = await Writing.findByStudentId(studentId);
     
@@ -214,7 +255,7 @@ export const getWritingProgress = async (req, res) => {
 // ================================
 export const initializeWritingData = async (req, res) => {
   try {
-    const studentId = req.user.userId;
+    const studentId = req.userId;
 
     const writingData = await Writing.findOrCreateByStudentId(studentId);
 

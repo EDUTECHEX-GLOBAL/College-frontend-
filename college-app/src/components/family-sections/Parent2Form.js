@@ -71,7 +71,7 @@ const Parent2Form = () => {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
-      navigate('/dashboard/family/sibling');
+      navigate('/firstyear/dashboard/family/sibling');
     } catch (error) {
       console.error('Error saving parent 2 data:', error);
       alert('Error saving parent 2 data. Please try again.');

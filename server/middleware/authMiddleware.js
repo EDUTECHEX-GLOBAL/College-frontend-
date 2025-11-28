@@ -42,15 +42,29 @@ export const authenticateToken = (req, res, next) => {
     const decoded = jwt.verify(token, jwtSecret);
 
     console.log('✅ Token verified successfully!');
-    console.log('👤 Decoded user ID:', decoded.id);
+    console.log('👤 Full decoded token:', decoded);
+    console.log('👤 Decoded user ID (_id):', decoded._id);
+    console.log('👤 Decoded user ID (id):', decoded.id);
     console.log('📧 Decoded email:', decoded.email);
     console.log('📝 Decoded username:', decoded.username);
 
-    // Attach user info to request object
+    // FIX: Check both possible ID fields and attach to request object
     req.user = decoded;
-    req.userId = decoded.id; // Easier access in controllers
+    
+    // Try multiple possible ID fields - this is the key fix!
+    const userId = decoded.id || decoded._id || decoded.userId;
+    req.userId = userId;
 
-    console.log('✅ User authenticated and attached to request - ID:', req.userId);
+    console.log('✅ User authenticated and attached to request - Final ID:', req.userId);
+
+    if (!req.userId) {
+      console.error('❌ No user ID found in decoded token!');
+      console.error('   Available fields:', Object.keys(decoded));
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid token format. No user ID found.',
+      });
+    }
 
     next();
   } catch (error) {

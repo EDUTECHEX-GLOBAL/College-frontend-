@@ -197,7 +197,7 @@ const TestingForm = () => {
     if (section) {
       setActiveSection(section);
     } else {
-      navigate('/dashboard/testing/tests-taken', { replace: true });
+      navigate('/firstyear/dashboard/testing/tests-taken', { replace: true });
     }
   }, [section, navigate]);
 
@@ -352,20 +352,24 @@ const TestingForm = () => {
     }
   };
 
+  // FIXED: Updated handleArrayChange to use functional update
   const handleArrayChange = (field, value) => {
-    const updatedFormData = {
-      ...formData,
-      [field]: formData[field].includes(value)
-        ? formData[field].filter((item) => item !== value)
-        : [...formData[field], value],
-    };
+    setFormData((prevFormData) => {
+      const updatedFormData = {
+        ...prevFormData,
+        [field]: prevFormData[field].includes(value)
+          ? prevFormData[field].filter((item) => item !== value)
+          : [...prevFormData[field], value],
+      };
 
-    setFormData(updatedFormData);
+      // Update localStorage with the UPDATED form data immediately
+      if (field === 'testsToReport') {
+        updateLocalStorageWithTestingData(updatedFormData, progress);
+        setUpdateTrigger((prev) => prev + 1);
+      }
 
-    if (field === 'testsToReport') {
-      updateLocalStorageWithTestingData(updatedFormData, progress);
-      setUpdateTrigger((prev) => prev + 1);
-    }
+      return updatedFormData;
+    });
   };
 
   const clearAnswer = (field) => {
@@ -475,10 +479,28 @@ const TestingForm = () => {
     const success = await saveTesting();
 
     if (success) {
-      if (activeSection !== 'tests-taken') {
-        navigate('/dashboard/testing/tests-taken');
+      const selectedTests = formData.testsToReport || [];
+      
+      if (activeSection === 'tests-taken') {
+        // From tests-taken, go to first selected test
+        if (selectedTests.length > 0) {
+          const firstTest = selectedTests[0];
+          navigate(`/firstyear/dashboard/testing/${firstTest}`);
+        } else {
+          navigate('/firstyear/dashboard');
+        }
       } else {
-        navigate('/dashboard');
+        // From a test section, find next test in sequence
+        const currentIndex = selectedTests.indexOf(activeSection);
+        
+        if (currentIndex < selectedTests.length - 1) {
+          // Go to next test in sequence
+          const nextTest = selectedTests[currentIndex + 1];
+          navigate(`/firstyear/dashboard/testing/${nextTest}`);
+        } else {
+          // No more tests, go to dashboard
+          navigate('/firstyear/dashboard');
+        }
       }
     }
   };
@@ -493,7 +515,7 @@ const TestingForm = () => {
 
   const handleEditSection = (section) => {
     setShowPreview(false);
-    navigate(`/dashboard/testing/${section}`);
+    navigate(`/firstyear/dashboard/testing/${section}`);
   };
 
   const handleFinalSubmit = async () => {
@@ -506,7 +528,7 @@ const TestingForm = () => {
         text: 'Testing section saved. Redirecting to dashboard...',
       });
       setTimeout(() => {
-        navigate('/dashboard');
+        navigate('/firstyear/dashboard');
       }, 3000);
     }
   };
