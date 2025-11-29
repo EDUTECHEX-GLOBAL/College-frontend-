@@ -79,8 +79,8 @@ const ACTTestsSection = ({
         {!showSimpleForm && (
           <div className="detailed-fields">
             {/* Composite Score and Date */}
-            <div className="form-row">
-              <div className="form-field">
+            <div className="field-group">
+              <div className="form-group">
                 <p className="question-text">Highest composite score*</p>
                 <select 
                   name="highestCompositeScore"
@@ -94,7 +94,7 @@ const ACTTestsSection = ({
                   ))}
                 </select>
               </div>
-              <div className="form-field">
+              <div className="form-group">
                 <p className="question-text">Highest composite date*</p>
                 <input
                   type="text"
@@ -108,8 +108,8 @@ const ACTTestsSection = ({
             </div>
 
             {/* Math Score and Date */}
-            <div className="form-row">
-              <div className="form-field">
+            <div className="field-group">
+              <div className="form-group">
                 <p className="question-text">Highest math score*</p>
                 <select 
                   name="highestMathScore"
@@ -123,7 +123,7 @@ const ACTTestsSection = ({
                   ))}
                 </select>
               </div>
-              <div className="form-field">
+              <div className="form-group">
                 <p className="question-text">Highest math date*</p>
                 <input
                   type="text"
@@ -137,8 +137,8 @@ const ACTTestsSection = ({
             </div>
 
             {/* English Score and Date */}
-            <div className="form-row">
-              <div className="form-field">
+            <div className="field-group">
+              <div className="form-group">
                 <p className="question-text">Highest English score*</p>
                 <select 
                   name="highestEnglishScore"
@@ -152,7 +152,7 @@ const ACTTestsSection = ({
                   ))}
                 </select>
               </div>
-              <div className="form-field">
+              <div className="form-group">
                 <p className="question-text">Highest English date*</p>
                 <input
                   type="text"
@@ -166,8 +166,8 @@ const ACTTestsSection = ({
             </div>
 
             {/* Reading Score and Date */}
-            <div className="form-row">
-              <div className="form-field">
+            <div className="field-group">
+              <div className="form-group">
                 <p className="question-text">Highest reading score*</p>
                 <select 
                   name="highestReadingScore"
@@ -181,7 +181,7 @@ const ACTTestsSection = ({
                   ))}
                 </select>
               </div>
-              <div className="form-field">
+              <div className="form-group">
                 <p className="question-text">Highest reading date*</p>
                 <input
                   type="text"
@@ -230,8 +230,8 @@ const ACTTestsSection = ({
 
             {/* Science Score (conditional) */}
             {formData.reportScienceScore === 'yes' && (
-              <div className="form-row">
-                <div className="form-field">
+              <div className="field-group">
+                <div className="form-group">
                   <p className="question-text">Highest science score*</p>
                   <select 
                     name="highestScienceScore"
@@ -245,7 +245,7 @@ const ACTTestsSection = ({
                     ))}
                   </select>
                 </div>
-                <div className="form-field">
+                <div className="form-group">
                   <p className="question-text">Highest science date*</p>
                   <input
                     type="text"
@@ -295,8 +295,8 @@ const ACTTestsSection = ({
 
             {/* Writing Score (conditional) */}
             {formData.reportWritingScore === 'yes' && (
-              <div className="form-row">
-                <div className="form-field">
+              <div className="field-group">
+                <div className="form-group">
                   <p className="question-text">Highest writing score*</p>
                   <select 
                     name="highestWritingScore"
@@ -310,7 +310,7 @@ const ACTTestsSection = ({
                     ))}
                   </select>
                 </div>
-                <div className="form-field">
+                <div className="form-group">
                   <p className="question-text">Highest writing date*</p>
                   <input
                     type="text"
@@ -373,6 +373,11 @@ const ACTTestsSection = ({
             ))}
           </div>
         )}
+
+        {/* Helper text */}
+        <div className="form-helper">
+          * Required fields. Remember to send official score reports to colleges that require them.
+        </div>
       </div>
     </div>
   );

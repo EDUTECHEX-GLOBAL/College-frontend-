@@ -142,7 +142,7 @@
   width: 100%;
 }
 
-/* Radio Buttons */
+/* Radio Buttons - Enhanced Styling */
 .radio-container {
   display: flex;
   flex-direction: column;
@@ -160,7 +160,13 @@
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  padding: 4px 0;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.radio-option:hover {
+  background: #f7fafc;
 }
 
 .radio-input {
@@ -207,6 +213,13 @@
   font-size: 14px;
   color: #2d3748;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  transition: color 0.2s ease, font-weight 0.2s ease;
+}
+
+/* Enhanced radio button styling for better visual feedback */
+.radio-input:checked ~ .radio-text {
+  color: #2C5AA0;
+  font-weight: 500;
 }
 
 .clear-answer {

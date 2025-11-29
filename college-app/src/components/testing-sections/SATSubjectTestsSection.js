@@ -153,17 +153,20 @@ const SATSubjectTestsSection = ({ formData, handleInputChange }) => {
 
   return (
     <div className="sat-subject-tests-section">
-      <h2>SAT Subject Tests</h2>
-      <div className="section-status">
-        {isSectionComplete ? 'Complete' : 'In Progress'}
+      <div className="section-header">
+        <h2>SAT Subject Tests</h2>
+        <div className={`section-status ${isSectionComplete ? 'complete' : 'in-progress'}`}>
+          <span className="status-indicator"></span>
+          {isSectionComplete ? 'Complete' : 'In Progress'}
+        </div>
       </div>
       
       <div className="form-content">
         {/* Number of Tests Question */}
         <div className="form-group">
-          <label className="question-label">
+          <p className="question-text">
             Number of SAT Subject Tests you wish to report, including tests you expect to take*
-          </label>
+          </p>
           <div className="select-group">
             <select
               name="numberOfSATTests"
@@ -189,11 +192,13 @@ const SATSubjectTestsSection = ({ formData, handleInputChange }) => {
           <div className="tests-container">
             {tests.map((test, index) => (
               <div key={index} className="test-entry">
-                <h3>Test {index + 1}</h3>
+                <div className="test-header">
+                  <h3>Test {index + 1}</h3>
+                </div>
                 
                 {/* Date Field with Month Selection and Year Grid */}
                 <div className="form-group">
-                  <label>Date taken or planned*</label>
+                  <p className="question-text">Date taken or planned*</p>
                   <div className="date-selection">
                     <div className="month-year-selection">
                       <div className="month-select-container">
@@ -220,6 +225,9 @@ const SATSubjectTestsSection = ({ formData, handleInputChange }) => {
                         
                         {showYearGrid === index && (
                           <div className="year-grid-container">
+                            <div className="year-grid-header">
+                              Select Year
+                            </div>
                             <div className="year-grid">
                               {yearRows.map((row, rowIndex) => (
                                 <div key={rowIndex} className="year-row">
@@ -257,7 +265,7 @@ const SATSubjectTestsSection = ({ formData, handleInputChange }) => {
 
                 {/* Subject Field */}
                 <div className="form-group">
-                  <label>Subject*</label>
+                  <p className="question-text">Subject*</p>
                   <select
                     value={test.subject || ''}
                     onChange={(e) => handleTestChange(index, 'subject', e.target.value)}
@@ -277,7 +285,7 @@ const SATSubjectTestsSection = ({ formData, handleInputChange }) => {
 
                 {/* Score Field (Optional) */}
                 <div className="form-group">
-                  <label>Score</label>
+                  <p className="question-text">Score</p>
                   <select
                     value={test.score || ''}
                     onChange={(e) => handleTestChange(index, 'score', e.target.value)}

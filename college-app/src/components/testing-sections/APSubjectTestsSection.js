@@ -288,31 +288,30 @@ const APSubjectTestsSection = ({ formData, handleInputChange }) => {
 
                 {/* Score Field - Radio buttons for AP scores (1-5) */}
                 <div className="form-group">
-                    <label>Score</label>
-                    <div className="score-radio-group-horizontal">
-                        {scoreOptions.map(score => (
-                        <label key={score} className="score-radio-option-horizontal">
-                            <input
-                            type="radio"
-                            name={`score-${index}`}
-                            value={score}
-                            checked={test.score === score.toString()}
-                            onChange={(e) => handleTestChange(index, 'score', e.target.value)}
-                            className="score-radio-input"
-                            />
-                            <span className="score-radio-custom"></span>
-                            <span className="score-radio-label">{score}</span>
-                        </label>
-                        ))}
-                    </div>
-                    <button 
-                        type="button" 
-                        className="clear-answer-button"
-                        onClick={() => handleTestChange(index, 'score', '')}
-                    >
-                        Clear answer
-                    </button>
-                    </div>
+                  <label>Score</label>
+                  <div className="score-radio-group-horizontal">
+                    {scoreOptions.map(score => (
+                      <label key={score} className="score-radio-option-horizontal">
+                        <input
+                          type="radio"
+                          name={`score-${index}`}
+                          value={score}
+                          checked={test.score === score.toString()}
+                          onChange={(e) => handleTestChange(index, 'score', e.target.value)}
+                          className="score-radio-input"
+                        />
+                        <span className="score-radio-label">{score}</span>
+                      </label>
+                    ))}
+                  </div>
+                  <button 
+                    type="button" 
+                    className="clear-answer-button"
+                    onClick={() => handleTestChange(index, 'score', '')}
+                  >
+                    Clear answer
+                  </button>
+                </div>
               </div>
             ))}
           </div>

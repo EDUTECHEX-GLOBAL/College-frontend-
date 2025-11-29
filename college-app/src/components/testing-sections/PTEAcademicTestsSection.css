@@ -91,11 +91,28 @@
   width: 16px;
   height: 16px;
   accent-color: #2C5AA0;
+  cursor: pointer;
+}
+
+/* Enhanced radio button styling for better visual feedback */
+.radio-group-vertical .radio-option input[type="radio"]:checked {
+  accent-color: #2C5AA0;
+  background-color: #2C5AA0;
+  border-color: #2C5AA0;
+}
+
+.radio-group-vertical .radio-option input[type="radio"]:checked + .radio-label {
+  color: #2C5AA0;
+  font-weight: 500;
+}
+
+.radio-group-vertical .radio-label {
+  transition: color 0.2s ease, font-weight 0.2s ease;
 }
 
 /* Score Dropdowns - Compact */
 .score-dropdown {
-  width: 100px;
+  width: 120px;
   padding: 6px 8px;
   border: 1px solid #d1d5db;
   border-radius: 4px;
@@ -126,6 +143,11 @@
   outline: none;
   border-color: #2C5AA0;
   box-shadow: 0 0 0 2px rgba(44, 90, 160, 0.1);
+}
+
+.date-input::placeholder {
+  color: #9ca3af;
+  font-size: 13px;
 }
 
 /* Clear Answer Button - Compact */
@@ -163,7 +185,8 @@
   border-bottom: 1px solid #e8ecef;
 }
 
-.detailed-fields .form-row {
+/* Field Groups for better organization - Compact */
+.field-group {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
@@ -172,15 +195,19 @@
   border-bottom: 1px solid #e8ecef;
 }
 
-.detailed-fields .form-row:last-child {
+.field-group:last-child {
   border-bottom: none;
   margin-bottom: 0;
   padding-bottom: 0;
 }
 
-.detailed-fields .form-field {
-  display: flex;
-  flex-direction: column;
+.field-group .form-group {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+  background: none;
+  padding: 0;
+  border: none;
 }
 
 /* Form Helper Text - Compact */
@@ -223,7 +250,7 @@
     margin: 12px 0;
   }
   
-  .detailed-fields .form-row {
+  .field-group {
     grid-template-columns: 1fr;
     gap: 12px;
   }

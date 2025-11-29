@@ -224,40 +224,21 @@
   margin-top: 4px;
 }
 
-/* Level Selection with Clear Button */
+/* Select with Clear Button */
 .ib-subject-tests-section .select-with-clear {
   display: flex;
   gap: 12px;
   align-items: flex-start;
-  max-width: 400px;
 }
 
-.ib-subject-tests-section .select-with-clear .level-select {
+.ib-subject-tests-section .select-with-clear select {
   flex: 1;
-  max-width: none;
 }
 
-.ib-subject-tests-section .clear-answer-button {
-  background: none;
-  border: 1px solid #d1d5db;
-  color: #6b7280;
-  padding: 10px 16px;
-  border-radius: 4px;
-  font-size: 14px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s ease;
-}
-
-.ib-subject-tests-section .clear-answer-button:hover {
-  background: #f9fafb;
-  border-color: #9ca3af;
-}
-
-/* Score Radio Button Styles */
+/* Score Radio Button Styles - Horizontal Layout */
 .ib-subject-tests-section .score-radio-group-horizontal {
   display: flex;
-  gap: 16px;
+  gap: 20px;
   margin-bottom: 12px;
   flex-wrap: wrap;
 }
@@ -265,44 +246,56 @@
 .ib-subject-tests-section .score-radio-option-horizontal {
   display: flex;
   align-items: center;
+  gap: 8px;
   cursor: pointer;
-  padding: 8px 0;
+  font-size: 14px;
+  color: #4a5568;
+  padding: 6px 0;
+  transition: color 0.2s ease;
+}
+
+.ib-subject-tests-section .score-radio-option-horizontal:hover {
+  color: #2C5AA0;
 }
 
 .ib-subject-tests-section .score-radio-input {
-  display: none;
+  margin: 0;
+  width: 16px;
+  height: 16px;
+  accent-color: #2C5AA0;
+  cursor: pointer;
 }
 
-.ib-subject-tests-section .score-radio-custom {
-  width: 18px;
-  height: 18px;
-  border: 2px solid #d1d5db;
-  border-radius: 50%;
-  margin-right: 8px;
-  position: relative;
-  transition: all 0.2s ease;
-}
-
-.ib-subject-tests-section .score-radio-input:checked + .score-radio-custom {
+/* Enhanced radio button styling for better visual feedback */
+.ib-subject-tests-section .score-radio-input:checked {
+  accent-color: #2C5AA0;
+  background-color: #2C5AA0;
   border-color: #2C5AA0;
-  background: #2C5AA0;
 }
 
-.ib-subject-tests-section .score-radio-input:checked + .score-radio-custom::after {
-  content: '';
-  width: 6px;
-  height: 6px;
-  background: white;
-  border-radius: 50%;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+.ib-subject-tests-section .score-radio-input:checked + .score-radio-label {
+  color: #2C5AA0;
+  font-weight: 500;
 }
 
 .ib-subject-tests-section .score-radio-label {
-  font-size: 14px;
-  color: #374151;
+  transition: color 0.2s ease, font-weight 0.2s ease;
+}
+
+.ib-subject-tests-section .clear-answer-button {
+  background: none;
+  border: 1px solid #d1d5db;
+  color: #6b7280;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ib-subject-tests-section .clear-answer-button:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
 }
 
 /* Responsive Design */
@@ -330,16 +323,13 @@
   }
   
   .ib-subject-tests-section .score-radio-group-horizontal {
+    flex-wrap: wrap;
     gap: 12px;
   }
   
   .ib-subject-tests-section .select-with-clear {
     flex-direction: column;
     gap: 8px;
-  }
-  
-  .ib-subject-tests-section .clear-answer-button {
-    align-self: flex-start;
   }
 }
 

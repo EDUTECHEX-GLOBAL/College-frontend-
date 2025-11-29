@@ -133,8 +133,8 @@ const DuolingoEnglishTestSection = ({
             <h3>Duolingo English Test Scores</h3>
             
             {/* Literacy Score */}
-            <div className="form-row">
-              <div className="form-field">
+            <div className="field-group">
+              <div className="form-group">
                 <p className="question-text">Highest literacy score*</p>
                 <select 
                   name="duolingoHighestLiteracyScore"
@@ -148,7 +148,7 @@ const DuolingoEnglishTestSection = ({
                   ))}
                 </select>
               </div>
-              <div className="form-field">
+              <div className="form-group">
                 <p className="question-text">Literacy score date*</p>
                 <input
                   type="text"
@@ -165,8 +165,8 @@ const DuolingoEnglishTestSection = ({
             </div>
 
             {/* Comprehension Score */}
-            <div className="form-row">
-              <div className="form-field">
+            <div className="field-group">
+              <div className="form-group">
                 <p className="question-text">Highest comprehension score*</p>
                 <select 
                   name="duolingoHighestComprehensionScore"
@@ -180,7 +180,7 @@ const DuolingoEnglishTestSection = ({
                   ))}
                 </select>
               </div>
-              <div className="form-field">
+              <div className="form-group">
                 <p className="question-text">Comprehension score date*</p>
                 <input
                   type="text"
@@ -197,8 +197,8 @@ const DuolingoEnglishTestSection = ({
             </div>
 
             {/* Conversation Score */}
-            <div className="form-row">
-              <div className="form-field">
+            <div className="field-group">
+              <div className="form-group">
                 <p className="question-text">Highest conversation score*</p>
                 <select 
                   name="duolingoHighestConversationScore"
@@ -212,7 +212,7 @@ const DuolingoEnglishTestSection = ({
                   ))}
                 </select>
               </div>
-              <div className="form-field">
+              <div className="form-group">
                 <p className="question-text">Conversation score date*</p>
                 <input
                   type="text"
@@ -229,8 +229,8 @@ const DuolingoEnglishTestSection = ({
             </div>
 
             {/* Production Score */}
-            <div className="form-row">
-              <div className="form-field">
+            <div className="field-group">
+              <div className="form-group">
                 <p className="question-text">Highest production score*</p>
                 <select 
                   name="duolingoHighestProductionScore"
@@ -244,7 +244,7 @@ const DuolingoEnglishTestSection = ({
                   ))}
                 </select>
               </div>
-              <div className="form-field">
+              <div className="form-group">
                 <p className="question-text">Production score date*</p>
                 <input
                   type="text"
@@ -261,8 +261,8 @@ const DuolingoEnglishTestSection = ({
             </div>
 
             {/* Total Score */}
-            <div className="form-row">
-              <div className="form-field">
+            <div className="field-group">
+              <div className="form-group">
                 <p className="question-text">Highest Duolingo total score*</p>
                 <select 
                   name="duolingoHighestTotalScore"
@@ -276,7 +276,7 @@ const DuolingoEnglishTestSection = ({
                   ))}
                 </select>
               </div>
-              <div className="form-field">
+              <div className="form-group">
                 <p className="question-text">Duolingo total score date*</p>
                 <input
                   type="text"

@@ -221,26 +221,51 @@
   margin-top: 4px;
 }
 
-/* Score Radio Button Styles */
-.ap-subject-tests-section .score-radio-group {
+/* Score Radio Button Styles - Horizontal Layout */
+.ap-subject-tests-section .score-radio-group-horizontal {
   display: flex;
-  gap: 16px;
+  gap: 20px;
   margin-bottom: 12px;
+  flex-wrap: wrap;
 }
 
-.ap-subject-tests-section .score-radio-option {
+.ap-subject-tests-section .score-radio-option-horizontal {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   cursor: pointer;
   font-size: 14px;
-  color: #374151;
+  color: #4a5568;
+  padding: 6px 0;
+  transition: color 0.2s ease;
 }
 
-.ap-subject-tests-section .score-radio-option input[type="radio"] {
+.ap-subject-tests-section .score-radio-option-horizontal:hover {
+  color: #2C5AA0;
+}
+
+.ap-subject-tests-section .score-radio-input {
   margin: 0;
   width: 16px;
   height: 16px;
+  accent-color: #2C5AA0;
+  cursor: pointer;
+}
+
+/* Enhanced radio button styling for better visual feedback */
+.ap-subject-tests-section .score-radio-input:checked {
+  accent-color: #2C5AA0;
+  background-color: #2C5AA0;
+  border-color: #2C5AA0;
+}
+
+.ap-subject-tests-section .score-radio-input:checked + .score-radio-label {
+  color: #2C5AA0;
+  font-weight: 500;
+}
+
+.ap-subject-tests-section .score-radio-label {
+  transition: color 0.2s ease, font-weight 0.2s ease;
 }
 
 .ap-subject-tests-section .clear-answer-button {
@@ -283,7 +308,7 @@
     grid-template-columns: repeat(2, 1fr);
   }
   
-  .ap-subject-tests-section .score-radio-group {
+  .ap-subject-tests-section .score-radio-group-horizontal {
     flex-wrap: wrap;
     gap: 12px;
   }
@@ -313,5 +338,9 @@
   
   .ap-subject-tests-section .year-row {
     grid-template-columns: 1fr;
+  }
+  
+  .ap-subject-tests-section .score-radio-group-horizontal {
+    gap: 8px;
   }
 }

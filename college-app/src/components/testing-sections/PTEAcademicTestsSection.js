@@ -110,8 +110,8 @@ const PTEAcademicTestsSection = ({
             <h3>PTE Academic Test Scores</h3>
             
             {/* Listening Score */}
-            <div className="form-row">
-              <div className="form-field">
+            <div className="field-group">
+              <div className="form-group">
                 <p className="question-text">Highest listening score*</p>
                 <select 
                   name="pteHighestListeningScore"
@@ -125,7 +125,7 @@ const PTEAcademicTestsSection = ({
                   ))}
                 </select>
               </div>
-              <div className="form-field">
+              <div className="form-group">
                 <p className="question-text">Listening score date*</p>
                 <input
                   type="date"
@@ -141,8 +141,8 @@ const PTEAcademicTestsSection = ({
             </div>
 
             {/* Reading Score */}
-            <div className="form-row">
-              <div className="form-field">
+            <div className="field-group">
+              <div className="form-group">
                 <p className="question-text">Highest reading score*</p>
                 <select 
                   name="pteHighestReadingScore"
@@ -156,7 +156,7 @@ const PTEAcademicTestsSection = ({
                   ))}
                 </select>
               </div>
-              <div className="form-field">
+              <div className="form-group">
                 <p className="question-text">Reading score date*</p>
                 <input
                   type="date"
@@ -172,8 +172,8 @@ const PTEAcademicTestsSection = ({
             </div>
 
             {/* Speaking Score */}
-            <div className="form-row">
-              <div className="form-field">
+            <div className="field-group">
+              <div className="form-group">
                 <p className="question-text">Highest speaking score*</p>
                 <select 
                   name="pteHighestSpeakingScore"
@@ -187,7 +187,7 @@ const PTEAcademicTestsSection = ({
                   ))}
                 </select>
               </div>
-              <div className="form-field">
+              <div className="form-group">
                 <p className="question-text">Speaking score date*</p>
                 <input
                   type="date"
@@ -203,8 +203,8 @@ const PTEAcademicTestsSection = ({
             </div>
 
             {/* Writing Score */}
-            <div className="form-row">
-              <div className="form-field">
+            <div className="field-group">
+              <div className="form-group">
                 <p className="question-text">Highest writing score*</p>
                 <select 
                   name="pteHighestWritingScore"
@@ -218,7 +218,7 @@ const PTEAcademicTestsSection = ({
                   ))}
                 </select>
               </div>
-              <div className="form-field">
+              <div className="form-group">
                 <p className="question-text">Writing score date*</p>
                 <input
                   type="date"
@@ -234,8 +234,8 @@ const PTEAcademicTestsSection = ({
             </div>
 
             {/* Grammar Score */}
-            <div className="form-row">
-              <div className="form-field">
+            <div className="field-group">
+              <div className="form-group">
                 <p className="question-text">Highest grammar score*</p>
                 <select 
                   name="pteHighestGrammarScore"
@@ -249,7 +249,7 @@ const PTEAcademicTestsSection = ({
                   ))}
                 </select>
               </div>
-              <div className="form-field">
+              <div className="form-group">
                 <p className="question-text">Grammar score date*</p>
                 <input
                   type="date"
@@ -265,8 +265,8 @@ const PTEAcademicTestsSection = ({
             </div>
 
             {/* Oral Fluency Score */}
-            <div className="form-row">
-              <div className="form-field">
+            <div className="field-group">
+              <div className="form-group">
                 <p className="question-text">Highest oral fluency score*</p>
                 <select 
                   name="pteHighestOralFluencyScore"
@@ -280,7 +280,7 @@ const PTEAcademicTestsSection = ({
                   ))}
                 </select>
               </div>
-              <div className="form-field">
+              <div className="form-group">
                 <p className="question-text">Oral fluency score date*</p>
                 <input
                   type="date"
@@ -296,8 +296,8 @@ const PTEAcademicTestsSection = ({
             </div>
 
             {/* Pronunciation Score */}
-            <div className="form-row">
-              <div className="form-field">
+            <div className="field-group">
+              <div className="form-group">
                 <p className="question-text">Highest pronunciation score*</p>
                 <select 
                   name="pteHighestPronunciationScore"
@@ -311,7 +311,7 @@ const PTEAcademicTestsSection = ({
                   ))}
                 </select>
               </div>
-              <div className="form-field">
+              <div className="form-group">
                 <p className="question-text">Pronunciation score date*</p>
                 <input
                   type="date"
@@ -327,8 +327,8 @@ const PTEAcademicTestsSection = ({
             </div>
 
             {/* Spelling Score */}
-            <div className="form-row">
-              <div className="form-field">
+            <div className="field-group">
+              <div className="form-group">
                 <p className="question-text">Highest spelling score*</p>
                 <select 
                   name="pteHighestSpellingScore"
@@ -342,7 +342,7 @@ const PTEAcademicTestsSection = ({
                   ))}
                 </select>
               </div>
-              <div className="form-field">
+              <div className="form-group">
                 <p className="question-text">Spelling score date*</p>
                 <input
                   type="date"
@@ -358,8 +358,8 @@ const PTEAcademicTestsSection = ({
             </div>
 
             {/* Vocabulary Score */}
-            <div className="form-row">
-              <div className="form-field">
+            <div className="field-group">
+              <div className="form-group">
                 <p className="question-text">Highest vocabulary score*</p>
                 <select 
                   name="pteHighestVocabularyScore"
@@ -373,7 +373,7 @@ const PTEAcademicTestsSection = ({
                   ))}
                 </select>
               </div>
-              <div className="form-field">
+              <div className="form-group">
                 <p className="question-text">Vocabulary score date*</p>
                 <input
                   type="date"
@@ -389,8 +389,8 @@ const PTEAcademicTestsSection = ({
             </div>
 
             {/* Written Discourse Score */}
-            <div className="form-row">
-              <div className="form-field">
+            <div className="field-group">
+              <div className="form-group">
                 <p className="question-text">Highest written discourse score*</p>
                 <select 
                   name="pteHighestWrittenDiscourseScore"
@@ -404,7 +404,7 @@ const PTEAcademicTestsSection = ({
                   ))}
                 </select>
               </div>
-              <div className="form-field">
+              <div className="form-group">
                 <p className="question-text">Written discourse score date*</p>
                 <input
                   type="date"
