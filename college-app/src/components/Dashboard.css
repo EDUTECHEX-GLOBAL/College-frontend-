@@ -1068,3 +1068,19 @@
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(10px);
 }
+
+/* Ensure Activities page shows the logo */
+.dashboard-container .dashboard-sidebar {
+  display: flex !important;
+}
+
+.brand-section {
+  display: block !important;
+  visibility: visible !important;
+}
+
+/* Make sure Activities page doesn't hide the sidebar */
+.activities-container ~ .dashboard-sidebar,
+.responsibilities-container ~ .dashboard-sidebar {
+  display: flex !important;
+}

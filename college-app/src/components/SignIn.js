@@ -9,12 +9,28 @@ const SignIn = () => {
   const [studentType, setStudentType] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  
+  // New state for password visibility
+  const [showPassword, setShowPassword] = useState(false);
+  const [showTransferPassword, setShowTransferPassword] = useState(false);
 
   // 🔄 Reset state handler
   const handleResetState = () => {
     setShowStudentOptions(false);
     setStudentType(null);
     setError("");
+    setShowPassword(false);
+    setShowTransferPassword(false);
+  };
+
+  // Toggle password visibility for first-year students
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  // Toggle password visibility for transfer students
+  const toggleTransferPasswordVisibility = () => {
+    setShowTransferPassword(!showTransferPassword);
   };
 
   // 🔐 First-Year Student Sign-In
@@ -269,15 +285,38 @@ const SignIn = () => {
               />
 
               <label htmlFor="signin-password">Password</label>
-              <input
-                id="signin-password"
-                type="password"
-                name="password"
-                placeholder="Enter your password"
-                required
-                disabled={loading}
-                autoComplete="current-password"
-              />
+              <div className="password-input-container">
+                <input
+                  id="signin-password"
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Enter your password"
+                  required
+                  disabled={loading}
+                  autoComplete="current-password"
+                  className="password-input"
+                />
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  onClick={togglePasswordVisibility}
+                  disabled={loading}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <svg className="eye-icon" viewBox="0 0 24 24" fill="none">
+                      <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  ) : (
+                    <svg className="eye-off-icon" viewBox="0 0 24 24" fill="none">
+                      <path d="M17.94 17.94C16.2306 19.243 14.1491 19.9649 12 20C5 20 1 12 1 12C2.24389 9.68192 3.96914 7.65663 6.06 6.06L17.94 17.94Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M9.9 4.24C10.5883 4.07888 11.2931 3.99834 12 4C19 4 23 12 23 12C22.393 13.1356 21.6691 14.2048 20.84 15.19L9.9 4.24Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M1 1L23 23" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  )}
+                </button>
+              </div>
 
               <div className="form-actions">
                 <button
@@ -333,15 +372,38 @@ const SignIn = () => {
               />
 
               <label htmlFor="transfer-password">Password</label>
-              <input
-                id="transfer-password"
-                type="password"
-                name="password"
-                placeholder="Enter your password"
-                required
-                disabled={loading}
-                autoComplete="current-password"
-              />
+              <div className="password-input-container">
+                <input
+                  id="transfer-password"
+                  type={showTransferPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Enter your password"
+                  required
+                  disabled={loading}
+                  autoComplete="current-password"
+                  className="password-input"
+                />
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  onClick={toggleTransferPasswordVisibility}
+                  disabled={loading}
+                  aria-label={showTransferPassword ? "Hide password" : "Show password"}
+                >
+                  {showTransferPassword ? (
+                    <svg className="eye-icon" viewBox="0 0 24 24" fill="none">
+                      <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  ) : (
+                    <svg className="eye-off-icon" viewBox="0 0 24 24" fill="none">
+                      <path d="M17.94 17.94C16.2306 19.243 14.1491 19.9649 12 20C5 20 1 12 1 12C2.24389 9.68192 3.96914 7.65663 6.06 6.06L17.94 17.94Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M9.9 4.24C10.5883 4.07888 11.2931 3.99834 12 4C19 4 23 12 23 12C22.393 13.1356 21.6691 14.2048 20.84 15.19L9.9 4.24Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M1 1L23 23" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  )}
+                </button>
+              </div>
 
               <div className="form-actions">
                 <button

@@ -48,6 +48,10 @@ const FirstYearAccount = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState("");
+  
+  // New state for password visibility
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -78,258 +82,270 @@ const FirstYearAccount = () => {
     });
   };
 
+  // Toggle password visibility
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  // Toggle confirm password visibility
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
+
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setMessage({ type: "", text: "" });
+    e.preventDefault();
+    setMessage({ type: "", text: "" });
 
-  // Client-side validation
-  if (formData.email !== formData.confirmEmail) {
-    return setMessage({
-      type: "error",
-      text: "❌ Email addresses do not match!",
-    });
-  }
-
-  if (formData.password !== formData.confirmPassword) {
-    return setMessage({
-      type: "error",
-      text: "❌ Passwords do not match!",
-    });
-  }
-
-  const allValid = Object.values(passwordValidation).every(Boolean);
-  if (!allValid) {
-    return setMessage({
-      type: "error",
-      text: "❌ Please meet all password requirements!",
-    });
-  }
-
-  if (!formData.agreeToTerms) {
-    return setMessage({
-      type: "error",
-      text: "❌ Please agree to the terms of use!",
-    });
-  }
-
-  try {
-    setLoading(true);
-
-    // 🔑 KEY FIX: Only send required fields + non-empty optional fields
-    const registrationData = {
-      email: formData.email.toLowerCase().trim(),
-      password: formData.password,
-      confirmPassword: formData.confirmPassword,
-      firstName: formData.firstName.trim(),
-      lastName: formData.lastName.trim(),
-      studentType: formData.studentType,
-      agreeToTerms: formData.agreeToTerms,
-    };
-
-    // Add optional fields only if they have values
-    if (formData.preferredFirstName.trim()) {
-      registrationData.preferredFirstName = formData.preferredFirstName.trim();
-    }
-
-    if (formData.useDifferentFirstName === "yes") {
-      registrationData.useDifferentFirstName = formData.useDifferentFirstName;
-    }
-
-    if (formData.birthDate) {
-      registrationData.birthDate = formData.birthDate;
-    }
-
-    if (formData.phone.trim()) {
-      registrationData.phone = formData.phone.trim();
-      registrationData.countryCode = formData.countryCode;
-    }
-
-    if (formData.europeanUnionResident) {
-      registrationData.europeanUnionResident = formData.europeanUnionResident;
-    }
-
-    if (formData.receiveComms) {
-      registrationData.receiveComms = formData.receiveComms;
-    }
-
-    // Add address fields only if address is being added
-    if (showAddress && formData.addressLine1.trim()) {
-      registrationData.addressLine1 = formData.addressLine1.trim();
-      registrationData.city = formData.city.trim();
-      registrationData.state = formData.state.trim();
-      registrationData.zipCode = formData.zipCode.trim();
-      registrationData.country = formData.country.trim();
-
-      if (formData.addressLine2.trim()) {
-        registrationData.addressLine2 = formData.addressLine2.trim();
-      }
-    }
-
-    console.log("📤 Sending registration request to:", `${API_URL}/api/students/register`);
-    console.log("📋 Registration data:", {
-      ...registrationData,
-      password: '***HIDDEN***',
-      confirmPassword: '***HIDDEN***'
-    });
-
-    const response = await axios.post(
-      `${API_URL}/api/students/register`,
-      registrationData,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    console.log("✅ Registration successful:", response.data);
-
-    // Check if OTP verification is required or if immediate login is used
-    if (response.data.requireOtpVerification) {
-      // OTP Verification Flow
-      setRegisteredEmail(formData.email);
-      setShowOtpModal(true);
-      setLoading(false);
-    } else if (response.data.success && response.data.token) {
-      // Immediate Login Flow
-      localStorage.setItem("token", response.data.token);
-
-      // 🔧 FIX: Make sure userData is properly set
-      if (response.data.user) {
-        localStorage.setItem("userData", JSON.stringify(response.data.user));
-      } else if (response.data.account) {
-        localStorage.setItem("userData", JSON.stringify(response.data.account));
-      } else {
-        // Fallback: create basic user data from form data
-        const basicUserData = {
-          name: `${formData.firstName} ${formData.lastName}`,
-          email: formData.email,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          studentId: `CAID ${Math.floor(10000000 + Math.random() * 90000000)}` // Generate random ID
-        };
-        localStorage.setItem("userData", JSON.stringify(basicUserData));
-        console.log("📝 Created fallback user data:", basicUserData);
-      }
-
-      // Show success message
-      setMessage({
-        type: "success",
-        text: "🎉 Account created successfully! Redirecting to dashboard...",
-      });
-
-      // Reset form
-      setFormData({
-        email: "",
-        confirmEmail: "",
-        password: "",
-        confirmPassword: "",
-        studentType: "first-year-2025-2026",
-        firstName: "",
-        useDifferentFirstName: "no",
-        preferredFirstName: "",
-        lastName: "",
-        birthDate: "",
-        phone: "",
-        countryCode: "+1",
-        addressLine1: "",
-        addressLine2: "",
-        city: "",
-        state: "",
-        zipCode: "",
-        country: "",
-        europeanUnionResident: "",
-        receiveComms: "",
-        agreeToTerms: false,
-      });
-
-      setPasswordValidation({
-        length: false,
-        uppercase: false,
-        lowercase: false,
-        number: false,
-        specialChar: false,
-        noSpaces: false,
-      });
-
-      setShowAddress(false);
-
-      // Redirect to dashboard after 2 seconds
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 2000);
-    } else {
-      setMessage({
+    // Client-side validation
+    if (formData.email !== formData.confirmEmail) {
+      return setMessage({
         type: "error",
-        text: response.data.message || "❌ Registration failed. Please try again.",
+        text: "❌ Email addresses do not match!",
       });
     }
 
-    setLoading(false);
+    if (formData.password !== formData.confirmPassword) {
+      return setMessage({
+        type: "error",
+        text: "❌ Passwords do not match!",
+      });
+    }
 
-  } catch (error) {
-      setLoading(false);
-      console.error("❌ Error creating account:", error);
+    const allValid = Object.values(passwordValidation).every(Boolean);
+    if (!allValid) {
+      return setMessage({
+        type: "error",
+        text: "❌ Please meet all password requirements!",
+      });
+    }
 
-      // Handle different error scenarios
-      if (error.response) {
-        const status = error.response.status;
-        const errorData = error.response.data;
-        const errorMessage = errorData?.message;
+    if (!formData.agreeToTerms) {
+      return setMessage({
+        type: "error",
+        text: "❌ Please agree to the terms of use!",
+      });
+    }
 
-        // 🔍 DETAILED ERROR LOGGING
-        console.log("═══════════════════════════════════════");
-        console.log("🔍 FULL ERROR DETAILS:");
-        console.log("Status Code:", status);
-        console.log("Error Message:", errorMessage);
-        console.log("Full Error Data:", JSON.stringify(errorData, null, 2));
-        console.log("Success Flag:", errorData?.success);
-        console.log("═══════════════════════════════════════");
+    try {
+      setLoading(true);
 
-        // Handle specific error codes
-        switch (status) {
-          case 409:
-            setMessage({
-              type: "error",
-              text: "⚠️ This email is already registered. Please use a different email or sign in.",
-            });
-            break;
+      // 🔑 KEY FIX: Only send required fields + non-empty optional fields
+      const registrationData = {
+        email: formData.email.toLowerCase().trim(),
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        studentType: formData.studentType,
+        agreeToTerms: formData.agreeToTerms,
+      };
 
-          case 400:
-            setMessage({
-              type: "error",
-              text: `❌ ${errorMessage || "Invalid input. Please check your information and try again."}`,
-            });
-            break;
+      // Add optional fields only if they have values
+      if (formData.preferredFirstName.trim()) {
+        registrationData.preferredFirstName = formData.preferredFirstName.trim();
+      }
 
-          case 500:
-            setMessage({
-              type: "error",
-              text: "❌ Server error. Please try again later.",
-            });
-            break;
+      if (formData.useDifferentFirstName === "yes") {
+        registrationData.useDifferentFirstName = formData.useDifferentFirstName;
+      }
 
-          default:
-            setMessage({
-              type: "error",
-              text: `❌ ${errorMessage || "An error occurred. Please try again."}`,
-            });
+      if (formData.birthDate) {
+        registrationData.birthDate = formData.birthDate;
+      }
+
+      if (formData.phone.trim()) {
+        registrationData.phone = formData.phone.trim();
+        registrationData.countryCode = formData.countryCode;
+      }
+
+      if (formData.europeanUnionResident) {
+        registrationData.europeanUnionResident = formData.europeanUnionResident;
+      }
+
+      if (formData.receiveComms) {
+        registrationData.receiveComms = formData.receiveComms;
+      }
+
+      // Add address fields only if address is being added
+      if (showAddress && formData.addressLine1.trim()) {
+        registrationData.addressLine1 = formData.addressLine1.trim();
+        registrationData.city = formData.city.trim();
+        registrationData.state = formData.state.trim();
+        registrationData.zipCode = formData.zipCode.trim();
+        registrationData.country = formData.country.trim();
+
+        if (formData.addressLine2.trim()) {
+          registrationData.addressLine2 = formData.addressLine2.trim();
         }
-      } else if (error.request) {
+      }
+
+      console.log("📤 Sending registration request to:", `${API_URL}/api/students/register`);
+      console.log("📋 Registration data:", {
+        ...registrationData,
+        password: '***HIDDEN***',
+        confirmPassword: '***HIDDEN***'
+      });
+
+      const response = await axios.post(
+        `${API_URL}/api/students/register`,
+        registrationData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("✅ Registration successful:", response.data);
+
+      // Check if OTP verification is required or if immediate login is used
+      if (response.data.requireOtpVerification) {
+        // OTP Verification Flow
+        setRegisteredEmail(formData.email);
+        setShowOtpModal(true);
+        setLoading(false);
+      } else if (response.data.success && response.data.token) {
+        // Immediate Login Flow
+        localStorage.setItem("token", response.data.token);
+
+        // 🔧 FIX: Make sure userData is properly set
+        if (response.data.user) {
+          localStorage.setItem("userData", JSON.stringify(response.data.user));
+        } else if (response.data.account) {
+          localStorage.setItem("userData", JSON.stringify(response.data.account));
+        } else {
+          // Fallback: create basic user data from form data
+          const basicUserData = {
+            name: `${formData.firstName} ${formData.lastName}`,
+            email: formData.email,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            studentId: `CAID ${Math.floor(10000000 + Math.random() * 90000000)}` // Generate random ID
+          };
+          localStorage.setItem("userData", JSON.stringify(basicUserData));
+          console.log("📝 Created fallback user data:", basicUserData);
+        }
+
+        // Show success message
         setMessage({
-          type: "error",
-          text: "❌ Cannot connect to server. Please check if the server is running at http://localhost:5000",
+          type: "success",
+          text: "🎉 Account created successfully! Redirecting to dashboard...",
         });
+
+        // Reset form
+        setFormData({
+          email: "",
+          confirmEmail: "",
+          password: "",
+          confirmPassword: "",
+          studentType: "first-year-2025-2026",
+          firstName: "",
+          useDifferentFirstName: "no",
+          preferredFirstName: "",
+          lastName: "",
+          birthDate: "",
+          phone: "",
+          countryCode: "+1",
+          addressLine1: "",
+          addressLine2: "",
+          city: "",
+          state: "",
+          zipCode: "",
+          country: "",
+          europeanUnionResident: "",
+          receiveComms: "",
+          agreeToTerms: false,
+        });
+
+        setPasswordValidation({
+          length: false,
+          uppercase: false,
+          lowercase: false,
+          number: false,
+          specialChar: false,
+          noSpaces: false,
+        });
+
+        setShowAddress(false);
+        setShowPassword(false);
+        setShowConfirmPassword(false);
+
+        // Redirect to dashboard after 2 seconds
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 2000);
       } else {
         setMessage({
           type: "error",
-          text: "❌ Something went wrong. Please try again.",
+          text: response.data.message || "❌ Registration failed. Please try again.",
         });
       }
 
-      // Scroll to top to show error message
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+      setLoading(false);
+
+    } catch (error) {
+        setLoading(false);
+        console.error("❌ Error creating account:", error);
+
+        // Handle different error scenarios
+        if (error.response) {
+          const status = error.response.status;
+          const errorData = error.response.data;
+          const errorMessage = errorData?.message;
+
+          // 🔍 DETAILED ERROR LOGGING
+          console.log("═══════════════════════════════════════");
+          console.log("🔍 FULL ERROR DETAILS:");
+          console.log("Status Code:", status);
+          console.log("Error Message:", errorMessage);
+          console.log("Full Error Data:", JSON.stringify(errorData, null, 2));
+          console.log("Success Flag:", errorData?.success);
+          console.log("═══════════════════════════════════════");
+
+          // Handle specific error codes
+          switch (status) {
+            case 409:
+              setMessage({
+                type: "error",
+                text: "⚠️ This email is already registered. Please use a different email or sign in.",
+              });
+              break;
+
+            case 400:
+              setMessage({
+                type: "error",
+                text: `❌ ${errorMessage || "Invalid input. Please check your information and try again."}`,
+              });
+              break;
+
+            case 500:
+              setMessage({
+                type: "error",
+                text: "❌ Server error. Please try again later.",
+              });
+              break;
+
+            default:
+              setMessage({
+                type: "error",
+                text: `❌ ${errorMessage || "An error occurred. Please try again."}`,
+              });
+          }
+        } else if (error.request) {
+          setMessage({
+            type: "error",
+            text: "❌ Cannot connect to server. Please check if the server is running at http://localhost:5000",
+          });
+        } else {
+          setMessage({
+            type: "error",
+            text: "❌ Something went wrong. Please try again.",
+          });
+        }
+
+        // Scroll to top to show error message
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
   };
 
   const toggleAddress = () => {
@@ -427,7 +443,7 @@ const FirstYearAccount = () => {
 
         <form onSubmit={handleSubmit}>
           {/* Account Info */}
-          <section className="form-section">
+           <section className="form-section">
             <h3>Account Information</h3>
 
             <label>Email Address *</label>
@@ -455,16 +471,38 @@ const FirstYearAccount = () => {
             />
 
             <label>Password *</label>
-            <input
-              type="password"
-              name="password"
-              required
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Enter your password"
-              disabled={loading}
-              autoComplete="new-password"
-            />
+            <div className="password-input-container">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                required
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Enter your password"
+                disabled={loading}
+                autoComplete="new-password"
+                className="password-input"
+              />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={togglePasswordVisibility}
+                disabled={loading}
+              >
+                {showPassword ? (
+                  <svg className="eye-icon" viewBox="0 0 24 24" fill="none">
+                    <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                ) : (
+                  <svg className="eye-off-icon" viewBox="0 0 24 24" fill="none">
+                    <path d="M17.94 17.94C16.2306 19.243 14.1491 19.9649 12 20C5 20 1 12 1 12C2.24389 9.68192 3.96914 7.65663 6.06 6.06L17.94 17.94Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M9.9 4.24C10.5883 4.07888 11.2931 3.99834 12 4C19 4 23 12 23 12C22.393 13.1356 21.6691 14.2048 20.84 15.19L9.9 4.24Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M1 1L23 23" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
+              </button>
+            </div>
 
             <div className="password-requirements">
               <div className={passwordValidation.length ? "valid" : "invalid"}>
@@ -488,16 +526,38 @@ const FirstYearAccount = () => {
             </div>
 
             <label>Re-type Password *</label>
-            <input
-              type="password"
-              name="confirmPassword"
-              required
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              placeholder="Re-enter your password"
-              disabled={loading}
-              autoComplete="new-password"
-            />
+            <div className="password-input-container">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                name="confirmPassword"
+                required
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="Re-enter your password"
+                disabled={loading}
+                autoComplete="new-password"
+                className="password-input"
+              />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={toggleConfirmPasswordVisibility}
+                disabled={loading}
+              >
+                {showConfirmPassword ? (
+                  <svg className="eye-icon" viewBox="0 0 24 24" fill="none">
+                    <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                ) : (
+                  <svg className="eye-off-icon" viewBox="0 0 24 24" fill="none">
+                    <path d="M17.94 17.94C16.2306 19.243 14.1491 19.9649 12 20C5 20 1 12 1 12C2.24389 9.68192 3.96914 7.65663 6.06 6.06L17.94 17.94Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M9.9 4.24C10.5883 4.07888 11.2931 3.99834 12 4C19 4 23 12 23 12C22.393 13.1356 21.6691 14.2048 20.84 15.19L9.9 4.24Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M1 1L23 23" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
+              </button>
+            </div>
             <small className="hint-text">Passwords must match</small>
 
             <label>Which best describes you? I am: *</label>

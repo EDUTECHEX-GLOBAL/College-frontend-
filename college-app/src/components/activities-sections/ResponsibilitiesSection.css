@@ -234,3 +234,112 @@
     font-size: 18px;
   }
 }
+
+/* Back to Dashboard Button Styles */
+.back-dashboard-btn {
+  background: transparent;
+  color: #2C5AA0;
+  border: 1px solid #2C5AA0;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.back-dashboard-btn:hover {
+  background: rgba(44, 90, 160, 0.08);
+  border-color: #1E3D6F;
+  color: #1E3D6F;
+  transform: translateY(-1px);
+}
+
+.back-dashboard-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.back-dashboard-btn:active {
+  transform: translateY(0);
+}
+
+/* Modified Responsibilities Header Layout */
+.responsibilities-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e0e0e0;
+  position: relative;
+}
+
+.header-left-container {
+  flex: 1;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.header-center {
+  flex: 2;
+  display: flex;
+  justify-content: center;
+}
+
+.header-right {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Ensure the existing h1 styling is preserved */
+.responsibilities-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+  text-align: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .responsibilities-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: stretch;
+  }
+  
+  .header-left-container,
+  .header-center,
+  .header-right {
+    justify-content: center;
+    width: 100%;
+  }
+  
+  .back-dashboard-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .responsibilities-header h1 {
+    font-size: 20px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .back-dashboard-btn {
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+  
+  .responsibilities-header h1 {
+    font-size: 18px;
+  }
+}

@@ -13,6 +13,13 @@ const ResponsibilitiesSection = () => {
     circumstances: []
   });
 
+  // ADDED: Back to Dashboard function
+  const handleBackToDashboard = () => {
+    const isFirstYear = window.location.pathname.includes('/firstyear/');
+    const basePath = isFirstYear ? '/firstyear/dashboard' : '/transfer/dashboard';
+    navigate(basePath);
+  };
+
   const responsibilityOptions = [
     'Assisting family or household members with tasks such as doctors\' appointments, bank visits, or visa interviews',
     'Farm work or unpaid work for a family business',
@@ -55,7 +62,6 @@ const ResponsibilitiesSection = () => {
         }
       } catch (error) {
         console.error('Error fetching responsibilities data:', error);
-        // Remove localStorage fallback since we're using separate backend models
       }
     };
 
@@ -146,8 +152,8 @@ const ResponsibilitiesSection = () => {
           }));
         }
 
-        // Navigate to writing section
-        navigate('/firstyear/dashboard');
+        // Navigate to dashboard
+        handleBackToDashboard();
       }
     } catch (error) {
       console.error('Error saving responsibilities data:', error);
@@ -164,9 +170,23 @@ const ResponsibilitiesSection = () => {
   return (
     <div className="responsibilities-container">
       <div className="responsibilities-content">
+        {/* MODIFIED: Added Back Button to the left of Complete your Application */}
         <div className="responsibilities-header">
-          <h1>Complete your Common Application</h1>
-          <div className="progress-status">In progress</div>
+          <div className="header-left-container">
+            <button
+              className="back-dashboard-btn"
+              onClick={handleBackToDashboard}
+              disabled={loading}
+            >
+              ← Back to Dashboard
+            </button>
+          </div>
+          <div className="header-center">
+            <h1>Complete your Common Application</h1>
+          </div>
+          <div className="header-right">
+            <div className="progress-status">In progress</div>
+          </div>
         </div>
 
         <div className="responsibilities-card">

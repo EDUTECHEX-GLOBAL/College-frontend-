@@ -41,6 +41,8 @@
   border-radius: 8px;
   padding: 30px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
 }
 
 .activities-card h2 {
@@ -199,6 +201,7 @@
   border: 1px solid #e9ecef;
   border-radius: 8px;
   background: #fdfdfd;
+  position: relative;
 }
 
 .activity-header {
@@ -234,6 +237,7 @@
 
 .form-group {
   margin-bottom: 25px;
+  position: relative;
 }
 
 .form-group label {
@@ -244,7 +248,62 @@
   font-size: 14px;
 }
 
-.form-group select,
+/* Enhanced Dropdown Styles */
+.form-group select {
+  width: 100%;
+  padding: 12px 40px 12px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  font-family: inherit;
+  background: white;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236c757d' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  cursor: pointer;
+}
+
+.form-group select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+/* Custom dropdown container to ensure proper z-index */
+.form-group select {
+  position: relative;
+  z-index: 1;
+}
+
+/* Ensure dropdown appears above other content */
+.form-group select:focus {
+  z-index: 1000;
+}
+
+/* Style the dropdown options */
+.form-group select option {
+  padding: 12px;
+  font-size: 14px;
+  border-bottom: 1px solid #f0f0f0;
+  background: white;
+  color: #1a1a1a;
+}
+
+.form-group select option:hover {
+  background: #007bff;
+  color: white;
+}
+
+.form-group select option:checked {
+  background: #007bff;
+  color: white;
+}
+
+/* Regular input and textarea styles */
 .form-group input,
 .form-group textarea {
   width: 100%;
@@ -258,7 +317,6 @@
   background: white;
 }
 
-.form-group select:focus,
 .form-group input:focus,
 .form-group textarea:focus {
   outline: none;
@@ -354,6 +412,20 @@ hr {
   margin: 30px 0;
 }
 
+/* Enhanced Dropdown Fixes for Different Browsers */
+@supports (-webkit-appearance: none) or (-moz-appearance: none) {
+  .form-group select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+}
+
+/* Ensure dropdown has proper stacking context */
+.activities-card {
+  isolation: isolate;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .activities-container {
@@ -394,6 +466,11 @@ hr {
   .activity-form {
     padding: 20px;
   }
+  
+  /* Mobile dropdown improvements */
+  .form-group select {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
 }
 
 @media (max-width: 480px) {
@@ -420,5 +497,211 @@ hr {
   .simple-checkbox-group,
   .simple-radio-group {
     gap: 12px;
+  }
+}
+
+/* Additional fixes for dropdown positioning */
+.form-group {
+  z-index: auto;
+}
+
+.form-group:focus-within {
+  z-index: 10;
+}
+
+/* Ensure dropdown doesn't get cut off */
+.activities-content {
+  position: relative;
+}
+
+/* Modern dropdown enhancements */
+.form-group select {
+  border: 1px solid #d1d5db;
+  background-color: white;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.form-group select:hover {
+  border-color: #9ca3af;
+}
+
+.form-group select:active {
+  border-color: #007bff;
+  transform: translateY(0);
+}
+
+/* React Select Overrides */
+.react-select-container {
+  position: relative;
+  z-index: 1000;
+}
+
+.react-select__control {
+  min-height: 44px !important;
+  border: 1px solid #ced4da !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  font-family: inherit !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-select__control--is-focused {
+  border-color: #007bff !important;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1) !important;
+}
+
+.react-select__menu {
+  z-index: 9999 !important;
+  border-radius: 6px !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  border: 1px solid #e5e7eb !important;
+  margin-top: 2px !important;
+}
+
+.react-select__option {
+  font-size: 14px !important;
+  padding: 10px 12px !important;
+}
+
+.react-select__option--is-focused {
+  background-color: #f8f9fa !important;
+  color: #1a1a1a !important;
+}
+
+.react-select__option--is-selected {
+  background-color: #007bff !important;
+  color: white !important;
+}
+
+.react-select__placeholder {
+  color: #6c757d !important;
+}
+
+.react-select__single-value {
+  color: #1a1a1a !important;
+}
+
+/* Ensure dropdown always opens below and doesn't get cut off */
+.react-select__menu-portal {
+  z-index: 9999 !important;
+}
+
+/* Fix for mobile devices */
+@media (max-width: 768px) {
+  .react-select__menu {
+    position: fixed !important;
+    top: auto !important;
+    bottom: auto !important;
+    left: 20px !important;
+    right: 20px !important;
+    width: auto !important;
+  }
+}
+
+.back-dashboard-btn {
+  background: transparent;
+  color: #2C5AA0;
+  border: 1px solid #2C5AA0;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.back-dashboard-btn:hover {
+  background: rgba(44, 90, 160, 0.08);
+  border-color: #1E3D6F;
+  color: #1E3D6F;
+  transform: translateY(-1px);
+}
+
+.back-dashboard-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.back-dashboard-btn:active {
+  transform: translateY(0);
+}
+
+/* Modified Activities Header Layout */
+.activities-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #dee2e6;
+  position: relative;
+}
+
+.header-left-container {
+  flex: 1;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.header-center {
+  flex: 2;
+  display: flex;
+  justify-content: center;
+}
+
+.header-right {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Ensure the existing h1 styling is preserved */
+.activities-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+  text-align: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .activities-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: stretch;
+  }
+  
+  .header-left-container,
+  .header-center,
+  .header-right {
+    justify-content: center;
+    width: 100%;
+  }
+  
+  .back-dashboard-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .activities-header h1 {
+    font-size: 20px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .back-dashboard-btn {
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+  
+  .activities-header h1 {
+    font-size: 18px;
   }
 }

@@ -157,6 +157,74 @@ select:focus {
   transform: translateY(-2px);
 }
 
+/* ===== Password Input Container with Toggle Button ===== */
+.password-input-container {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.password-input {
+  width: 100%;
+  padding: 14px 50px 14px 16px;
+  border: 2px solid #E2E8F0;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  background: white;
+  font-family: "Poppins", sans-serif;
+  height: 52px; /* Fixed height for consistent centering */
+}
+
+.password-input:focus {
+  border-color: #2C5AA0;
+  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+  outline: none;
+  transform: translateY(-2px);
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: #718096;
+}
+
+.password-toggle-btn:hover {
+  background: rgba(44, 90, 160, 0.1);
+  color: #2C5AA0;
+}
+
+.password-toggle-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.password-toggle-btn:disabled:hover {
+  background: none;
+  color: #718096;
+}
+
+.eye-icon,
+.eye-off-icon {
+  padding-bottom: 20px;
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+}
+
 /* ===== Hint Text ===== */
 .hint-text {
   display: block;
@@ -181,31 +249,31 @@ select:focus {
 
 /* ===== Password Requirements ===== */
 .password-requirements {
-  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-  border: 2px solid #E2E8F0;
-  border-radius: 10px;
-  padding: 20px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 16px;
   margin-bottom: 20px;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
+  color: #374151;
 }
 
 .password-requirements div {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 0;
+  padding: 2px 0;
 }
 
 .password-requirements .valid {
-  color: #38A169;
-  font-weight: 600;
+  color: #059669;
 }
 
 .password-requirements .invalid {
-  color: #A0AEC0;
+  color: #6b7280;
 }
 
 /* ===== Radio Groups ===== */
@@ -645,6 +713,24 @@ select:focus {
     padding: 12px 14px;
   }
   
+  .password-input {
+    padding: 12px 45px 12px 14px;
+    height: 48px;
+  }
+  
+  .password-toggle-btn {
+    right: 10px;
+    padding: 6px;
+    width: 30px;
+    height: 30px;
+  }
+  
+  .eye-icon,
+  .eye-off-icon {
+    width: 18px;
+    height: 18px;
+  }
+  
   .success-modal {
     padding: 30px 20px;
     margin: 10px;
@@ -685,5 +771,23 @@ select:focus {
   select {
     padding: 10px 12px;
     font-size: 0.9rem;
+  }
+  
+  .password-input {
+    padding: 10px 40px 10px 12px;
+    font-size: 0.9rem;
+    height: 44px;
+  }
+  
+  .password-toggle-btn {
+    right: 8px;
+    width: 28px;
+    height: 28px;
+  }
+  
+  .eye-icon,
+  .eye-off-icon {
+    width: 16px;
+    height: 16px;
   }
 }

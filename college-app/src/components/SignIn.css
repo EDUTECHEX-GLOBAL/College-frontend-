@@ -245,7 +245,7 @@
   color: #2D3748;
 }
 
-.signin-form-container input {
+.signin-form-container input:not(.password-input) {
   margin-top: 8px;
   padding: 14px 16px;
   border-radius: 10px;
@@ -257,7 +257,7 @@
   color: #2D3748;
 }
 
-.signin-form-container input:focus {
+.signin-form-container input:not(.password-input):focus {
   border-color: #2C5AA0;
   box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
   outline: none;
@@ -272,6 +272,75 @@
 
 .form-actions {
   margin-top: 25px;
+}
+
+/* ===== Password Input Container with Toggle Button ===== */
+.password-input-container {
+  position: relative;
+  margin-bottom: 0;
+}
+
+.password-input {
+  width: 100%;
+  padding: 14px 50px 14px 16px;
+  border: 2px solid #E2E8F0;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  background: white;
+  font-family: "Poppins", sans-serif;
+  height: 52px; /* Fixed height for consistent centering */
+  margin-top: 8px;
+}
+
+.password-input:focus {
+  border-color: #2C5AA0;
+  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+  outline: none;
+  transform: translateY(-2px);
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: #718096;
+}
+
+.password-toggle-btn:hover {
+  background: rgba(44, 90, 160, 0.1);
+  color: #2C5AA0;
+}
+
+.password-toggle-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.password-toggle-btn:disabled:hover {
+  background: none;
+  color: #718096;
+}
+
+.eye-icon,
+.eye-off-icon {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  padding-bottom: 15px; /* Added to center the eye icon vertically */
 }
 
 /* ===== Back Link ===== */
@@ -386,6 +455,24 @@
     height: 32px;
     font-size: 16px;
   }
+  
+  .password-input {
+    padding: 12px 45px 12px 14px;
+    height: 48px;
+  }
+  
+  .password-toggle-btn {
+    right: 10px;
+    padding: 6px;
+    width: 30px;
+    height: 30px;
+  }
+  
+  .eye-icon,
+  .eye-off-icon {
+    width: 18px;
+    height: 18px;
+  }
 }
 
 /* Extra small devices */
@@ -398,7 +485,25 @@
     font-size: 1.6rem;
   }
   
-  .signin-form-container input {
+  .signin-form-container input:not(.password-input) {
     padding: 12px 14px;
+  }
+  
+  .password-input {
+    padding: 10px 40px 10px 12px;
+    font-size: 0.9rem;
+    height: 44px;
+  }
+  
+  .password-toggle-btn {
+    right: 8px;
+    width: 28px;
+    height: 28px;
+  }
+  
+  .eye-icon,
+  .eye-off-icon {
+    width: 16px;
+    height: 16px;
   }
 }
