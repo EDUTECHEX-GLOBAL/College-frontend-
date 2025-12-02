@@ -228,7 +228,7 @@
 .header-content {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   padding: 32px 40px;
   max-width: 1200px;
   margin: 0 auto;
@@ -634,7 +634,7 @@
     padding: 24px 20px;
     flex-direction: column;
     gap: 16px;
-    align-items: flex-start;
+    align-items: center;
   }
   
   .application-sections-grid {
@@ -1083,4 +1083,107 @@
 .activities-container ~ .dashboard-sidebar,
 .responsibilities-container ~ .dashboard-sidebar {
   display: flex !important;
+}
+
+/* =========================================
+   CENTERED HEADER WITH NO HELP BUTTON
+   ========================================= */
+
+/* Center the header content */
+.header-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 120px;
+  width: 100%;
+}
+
+/* Hide the header actions (Need Help button) */
+.header-actions {
+  display: none !important;
+}
+
+/* New centered welcome section */
+.welcome-section-centered {
+  text-align: center;
+  width: 100%;
+}
+
+.welcome-name {
+  font-size: 30px;
+  font-weight: 700;
+  color: #1e3d6f;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+/* Adjust the subtitle */
+.welcome-subtitle {
+  font-size: 16px;
+  color: #718096;
+  margin: 0;
+  font-weight: 400;
+  letter-spacing: 0.3px;
+}
+
+/* Hide the old welcome section if it exists */
+.welcome-section {
+  display: none;
+}
+
+/* Make sure the main-header has proper height */
+.main-header {
+  background: white;
+  padding: 0;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  min-height: 140px;
+}
+
+/* Ensure the help button is hidden in all cases */
+.help-button {
+  display: none !important;
+}
+
+/* =========================================
+   RESPONSIVE ADJUSTMENTS
+   ========================================= */
+
+@media (max-width: 768px) {
+  .header-content {
+    padding: 20px;
+    min-height: 100px;
+  }
+  
+  .welcome-name {
+    font-size: 28px;
+  }
+  
+  .welcome-subtitle {
+    font-size: 15px;
+  }
+  
+  .main-header {
+    min-height: 120px;
+  }
+}
+
+@media (max-width: 480px) {
+  .welcome-name {
+    font-size: 24px;
+  }
+  
+  .welcome-subtitle {
+    font-size: 14px;
+  }
+  
+  .main-header {
+    min-height: 100px;
+  }
 }

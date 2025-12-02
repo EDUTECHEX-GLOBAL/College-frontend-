@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Select from 'react-select';
 import './HouseholdForm.css';
 
 const API_URL = process.env.REACT_APP_API_URL;
@@ -15,6 +16,25 @@ const HouseholdForm = () => {
   });
   const [loading, setLoading] = useState(false);
 
+  // Options for dropdowns
+  const maritalStatusOptions = [
+    { value: 'married', label: 'Married' },
+    { value: 'separated', label: 'Separated' },
+    { value: 'divorced', label: 'Divorced' },
+    { value: 'widowed', label: 'Widowed' },
+    { value: 'never_married', label: 'Never Married' },
+    { value: 'civil_union', label: 'Civil Union/Domestic Partnership' }
+  ];
+
+  const permanentHomeOptions = [
+    { value: 'both_parents', label: 'Both Parents' },
+    { value: 'parent1', label: 'Parent 1' },
+    { value: 'parent2', label: 'Parent 2' },
+    { value: 'other_relatives', label: 'Other Relatives' },
+    { value: 'guardian', label: 'Guardian' },
+    { value: 'on_my_own', label: 'On My Own' }
+  ];
+
   useEffect(() => {
     fetchHouseholdData();
   }, []);
@@ -27,11 +47,24 @@ const HouseholdForm = () => {
       });
 
       if (response.data.success && response.data.familyData.household) {
-        setFormData(response.data.familyData.household);
+        const householdData = response.data.familyData.household;
+        setFormData({
+          parentsMaritalStatus: householdData.parentsMaritalStatus || '',
+          permanentHomeWith: householdData.permanentHomeWith || '',
+          hasChildren: householdData.hasChildren || '',
+          childrenCount: householdData.childrenCount || ''
+        });
       }
     } catch (error) {
       console.error('Error fetching household data:', error);
     }
+  };
+
+  const handleSelectChange = (field, selectedOption) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: selectedOption ? selectedOption.value : ''
+    }));
   };
 
   const handleInputChange = (field, value) => {
@@ -51,7 +84,6 @@ const HouseholdForm = () => {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
-      // Navigate to next section
       navigate('/firstyear/dashboard/family/parent1');
     } catch (error) {
       console.error('Error saving household data:', error);
@@ -59,6 +91,15 @@ const HouseholdForm = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Get selected values for react-select
+  const getSelectedMaritalStatus = () => {
+    return maritalStatusOptions.find(option => option.value === formData.parentsMaritalStatus);
+  };
+
+  const getSelectedPermanentHome = () => {
+    return permanentHomeOptions.find(option => option.value === formData.permanentHomeWith);
   };
 
   return (
@@ -74,20 +115,16 @@ const HouseholdForm = () => {
           <label className="form-label required">
             Parents' marital status (relative to each other)*
           </label>
-          <select 
-            className="form-select"
-            value={formData.parentsMaritalStatus}
-            onChange={(e) => handleInputChange('parentsMaritalStatus', e.target.value)}
+          <Select
+            className="react-select-container"
+            classNamePrefix="react-select"
+            value={getSelectedMaritalStatus()}
+            onChange={(option) => handleSelectChange('parentsMaritalStatus', option)}
+            options={maritalStatusOptions}
+            placeholder="Choose an option"
+            isSearchable={false}
             required
-          >
-            <option value="">Choose an option</option>
-            <option value="married">Married</option>
-            <option value="separated">Separated</option>
-            <option value="divorced">Divorced</option>
-            <option value="widowed">Widowed</option>
-            <option value="never_married">Never Married</option>
-            <option value="civil_union">Civil Union/Domestic Partnership</option>
-          </select>
+          />
         </div>
 
         {/* Permanent Home */}
@@ -95,20 +132,16 @@ const HouseholdForm = () => {
           <label className="form-label required">
             With whom do you make your permanent home?*
           </label>
-          <select 
-            className="form-select"
-            value={formData.permanentHomeWith}
-            onChange={(e) => handleInputChange('permanentHomeWith', e.target.value)}
+          <Select
+            className="react-select-container"
+            classNamePrefix="react-select"
+            value={getSelectedPermanentHome()}
+            onChange={(option) => handleSelectChange('permanentHomeWith', option)}
+            options={permanentHomeOptions}
+            placeholder="Choose an option"
+            isSearchable={false}
             required
-          >
-            <option value="">Choose an option</option>
-            <option value="both_parents">Both Parents</option>
-            <option value="parent1">Parent 1</option>
-            <option value="parent2">Parent 2</option>
-            <option value="other_relatives">Other Relatives</option>
-            <option value="guardian">Guardian</option>
-            <option value="on_my_own">On My Own</option>
-          </select>
+          />
         </div>
 
         {/* Children */}

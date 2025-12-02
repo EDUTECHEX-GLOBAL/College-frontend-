@@ -128,3 +128,32 @@
     width: 100%;
   }
 }
+
+/* Back to Dashboard Button - EXACT style from screenshot */
+.content-back-button {
+  margin-bottom: 24px;
+}
+
+.back-to-dashboard-content-btn {
+  background: #2C5AA0;
+  color: white;
+  border: 1px solid #2C5AA0;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.back-to-dashboard-content-btn:hover {
+  background: #1E3D6F;
+  border-color: #1E3D6F;
+}
+
+.back-to-dashboard-content-btn:active {
+  transform: translateY(1px);
+}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Select from 'react-select';
 import './Parent2Form.css';
 
 const API_URL = process.env.REACT_APP_API_URL;
@@ -21,6 +22,42 @@ const Parent2Form = () => {
     noOtherParent: false
   });
   const [loading, setLoading] = useState(false);
+
+  // Options for dropdowns
+  const prefixOptions = [
+    { value: 'mr', label: 'Mr.' },
+    { value: 'ms', label: 'Ms.' },
+    { value: 'mrs', label: 'Mrs.' },
+    { value: 'dr', label: 'Dr.' }
+  ];
+
+  const suffixOptions = [
+    { value: 'jr', label: 'Jr.' },
+    { value: 'sr', label: 'Sr.' },
+    { value: 'ii', label: 'II' },
+    { value: 'iii', label: 'III' }
+  ];
+
+  const occupationOptions = [
+    { value: 'architect', label: 'Architect' },
+    { value: 'doctor', label: 'Doctor' },
+    { value: 'engineer', label: 'Engineer' },
+    { value: 'teacher', label: 'Teacher' },
+    { value: 'business_owner', label: 'Business Owner' },
+    { value: 'retired', label: 'Retired' },
+    { value: 'deceased', label: 'Deceased' },
+    { value: 'other', label: 'Other' }
+  ];
+
+  const educationLevelOptions = [
+    { value: 'high_school', label: 'High School' },
+    { value: 'some_college', label: 'Some College' },
+    { value: 'associates', label: "Associate's Degree" },
+    { value: 'bachelors', label: "Bachelor's Degree" },
+    { value: 'masters', label: "Master's Degree" },
+    { value: 'doctorate', label: 'Doctorate' },
+    { value: 'professional', label: 'Professional Degree' }
+  ];
 
   useEffect(() => {
     fetchParent2Data();
@@ -44,12 +81,19 @@ const Parent2Form = () => {
     }
   };
 
+  const handleSelectChange = (field, selectedOption) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: selectedOption ? selectedOption.value : '',
+      ...(field === 'parentType' && selectedOption?.value !== 'no_other_parent' ? { noOtherParent: false } : {})
+    }));
+  };
+
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
       [field]: value,
-      // Reset noOtherParent if changing parent type
-      ...(field === 'parentType' && { noOtherParent: value === 'no_other_parent' })
+      ...(field === 'parentType' && value !== 'no_other_parent' ? { noOtherParent: false } : {})
     }));
   };
 
@@ -80,6 +124,23 @@ const Parent2Form = () => {
     }
   };
 
+  // Get selected values for react-select
+  const getSelectedPrefix = () => {
+    return prefixOptions.find(option => option.value === formData.prefix);
+  };
+
+  const getSelectedSuffix = () => {
+    return suffixOptions.find(option => option.value === formData.suffix);
+  };
+
+  const getSelectedOccupation = () => {
+    return occupationOptions.find(option => option.value === formData.occupation);
+  };
+
+  const getSelectedEducationLevel = () => {
+    return educationLevelOptions.find(option => option.value === formData.educationLevel);
+  };
+
   if (formData.noOtherParent || formData.parentType === 'no_other_parent') {
     return (
       <div className="family-form-container">
@@ -91,7 +152,7 @@ const Parent2Form = () => {
         <div className="no-parent-message">
           <p>You have indicated that you do not have another parent to list.</p>
           <button 
-            onClick={() => navigate('/dashboard/family/sibling')}
+            onClick={() => navigate('/firstyear/dashboard/family/sibling')}
             className="continue-button"
           >
             Continue to Sibling Section
@@ -108,7 +169,7 @@ const Parent2Form = () => {
         <div className="progress-indicator">In Progress</div>
       </div>
 
-      <form onSubmit={handleSubmit} className="family-form">
+      <form onSubmit={handleSubmit} className="family-form parent2-form">
         {/* Parent Type */}
         <div className="form-field">
           <label className="form-label required">
@@ -146,7 +207,7 @@ const Parent2Form = () => {
               />
               I have limited information about this parent
             </label>
-            <label className="radio-label">
+            <label className="radio-label no-parent-option">
               <input
                 type="radio"
                 name="parentType"
@@ -210,17 +271,16 @@ const Parent2Form = () => {
             <div className="form-row">
               <div className="form-field">
                 <label className="form-label">Prefix</label>
-                <select 
-                  className="form-select"
-                  value={formData.prefix}
-                  onChange={(e) => handleInputChange('prefix', e.target.value)}
-                >
-                  <option value="">Choose an option</option>
-                  <option value="mr">Mr.</option>
-                  <option value="ms">Ms.</option>
-                  <option value="mrs">Mrs.</option>
-                  <option value="dr">Dr.</option>
-                </select>
+                <Select
+                  className="react-select-container"
+                  classNamePrefix="react-select"
+                  value={getSelectedPrefix()}
+                  onChange={(option) => handleSelectChange('prefix', option)}
+                  options={prefixOptions}
+                  placeholder="Choose an option"
+                  isSearchable={false}
+                  isClearable={true}
+                />
               </div>
 
               <div className="form-field">
@@ -272,17 +332,16 @@ const Parent2Form = () => {
 
               <div className="form-field">
                 <label className="form-label">Suffix</label>
-                <select 
-                  className="form-select"
-                  value={formData.suffix}
-                  onChange={(e) => handleInputChange('suffix', e.target.value)}
-                >
-                  <option value="">Choose an option</option>
-                  <option value="jr">Jr.</option>
-                  <option value="sr">Sr.</option>
-                  <option value="ii">II</option>
-                  <option value="iii">III</option>
-                </select>
+                <Select
+                  className="react-select-container"
+                  classNamePrefix="react-select"
+                  value={getSelectedSuffix()}
+                  onChange={(option) => handleSelectChange('suffix', option)}
+                  options={suffixOptions}
+                  placeholder="Choose an option"
+                  isSearchable={false}
+                  isClearable={true}
+                />
               </div>
             </div>
 
@@ -290,39 +349,30 @@ const Parent2Form = () => {
             <div className="form-row">
               <div className="form-field">
                 <label className="form-label">Occupation (former occupation, if retired or deceased)</label>
-                <select 
-                  className="form-select"
-                  value={formData.occupation}
-                  onChange={(e) => handleInputChange('occupation', e.target.value)}
-                >
-                  <option value="">Choose an option</option>
-                  <option value="architect">Architect</option>
-                  <option value="doctor">Doctor</option>
-                  <option value="engineer">Engineer</option>
-                  <option value="teacher">Teacher</option>
-                  <option value="business_owner">Business Owner</option>
-                  <option value="retired">Retired</option>
-                  <option value="deceased">Deceased</option>
-                  <option value="other">Other</option>
-                </select>
+                <Select
+                  className="react-select-container"
+                  classNamePrefix="react-select"
+                  value={getSelectedOccupation()}
+                  onChange={(option) => handleSelectChange('occupation', option)}
+                  options={occupationOptions}
+                  placeholder="Choose an option"
+                  isSearchable={false}
+                  isClearable={true}
+                />
               </div>
 
               <div className="form-field">
                 <label className="form-label">Highest education level</label>
-                <select 
-                  className="form-select"
-                  value={formData.educationLevel}
-                  onChange={(e) => handleInputChange('educationLevel', e.target.value)}
-                >
-                  <option value="">Choose an option</option>
-                  <option value="high_school">High School</option>
-                  <option value="some_college">Some College</option>
-                  <option value="associates">Associate's Degree</option>
-                  <option value="bachelors">Bachelor's Degree</option>
-                  <option value="masters">Master's Degree</option>
-                  <option value="doctorate">Doctorate</option>
-                  <option value="professional">Professional Degree</option>
-                </select>
+                <Select
+                  className="react-select-container"
+                  classNamePrefix="react-select"
+                  value={getSelectedEducationLevel()}
+                  onChange={(option) => handleSelectChange('educationLevel', option)}
+                  options={educationLevelOptions}
+                  placeholder="Choose an option"
+                  isSearchable={false}
+                  isClearable={true}
+                />
               </div>
             </div>
           </>

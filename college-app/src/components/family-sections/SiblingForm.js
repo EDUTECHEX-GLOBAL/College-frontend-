@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Select from 'react-select';
 import './SiblingForm.css';
 
 const API_URL = process.env.REACT_APP_API_URL;
@@ -12,6 +13,21 @@ const SiblingForm = () => {
     siblingsList: []
   });
   const [loading, setLoading] = useState(false);
+
+  // Options for siblings count
+  const siblingsCountOptions = [
+    { value: '0', label: '0' },
+    { value: '1', label: '1' },
+    { value: '2', label: '2' },
+    { value: '3', label: '3' },
+    { value: '4', label: '4' },
+    { value: '5', label: '5' },
+    { value: '6', label: '6' },
+    { value: '7', label: '7' },
+    { value: '8', label: '8' },
+    { value: '9', label: '9' },
+    { value: '10', label: '10+' }
+  ];
 
   useEffect(() => {
     fetchSiblingData();
@@ -36,15 +52,16 @@ const SiblingForm = () => {
     }
   };
 
-  const handleSiblingsCountChange = (count) => {
-    const siblingsCount = parseInt(count);
-    const newSiblingsList = Array.from({ length: siblingsCount }, (_, index) => 
+  const handleSiblingsCountChange = (selectedOption) => {
+    const siblingsCount = selectedOption ? selectedOption.value : '';
+    const countNum = parseInt(siblingsCount) || 0;
+    const newSiblingsList = Array.from({ length: countNum }, (_, index) => 
       formData.siblingsList[index] || { firstName: '', lastName: '', age: '' }
     );
     
     setFormData(prev => ({
       ...prev,
-      siblingsCount: count,
+      siblingsCount: siblingsCount,
       siblingsList: newSiblingsList
     }));
   };
@@ -65,7 +82,7 @@ const SiblingForm = () => {
     try {
       // Prepare data for submission
       const submissionData = {
-        siblingsCount: parseInt(formData.siblingsCount),
+        siblingsCount: parseInt(formData.siblingsCount) || 0,
         siblingsList: formData.siblingsList
       };
 
@@ -103,6 +120,11 @@ const SiblingForm = () => {
     }
   };
 
+  // Get selected siblings count
+  const getSelectedSiblingsCount = () => {
+    return siblingsCountOptions.find(option => option.value === formData.siblingsCount);
+  };
+
   return (
     <div className="family-form-container">
       <div className="form-header">
@@ -110,39 +132,30 @@ const SiblingForm = () => {
         <div className="progress-indicator">In Progress</div>
       </div>
 
-      <form onSubmit={handleSubmit} className="family-form">
+      <form onSubmit={handleSubmit} className="family-form sibling-form">
         {/* Siblings Count */}
         <div className="form-field">
           <label className="form-label required">
             Please specify number of siblings you have*
           </label>
-          <select 
-            className="form-select sibling-count-select"
-            value={formData.siblingsCount}
-            onChange={(e) => handleSiblingsCountChange(e.target.value)}
+          <Select
+            className="react-select-container"
+            classNamePrefix="react-select"
+            value={getSelectedSiblingsCount()}
+            onChange={handleSiblingsCountChange}
+            options={siblingsCountOptions}
+            placeholder="Choose an option"
+            isSearchable={false}
             required
-          >
-            <option value="">Choose an option</option>
-            <option value="0">0</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-            <option value="6">6</option>
-            <option value="7">7</option>
-            <option value="8">8</option>
-            <option value="9">9</option>
-            <option value="10">10+</option>
-          </select>
+          />
         </div>
 
         {/* Display selected number */}
-        {formData.siblingsCount && formData.siblingsCount !== '0' && (
+        {/* {formData.siblingsCount && formData.siblingsCount !== '0' && (
           <div className="selected-count-display">
-            <p className="count-text">{formData.siblingsCount}</p>
+            <p className="count-text">{formData.siblingsCount} {formData.siblingsCount === '1' ? 'sibling' : 'siblings'}</p>
           </div>
-        )}
+        )} */}
 
         {/* Sibling Details Forms */}
         {formData.siblingsCount && formData.siblingsCount !== '0' && (

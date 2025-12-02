@@ -14,7 +14,6 @@ const FamilySection = () => {
   const location = useLocation();
   const [familyData, setFamilyData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeSubSection, setActiveSubSection] = useState('household');
 
   useEffect(() => {
     const fetchFamilyData = async () => {
@@ -42,21 +41,17 @@ const FamilySection = () => {
     fetchFamilyData();
   }, []);
 
-  // Update active subsection based on route
-  useEffect(() => {
+  const handleBackToDashboard = () => {
+    // Check current path to determine correct dashboard
     const path = location.pathname;
-    if (path.includes('/firstyear/dashboard/household')) {
-      setActiveSubSection('household');
-    } else if (path.includes('/firstyear/dashboard/parent1')) {
-      setActiveSubSection('parent1');
-    } else if (path.includes('/firstyear/dashboard/parent2')) {
-      setActiveSubSection('parent2');
-    } else if (path.includes('/firstyear/dashboard/sibling')) {
-      setActiveSubSection('sibling');
+    if (path.includes('/firstyear/')) {
+      navigate('/firstyear/dashboard');
+    } else if (path.includes('/transfer/')) {
+      navigate('/transfer/dashboard');
     } else {
-      setActiveSubSection('household');
+      navigate('/dashboard');
     }
-  }, [location.pathname]);
+  };
 
   if (loading) {
     return (
@@ -69,24 +64,25 @@ const FamilySection = () => {
 
   return (
     <div className="family-section-container">
-      <header className="family-header">
-        <div className="header-content">
-          <div className="welcome-section">
-            <h1 className="welcome-title">Family Information</h1>
-            <p className="welcome-subtitle">Manage your family background and relationships</p>
-          </div>
-          <div className="header-actions">
-            <button className="help-button">
-              <span className="help-icon">?</span>
-              Need Help?
-            </button>
+      {/* Fixed Header - Properly aligned */}
+      <div className="family-header-section">
+        <div className="family-header-content">
+          <button 
+            className="back-to-dashboard-btn"
+            onClick={handleBackToDashboard}
+          >
+            ← Back to Dashboard
+          </button>
+          
+          <div className="family-title-container">
+            <h1 className="family-main-title">Family Information</h1>
+            <p className="family-sub-title">Manage your family background and relationships</p>
           </div>
         </div>
-      </header>
+      </div>
 
-      <div className="family-content">
-        {/* Main Form Content - Full width without sidebar */}
-        <div className="family-main-content-full">
+      <div className="family-content-wrapper">
+        <div className="family-forms-container">
           <Routes>
             <Route path="/" element={<HouseholdForm />} />
             <Route path="/household" element={<HouseholdForm />} />

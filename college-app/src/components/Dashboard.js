@@ -346,31 +346,151 @@ const Dashboard = () => {
 
   // ✅ FIXED: CollegesSection with correct navigation paths
   const CollegesSection = () => (
-    <>
-      <header className="main-header">
-        <div className="header-content">
-          <div className="welcome-section">
-            <h1 className="welcome-title">My Colleges - Overview</h1>
-            <p className="welcome-subtitle">Manage your college applications and track progress</p>
+  <>
+    <header className="main-header">
+      <div className="header-content">
+        <div className="welcome-section-centered">
+          <h1 className="welcome-title">My Colleges - Overview</h1>
+          <p className="welcome-subtitle">Manage your college applications and track progress</p>
+        </div>
+      </div>
+    </header>
+
+    <div className="main-content">
+      <section className="content-section">
+        <div className="section-header">
+          <h2 className="section-title">Your College List</h2>
+          <div className="college-count">{userColleges.length} colleges</div>
+        </div>
+        
+        {userColleges.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-state-icon">
+              <div className="icon-background">
+                🏫
+              </div>
+            </div>
+            <div className="empty-state-content">
+              <h3 className="empty-state-title">No colleges added yet</h3>
+              <p className="empty-state-description">
+                Start by searching for colleges to add to your list. You can manage your applications from the sidebar.
+              </p>
+              <button 
+                className="primary-action-button"
+                onClick={() => navigate(`${basePath}/college-search`)}
+              >
+                Search Colleges
+              </button>
+            </div>
           </div>
-          <div className="header-actions">
-            <button 
-              className="primary-action-button"
-              onClick={() => navigate(`${basePath}/college-search`)}
-            >
-              Search More Colleges
-            </button>
+        ) : (
+          <div className="college-list">
+            {userColleges.map((college) => (
+              <div key={college.collegeId} className="college-list-item">
+                <div className="college-info">
+                  <div className="college-text">
+                    <h4 
+                      className="college-name-link"
+                      onClick={() => navigate(`${basePath}/colleges/${college.collegeId}`)}
+                    >
+                      {college.name}
+                    </h4>
+                    <p className="college-location-small">
+                      {college.city}, {college.state} - USA
+                    </p>
+                    <div className="college-status">
+                      <span className={`status-badge ${college.status}`}>
+                        {college.status || 'Not Started'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <button 
+                  className="view-details-button"
+                  onClick={() => navigate(`${basePath}/colleges/${college.collegeId}`)}
+                >
+                  View Details
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {userColleges.length > 0 && (
+        <section className="content-section">
+          <h2 className="section-title">Application Progress Summary</h2>
+          <div className="progress-summary">
+            <p>Click on any college in the sidebar to start working on your application sections.</p>
+            <p>Each college has its own set of application requirements and deadlines.</p>
+          </div>
+        </section>
+      )}
+    </div>
+  </>
+);
+
+  // ✅ FIXED: DashboardHome with correct Add Colleges button
+  const DashboardHome = () => (
+  <>
+    <header className="main-header">
+      <div className="header-content">
+        <div className="welcome-section-centered">
+          <h1 className="welcome-name">{userData?.name || 'Student'}</h1>
+          <p className="welcome-subtitle">Welcome back to your application dashboard</p>
+        </div>
+      </div>
+    </header>
+
+    <div className="main-content">
+      <section className="content-section application-section">
+        <div className="section-header">
+          <div className="section-title-group">
+            <h2 className="section-title">My Common Application</h2>
+            <div className="progress-indicator">{completedSections}/{totalSections} sections complete</div>
+          </div>
+          <div className="progress-bar-container">
+            <div className="progress-bar">
+              <div className="progress-fill" style={{ width: `${overallProgress}%` }}></div>
+            </div>
           </div>
         </div>
-      </header>
+        
+        <div className="application-sections-grid">
+          {applicationSections.map((section, index) => (
+            <div key={index} className="application-section-card">
+              <div className="section-header-mini">
+                <h4 className="section-name">{section.name}</h4>
+                {section.progress > 0 && (
+                  <div className="section-progress">{section.progress}%</div>
+                )}
+              </div>
+              <div className="section-progress-bar">
+                <div 
+                  className="section-progress-fill" 
+                  style={{ width: `${section.progress}%` }}
+                ></div>
+              </div>
+              <button 
+                className={`section-action-button ${section.progress === 100 ? 'completed' : ''}`}
+                onClick={() => handleSectionClick(section)}
+              >
+                {section.progress === 100 ? 'Review' : section.progress > 0 ? 'Continue' : 'Start'}
+              </button>
+            </div>
+          ))}
+        </div>
+      </section>
 
-      <div className="main-content">
-        <section className="content-section">
-          <div className="section-header">
-            <h2 className="section-title">Your College List</h2>
+      <section className="content-section colleges-section">
+        <div className="section-header">
+          <div className="section-title-group">
+            <h2 className="section-title">My Colleges</h2>
             <div className="college-count">{userColleges.length} colleges</div>
           </div>
-          
+        </div>
+        
+        <div className="colleges-content">
           {userColleges.length === 0 ? (
             <div className="empty-state">
               <div className="empty-state-icon">
@@ -379,218 +499,82 @@ const Dashboard = () => {
                 </div>
               </div>
               <div className="empty-state-content">
-                <h3 className="empty-state-title">No colleges added yet</h3>
+                <h3 className="empty-state-title">Nothing here yet!</h3>
                 <p className="empty-state-description">
-                  Start by searching for colleges to add to your list. You can manage your applications from the sidebar.
+                  Add some colleges to your list to get started with your applications.
                 </p>
                 <button 
-                  className="primary-action-button"
+                  className="primary-action-button" 
                   onClick={() => navigate(`${basePath}/college-search`)}
                 >
-                  Search Colleges
+                  Add Colleges
                 </button>
               </div>
             </div>
           ) : (
-            <div className="college-list">
-              {userColleges.map((college) => (
-                <div key={college.collegeId} className="college-list-item">
-                  <div className="college-info">
-                    <div className="college-text">
-                      <h4 
-                        className="college-name-link"
-                        onClick={() => navigate(`${basePath}/colleges/${college.collegeId}`)}
-                      >
-                        {college.name}
-                      </h4>
-                      <p className="college-location-small">
-                        {college.city}, {college.state} - USA
-                      </p>
-                      <div className="college-status">
-                        <span className={`status-badge ${college.status}`}>
-                          {college.status || 'Not Started'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <button 
-                    className="view-details-button"
-                    onClick={() => navigate(`${basePath}/colleges/${college.collegeId}`)}
-                  >
-                    View Details
-                  </button>
+            <div className="college-preview-list">
+              {userColleges.slice(0, 3).map((college) => (
+                <div key={college.collegeId} className="college-preview-item">
+                  <h4 className="college-name">{college.name}</h4>
+                  <p className="college-location">{college.city}, {college.state}</p>
+                  <span className={`status-badge-small ${college.status}`}>
+                    {college.status}
+                  </span>
                 </div>
               ))}
+              {userColleges.length > 3 && (
+                <button 
+                  className="view-all-colleges-button"
+                  onClick={() => navigate(`${basePath}/colleges`)}
+                >
+                  View all {userColleges.length} colleges →
+                </button>
+              )}
             </div>
           )}
-        </section>
+        </div>
+      </section>
 
-        {userColleges.length > 0 && (
-          <section className="content-section">
-            <h2 className="section-title">Application Progress Summary</h2>
-            <div className="progress-summary">
-              <p>Click on any college in the sidebar to start working on your application sections.</p>
-              <p>Each college has its own set of application requirements and deadlines.</p>
+      <section className="content-section help-section">
+        <div className="section-header">
+          <h2 className="section-title">Help & Support</h2>
+        </div>
+        
+        <div className="search-section">
+          <div className="search-container">
+            <input 
+              type="text" 
+              placeholder="Search FAQs"
+              className="search-input"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <div className="search-hint">
+              Search takes you to the student solution center
             </div>
-          </section>
-        )}
-      </div>
-    </>
-  );
-
-  // ✅ FIXED: DashboardHome with correct Add Colleges button
-  const DashboardHome = () => (
-    <>
-      <header className="main-header">
-        <div className="header-content">
-          <div className="welcome-section">
-            <h1 className="welcome-title">
-              Hello, {userData?.firstName || 'there'}!
-            </h1>
-            <p className="welcome-subtitle">Welcome back to your application dashboard</p>
-          </div>
-          <div className="header-actions">
-            <button className="help-button">
-              <span className="help-icon">?</span>
-              Need Help?
-            </button>
           </div>
         </div>
-      </header>
-
-      <div className="main-content">
-        <section className="content-section application-section">
-          <div className="section-header">
-            <div className="section-title-group">
-              <h2 className="section-title">My Common Application</h2>
-              <div className="progress-indicator">{completedSections}/{totalSections} sections complete</div>
-            </div>
-            <div className="progress-bar-container">
-              <div className="progress-bar">
-                <div className="progress-fill" style={{ width: `${overallProgress}%` }}></div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="application-sections-grid">
-            {applicationSections.map((section, index) => (
-              <div key={index} className="application-section-card">
-                <div className="section-header-mini">
-                  <h4 className="section-name">{section.name}</h4>
-                  {section.progress > 0 && (
-                    <div className="section-progress">{section.progress}%</div>
-                  )}
+        
+        <div className="faq-section">
+          <h3 className="faq-section-title">Frequently Asked Questions</h3>
+          <div className="faq-list">
+            {faqItems.map((faq, index) => (
+              <div key={index} className="faq-card">
+                <div className="faq-content">
+                  <h4 className="faq-question">{faq.question}</h4>
+                  <p className="faq-answer">{faq.shortAnswer}</p>
                 </div>
-                <div className="section-progress-bar">
-                  <div 
-                    className="section-progress-fill" 
-                    style={{ width: `${section.progress}%` }}
-                  ></div>
-                </div>
-                <button 
-                  className={`section-action-button ${section.progress === 100 ? 'completed' : ''}`}
-                  onClick={() => handleSectionClick(section)}
-                >
-                  {section.progress === 100 ? 'Review' : section.progress > 0 ? 'Continue' : 'Start'}
+                <button className="faq-action-button">
+                  Read full answer
                 </button>
               </div>
             ))}
           </div>
-        </section>
-
-        <section className="content-section colleges-section">
-          <div className="section-header">
-            <div className="section-title-group">
-              <h2 className="section-title">My Colleges</h2>
-              <div className="college-count">{userColleges.length} colleges</div>
-            </div>
-          </div>
-          
-          <div className="colleges-content">
-            {userColleges.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-state-icon">
-                  <div className="icon-background">
-                    🏫
-                  </div>
-                </div>
-                <div className="empty-state-content">
-                  <h3 className="empty-state-title">Nothing here yet!</h3>
-                  <p className="empty-state-description">
-                    Add some colleges to your list to get started with your applications.
-                  </p>
-                  <button 
-                    className="primary-action-button" 
-                    onClick={() => navigate(`${basePath}/college-search`)}
-                  >
-                    Add Colleges
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="college-preview-list">
-                {userColleges.slice(0, 3).map((college) => (
-                  <div key={college.collegeId} className="college-preview-item">
-                    <h4 className="college-name">{college.name}</h4>
-                    <p className="college-location">{college.city}, {college.state}</p>
-                    <span className={`status-badge-small ${college.status}`}>
-                      {college.status}
-                    </span>
-                  </div>
-                ))}
-                {userColleges.length > 3 && (
-                  <button 
-                    className="view-all-colleges-button"
-                    onClick={() => navigate(`${basePath}/colleges`)}
-                  >
-                    View all {userColleges.length} colleges →
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-        </section>
-
-        <section className="content-section help-section">
-          <div className="section-header">
-            <h2 className="section-title">Help & Support</h2>
-          </div>
-          
-          <div className="search-section">
-            <div className="search-container">
-              <input 
-                type="text" 
-                placeholder="Search FAQs"
-                className="search-input"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <div className="search-hint">
-                Search takes you to the student solution center
-              </div>
-            </div>
-          </div>
-          
-          <div className="faq-section">
-            <h3 className="faq-section-title">Frequently Asked Questions</h3>
-            <div className="faq-list">
-              {faqItems.map((faq, index) => (
-                <div key={index} className="faq-card">
-                  <div className="faq-content">
-                    <h4 className="faq-question">{faq.question}</h4>
-                    <p className="faq-answer">{faq.shortAnswer}</p>
-                  </div>
-                  <button className="faq-action-button">
-                    Read full answer
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      </div>
-    </>
-  );
+        </div>
+      </section>
+    </div>
+  </>
+);
 
   if (loading) {
     return (

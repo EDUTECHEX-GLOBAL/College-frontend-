@@ -19,13 +19,18 @@ const WritingSection = () => {
 
   return (
     <div className="writing-section">
-      {/* REMOVED the duplicate header - DashboardLayout already shows "Writing" in sidebar */}
-      
       <div className="writing-container">
-
-
-        {/* Main Content - Only shows PersonalEssay or AdditionalInformation */}
         <div className="writing-main-content">
+          {/* Back Button at top left of content */}
+          <div className="content-back-button">
+            <button 
+              className="back-to-dashboard-content-btn"
+              onClick={() => navigate('/firstyear/dashboard')}
+            >
+              ← Back to Dashboard
+            </button>
+          </div>
+          
           <Routes>
             <Route path="/" element={<PersonalEssay />} />
             <Route path="/personal-essay" element={<PersonalEssay />} />
