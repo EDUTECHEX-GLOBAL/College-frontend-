@@ -151,7 +151,7 @@ const ProfilePreview = ({ formData, onEditSection, onBackToForm, onFinalSubmit, 
         {/* Fee Waiver Preview */}
         <div className="preview-section">
           <div className="preview-section-header">
-            
+             
             <button 
               className="edit-section-btn"
               onClick={() => onEditSection('feewaiver')}

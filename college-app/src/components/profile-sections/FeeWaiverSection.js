@@ -112,7 +112,7 @@ const FeeWaiverSection = ({ formData, handleInputChange, handleArrayChange }) =>
         </div>
       </div>
 
-      <div className="form-group">
+      {/* <div className="form-group">
         <label>Would you like to connect with a UStrive mentor?</label>
         <div className="radio-group">
           <label>
@@ -136,7 +136,7 @@ const FeeWaiverSection = ({ formData, handleInputChange, handleArrayChange }) =>
             No
           </label>
         </div>
-      </div>
+      </div> */}
     </div>
   </div>
 );

@@ -1,5 +1,5 @@
 import React from 'react';
-import './ProfilePreview.css'; // Add this import
+import './ProfilePreview.css';
 
 const ProfilePreview = ({ formData, onEditSection, onBackToForm, onFinalSubmit, saving }) => {
   return (
@@ -148,25 +148,7 @@ const ProfilePreview = ({ formData, onEditSection, onBackToForm, onFinalSubmit, 
           </div>
         </div>
 
-        {/* Fee Waiver Preview */}
-        <div className="preview-section">
-          <div className="preview-section-header">
-            <h3>Common App Fee Waiver</h3>
-            <button 
-              className="edit-section-btn"
-              onClick={() => onEditSection('feewaiver')}
-            >
-              Edit
-            </button>
-          </div>
-          <div className="preview-content">
-            <p><strong>Fee Waiver Eligible:</strong> {formData.feeWaiverEligible ? 'Yes' : 'No'}</p>
-            {formData.feeWaiverCriteria && formData.feeWaiverCriteria.length > 0 && (
-              <p><strong>Fee Waiver Criteria:</strong> {formData.feeWaiverCriteria.join(', ')}</p>
-            )}
-            <p><strong>UStrive Mentor:</strong> {formData.ustriveMentor ? 'Yes' : 'No'}</p>
-          </div>
-        </div>
+        {/* Removed Fee Waiver Section */}
       </div>
 
       <div className="preview-actions">

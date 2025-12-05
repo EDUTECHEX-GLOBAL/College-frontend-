@@ -177,3 +177,33 @@
     gap: 8px;
   }
 }
+/* ContactDetails.css additions */
+.phone-input-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.country-code-dropdown {
+  flex: 0 0 100px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.phone-number-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.phone-type-dropdown {
+  flex: 0 0 100px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}

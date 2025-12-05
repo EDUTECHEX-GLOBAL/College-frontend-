@@ -323,11 +323,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
                 <span className="nav-text">Geography & Nationality</span>
               </div>
             </li>
-            <li className={`nav-item ${location.pathname.includes('/feewaiver') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => onSectionChange('feewaiver')}>
-                <span className="nav-text">Common App Fee Waiver</span>
-              </div>
-            </li>
+           
           </ul>
         </div>
       );

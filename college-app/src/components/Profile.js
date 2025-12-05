@@ -10,7 +10,7 @@ import AddressSection from './profilesection/Address';
 import DemographicsSection from './profilesection/Demographics';
 import LanguageSection from './profilesection/Language';
 import GeographySection from './profilesection/Geography';
-import FeeWaiverSection from './profilesection/FeeWaiver';
+
 import ProfilePreview from './ProfilePre';
 
 const ProfileForm = () => {
@@ -23,10 +23,10 @@ const ProfileForm = () => {
   const [progress, setProgress] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
 
-  // Define all sections in order
-  const sections = ['personal', 'contact', 'address', 'demographics', 'language', 'geography', 'feewaiver'];
+  // Define all sections in order (fee waiver removed)
+  const sections = ['personal', 'contact', 'address', 'demographics', 'language', 'geography'];
 
-  // Main form state - Initialize with empty values
+  // Main form state - Initialize with empty values (fee waiver fields removed)
   const [formData, setFormData] = useState({
     // Personal Information
     firstName: '',
@@ -43,6 +43,7 @@ const ProfileForm = () => {
     preferredPhoneType: 'mobile',
     alternatePhone: '',
     alternatePhoneType: 'none',
+    alternateCountryCode: '+1', // Added for alternate phone country code
     addressLine1: '',
     addressLine2: '',
     city: '',
@@ -79,21 +80,21 @@ const ProfileForm = () => {
     yearsInUS: '',
     citizenshipStatus: '',
     
-    // Fee Waiver
-    feeWaiverEligible: false,
-    feeWaiverCriteria: [],
-    ustriveMentor: false,
-    
-    // Profile Completion Tracking
+    // Profile Completion Tracking (fee waiver removed)
     profileCompletion: {
       personalInfo: false,
       contactDetails: false,
       demographics: false,
       language: false,
-      geography: false,
-      feeWaiver: false
+      geography: false
     }
   });
+
+  // Helper function to get available phone types
+  const getAvailablePhoneTypes = (preferredType) => {
+    const allTypes = ['home', 'mobile', 'work'];
+    return allTypes.filter(type => type !== preferredType);
+  };
 
   // ✅ FIXED: Set active section based on URL with correct path
   useEffect(() => {
@@ -146,7 +147,7 @@ const ProfileForm = () => {
       if (response.data.success && response.data.account) {
         const profileData = response.data.account;
         
-        // Merge fetched data with our form structure
+        // Merge fetched data with our form structure (fee waiver fields excluded)
         const mergedData = {
           // Personal Information
           firstName: profileData.firstName || '',
@@ -163,6 +164,7 @@ const ProfileForm = () => {
           preferredPhoneType: profileData.preferredPhoneType || 'mobile',
           alternatePhone: profileData.alternatePhone || '',
           alternatePhoneType: profileData.alternatePhoneType || 'none',
+          alternateCountryCode: profileData.alternateCountryCode || '+1', // Added this line
           addressLine1: profileData.addressLine1 || '',
           addressLine2: profileData.addressLine2 || '',
           city: profileData.city || '',
@@ -199,21 +201,25 @@ const ProfileForm = () => {
           yearsInUS: profileData.yearsInUS || '',
           citizenshipStatus: profileData.citizenshipStatus || '',
           
-          // Fee Waiver
-          feeWaiverEligible: profileData.feeWaiverEligible || false,
-          feeWaiverCriteria: profileData.feeWaiverCriteria || [],
-          ustriveMentor: profileData.ustriveMentor || false,
-          
-          // Profile Completion
+          // Profile Completion (fee waiver removed)
           profileCompletion: profileData.profileCompletion || {
             personalInfo: false,
             contactDetails: false,
             demographics: false,
             language: false,
-            geography: false,
-            feeWaiver: false
+            geography: false
           }
         };
+
+        // Remove any fee waiver data that might come from backend
+        delete mergedData.feeWaiverEligible;
+        delete mergedData.feeWaiverCriteria;
+        delete mergedData.ustriveMentor;
+        
+        // Ensure profileCompletion doesn't have feeWaiver property
+        if (mergedData.profileCompletion && mergedData.profileCompletion.feeWaiver) {
+          delete mergedData.profileCompletion.feeWaiver;
+        }
 
         setFormData(mergedData);
         setProgress(response.data.profileProgress || 0);
@@ -252,7 +258,37 @@ const ProfileForm = () => {
   // Handler functions
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    
+    // Handle alternate phone toggle
+    if (name === 'alternatePhoneType') {
+      if (value === 'no') {
+        // Reset alternate phone fields when "No" is selected
+        setFormData((prev) => ({
+          ...prev,
+          alternatePhoneType: 'none',
+          alternatePhone: '',
+          alternateCountryCode: '+1'
+        }));
+        return;
+      } else if (value === 'yes') {
+        // When "Yes" is selected, set to first available phone type
+        setFormData((prev) => {
+          const availableTypes = getAvailablePhoneTypes(prev.preferredPhoneType);
+          const currentType = prev.alternatePhoneType !== 'none' && prev.alternatePhoneType !== '' 
+            ? prev.alternatePhoneType 
+            : availableTypes[0] || 'home';
+          
+          return {
+            ...prev,
+            alternatePhoneType: currentType
+          };
+        });
+        return;
+      }
+    }
+    
+    // Handle regular input changes
+    setFormData((prev) => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
@@ -327,14 +363,21 @@ const ProfileForm = () => {
         // Validate personal info completion
         updatedCompletion.personalInfo = !!(formData.firstName && formData.lastName && formData.birthDate);
       } else if (section === 'contact') {
-        // Validate contact details completion
-        updatedCompletion.contactDetails = !!(formData.phone);
+        // Validate contact details completion including alternate phone if enabled
+        const hasAlternatePhone = formData.alternatePhoneType !== 'none' && formData.alternatePhoneType !== '';
+        const alternatePhoneValid = !hasAlternatePhone || (hasAlternatePhone && formData.alternatePhone.trim() !== '');
+        updatedCompletion.contactDetails = !!(formData.phone && alternatePhoneValid);
       }
 
       const dataToSave = {
         ...formData,
         profileCompletion: updatedCompletion
       };
+
+      // Ensure no fee waiver data is sent
+      delete dataToSave.feeWaiverEligible;
+      delete dataToSave.feeWaiverCriteria;
+      delete dataToSave.ustriveMentor;
 
       console.log('📤 Sending data to backend...');
 
@@ -437,14 +480,18 @@ const ProfileForm = () => {
         contactDetails: true,
         demographics: true,
         language: true,
-        geography: true,
-        feeWaiver: true
+        geography: true
       };
 
       const finalData = {
         ...formData,
         profileCompletion: finalCompletion
       };
+
+      // Ensure no fee waiver data is sent
+      delete finalData.feeWaiverEligible;
+      delete finalData.feeWaiverCriteria;
+      delete finalData.ustriveMentor;
 
       console.log('📤 Sending final submission...');
 
@@ -599,14 +646,6 @@ const ProfileForm = () => {
               <GeographySection 
                 formData={formData} 
                 handleInputChange={handleInputChange} 
-              />
-            )}
-
-            {activeSection === 'feewaiver' && (
-              <FeeWaiverSection 
-                formData={formData} 
-                handleInputChange={handleInputChange}
-                handleArrayChange={handleArrayChange}
               />
             )}
 

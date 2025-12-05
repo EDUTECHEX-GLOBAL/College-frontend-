@@ -246,9 +246,7 @@ const Dashboard = () => {
       case 'geography':
         navigate(`${basePath}/profile/geography`);
         break;
-      case 'feewaiver':
-        navigate(`${basePath}/profile/feewaiver`);
-        break;
+      
       case 'family':
         navigate(`${basePath}/family`);
         break;
