@@ -67,7 +67,7 @@ const writingSchema = new mongoose.Schema(
       qualificationsText: {
         type: String,
         default: "",
-        maxlength: 2000,
+        maxlength: 5000,
       },
       qualificationsWordCount: {
         type: Number,
@@ -225,29 +225,39 @@ writingSchema.methods.updateAdditionalInformation = function (
   qualifications
 ) {
   if (circumstances) {
-    this.additionalInformation.shareCircumstances = circumstances.share ?? null;
-    this.additionalInformation.circumstancesText = circumstances.text || "";
-    this.additionalInformation.circumstancesWordCount = circumstances.text
-      ? circumstances.text.trim().split(/\s+/).length
-      : 0;
+    this.additionalInformation.shareCircumstances =
+      circumstances.share ?? this.additionalInformation.shareCircumstances;
+    
+    this.additionalInformation.circumstancesText =
+      circumstances.text ?? this.additionalInformation.circumstancesText;
+
+    this.additionalInformation.circumstancesWordCount =
+      circumstances.text
+        ? circumstances.text.trim().split(/\s+/).length
+        : this.additionalInformation.circumstancesWordCount;
   }
 
   if (qualifications) {
     this.additionalInformation.shareQualifications =
-      qualifications.share ?? null;
-    this.additionalInformation.qualificationsText = qualifications.text || "";
-    this.additionalInformation.qualificationsWordCount = qualifications.text
-      ? qualifications.text.trim().split(/\s+/).length
-      : 0;
+      qualifications.share ?? this.additionalInformation.shareQualifications;
+
+    this.additionalInformation.qualificationsText =
+      qualifications.text ?? this.additionalInformation.qualificationsText;
+
+    this.additionalInformation.qualificationsWordCount =
+      qualifications.text
+        ? qualifications.text.trim().split(/\s+/).length
+        : this.additionalInformation.qualificationsWordCount;
   }
 
   this.additionalInformation.lastSaved = new Date();
 
   this.additionalInformation.isComplete = Boolean(
     this.additionalInformation.shareCircumstances !== null &&
-      this.additionalInformation.shareQualifications !== null
+    this.additionalInformation.shareQualifications !== null
   );
 };
+
 
 const Writing = mongoose.model("Writing", writingSchema);
 export default Writing;
