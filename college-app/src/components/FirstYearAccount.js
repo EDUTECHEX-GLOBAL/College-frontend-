@@ -886,7 +886,7 @@ const FirstYearAccount = () => {
             </button>
 
             <label className="sub-label">
-              Would you like to receive communications from College App about
+              Would you like to receive communications from EduTechEX  about
               opportunities and resources?*
             </label>
             <small className="hint-text">
