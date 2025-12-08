@@ -29,6 +29,17 @@ const SiblingForm = () => {
     { value: '10', label: '10+' }
   ];
 
+  // Relationship options (you can adjust as needed)
+  const relationshipOptions = [
+    { value: 'brother', label: 'Brother' },
+    { value: 'sister', label: 'Sister' },
+    { value: 'step_brother', label: 'Step-brother' },
+    { value: 'step_sister', label: 'Step-sister' },
+    { value: 'half_brother', label: 'Half-brother' },
+    { value: 'half_sister', label: 'Half-sister' },
+    { value: 'other', label: 'Other' }
+  ];
+
   useEffect(() => {
     fetchSiblingData();
   }, []);
@@ -42,9 +53,20 @@ const SiblingForm = () => {
 
       if (response.data.success && response.data.familyData.siblings) {
         const siblingsData = response.data.familyData.siblings;
+
+        // Ensure each sibling object has the new fields as well
+        const normalizedList = (siblingsData.siblingsList || []).map((sibling) => ({
+          firstName: sibling.firstName || '',
+          lastName: sibling.lastName || '',
+          age: sibling.age || '',
+          relationship: sibling.relationship || '',
+          collegeAttended: sibling.collegeAttended || '',
+          degreeEarned: sibling.degreeEarned || ''
+        }));
+
         setFormData({
           siblingsCount: siblingsData.siblingsCount?.toString() || '',
-          siblingsList: siblingsData.siblingsList || []
+          siblingsList: normalizedList
         });
       }
     } catch (error) {
@@ -55,10 +77,19 @@ const SiblingForm = () => {
   const handleSiblingsCountChange = (selectedOption) => {
     const siblingsCount = selectedOption ? selectedOption.value : '';
     const countNum = parseInt(siblingsCount) || 0;
-    const newSiblingsList = Array.from({ length: countNum }, (_, index) => 
-      formData.siblingsList[index] || { firstName: '', lastName: '', age: '' }
+
+    // Include new fields in default object
+    const newSiblingsList = Array.from({ length: countNum }, (_, index) =>
+      formData.siblingsList[index] || {
+        firstName: '',
+        lastName: '',
+        age: '',
+        relationship: '',
+        collegeAttended: '',
+        degreeEarned: ''
+      }
     );
-    
+
     setFormData(prev => ({
       ...prev,
       siblingsCount: siblingsCount,
@@ -69,7 +100,7 @@ const SiblingForm = () => {
   const handleSiblingChange = (index, field, value) => {
     setFormData(prev => ({
       ...prev,
-      siblingsList: prev.siblingsList.map((sibling, i) => 
+      siblingsList: prev.siblingsList.map((sibling, i) =>
         i === index ? { ...sibling, [field]: value } : sibling
       )
     }));
@@ -100,9 +131,13 @@ const SiblingForm = () => {
       }
 
       const token = localStorage.getItem('token');
-      const response = await axios.post(`${API_URL}/api/students/family-dashb/sibling`, submissionData, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await axios.post(
+        `${API_URL}/api/students/family-dashb/sibling`,
+        submissionData,
+        {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }
+      );
 
       if (response.data.success) {
         // Navigate back to dashboard
@@ -124,6 +159,9 @@ const SiblingForm = () => {
   const getSelectedSiblingsCount = () => {
     return siblingsCountOptions.find(option => option.value === formData.siblingsCount);
   };
+
+  const getSelectedRelationship = (sibling) =>
+    relationshipOptions.find(opt => opt.value === (sibling.relationship || ''));
 
   return (
     <div className="family-form-container">
@@ -150,22 +188,15 @@ const SiblingForm = () => {
           />
         </div>
 
-        {/* Display selected number */}
-        {/* {formData.siblingsCount && formData.siblingsCount !== '0' && (
-          <div className="selected-count-display">
-            <p className="count-text">{formData.siblingsCount} {formData.siblingsCount === '1' ? 'sibling' : 'siblings'}</p>
-          </div>
-        )} */}
-
         {/* Sibling Details Forms */}
         {formData.siblingsCount && formData.siblingsCount !== '0' && (
           <div className="siblings-details-section">
             <h3 className="siblings-section-title">Sibling Details</h3>
-            
+
             {formData.siblingsList.map((sibling, index) => (
               <div key={index} className="sibling-form-card">
                 <h4 className="sibling-title">Sibling {index + 1}</h4>
-                
+
                 <div className="sibling-form-fields">
                   <div className="form-row">
                     <div className="form-field">
@@ -211,6 +242,56 @@ const SiblingForm = () => {
                       />
                     </div>
                   </div>
+
+                  <div className="form-row">
+                    <div className="form-field">
+                      <label className="form-label required">
+                        Relationship*
+                      </label>
+                      <Select
+                        className="react-select-container"
+                        classNamePrefix="react-select"
+                        value={getSelectedRelationship(sibling)}
+                        onChange={(opt) =>
+                          handleSiblingChange(index, 'relationship', opt ? opt.value : '')
+                        }
+                        options={relationshipOptions}
+                        placeholder="Select relationship"
+                        isSearchable={false}
+                        isClearable={true}
+                      />
+                    </div>
+
+                    <div className="form-field">
+                      <label className="form-label">
+                        College Attended
+                      </label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        value={sibling.collegeAttended || ''}
+                        onChange={(e) =>
+                          handleSiblingChange(index, 'collegeAttended', e.target.value)
+                        }
+                        placeholder="Enter college attended"
+                      />
+                    </div>
+
+                    <div className="form-field">
+                      <label className="form-label">
+                        Degree Earned
+                      </label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        value={sibling.degreeEarned || ''}
+                        onChange={(e) =>
+                          handleSiblingChange(index, 'degreeEarned', e.target.value)
+                        }
+                        placeholder="Enter degree earned"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -225,8 +306,8 @@ const SiblingForm = () => {
         )}
 
         <div className="form-actions">
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="continue-button"
             disabled={loading}
           >

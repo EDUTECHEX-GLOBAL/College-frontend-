@@ -15,9 +15,8 @@ const generateToken = (id, email, username) => {
   console.log('🔐 Generating token with ID:', id);
   
   // ✅ FIXED: Use same fallback secret as authMiddleware
- const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+  const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
-  
   if (!process.env.JWT_SECRET) {
     console.warn('⚠️  WARNING: JWT_SECRET not in .env, using fallback: "your-secret-key"');
     console.warn('   Make sure this matches the secret in authMiddleware!');
@@ -242,6 +241,11 @@ export const registerTransferStudent = async (req, res) => {
     console.log('🔑 New Student ID:', newStudent._id);
     const token = generateToken(newStudent._id, newStudent.email, newStudent.username);
 
+    // ✅ NEW: Generate dashboard display data for registration response
+    const fullName = `${newStudent.firstName} ${newStudent.lastName}`;
+    const initials = (newStudent.firstName?.charAt(0) + newStudent.lastName?.charAt(0)).toUpperCase();
+    const caid = newStudent._id.toString().slice(-8).toUpperCase();
+
     return res.status(201).json({
       success: true,
       message: "🎉 Transfer student account created! OTP sent to your email.",
@@ -254,6 +258,14 @@ export const registerTransferStudent = async (req, res) => {
         email: newStudent.email,
         username: newStudent.username,
         accountType: newStudent.accountType,
+      },
+      // ✅ NEW: Dashboard data for immediate use after registration
+      dashboard: {
+        displayName: fullName,
+        displayInitials: initials,
+        caid: caid,
+        email: newStudent.email,
+        username: newStudent.username,
       },
     });
   } catch (error) {
@@ -324,6 +336,11 @@ export const loginTransferStudent = async (req, res) => {
 
     console.log("✅ Transfer student logged in:", username);
 
+    // ✅ NEW: Generate dashboard display data for login response
+    const fullName = `${student.firstName} ${student.lastName}`;
+    const initials = (student.firstName?.charAt(0) + student.lastName?.charAt(0)).toUpperCase();
+    const caid = student._id.toString().slice(-8).toUpperCase();
+
     return res.status(200).json({
       success: true,
       message: "Login successful",
@@ -337,6 +354,14 @@ export const loginTransferStudent = async (req, res) => {
         accountType: student.accountType,
         isEmailVerified: student.isEmailVerified,
       },
+      // ✅ NEW: Dashboard data for immediate use after login
+      dashboard: {
+        displayName: fullName,
+        displayInitials: initials,
+        caid: caid,
+        email: student.email,
+        username: student.username,
+      },
     });
   } catch (error) {
     console.error("❌ Login error:", error);
@@ -348,7 +373,7 @@ export const loginTransferStudent = async (req, res) => {
 };
 
 /**
- * 👤 Get Current Transfer Student Profile (using JWT token)
+ * 👤 Get Current Transfer Student Profile (using JWT token) - UPDATED
  * GET /api/transfer/profile
  */
 export const getCurrentTransferStudentProfile = async (req, res) => {
@@ -380,11 +405,31 @@ export const getCurrentTransferStudentProfile = async (req, res) => {
 
     // Calculate profile progress
     const profileProgress = calculateProfileProgress(student);
+    
+    // ✅ NEW: Generate dashboard display data
+    // Generate full name in "FirstName LastName" format
+    const fullName = `${student.firstName} ${student.lastName}`;
+    
+    // Generate initials from first name and last name
+    const initials = (student.firstName?.charAt(0) + student.lastName?.charAt(0)).toUpperCase();
+    
+    // Generate CAID - Using the last 8 characters of the MongoDB ObjectId
+    // You can change this to use a specific field if you add one to your model
+    const caid = student._id.toString().slice(-8).toUpperCase();
 
     return res.status(200).json({
       success: true,
       account: student,
       profileProgress: profileProgress,
+      // ✅ NEW: Dashboard display data
+      dashboard: {
+        displayName: fullName,
+        displayInitials: initials,
+        caid: caid,
+        email: student.email,
+        username: student.username,
+        profileCompletion: profileProgress
+      }
     });
   } catch (error) {
     console.error('❌ Error fetching current profile:', error);
@@ -396,10 +441,6 @@ export const getCurrentTransferStudentProfile = async (req, res) => {
   }
 };
 
-/**
- * 💾 Update Current Transfer Student Profile (using JWT token)
- * PUT /api/transfer/profile
- */
 /**
  * 💾 Update Current Transfer Student Profile (using JWT token)
  * PUT /api/transfer/profile
@@ -445,6 +486,11 @@ export const updateCurrentTransferStudentProfile = async (req, res) => {
 
       // Calculate updated profile progress
       const profileProgress = calculateProfileProgress(updatedStudent);
+      
+      // ✅ NEW: Generate updated dashboard display data
+      const fullName = `${updatedStudent.firstName} ${updatedStudent.lastName}`;
+      const initials = (updatedStudent.firstName?.charAt(0) + updatedStudent.lastName?.charAt(0)).toUpperCase();
+      const caid = updatedStudent._id.toString().slice(-8).toUpperCase();
 
       return res.status(200).json({
         success: true,
@@ -453,6 +499,15 @@ export const updateCurrentTransferStudentProfile = async (req, res) => {
         progress: {
           profile: profileProgress
         },
+        // ✅ NEW: Include dashboard data in update response
+        dashboard: {
+          displayName: fullName,
+          displayInitials: initials,
+          caid: caid,
+          email: updatedStudent.email,
+          username: updatedStudent.username,
+          profileCompletion: profileProgress
+        }
       });
     } catch (updateError) {
       console.error('❌ MongoDB update error:', updateError);

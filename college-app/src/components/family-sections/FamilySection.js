@@ -9,40 +9,47 @@ import SiblingForm from './SiblingForm';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
-const FamilySection = () => {
+const FamilySection = ({ onComplete }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [familyData, setFamilyData] = useState(null);
   const [loading, setLoading] = useState(true);
+useEffect(() => {
+  const fetchFamilyData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
 
-  useEffect(() => {
-    const fetchFamilyData = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-
-        const response = await axios.get(`${API_URL}/api/students/family-dashb`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (response.data.success) {
-          setFamilyData(response.data.familyData);
+      const response = await axios.get(`${API_URL}/api/students/family-dashb`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
-      } catch (error) {
-        console.error('Error fetching family data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+      });
 
-    fetchFamilyData();
-  }, []);
+      if (response.data.success) {
+        const data = response.data.familyData;
+        setFamilyData(data);
+
+        if (data.overallProgress >= 100) {
+          localStorage.setItem('familySectionComplete', 'true');
+          if (onComplete) {
+            onComplete(true);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching family data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchFamilyData();
+}, []); // <-- remove onComplete from dependency array
+
 
   const handleBackToDashboard = () => {
-    // Check current path to determine correct dashboard
     const path = location.pathname;
     if (path.includes('/firstyear/')) {
       navigate('/firstyear/dashboard');
@@ -67,13 +74,13 @@ const FamilySection = () => {
       {/* Fixed Header - Properly aligned */}
       <div className="family-header-section">
         <div className="family-header-content">
-          <button 
+          <button
             className="back-to-dashboard-btn"
             onClick={handleBackToDashboard}
           >
             ← Back to Dashboard
           </button>
-          
+
           <div className="family-title-container">
             <h1 className="family-main-title">Family Information</h1>
             <p className="family-sub-title">Manage your family background and relationships</p>
@@ -88,7 +95,8 @@ const FamilySection = () => {
             <Route path="/household" element={<HouseholdForm />} />
             <Route path="/parent1" element={<Parent1Form />} />
             <Route path="/parent2" element={<Parent2Form />} />
-            <Route path="/sibling" element={<SiblingForm />} />
+            {/* Sibling form can actively mark completion when it POSTs successfully */}
+            <Route path="/sibling" element={<SiblingForm onComplete={onComplete} />} />
           </Routes>
         </div>
       </div>

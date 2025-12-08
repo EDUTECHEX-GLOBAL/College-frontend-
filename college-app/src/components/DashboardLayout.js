@@ -612,7 +612,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
       <div className="dashboard-sidebar">
         <div className="sidebar-header">
           <div className="brand-section">
-            <h2 className="brand-logo">College App</h2>
+            <h2 className="brand-logo">EduTechEX</h2>
           </div>
           
           <div className="user-profile-card">

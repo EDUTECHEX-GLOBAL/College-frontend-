@@ -1,8 +1,9 @@
 // src/components/DashboardLayout.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import './Dashboardtest.css'; // Make sure to import CSS
 
-const DashboardLayout = ({ userData, children, activeMainSection, onSectionChange }) => {
+const DashboardLayout = ({ userData, dashboardData, children, activeMainSection, onSectionChange }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [activeSections, setActiveSections] = useState(['tests-taken', 'senior-secondary-exams']);
@@ -40,34 +41,66 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     };
   }, []);
 
-  const getStudentId = () => {
-    if (!userData) return 'CAID Loading...';
+  // ✅ UPDATED: Get display data with fallbacks
+  const getDisplayData = () => {
+    // First try dashboardData, then userData
+    const displayData = dashboardData || userData;
     
-    const possibleIds = [
-      userData.studentId,
-      userData.caId,
-      userData.CAID,
-      userData.studentID,
-      userData._id
-    ];
-    
-    const foundId = possibleIds.find(id => id && id !== '');
-    
-    if (foundId) {
-      if (foundId.length === 24) {
-        return `CAID-${foundId.substring(0, 8).toUpperCase()}`;
-      }
-      return foundId;
+    if (!displayData) {
+      return {
+        initials: 'AA',
+        fullName: 'Loading...',
+        email: 'Loading...',
+        caid: 'CAID-Loading...'
+      };
     }
+
+    // Get initials
+    const initials = displayData.displayInitials || 
+      ((userData?.firstName?.charAt(0) || '') + (userData?.lastName?.charAt(0) || '')).toUpperCase() || 
+      'AA';
     
-    return 'CAID Loading...';
+    // Get full name
+    const fullName = displayData.displayName || 
+      `${userData?.firstName || ''} ${userData?.lastName || ''}`.trim() || 
+      'User Name';
+    
+    // Get email
+    const email = displayData.email || userData?.email || 'Loading...';
+    
+    // Get CAID - prioritize dashboardData.caid
+    let caid = 'CAID-Loading...';
+    if (displayData.caid) {
+      caid = displayData.caid.startsWith('CAID-') ? displayData.caid : `CAID-${displayData.caid}`;
+    } else if (userData) {
+      const possibleIds = [
+        userData.studentId,
+        userData.caId,
+        userData.CAID,
+        userData.studentID,
+        userData._id
+      ];
+      
+      const foundId = possibleIds.find(id => id && id !== '');
+      
+      if (foundId) {
+        if (foundId.length === 24) {
+          caid = `CAID-${foundId.substring(0, 8).toUpperCase()}`;
+        } else {
+          caid = foundId.startsWith('CAID-') ? foundId : `CAID-${foundId}`;
+        }
+      }
+    }
+
+    return { initials, fullName, email, caid };
   };
 
   const handleSignOut = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('userData');
+    localStorage.removeItem('dashboardData');
     localStorage.removeItem('testingActiveSections');
-    navigate('/');
+    navigate('/sign-in');
   };
 
   // Determine which sidebar to show based on active section
@@ -318,31 +351,26 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     );
   };
 
+  // ✅ Get display data
+  const { initials, fullName, email, caid } = getDisplayData();
+
   return (
     <div className="dashboard-container">
       {/* Sidebar */}
       <div className="dashboard-sidebar">
         <div className="sidebar-header">
           <div className="brand-section">
-            <h2 className="brand-logo">College App</h2>
+            <h2 className="brand-logo">EduTechEX</h2>
           </div>
           
           <div className="user-profile-card">
             <div className="user-avatar">
-              {userData?.firstName && userData?.lastName 
-                ? `${userData.firstName[0]}${userData.lastName[0]}`.toUpperCase()
-                : 'AA'
-              }
+              {initials}
             </div>
             <div className="user-info">
-              <h3 className="user-name">
-                {userData?.firstName && userData?.lastName 
-                  ? `${userData.firstName} ${userData.lastName}`
-                  : 'Loading...'
-                }
-              </h3>
-              <p className="user-email">{userData?.email || 'Loading...'}</p>
-              <p className="user-id">{getStudentId()}</p>
+              <h3 className="user-name">{fullName}</h3>
+              <p className="user-email">{email}</p>
+              <p className="user-id">{caid}</p>
             </div>
           </div>
         </div>

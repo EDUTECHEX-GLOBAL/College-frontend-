@@ -60,18 +60,25 @@ export const saveHouseholdData = async (req, res) => {
     }
 
     const familyData = await firstfamilydashb.findOneAndUpdate(
-      { studentId },
-      {
-        $set: {
-          "household": householdData,
-          "completionStatus.household": true,
-        },
-      },
-      { new: true, upsert: true, runValidators: true }
-    );
+  { studentId },
+  {
+    $set: {
+      household: householdData,
+      "completionStatus.household": true,
+    },
+  },
+  { new: true, upsert: true, runValidators: true }
+);
 
-    // Update application progress in Account
-    await updateFamilyProgress(studentId, familyData.overallProgress);
+// recompute overallProgress manually since pre('save') isn't run
+const completionFields = Object.values(familyData.completionStatus);
+const completedCount = completionFields.filter(Boolean).length;
+const totalSections = completionFields.length;
+familyData.overallProgress = Math.round((completedCount / totalSections) * 100);
+await familyData.save();
+await updateFamilyProgress(studentId, familyData.overallProgress);
+
+
 
     res.status(200).json({
       success: true,

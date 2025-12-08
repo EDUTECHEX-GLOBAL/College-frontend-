@@ -382,7 +382,7 @@ const FirstYearAccount = () => {
             <div className="modal-icon">🎉</div>
             <h3 className="modal-title">Account Created Successfully!</h3>
             <p className="modal-message">
-              Your College App account has been created. You can now login and start your application journey.
+              Your EduTechEX account has been created. You can now login and start your application journey.
             </p>
             <div className="modal-actions">
               <button 
@@ -832,7 +832,7 @@ const FirstYearAccount = () => {
             <h3>Privacy policy and preferences</h3>
 
             <p className="privacy-text">
-              College App will process and share your information in accordance
+               EduTechEX  will process and share your information in accordance
               with our{" "}
               <a href="#privacy" target="_blank" rel="noopener noreferrer">
                 privacy policy

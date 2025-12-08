@@ -40,7 +40,7 @@ const CreateAccount = () => {
 
         <h2 className="title">Let's get started!</h2>
         <p className="subtitle">
-          Welcome to <strong>College App</strong>! Please tell us how you will
+          Welcome to <strong>EduTechEX </strong>! Please tell us how you will
           use the system so we can prepare your account.
         </p>
 

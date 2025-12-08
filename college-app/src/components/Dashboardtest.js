@@ -9,13 +9,13 @@ import FamilyForm from './Family';
 import EducationForm from './Education';
 import WritingForm from './Writing';
 import ActivitiesForm from './Activities';
-
 import TestingForm from './Testing'; // ✅ ADDED - Testing section
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [userData, setUserData] = useState(null);
+  const [dashboardData, setDashboardData] = useState(null); // ✅ NEW: Separate dashboard display data
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeMainSection, setActiveMainSection] = useState('application');
@@ -74,11 +74,13 @@ const Dashboard = () => {
         console.log('✅ Response received:', response.status);
         console.log('📦 Response data:', response.data);
 
-        if (response.data.success && response.data.account) {
+        if (response.data.success) {
           const transferData = response.data.account;
           
           console.log('✅ Transfer student data found:', transferData.firstName);
+          console.log('📊 Dashboard data received:', response.data.dashboard); // ✅ Debug dashboard data
 
+          // ✅ Store account data
           const formattedUserData = {
             name: `${transferData.firstName} ${transferData.lastName}`,
             firstName: transferData.firstName,
@@ -97,15 +99,52 @@ const Dashboard = () => {
           };
           
           setUserData(formattedUserData);
+          
+          // ✅ NEW: Store dashboard display data separately
+          if (response.data.dashboard) {
+            setDashboardData(response.data.dashboard);
+            localStorage.setItem('dashboardData', JSON.stringify(response.data.dashboard));
+          } else {
+            // ✅ Fallback: Generate dashboard data from account data
+            const generatedDashboardData = {
+              displayName: `${transferData.firstName} ${transferData.lastName}`,
+              displayInitials: (transferData.firstName?.charAt(0) + transferData.lastName?.charAt(0)).toUpperCase(),
+              caid: transferData._id ? transferData._id.toString().slice(-8).toUpperCase() : 'CAID-' + transferData._id?.slice(-8)?.toUpperCase() || 'N/A',
+              email: transferData.email,
+              username: transferData.username,
+              profileCompletion: response.data.profileProgress || 0
+            };
+            setDashboardData(generatedDashboardData);
+            localStorage.setItem('dashboardData', JSON.stringify(generatedDashboardData));
+          }
+          
           localStorage.setItem('userData', JSON.stringify(formattedUserData));
           console.log('✅ User data stored in state and localStorage');
+          console.log('📊 Dashboard data set:', dashboardData);
         } else {
           console.warn('⚠️ Unexpected response structure');
+          
+          // ✅ Try to use stored dashboard data
+          const storedDashboardData = localStorage.getItem('dashboardData');
+          if (storedDashboardData) {
+            try {
+              const parsedDashboardData = JSON.parse(storedDashboardData);
+              setDashboardData(parsedDashboardData);
+              console.log('✅ Using stored dashboard data (fallback)');
+            } catch (parseError) {
+              console.error('❌ Error parsing stored dashboard data:', parseError);
+            }
+          }
+          
           const storedUserData = localStorage.getItem('userData');
           if (storedUserData) {
-            const parsedData = JSON.parse(storedUserData);
-            setUserData(parsedData);
-            console.log('✅ Using stored user data (fallback)');
+            try {
+              const parsedData = JSON.parse(storedUserData);
+              setUserData(parsedData);
+              console.log('✅ Using stored user data (fallback)');
+            } catch (parseError) {
+              console.error('❌ Error parsing stored user data:', parseError);
+            }
           }
         }
       } catch (error) {
@@ -113,6 +152,18 @@ const Dashboard = () => {
         console.error('   Status:', error.response?.status);
         console.error('   Message:', error.response?.data?.message || error.message);
         console.error('   URL:', error.config?.url);
+        
+        // ✅ Try to use stored dashboard data on error
+        const storedDashboardData = localStorage.getItem('dashboardData');
+        if (storedDashboardData) {
+          try {
+            const parsedDashboardData = JSON.parse(storedDashboardData);
+            setDashboardData(parsedDashboardData);
+            console.log('✅ Using stored dashboard data due to fetch error');
+          } catch (parseError) {
+            console.error('❌ Error parsing stored dashboard data:', parseError);
+          }
+        }
         
         const storedUserData = localStorage.getItem('userData');
         if (storedUserData) {
@@ -237,14 +288,13 @@ const Dashboard = () => {
   ];
 
   const handleSectionClick = (section) => {
-  console.log('Section clicked:', section);  // ✅ Debug log
-  if (section && section.path) {
-    navigate(section.path);  // ✅ Uses the correct path like "/dashboard/profile/personal"
-  } else {
-    alert(`${section?.name || 'This'} section coming soon!`);
-  }
-};
-
+    console.log('Section clicked:', section);  // ✅ Debug log
+    if (section && section.path) {
+      navigate(section.path);  // ✅ Uses the correct path like "/dashboard/profile/personal"
+    } else {
+      alert(`${section?.name || 'This'} section coming soon!`);
+    }
+  };
 
   if (loading) {
     return (
@@ -431,12 +481,12 @@ const Dashboard = () => {
   return (
     <DashboardLayout 
       userData={userData} 
+      dashboardData={dashboardData} // ✅ NEW: Pass dashboard display data
       activeMainSection={activeMainSection}
       onSectionChange={handleSectionChange}
     >
       <Routes>
         <Route path="/" element={<DashboardHome />} />
-       
         <Route path="/profile/*" element={<ProfileForm />} />
         <Route path="/family/*" element={<FamilyForm />} />
         <Route path="/education/*" element={<EducationForm />} />

@@ -28,7 +28,7 @@ const Home = () => {
     >
       {/* ===== Header Section ===== */}
       <header className="header">
-        <div className="logo">College App</div>
+        <div className="logo"> EduTechEX</div>
 
         <div className="header-buttons">
           {/* ✅ Added navigation for Sign In */}

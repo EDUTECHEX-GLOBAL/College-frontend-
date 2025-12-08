@@ -207,16 +207,7 @@ const Parent2Form = () => {
               />
               I have limited information about this parent
             </label>
-            <label className="radio-label no-parent-option">
-              <input
-                type="radio"
-                name="parentType"
-                value="no_other_parent"
-                checked={formData.parentType === 'no_other_parent'}
-                onChange={handleNoOtherParent}
-              />
-              I do not have another parent to list
-            </label>
+         
           </div>
           <button 
             type="button" 

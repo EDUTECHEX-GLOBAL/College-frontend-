@@ -8,31 +8,6 @@ const ContactDetailsSection = ({ formData, handleInputChange }) => {
     return allTypes.filter(type => type !== preferredType);
   };
 
-  const handleAlternatePhoneToggle = (e) => {
-    const value = e.target.value;
-    if (value === 'yes') {
-      handleInputChange(e);
-    } else {
-      // When "No" is selected, reset alternate phone fields
-      const event = {
-        target: {
-          name: 'alternatePhoneType',
-          value: 'none'
-        }
-      };
-      handleInputChange(event);
-      
-      // Also clear the alternate phone number
-      const clearEvent = {
-        target: {
-          name: 'alternatePhone',
-          value: ''
-        }
-      };
-      handleInputChange(clearEvent);
-    }
-  };
-
   // Check if user has alternate phone
   const hasAlternatePhone = formData.alternatePhoneType !== 'none' && formData.alternatePhoneType !== '';
   
@@ -46,6 +21,7 @@ const ContactDetailsSection = ({ formData, handleInputChange }) => {
         {formData.profileCompletion.contactDetails ? 'Complete' : 'In Progress'}
       </div>
       <div className="form-content">
+        {/* Preferred Phone Type */}
         <div className="form-group">
           <label className="required">Preferred Phone Type</label>
           <div className="radio-group">
@@ -82,6 +58,7 @@ const ContactDetailsSection = ({ formData, handleInputChange }) => {
           </div>
         </div>
 
+        {/* Preferred Phone Number */}
         <div className="form-group">
           <label className="required">Preferred Phone Number</label>
           <div className="phone-input">
@@ -91,9 +68,11 @@ const ContactDetailsSection = ({ formData, handleInputChange }) => {
               onChange={handleInputChange}
               className="country-code"
             >
-              <option value="+1">+1 (USA/Canada)</option>
-              <option value="+91">+91 (India)</option>
-              <option value="+44">+44 (UK)</option>
+              <option value="+1">🇺🇸 +1 (USA/Canada)</option>
+              <option value="+91">🇮🇳 +91 (India)</option>
+              <option value="+44">🇬🇧 +44 (UK)</option>
+              <option value="+61">🇦🇺 +61 (Australia)</option>
+              <option value="+49">🇩🇪 +49 (Germany)</option>
             </select>
             <input
               type="tel"
@@ -101,13 +80,14 @@ const ContactDetailsSection = ({ formData, handleInputChange }) => {
               value={formData.phone}
               onChange={handleInputChange}
               className="phone-number"
-              placeholder="Enter phone number"
+              placeholder="(201) 555-0123"
               required
             />
           </div>
           <div className="helper-text">Phone includes country code and number</div>
         </div>
 
+        {/* Alternate Phone Toggle - Yes/No */}
         <div className="form-group">
           <label>Do you have an alternate phone number?</label>
           <div className="radio-group">
@@ -116,8 +96,8 @@ const ContactDetailsSection = ({ formData, handleInputChange }) => {
                 type="radio"
                 name="alternatePhoneType"
                 value="no"
-                checked={formData.alternatePhoneType === 'none' || !formData.alternatePhoneType}
-                onChange={handleAlternatePhoneToggle}
+                checked={!hasAlternatePhone}
+                onChange={handleInputChange}
               />
               No
             </label>
@@ -126,59 +106,18 @@ const ContactDetailsSection = ({ formData, handleInputChange }) => {
                 type="radio"
                 name="alternatePhoneType"
                 value="yes"
-                checked={formData.alternatePhoneType !== 'none' && formData.alternatePhoneType !== ''}
-                onChange={handleAlternatePhoneToggle}
+                checked={hasAlternatePhone}
+                onChange={handleInputChange}
               />
               Yes
             </label>
           </div>
         </div>
 
-        {formData.alternatePhoneType !== 'none' && formData.alternatePhoneType !== '' && (
+        {/* Alternate Phone Details (shown only when Yes is selected) */}
+        {hasAlternatePhone && (
           <>
-            <div className="form-group">
-              <label className="required">Alternate Phone Type</label>
-              <div className="radio-group">
-                {/* Only show options that are NOT selected as preferred */}
-                {formData.preferredPhoneType !== 'home' && (
-                  <label>
-                    <input
-                      type="radio"
-                      name="alternatePhoneType"
-                      value="home"
-                      checked={formData.alternatePhoneType === 'home'}
-                      onChange={handleInputChange}
-                    />
-                    Home
-                  </label>
-                )}
-                {formData.preferredPhoneType !== 'mobile' && (
-                  <label>
-                    <input
-                      type="radio"
-                      name="alternatePhoneType"
-                      value="mobile"
-                      checked={formData.alternatePhoneType === 'mobile'}
-                      onChange={handleInputChange}
-                    />
-                    Mobile
-                  </label>
-                )}
-                {formData.preferredPhoneType !== 'work' && (
-                  <label>
-                    <input
-                      type="radio"
-                      name="alternatePhoneType"
-                      value="work"
-                      checked={formData.alternatePhoneType === 'work'}
-                      onChange={handleInputChange}
-                    />
-                    Work
-                  </label>
-                )}
-              </div>
-            </div>
-
+            {/* Alternate Phone Number with country code dropdown and phone type dropdown */}
             <div className="form-group">
               <label>Alternate Phone Number</label>
               <div className="phone-input-row">
@@ -203,7 +142,7 @@ const ContactDetailsSection = ({ formData, handleInputChange }) => {
                   name="alternatePhone"
                   value={formData.alternatePhone}
                   onChange={handleInputChange}
-                  placeholder="(201) 555-0123"
+                 
                   className="phone-number-input"
                 />
                 <select

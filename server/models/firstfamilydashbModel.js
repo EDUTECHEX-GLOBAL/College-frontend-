@@ -201,6 +201,19 @@ const familySchema = new mongoose.Schema(
             min: 0,
             max: 100,
           },
+          // New fields to match updated SiblingForm
+          relationship: {
+            type: String,
+            trim: true,
+          },
+          collegeAttended: {
+            type: String,
+            trim: true,
+          },
+          degreeEarned: {
+            type: String,
+            trim: true,
+          },
         },
       ],
     },

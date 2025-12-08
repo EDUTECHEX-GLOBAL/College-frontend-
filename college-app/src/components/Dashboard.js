@@ -33,6 +33,8 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeMainSection, setActiveMainSection] = useState('application');
   const [userColleges, setUserColleges] = useState([]);
+  // ADD THIS LINE: State to track family section completion locally
+  const [familyCompleted, setFamilyCompleted] = useState(false);
 
   // ✅ DYNAMIC BASE PATH DETECTION
   const isFirstYear = location.pathname.includes('/firstyear/');
@@ -104,6 +106,24 @@ const Dashboard = () => {
     await fetchUserColleges();
   };
 
+  // ADD THIS FUNCTION: Handle family completion
+  const handleFamilyComplete = (isComplete) => {
+    setFamilyCompleted(isComplete);
+    // Update local storage for persistence
+    localStorage.setItem('familySectionComplete', isComplete ? 'true' : 'false');
+    
+    // Update userData if it exists
+    if (userData) {
+      setUserData(prev => ({
+        ...prev,
+        applicationProgress: {
+          ...prev.applicationProgress,
+          family: isComplete ? 100 : (prev.applicationProgress?.family || 0)
+        }
+      }));
+    }
+  };
+
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -123,6 +143,10 @@ const Dashboard = () => {
 
         if (response.data.success && response.data.account) {
           const user = response.data.account;
+          // ADD THIS: Check local storage for family completion status
+          const storedFamilyComplete = localStorage.getItem('familySectionComplete') === 'true';
+          setFamilyCompleted(storedFamilyComplete);
+          
           const formattedUserData = {
             name: `${user.firstName} ${user.lastName}`,
             email: user.email,
@@ -134,6 +158,11 @@ const Dashboard = () => {
             testingProgress: user.applicationProgress?.testing || 0,
             writingProgress: user.applicationProgress?.writing || 0,
             activitiesProgress: user.applicationProgress?.activities || 0,
+            // ADD THIS: Include family progress
+            applicationProgress: {
+              ...user.applicationProgress,
+              family: storedFamilyComplete ? 100 : (user.applicationProgress?.family || 0)
+            },
             ...user
           };
           
@@ -145,7 +174,11 @@ const Dashboard = () => {
         const storedUserData = localStorage.getItem('userData');
         if (storedUserData && storedUserData !== 'undefined') {
           try {
-            setUserData(JSON.parse(storedUserData));
+            const parsedData = JSON.parse(storedUserData);
+            setUserData(parsedData);
+            // Check local storage for family completion
+            const storedFamilyComplete = localStorage.getItem('familySectionComplete') === 'true';
+            setFamilyCompleted(storedFamilyComplete);
           } catch (parseError) {
             console.error('Error parsing stored user data:', parseError);
           }
@@ -178,6 +211,21 @@ const Dashboard = () => {
     
     return () => {
       window.removeEventListener('collegesUpdated', handleCollegesUpdate);
+    };
+  }, []);
+
+  // ADD THIS: Listen for family completion events
+  useEffect(() => {
+    const handleFamilyCompletion = (event) => {
+      if (event.detail && event.detail.section === 'family') {
+        handleFamilyComplete(event.detail.isComplete);
+      }
+    };
+
+    window.addEventListener('familySectionComplete', handleFamilyCompletion);
+    
+    return () => {
+      window.removeEventListener('familySectionComplete', handleFamilyCompletion);
     };
   }, []);
 
@@ -246,7 +294,6 @@ const Dashboard = () => {
       case 'geography':
         navigate(`${basePath}/profile/geography`);
         break;
-      
       case 'family':
         navigate(`${basePath}/family`);
         break;
@@ -269,8 +316,9 @@ const Dashboard = () => {
       Object.values(userData.applicationProgress).length 
     : 0;
 
+  // FIX THIS: Update completedSections to use 100% as completion threshold
   const completedSections = userData?.applicationProgress 
-    ? Object.values(userData.applicationProgress).filter(progress => progress > 0).length 
+    ? Object.values(userData.applicationProgress).filter(progress => progress >= 100).length 
     : 0;
 
   const totalSections = 6;
@@ -279,37 +327,38 @@ const Dashboard = () => {
   const applicationSections = [
     { 
       name: "Profile", 
-      completed: userData?.profileProgress > 0, 
+      completed: userData?.profileProgress >= 100, 
       progress: userData?.profileProgress || 0, 
       path: `${basePath}/profile/personal`
     },
     { 
       name: "Family", 
-      completed: userData?.applicationProgress?.family > 0, 
-      progress: userData?.applicationProgress?.family || 0, 
+      // FIX THIS: Use familyCompleted state OR backend progress
+      completed: familyCompleted || (userData?.applicationProgress?.family >= 100),
+      progress: familyCompleted ? 100 : (userData?.applicationProgress?.family || 0), 
       path: `${basePath}/family`
     },
     { 
       name: "Education", 
-      completed: userData?.applicationProgress?.education > 0, 
+      completed: userData?.applicationProgress?.education >= 100, 
       progress: userData?.applicationProgress?.education || 0, 
       path: `${basePath}/education/current-school`
     },
     { 
       name: "Testing", 
-      completed: userData?.applicationProgress?.testing > 0, 
+      completed: userData?.applicationProgress?.testing >= 100, 
       progress: userData?.applicationProgress?.testing || 0, 
       path: `${basePath}/testing/tests-taken`
     },
     { 
       name: "Activities", 
-      completed: userData?.applicationProgress?.activities > 0, 
+      completed: userData?.applicationProgress?.activities >= 100, 
       progress: userData?.applicationProgress?.activities || 0, 
       path: `${basePath}/activities`
     },
     { 
       name: "Writing", 
-      completed: userData?.applicationProgress?.writing > 0, 
+      completed: userData?.applicationProgress?.writing >= 100, 
       progress: userData?.applicationProgress?.writing || 0, 
       path: `${basePath}/writing/personal-essay`
     }
@@ -597,7 +646,11 @@ const Dashboard = () => {
         <Route path="/colleges/:collegeId" element={<CollegeDetails />} />
         <Route path="/colleges/:collegeId/:subsection" element={<CollegeSubsection />} />
         <Route path="/profile/*" element={<ProfileForm />} />
-        <Route path="/family/*" element={<FamilySection />} /> {/* ✅ FamilySection properly imported & used */}
+        {/* PASS THE COMPLETION HANDLER TO FAMILYSECTION */}
+        <Route 
+          path="/family/*" 
+          element={<FamilySection onComplete={handleFamilyComplete} />} 
+        />
         <Route path="/education/*" element={<EducationForm />} />
         <Route path="/testing/*" element={<TestingForm />} />
         
