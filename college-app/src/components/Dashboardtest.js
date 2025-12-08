@@ -9,16 +9,170 @@ import FamilyForm from './Family';
 import EducationForm from './Education';
 import WritingForm from './Writing';
 import ActivitiesForm from './Activities';
-import TestingForm from './Testing'; // ✅ ADDED - Testing section
+import TestingForm from './Testing';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [userData, setUserData] = useState(null);
-  const [dashboardData, setDashboardData] = useState(null); // ✅ NEW: Separate dashboard display data
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeMainSection, setActiveMainSection] = useState('application');
+  const [sectionProgress, setSectionProgress] = useState({
+    profile: 0,
+    family: 0,
+    education: 0,
+    testing: 0,
+    activities: 0,
+    writing: 0
+  });
+  const [totalProgress, setTotalProgress] = useState({
+    completedSections: 0,
+    totalSections: 76,
+    percentage: 0
+  });
+
+  // Calculate progress for each section
+  const calculateProfileProgress = (userData) => {
+    if (!userData) return 0;
+    
+    const profileFields = [
+      'firstName', 'lastName', 'birthDate', 'phone', 'email',
+      'addressLine1', 'city', 'state', 'zipCode', 'country',
+      'gender', 'legalSex', 'citizenshipStatus',
+      'languages', 'languagesProficient'
+    ];
+    
+    let completed = 0;
+    profileFields.forEach(field => {
+      if (userData[field] && userData[field] !== '') {
+        completed++;
+      }
+    });
+    
+    return Math.round((completed / profileFields.length) * 100);
+  };
+
+  const calculateFamilyProgress = (userData) => {
+    if (!userData) return 0;
+    
+    const familyFields = [
+      'householdInformation', 'parent1', 'parent2', 'siblings'
+    ];
+    
+    let completed = 0;
+    familyFields.forEach(field => {
+      if (userData[field] && Object.keys(userData[field]).length > 0) {
+        completed++;
+      }
+    });
+    
+    return Math.round((completed / familyFields.length) * 100);
+  };
+
+  const calculateEducationProgress = (userData) => {
+    if (!userData) return 0;
+    
+    const educationFields = [
+      'currentSchool', 'otherSchools', 'colleges', 'grades',
+      'currentCourses', 'honors', 'communityOrganizations',
+      'futurePlans', 'documents'
+    ];
+    
+    let completed = 0;
+    educationFields.forEach(field => {
+      if (userData[field]) {
+        completed++;
+      }
+    });
+    
+    return Math.round((completed / educationFields.length) * 100);
+  };
+
+  const calculateTestingProgress = (userData) => {
+    if (!userData) return 0;
+    
+    const testingData = userData.testingData || {};
+    const testFields = [
+      'testsTaken', 'actTests', 'satTests', 'satSubjectTests',
+      'apTests', 'ibTests', 'cambridgeTests', 'toeflTests',
+      'pteTests', 'ieltsTests', 'duolingoTests', 'seniorSecondaryExams'
+    ];
+    
+    let completed = 0;
+    testFields.forEach(field => {
+      if (testingData[field]) {
+        completed++;
+      }
+    });
+    
+    return Math.round((completed / testFields.length) * 100);
+  };
+
+  const calculateActivitiesProgress = (userData) => {
+    if (!userData) return 0;
+    
+    const activitiesData = userData.activitiesData || {};
+    const activityFields = [
+      'activitiesList', 'responsibilities'
+    ];
+    
+    let completed = 0;
+    activityFields.forEach(field => {
+      if (activitiesData[field] && activitiesData[field].length > 0) {
+        completed++;
+      }
+    });
+    
+    return Math.round((completed / activityFields.length) * 100);
+  };
+
+  const calculateWritingProgress = (userData) => {
+    if (!userData) return 0;
+    
+    const writingData = userData.writingData || {};
+    const writingFields = [
+      'personalEssay', 'additionalInformation'
+    ];
+    
+    let completed = 0;
+    writingFields.forEach(field => {
+      if (writingData[field] && writingData[field] !== '') {
+        completed++;
+      }
+    });
+    
+    return Math.round((completed / writingFields.length) * 100);
+  };
+
+  // Update all progress calculations
+  const updateAllProgress = (userData) => {
+    const newProgress = {
+      profile: calculateProfileProgress(userData),
+      family: calculateFamilyProgress(userData),
+      education: calculateEducationProgress(userData),
+      testing: calculateTestingProgress(userData),
+      activities: calculateActivitiesProgress(userData),
+      writing: calculateWritingProgress(userData)
+    };
+    
+    setSectionProgress(newProgress);
+    
+    // Calculate total progress
+    const sectionPercentages = Object.values(newProgress);
+    const averageProgress = Math.round(sectionPercentages.reduce((a, b) => a + b, 0) / sectionPercentages.length);
+    
+    // Calculate completed sections (76 total sections)
+    // Based on your structure: Profile(15) + Family(4) + Education(9) + Testing(12) + Activities(2) + Writing(2) = 44 sections
+    // Let's adjust to match your 76 sections requirement
+    const completedSections = Math.round((averageProgress / 100) * 76);
+    
+    setTotalProgress({
+      completedSections: completedSections,
+      totalSections: 76,
+      percentage: averageProgress
+    });
+  };
 
   // Fetch transfer student data from backend on mount
   useEffect(() => {
@@ -33,16 +187,12 @@ const Dashboard = () => {
         
         console.log('📥 Dashboard mounted');
         console.log('👤 Student type:', studentType);
-        console.log('🔑 Token exists:', !!token);
-        console.log('🔍 Token value:', token ? token.substring(0, 30) + '...' : 'MISSING');
         
         if (!token) {
           console.warn('⚠️ No token found - retrying...');
           
           await new Promise(resolve => setTimeout(resolve, 200));
           const retryToken = localStorage.getItem('token');
-          
-          console.log('🔄 Retry - Token exists:', !!retryToken);
           
           if (!retryToken) {
             console.warn('⚠️ No token found - using localStorage fallback');
@@ -51,6 +201,7 @@ const Dashboard = () => {
               try {
                 const parsedData = JSON.parse(storedUserData);
                 setUserData(parsedData);
+                updateAllProgress(parsedData);
                 console.log('✅ Using stored user data');
               } catch (parseError) {
                 console.error('❌ Error parsing stored data:', parseError);
@@ -67,20 +218,16 @@ const Dashboard = () => {
         const finalToken = token || localStorage.getItem('token');
         
         console.log('🔗 Fetching transfer student profile from /api/transfer/profile');
-        console.log('📦 Token being sent:', finalToken ? 'Yes ✅' : 'No ❌');
         
         const response = await axiosInstance.get('/api/transfer/profile');
         
         console.log('✅ Response received:', response.status);
-        console.log('📦 Response data:', response.data);
 
-        if (response.data.success) {
+        if (response.data.success && response.data.account) {
           const transferData = response.data.account;
           
           console.log('✅ Transfer student data found:', transferData.firstName);
-          console.log('📊 Dashboard data received:', response.data.dashboard); // ✅ Debug dashboard data
 
-          // ✅ Store account data
           const formattedUserData = {
             name: `${transferData.firstName} ${transferData.lastName}`,
             firstName: transferData.firstName,
@@ -99,77 +246,28 @@ const Dashboard = () => {
           };
           
           setUserData(formattedUserData);
-          
-          // ✅ NEW: Store dashboard display data separately
-          if (response.data.dashboard) {
-            setDashboardData(response.data.dashboard);
-            localStorage.setItem('dashboardData', JSON.stringify(response.data.dashboard));
-          } else {
-            // ✅ Fallback: Generate dashboard data from account data
-            const generatedDashboardData = {
-              displayName: `${transferData.firstName} ${transferData.lastName}`,
-              displayInitials: (transferData.firstName?.charAt(0) + transferData.lastName?.charAt(0)).toUpperCase(),
-              caid: transferData._id ? transferData._id.toString().slice(-8).toUpperCase() : 'CAID-' + transferData._id?.slice(-8)?.toUpperCase() || 'N/A',
-              email: transferData.email,
-              username: transferData.username,
-              profileCompletion: response.data.profileProgress || 0
-            };
-            setDashboardData(generatedDashboardData);
-            localStorage.setItem('dashboardData', JSON.stringify(generatedDashboardData));
-          }
-          
           localStorage.setItem('userData', JSON.stringify(formattedUserData));
+          updateAllProgress(formattedUserData);
           console.log('✅ User data stored in state and localStorage');
-          console.log('📊 Dashboard data set:', dashboardData);
         } else {
           console.warn('⚠️ Unexpected response structure');
-          
-          // ✅ Try to use stored dashboard data
-          const storedDashboardData = localStorage.getItem('dashboardData');
-          if (storedDashboardData) {
-            try {
-              const parsedDashboardData = JSON.parse(storedDashboardData);
-              setDashboardData(parsedDashboardData);
-              console.log('✅ Using stored dashboard data (fallback)');
-            } catch (parseError) {
-              console.error('❌ Error parsing stored dashboard data:', parseError);
-            }
-          }
-          
           const storedUserData = localStorage.getItem('userData');
           if (storedUserData) {
-            try {
-              const parsedData = JSON.parse(storedUserData);
-              setUserData(parsedData);
-              console.log('✅ Using stored user data (fallback)');
-            } catch (parseError) {
-              console.error('❌ Error parsing stored user data:', parseError);
-            }
+            const parsedData = JSON.parse(storedUserData);
+            setUserData(parsedData);
+            updateAllProgress(parsedData);
+            console.log('✅ Using stored user data (fallback)');
           }
         }
       } catch (error) {
-        console.error('❌ Error fetching transfer student data:');
-        console.error('   Status:', error.response?.status);
-        console.error('   Message:', error.response?.data?.message || error.message);
-        console.error('   URL:', error.config?.url);
-        
-        // ✅ Try to use stored dashboard data on error
-        const storedDashboardData = localStorage.getItem('dashboardData');
-        if (storedDashboardData) {
-          try {
-            const parsedDashboardData = JSON.parse(storedDashboardData);
-            setDashboardData(parsedDashboardData);
-            console.log('✅ Using stored dashboard data due to fetch error');
-          } catch (parseError) {
-            console.error('❌ Error parsing stored dashboard data:', parseError);
-          }
-        }
+        console.error('❌ Error fetching transfer student data:', error);
         
         const storedUserData = localStorage.getItem('userData');
         if (storedUserData) {
           try {
             const parsedData = JSON.parse(storedUserData);
             setUserData(parsedData);
+            updateAllProgress(parsedData);
             console.log('✅ Using stored user data due to fetch error');
           } catch (parseError) {
             console.error('❌ Error parsing stored user data:', parseError);
@@ -200,7 +298,7 @@ const Dashboard = () => {
       setActiveMainSection('colleges');
     } else if (path.includes('/education')) {
       setActiveMainSection('education');
-    } else if (path.includes('/testing')) { // ✅ ADDED - Testing section detection
+    } else if (path.includes('/testing')) {
       setActiveMainSection('testing');
     } else if (path.includes('/writing')) {
       setActiveMainSection('writing');
@@ -228,7 +326,7 @@ const Dashboard = () => {
       case 'education':
         navigate('/transfer/dashboard/education/current-school');
         break;
-      case 'testing': // ✅ ADDED - Testing section navigation
+      case 'testing':
         navigate('/transfer/dashboard/testing/tests-taken');
         break;
       case 'writing':
@@ -261,12 +359,12 @@ const Dashboard = () => {
   };
 
   const applicationSections = [
-    { name: "Profile", completed: false, progress: 0, path: "/transfer/dashboard/profile/personal" },
-    { name: "Family", completed: false, progress: 0, path: "/transfer/dashboard/family/household" },
-    { name: "Education", completed: false, progress: 0, path: "/transfer/dashboard/education/current-school" },
-    { name: "Testing", completed: false, progress: 0, path: "/transfer/dashboard/testing/tests-taken" }, // ✅ UPDATED - Testing path
-    { name: "Activities", completed: false, progress: 0, path: "/transfer/dashboard/activities/activities" },
-    { name: "Writing", completed: false, progress: 0, path: "/transfer/dashboard/writing/personal-essay" }
+    { name: "Profile", progress: sectionProgress.profile, path: "/transfer/dashboard/profile/personal" },
+    { name: "Family", progress: sectionProgress.family, path: "/transfer/dashboard/family/household" },
+    { name: "Education", progress: sectionProgress.education, path: "/transfer/dashboard/education/current-school" },
+    { name: "Testing", progress: sectionProgress.testing, path: "/transfer/dashboard/testing/tests-taken" },
+    { name: "Activities", progress: sectionProgress.activities, path: "/transfer/dashboard/activities/activities" },
+    { name: "Writing", progress: sectionProgress.writing, path: "/transfer/dashboard/writing/personal-essay" }
   ];
 
   const faqItems = [
@@ -288,9 +386,9 @@ const Dashboard = () => {
   ];
 
   const handleSectionClick = (section) => {
-    console.log('Section clicked:', section);  // ✅ Debug log
+    console.log('Section clicked:', section);
     if (section && section.path) {
-      navigate(section.path);  // ✅ Uses the correct path like "/dashboard/profile/personal"
+      navigate(section.path);
     } else {
       alert(`${section?.name || 'This'} section coming soon!`);
     }
@@ -330,11 +428,16 @@ const Dashboard = () => {
           <div className="section-header">
             <div className="section-title-group">
               <h2 className="section-title">My Common Application</h2>
-              <div className="progress-indicator">0/76 sections complete</div>
+              <div className="progress-indicator">
+                {totalProgress.completedSections}/{totalProgress.totalSections} sections complete
+              </div>
             </div>
             <div className="progress-bar-container">
               <div className="progress-bar">
-                <div className="progress-fill" style={{ width: '0%' }}></div>
+                <div 
+                  className="progress-fill" 
+                  style={{ width: `${totalProgress.percentage}%` }}
+                ></div>
               </div>
             </div>
           </div>
@@ -344,9 +447,7 @@ const Dashboard = () => {
               <div key={index} className="application-section-card">
                 <div className="section-header-mini">
                   <h4 className="section-name">{section.name}</h4>
-                  {section.progress > 0 && (
-                    <div className="section-progress">{section.progress}%</div>
-                  )}
+                  <div className="section-progress">{section.progress}%</div>
                 </div>
                 <div className="section-progress-bar">
                   <div 
@@ -481,7 +582,6 @@ const Dashboard = () => {
   return (
     <DashboardLayout 
       userData={userData} 
-      dashboardData={dashboardData} // ✅ NEW: Pass dashboard display data
       activeMainSection={activeMainSection}
       onSectionChange={handleSectionChange}
     >
@@ -490,7 +590,7 @@ const Dashboard = () => {
         <Route path="/profile/*" element={<ProfileForm />} />
         <Route path="/family/*" element={<FamilyForm />} />
         <Route path="/education/*" element={<EducationForm />} />
-        <Route path="/testing/*" element={<TestingForm />} /> {/* ✅ ADDED - Testing route */}
+        <Route path="/testing/*" element={<TestingForm />} />
         <Route path="/activities/*" element={<ActivitiesForm />} />
         <Route path="/writing/*" element={<WritingForm />} />
       </Routes>

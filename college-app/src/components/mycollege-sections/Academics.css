@@ -140,6 +140,7 @@
   border: 1px solid #d1d5db;
   border-radius: 8px;
   overflow: hidden;
+  position: relative; /* Create containing block for dropdowns */
 }
 
 .academics-section-title {
@@ -160,6 +161,8 @@
   padding: 24px;
   border-bottom: 1px solid #e5e7eb;
   background: white;
+  position: relative; /* Create stacking context */
+  z-index: auto;
 }
 
 .academics-question-card:last-child {
@@ -279,6 +282,8 @@
   border-radius: 6px;
   padding: 20px;
   margin: 16px 24px;
+  position: relative; /* Create stacking context */
+  z-index: 1; /* Ensure it stays above other content */
 }
 
 .academics-info-title {
@@ -581,4 +586,181 @@
 
 .academics-progress {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* =============================
+   Required Asterisk - Red
+   ============================= */
+
+.academics-question-title .required-asterisk {
+  color: #dc2626;
+  margin-left: 2px;
+  font-weight: 600;
+}
+
+/* Hide the old required badge */
+.academics-question-required {
+  display: none;
+}
+
+/* =============================
+   React-Select Custom Styles - FIXED
+   ============================= */
+
+.react-select-container {
+  max-width: 500px;
+  margin-bottom: 8px;
+  position: relative; /* Create positioning context */
+}
+
+.react-select__control {
+  min-height: 42px !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-select__control--is-focused {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+}
+
+.react-select__control:hover {
+  border-color: #9ca3af !important;
+}
+
+.react-select__control--is-focused:hover {
+  border-color: #2563eb !important;
+}
+
+.react-select__placeholder {
+  color: #6b7280 !important;
+  font-size: 14px !important;
+}
+
+.react-select__single-value {
+  color: #111827 !important;
+  font-size: 14px !important;
+}
+
+.react-select__input {
+  color: #111827 !important;
+  font-size: 14px !important;
+}
+
+/* FIXED: Reduced z-index and added constraints */
+.react-select__menu {
+  border-radius: 6px !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  margin-top: 4px !important;
+  z-index: 100 !important; /* Reduced from 9999 to prevent overlap */
+  max-height: 250px !important; /* Limit height to prevent covering too much content */
+  overflow-y: auto !important;
+  position: absolute !important;
+  width: 100% !important;
+}
+
+.react-select__menu-list {
+  padding: 4px !important;
+  max-height: 242px !important; /* Slightly less than menu height to account for borders */
+}
+
+.react-select__option {
+  font-size: 14px !important;
+  padding: 10px 12px !important;
+  cursor: pointer !important;
+}
+
+.react-select__option--is-selected {
+  background-color: #2563eb !important;
+  color: white !important;
+}
+
+.react-select__option--is-focused {
+  background-color: #f3f4f6 !important;
+}
+
+.react-select__option:active {
+  background-color: #dbeafe !important;
+}
+
+.react-select__dropdown-indicator {
+  color: #6b7280 !important;
+  padding: 8px !important;
+  transition: transform 0.2s ease !important;
+}
+
+.react-select__dropdown-indicator:hover {
+  color: #2563eb !important;
+}
+
+.react-select__indicator-separator {
+  display: none !important;
+}
+
+.react-select__clear-indicator {
+  color: #6b7280 !important;
+  padding: 8px !important;
+  cursor: pointer !important;
+}
+
+.react-select__clear-indicator:hover {
+  color: #dc2626 !important;
+}
+
+/* =============================
+   Disabled State
+   ============================= */
+
+.react-select__control--is-disabled {
+  background-color: #f9fafb !important;
+  cursor: not-allowed !important;
+}
+
+.react-select__control--is-disabled .react-select__dropdown-indicator {
+  color: #9ca3af !important;
+}
+
+/* =============================
+   Responsive Styles
+   ============================= */
+
+@media (max-width: 768px) {
+  .react-select-container {
+    max-width: 100% !important;
+  }
+  
+  .react-select__menu {
+    position: fixed !important; /* Use fixed positioning on mobile for better control */
+    z-index: 1000 !important; /* Higher z-index for mobile to prevent keyboard overlap */
+    max-height: 200px !important;
+    width: calc(100vw - 32px) !important; /* Account for padding */
+    left: 16px !important;
+    right: 16px !important;
+  }
+}
+
+/* =============================
+   Dropdown Container Enhancement
+   ============================= */
+
+/* Ensure dropdowns don't overflow the form section */
+.academics-form-section {
+  isolation: isolate; /* Create new stacking context */
+}
+
+/* =============================
+   Special handling for the last question before info cards
+   ============================= */
+
+/* Add more spacing before info cards to prevent dropdown overlap */
+.academics-question-card + .academics-info-card {
+  margin-top: 24px; /* Extra spacing */
+}
+
+/* Ensure clear answer button doesn't affect layout */
+.clear-answer-button {
+  display: inline-block;
+  margin-top: 12px;
 }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import Select from 'react-select';
 import './Academics.css';
 import { 
   SCHOOL_OPTIONS, 
@@ -20,6 +21,7 @@ const API_URL = process.env.REACT_APP_API_URL;
 const Academics = () => {
   const { collegeId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [formData, setFormData] = useState({
     schoolDepartment: '',
     major: '',
@@ -34,6 +36,99 @@ const Academics = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [progress, setProgress] = useState(0);
+
+  // Function to determine base path from current URL
+  const getBasePath = () => {
+    const path = location.pathname;
+    
+    // Extract the base path by finding the pattern
+    const match = path.match(/\/(firstyear|transfer|dashboard-test)\/dashboard/);
+    
+    if (match) {
+      return `/${match[1]}/dashboard`;
+    }
+    
+    // Default to firstyear if pattern not found
+    return '/firstyear/dashboard';
+  };
+
+  // Custom styles for react-select
+  const customSelectStyles = {
+    control: (base, state) => ({
+      ...base,
+      minHeight: '42px',
+      border: state.isFocused ? '1px solid #2563eb' : '1px solid #d1d5db',
+      borderRadius: '6px',
+      boxShadow: state.isFocused ? '0 0 0 3px rgba(37, 99, 235, 0.1)' : 'none',
+      '&:hover': {
+        borderColor: state.isFocused ? '#2563eb' : '#9ca3af'
+      },
+      backgroundColor: state.isDisabled ? '#f9fafb' : 'white',
+      cursor: 'pointer'
+    }),
+    placeholder: (base) => ({
+      ...base,
+      color: '#6b7280',
+      fontSize: '14px'
+    }),
+    singleValue: (base) => ({
+      ...base,
+      color: '#111827',
+      fontSize: '14px'
+    }),
+    input: (base) => ({
+      ...base,
+      color: '#111827',
+      fontSize: '14px'
+    }),
+    menu: (base) => ({
+      ...base,
+      borderRadius: '6px',
+      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+      marginTop: '4px',
+      zIndex: 100,
+      maxHeight: '250px',
+      overflow: 'hidden'
+    }),
+    menuList: (base) => ({
+      ...base,
+      padding: '4px',
+      maxHeight: '242px'
+    }),
+    option: (base, state) => ({
+      ...base,
+      fontSize: '14px',
+      padding: '10px 12px',
+      backgroundColor: state.isSelected ? '#2563eb' : state.isFocused ? '#f3f4f6' : 'white',
+      color: state.isSelected ? 'white' : '#111827',
+      cursor: 'pointer',
+      '&:active': {
+        backgroundColor: '#dbeafe'
+      }
+    }),
+    dropdownIndicator: (base, state) => ({
+      ...base,
+      color: state.isFocused ? '#2563eb' : '#6b7280',
+      padding: '8px',
+      transition: 'transform 0.2s ease',
+      transform: state.selectProps.menuIsOpen ? 'rotate(180deg)' : 'none',
+      '&:hover': {
+        color: '#2563eb'
+      }
+    }),
+    indicatorSeparator: () => ({
+      display: 'none'
+    }),
+    clearIndicator: (base) => ({
+      ...base,
+      color: '#6b7280',
+      padding: '8px',
+      cursor: 'pointer',
+      '&:hover': {
+        color: '#dc2626'
+      }
+    })
+  };
 
   // Fetch academics data from backend
   const fetchAcademicsData = async () => {
@@ -137,7 +232,8 @@ const Academics = () => {
     fetchAcademicsData();
   }, [collegeId]);
 
-  const handleInputChange = async (field, value) => {
+  const handleSelectChange = async (field, selectedOption) => {
+    const value = selectedOption ? selectedOption.value : '';
     const updatedData = { ...formData, [field]: value };
     
     // If school department changes, clear major and subplan selections
@@ -162,6 +258,18 @@ const Academics = () => {
     }
   };
 
+  const handleInputChange = async (field, value) => {
+    const updatedData = { ...formData, [field]: value };
+    setFormData(updatedData);
+
+    // Auto-save to backend
+    try {
+      await saveAcademicsData(updatedData);
+    } catch (error) {
+      localStorage.setItem(`college_${collegeId}_academics`, JSON.stringify(updatedData));
+    }
+  };
+
   const handleClearAnswer = async (field) => {
     await clearField(field);
   };
@@ -178,11 +286,36 @@ const Academics = () => {
   const handleSaveAndContinue = async () => {
     try {
       await saveAcademicsData(formData);
-      navigate(`/dashboard/colleges/${collegeId}/high-school`);
+      const basePath = getBasePath();
+      navigate(`${basePath}/colleges/${collegeId}/high-school`);
     } catch (error) {
       alert('Failed to save academics data. Please try again.');
     }
   };
+
+  const handleSaveAndClose = async () => {
+    try {
+      await saveAcademicsData(formData);
+      const basePath = getBasePath();
+      navigate(`${basePath}/colleges/${collegeId}`);
+    } catch (error) {
+      alert('Failed to save academics data. Please try again.');
+    }
+  };
+
+  // Prepare options for react-select
+  const schoolOptions = SCHOOL_OPTIONS.map(school => ({ value: school, label: school }));
+  const preProfessionalOptions = PRE_PROFESSIONAL_OPTIONS.map(option => ({ value: option, label: option }));
+  
+  // Get current major options based on selected school
+  const majorOptions = formData.schoolDepartment 
+    ? getMajorsBySchool(formData.schoolDepartment).map(major => ({ value: major, label: major }))
+    : [];
+  
+  // Get subplan options if applicable
+  const subplanOptions = getSubplansByMajor(formData.major).map(subplan => ({ value: subplan, label: subplan }));
+  
+  // Yes/No options for conditional questions - REMOVED dropdown, using radio buttons instead
 
   // Conditional content checks
   const showEngineeringQuestions = hasMathQuestions(formData.schoolDepartment, formData.major);
@@ -190,7 +323,6 @@ const Academics = () => {
   const showVisualArtQuestion = hasVisualArtQuestion(formData.schoolDepartment, formData.major);
   const showPortfolioInfo = hasPortfolioInfo(formData.schoolDepartment, formData.major);
   const showSubplanSelection = hasSubplanSelection(formData.schoolDepartment, formData.major);
-  const subplanOptions = getSubplansByMajor(formData.major);
 
   if (loading) {
     return (
@@ -208,7 +340,13 @@ const Academics = () => {
       {/* Header Section */}
       <div className="academics-header">
         <div className="academics-header-nav">
-          <button className="academics-back-button" onClick={() => navigate(`/dashboard/colleges/${collegeId}`)}>
+          <button 
+            className="academics-back-button" 
+            onClick={() => {
+              const basePath = getBasePath();
+              navigate(`${basePath}/colleges/${collegeId}`);
+            }}
+          >
             ← Back to College Details
           </button>
         </div>
@@ -240,22 +378,22 @@ const Academics = () => {
           {/* School/Department Question */}
           <div className="academics-question-card">
             <div className="academics-question-header">
-              <h3 className="academics-question-title">To what school or department are you applying?*</h3>
-              <span className="academics-question-required">Required</span>
+              <h3 className="academics-question-title">
+                To what school or department are you applying?<span className="required-asterisk">*</span>
+              </h3>
             </div>
-            <select 
-              className="academics-form-select"
-              value={formData.schoolDepartment}
-              onChange={(e) => handleInputChange('schoolDepartment', e.target.value)}
-              disabled={saving}
-            >
-              <option value="">Choose an option</option>
-              {SCHOOL_OPTIONS.map((school, index) => (
-                <option key={index} value={school}>
-                  {school}
-                </option>
-              ))}
-            </select>
+            <Select
+              styles={customSelectStyles}
+              options={schoolOptions}
+              value={schoolOptions.find(option => option.value === formData.schoolDepartment) || null}
+              onChange={(selectedOption) => handleSelectChange('schoolDepartment', selectedOption)}
+              placeholder="Choose an option"
+              isSearchable={true}
+              isDisabled={saving}
+              className="react-select-container"
+              classNamePrefix="react-select"
+              instanceId="school-department-select"
+            />
             {formData.schoolDepartment && (
               <button 
                 className="clear-answer-button"
@@ -270,25 +408,25 @@ const Academics = () => {
           {/* Major Selection Question */}
           <div className="academics-question-card">
             <div className="academics-question-header">
-              <h3 className="academics-question-title">Major*</h3>
-              <span className="academics-question-required">Required</span>
+              <h3 className="academics-question-title">
+                Major<span className="required-asterisk">*</span>
+              </h3>
             </div>
             <p className="academics-question-description">
               Please select one academic major. If you are undecided on an academic major, select "Deciding" in the College of Liberal Arts & Sciences and then one of the six subplan deciding options which best fits your general area of academic interest. You will be able to change your major later as you determine your specific interest.
             </p>
-            <select 
-              className="academics-form-select"
-              value={formData.major}
-              onChange={(e) => handleInputChange('major', e.target.value)}
-              disabled={saving || !formData.schoolDepartment}
-            >
-              <option value="">Choose an option</option>
-              {formData.schoolDepartment && getMajorsBySchool(formData.schoolDepartment).map((major, index) => (
-                <option key={index} value={major}>
-                  {major}
-                </option>
-              ))}
-            </select>
+            <Select
+              styles={customSelectStyles}
+              options={majorOptions}
+              value={majorOptions.find(option => option.value === formData.major) || null}
+              onChange={(selectedOption) => handleSelectChange('major', selectedOption)}
+              placeholder="Choose an option"
+              isSearchable={true}
+              isDisabled={saving || !formData.schoolDepartment}
+              className="react-select-container"
+              classNamePrefix="react-select"
+              instanceId="major-select"
+            />
             {!formData.schoolDepartment && (
               <p className="academics-field-note">Please select a school/department first</p>
             )}
@@ -304,25 +442,25 @@ const Academics = () => {
           </div>
 
           {/* Subplan Selection (Conditional) */}
-          {showSubplanSelection && (
+          {showSubplanSelection && subplanOptions.length > 0 && (
             <div className="academics-question-card">
               <div className="academics-question-header">
-                <h3 className="academics-question-title">Subplan*</h3>
-                <span className="academics-question-required">Required</span>
+                <h3 className="academics-question-title">
+                  Subplan<span className="required-asterisk">*</span>
+                </h3>
               </div>
-              <select 
-                className="academics-form-select"
-                value={formData.subplan}
-                onChange={(e) => handleInputChange('subplan', e.target.value)}
-                disabled={saving}
-              >
-                <option value="">Choose an option</option>
-                {subplanOptions.map((subplan, index) => (
-                  <option key={index} value={subplan}>
-                    {subplan}
-                  </option>
-                ))}
-              </select>
+              <Select
+                styles={customSelectStyles}
+                options={subplanOptions}
+                value={subplanOptions.find(option => option.value === formData.subplan) || null}
+                onChange={(selectedOption) => handleSelectChange('subplan', selectedOption)}
+                placeholder="Choose an option"
+                isSearchable={true}
+                isDisabled={saving}
+                className="react-select-container"
+                classNamePrefix="react-select"
+                instanceId="subplan-select"
+              />
               {formData.subplan && (
                 <button 
                   className="clear-answer-button"
@@ -338,24 +476,25 @@ const Academics = () => {
           {/* Pre-professional Question */}
           <div className="academics-question-card">
             <div className="academics-question-header">
-              <h3 className="academics-question-title">Pre-professional</h3>
+              <h3 className="academics-question-title">
+                Pre-professional
+              </h3>
             </div>
             <p className="academics-question-description">
               KU has pre-professional areas of interest that supplement majors but do not replace them. If you intend to pursue preparation in one of the following areas, please select one.
             </p>
-            <select 
-              className="academics-form-select"
-              value={formData.preProfessional}
-              onChange={(e) => handleInputChange('preProfessional', e.target.value)}
-              disabled={saving}
-            >
-              <option value="">Choose an option</option>
-              {PRE_PROFESSIONAL_OPTIONS.map((option, index) => (
-                <option key={index} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
+            <Select
+              styles={customSelectStyles}
+              options={preProfessionalOptions}
+              value={preProfessionalOptions.find(option => option.value === formData.preProfessional) || null}
+              onChange={(selectedOption) => handleSelectChange('preProfessional', selectedOption)}
+              placeholder="Choose an option"
+              isSearchable={true}
+              isDisabled={saving}
+              className="react-select-container"
+              classNamePrefix="react-select"
+              instanceId="pre-professional-select"
+            />
             {formData.preProfessional && (
               <button 
                 className="clear-answer-button"
@@ -367,24 +506,41 @@ const Academics = () => {
             )}
           </div>
 
-          {/* Visual Art Question (Architecture & Design) */}
+          {/* Visual Art Question (Architecture & Design) - CHANGED TO RADIO BUTTONS */}
           {showVisualArtQuestion && (
             <div className="academics-question-card">
               <div className="academics-question-header">
-                <h3 className="academics-question-title">Have you earned a B or higher in a high school visual art or creative class, such as studio art or graphic design?*</h3>
-                <span className="academics-question-required">Required</span>
+                <h3 className="academics-question-title">
+                  Have you earned a B or higher in a high school visual art or creative class, such as studio art or graphic design?<span className="required-asterisk">*</span>
+                </h3>
               </div>
-              <select 
-                className="academics-form-select"
-                value={formData.visualArtGrade}
-                onChange={(e) => handleInputChange('visualArtGrade', e.target.value)}
-                disabled={saving}
-              >
-                <option value="">Choose an option</option>
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
-              </select>
-              {formData.visualArtGrade && (
+              <div className="academics-radio-group">
+                <label className="academics-radio-option">
+                  <input
+                    type="radio"
+                    name="visualArtGrade"
+                    value="yes"
+                    checked={formData.visualArtGrade === 'yes'}
+                    onChange={(e) => handleInputChange('visualArtGrade', e.target.value)}
+                    className="academics-radio-input"
+                    disabled={saving}
+                  />
+                  <span className="academics-radio-label">Yes</span>
+                </label>
+                <label className="academics-radio-option">
+                  <input
+                    type="radio"
+                    name="visualArtGrade"
+                    value="no"
+                    checked={formData.visualArtGrade === 'no'}
+                    onChange={(e) => handleInputChange('visualArtGrade', e.target.value)}
+                    className="academics-radio-input"
+                    disabled={saving}
+                  />
+                  <span className="academics-radio-label">No</span>
+                </label>
+              </div>
+              {(formData.visualArtGrade === 'yes' || formData.visualArtGrade === 'no') && (
                 <button 
                   className="clear-answer-button"
                   onClick={() => handleClearAnswer('visualArtGrade')}
@@ -396,25 +552,42 @@ const Academics = () => {
             </div>
           )}
 
-          {/* Engineering Math Questions */}
+          {/* Engineering Math Questions - CHANGED TO RADIO BUTTONS */}
           {showEngineeringQuestions && (
             <>
               <div className="academics-question-card">
                 <div className="academics-question-header">
-                  <h3 className="academics-question-title">Have you earned a B or higher in college algebra, trigonometry or pre-calculus?*</h3>
-                  <span className="academics-question-required">Required</span>
+                  <h3 className="academics-question-title">
+                    Have you earned a B or higher in college algebra, trigonometry or pre-calculus?<span className="required-asterisk">*</span>
+                  </h3>
                 </div>
-                <select 
-                  className="academics-form-select"
-                  value={formData.algebraGrade}
-                  onChange={(e) => handleInputChange('algebraGrade', e.target.value)}
-                  disabled={saving}
-                >
-                  <option value="">Choose an option</option>
-                  <option value="yes">Yes</option>
-                  <option value="no">No</option>
-                </select>
-                {formData.algebraGrade && (
+                <div className="academics-radio-group">
+                  <label className="academics-radio-option">
+                    <input
+                      type="radio"
+                      name="algebraGrade"
+                      value="yes"
+                      checked={formData.algebraGrade === 'yes'}
+                      onChange={(e) => handleInputChange('algebraGrade', e.target.value)}
+                      className="academics-radio-input"
+                      disabled={saving}
+                    />
+                    <span className="academics-radio-label">Yes</span>
+                  </label>
+                  <label className="academics-radio-option">
+                    <input
+                      type="radio"
+                      name="algebraGrade"
+                      value="no"
+                      checked={formData.algebraGrade === 'no'}
+                      onChange={(e) => handleInputChange('algebraGrade', e.target.value)}
+                      className="academics-radio-input"
+                      disabled={saving}
+                    />
+                    <span className="academics-radio-label">No</span>
+                  </label>
+                </div>
+                {(formData.algebraGrade === 'yes' || formData.algebraGrade === 'no') && (
                   <button 
                     className="clear-answer-button"
                     onClick={() => handleClearAnswer('algebraGrade')}
@@ -427,20 +600,37 @@ const Academics = () => {
 
               <div className="academics-question-card">
                 <div className="academics-question-header">
-                  <h3 className="academics-question-title">Have you earned a C or higher in calculus?*</h3>
-                  <span className="academics-question-required">Required</span>
+                  <h3 className="academics-question-title">
+                    Have you earned a C or higher in calculus?<span className="required-asterisk">*</span>
+                  </h3>
                 </div>
-                <select 
-                  className="academics-form-select"
-                  value={formData.calculusGrade}
-                  onChange={(e) => handleInputChange('calculusGrade', e.target.value)}
-                  disabled={saving}
-                >
-                  <option value="">Choose an option</option>
-                  <option value="yes">Yes</option>
-                  <option value="no">No</option>
-                </select>
-                {formData.calculusGrade && (
+                <div className="academics-radio-group">
+                  <label className="academics-radio-option">
+                    <input
+                      type="radio"
+                      name="calculusGrade"
+                      value="yes"
+                      checked={formData.calculusGrade === 'yes'}
+                      onChange={(e) => handleInputChange('calculusGrade', e.target.value)}
+                      className="academics-radio-input"
+                      disabled={saving}
+                    />
+                    <span className="academics-radio-label">Yes</span>
+                  </label>
+                  <label className="academics-radio-option">
+                    <input
+                      type="radio"
+                      name="calculusGrade"
+                      value="no"
+                      checked={formData.calculusGrade === 'no'}
+                      onChange={(e) => handleInputChange('calculusGrade', e.target.value)}
+                      className="academics-radio-input"
+                      disabled={saving}
+                    />
+                    <span className="academics-radio-label">No</span>
+                  </label>
+                </div>
+                {(formData.calculusGrade === 'yes' || formData.calculusGrade === 'no') && (
                   <button 
                     className="clear-answer-button"
                     onClick={() => handleClearAnswer('calculusGrade')}
@@ -474,7 +664,9 @@ const Academics = () => {
           {/* University Honors Program */}
           <div className="academics-question-card">
             <div className="academics-question-header">
-              <h3 className="academics-question-title">University Honors Program</h3>
+              <h3 className="academics-question-title">
+                University Honors Program
+              </h3>
             </div>
             <p className="academics-question-description">
               The University Honors Program encourages all highly academically motivated students to apply. The review committee is looking for students with a strong academic record as well as evidence of curiosity, breadth and depth of involvement, and leadership potential as evidenced by application materials. For more information about the program and its admission process, please visit{' '}
@@ -527,7 +719,9 @@ const Academics = () => {
           {showSELFFellowship && (
             <div className="academics-question-card">
               <div className="academics-question-header">
-                <h3 className="academics-question-title">SELF Fellowship Program</h3>
+                <h3 className="academics-question-title">
+                  SELF Fellowship Program
+                </h3>
               </div>
               <p className="academics-question-description">
                 The SELF Program is a 4-year Fellowship with co-curricular programming aimed at developing passionate, goal-oriented engineering and computer science graduates to become engineering leaders and entrepreneurs. As part of the SELF Program, admitted Fellows are eligible for tuition assistance and opportunity grants, which are stackable upon all other School and University awards.
@@ -583,7 +777,7 @@ const Academics = () => {
           <div className="academics-actions">
             <button 
               className="academics-secondary-button" 
-              onClick={() => navigate(`/dashboard/colleges/${collegeId}`)}
+              onClick={handleSaveAndClose}
               disabled={saving}
             >
               Save and Close

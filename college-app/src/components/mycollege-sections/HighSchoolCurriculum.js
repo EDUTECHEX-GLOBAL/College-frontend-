@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import Select from 'react-select';
 import './HighSchoolCurriculum.css';
 
 const API_URL = process.env.REACT_APP_API_URL;
@@ -8,6 +9,7 @@ const API_URL = process.env.REACT_APP_API_URL;
 const HighSchoolCurriculum = () => {
   const { collegeId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [formData, setFormData] = useState({
     worldLanguageYears: '',
     honorsCourses: '',
@@ -20,13 +22,112 @@ const HighSchoolCurriculum = () => {
   const [saving, setSaving] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  // Language year options
+  // Function to determine base path from current URL
+  const getBasePath = () => {
+    const path = location.pathname;
+    
+    // Extract the base path by finding the pattern
+    const match = path.match(/\/(firstyear|transfer|dashboard-test)\/dashboard/);
+    
+    if (match) {
+      return `/${match[1]}/dashboard`;
+    }
+    
+    // Default to firstyear if pattern not found
+    return '/firstyear/dashboard';
+  };
+
+  // Language year options for react-select
   const languageYearOptions = [
     { label: '1 year or less', value: '1-year-or-less' },
     { label: '2 years', value: '2-years' },
     { label: '3 years', value: '3-years' },
     { label: '4+ years', value: '4-plus-years' }
   ];
+
+  // Yes/No options for react-select
+  const yesNoOptions = [
+    { label: 'Yes', value: 'yes' },
+    { label: 'No', value: 'no' }
+  ];
+
+  // Custom styles for react-select
+  const customSelectStyles = {
+    control: (base, state) => ({
+      ...base,
+      minHeight: '42px',
+      border: state.isFocused ? '1px solid #2563eb' : '1px solid #d1d5db',
+      borderRadius: '6px',
+      boxShadow: state.isFocused ? '0 0 0 3px rgba(37, 99, 235, 0.1)' : 'none',
+      '&:hover': {
+        borderColor: state.isFocused ? '#2563eb' : '#9ca3af'
+      },
+      backgroundColor: state.isDisabled ? '#f9fafb' : 'white',
+      cursor: 'pointer'
+    }),
+    placeholder: (base) => ({
+      ...base,
+      color: '#6b7280',
+      fontSize: '14px'
+    }),
+    singleValue: (base) => ({
+      ...base,
+      color: '#111827',
+      fontSize: '14px'
+    }),
+    input: (base) => ({
+      ...base,
+      color: '#111827',
+      fontSize: '14px'
+    }),
+    menu: (base) => ({
+      ...base,
+      borderRadius: '6px',
+      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+      marginTop: '4px',
+      zIndex: 100,
+      maxHeight: '250px',
+      overflow: 'hidden'
+    }),
+    menuList: (base) => ({
+      ...base,
+      padding: '4px',
+      maxHeight: '242px'
+    }),
+    option: (base, state) => ({
+      ...base,
+      fontSize: '14px',
+      padding: '10px 12px',
+      backgroundColor: state.isSelected ? '#2563eb' : state.isFocused ? '#f3f4f6' : 'white',
+      color: state.isSelected ? 'white' : '#111827',
+      cursor: 'pointer',
+      '&:active': {
+        backgroundColor: '#dbeafe'
+      }
+    }),
+    dropdownIndicator: (base, state) => ({
+      ...base,
+      color: state.isFocused ? '#2563eb' : '#6b7280',
+      padding: '8px',
+      transition: 'transform 0.2s ease',
+      transform: state.selectProps.menuIsOpen ? 'rotate(180deg)' : 'none',
+      '&:hover': {
+        color: '#2563eb'
+      }
+    }),
+    indicatorSeparator: () => ({
+      display: 'none'
+    }),
+    clearIndicator: (base) => ({
+      ...base,
+      color: '#6b7280',
+      padding: '8px',
+      cursor: 'pointer',
+      '&:hover': {
+        color: '#dc2626'
+      }
+    })
+  };
 
   // Fetch high school curriculum data from backend
   const fetchHighSchoolCurriculum = async () => {
@@ -127,6 +228,21 @@ const HighSchoolCurriculum = () => {
     fetchHighSchoolCurriculum();
   }, [collegeId]);
 
+  const handleSelectChange = async (field, selectedOption) => {
+    const value = selectedOption ? selectedOption.value : '';
+    const updatedData = { ...formData, [field]: value };
+    
+    setFormData(updatedData);
+
+    // Auto-save to backend
+    try {
+      await saveHighSchoolCurriculum(updatedData);
+    } catch (error) {
+      // If backend save fails, fallback to localStorage
+      localStorage.setItem(`college_${collegeId}_high_school_curriculum`, JSON.stringify(updatedData));
+    }
+  };
+
   const handleInputChange = async (field, value) => {
     const updatedData = { ...formData, [field]: value };
     setFormData(updatedData);
@@ -135,7 +251,6 @@ const HighSchoolCurriculum = () => {
     try {
       await saveHighSchoolCurriculum(updatedData);
     } catch (error) {
-      // If backend save fails, fallback to localStorage
       localStorage.setItem(`college_${collegeId}_high_school_curriculum`, JSON.stringify(updatedData));
     }
   };
@@ -156,7 +271,19 @@ const HighSchoolCurriculum = () => {
   const handleSaveAndContinue = async () => {
     try {
       await saveHighSchoolCurriculum(formData);
-      navigate(`/dashboard/colleges/${collegeId}/activities`);
+      const basePath = getBasePath();
+      // FIXED: Navigate to Activities page instead of landing page
+      navigate(`${basePath}/colleges/${collegeId}/activities`);
+    } catch (error) {
+      alert('Failed to save high school curriculum data. Please try again.');
+    }
+  };
+
+  const handleSaveAndClose = async () => {
+    try {
+      await saveHighSchoolCurriculum(formData);
+      const basePath = getBasePath();
+      navigate(`${basePath}/colleges/${collegeId}`);
     } catch (error) {
       alert('Failed to save high school curriculum data. Please try again.');
     }
@@ -178,7 +305,13 @@ const HighSchoolCurriculum = () => {
       {/* Header Section */}
       <div className="high-school-curriculum-header">
         <div className="high-school-curriculum-header-nav">
-          <button className="high-school-curriculum-back-button" onClick={() => navigate(`/dashboard/colleges/${collegeId}`)}>
+          <button 
+            className="high-school-curriculum-back-button" 
+            onClick={() => {
+              const basePath = getBasePath();
+              navigate(`${basePath}/colleges/${collegeId}`);
+            }}
+          >
             ← Back to College Details
           </button>
         </div>
@@ -207,27 +340,25 @@ const HighSchoolCurriculum = () => {
         <section className="high-school-curriculum-form-section">
           <h2 className="high-school-curriculum-section-title">High School Curriculum</h2>
           
-          {/* World Language Question */}
+          {/* World Language Question - UPDATED to react-select */}
           <div className="high-school-curriculum-question-card">
             <div className="high-school-curriculum-question-header">
               <h3 className="high-school-curriculum-question-title">
-                1. How many years of a world language will you have taken at the time of graduation?*
+                1. How many years of a world language will you have taken at the time of graduation?<span className="required-asterisk">*</span>
               </h3>
-              <span className="high-school-curriculum-question-required">Required</span>
             </div>
-            <select 
-              className="high-school-curriculum-form-select"
-              value={formData.worldLanguageYears}
-              onChange={(e) => handleInputChange('worldLanguageYears', e.target.value)}
-              disabled={saving}
-            >
-              <option value="">Choose an option</option>
-              {languageYearOptions.map((option, index) => (
-                <option key={index} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+            <Select
+              styles={customSelectStyles}
+              options={languageYearOptions}
+              value={languageYearOptions.find(option => option.value === formData.worldLanguageYears) || null}
+              onChange={(selectedOption) => handleSelectChange('worldLanguageYears', selectedOption)}
+              placeholder="Choose an option"
+              isSearchable={false}
+              isDisabled={saving}
+              className="react-select-container"
+              classNamePrefix="react-select"
+              instanceId="world-language-select"
+            />
             {formData.worldLanguageYears && (
               <button 
                 className="clear-answer-button"
@@ -239,41 +370,26 @@ const HighSchoolCurriculum = () => {
             )}
           </div>
 
-          {/* Honors Courses Question */}
+          {/* Honors Courses Question - UPDATED to react-select */}
           <div className="high-school-curriculum-question-card">
             <div className="high-school-curriculum-question-header">
               <h3 className="high-school-curriculum-question-title">
-                At the time of graduation, will you have taken any Honors courses while in high school?*
+                At the time of graduation, will you have taken any Honors courses while in high school?<span className="required-asterisk">*</span>
               </h3>
-              <span className="high-school-curriculum-question-required">Required</span>
             </div>
-            <div className="high-school-curriculum-radio-group">
-              <label className="high-school-curriculum-radio-option">
-                <input
-                  type="radio"
-                  name="honorsCourses"
-                  value="yes"
-                  checked={formData.honorsCourses === 'yes'}
-                  onChange={(e) => handleInputChange('honorsCourses', e.target.value)}
-                  className="high-school-curriculum-radio-input"
-                  disabled={saving}
-                />
-                <span className="high-school-curriculum-radio-label">Yes</span>
-              </label>
-              <label className="high-school-curriculum-radio-option">
-                <input
-                  type="radio"
-                  name="honorsCourses"
-                  value="no"
-                  checked={formData.honorsCourses === 'no'}
-                  onChange={(e) => handleInputChange('honorsCourses', e.target.value)}
-                  className="high-school-curriculum-radio-input"
-                  disabled={saving}
-                />
-                <span className="high-school-curriculum-radio-label">No</span>
-              </label>
-            </div>
-            {(formData.honorsCourses === 'yes' || formData.honorsCourses === 'no') && (
+            <Select
+              styles={customSelectStyles}
+              options={yesNoOptions}
+              value={yesNoOptions.find(option => option.value === formData.honorsCourses) || null}
+              onChange={(selectedOption) => handleSelectChange('honorsCourses', selectedOption)}
+              placeholder="Choose an option"
+              isSearchable={false}
+              isDisabled={saving}
+              className="react-select-container"
+              classNamePrefix="react-select"
+              instanceId="honors-courses-select"
+            />
+            {formData.honorsCourses && (
               <button 
                 className="clear-answer-button"
                 onClick={() => handleClearAnswer('honorsCourses')}
@@ -284,41 +400,26 @@ const HighSchoolCurriculum = () => {
             )}
           </div>
 
-          {/* College Credit Courses Question */}
+          {/* College Credit Courses Question - UPDATED to react-select */}
           <div className="high-school-curriculum-question-card">
             <div className="high-school-curriculum-question-header">
               <h3 className="high-school-curriculum-question-title">
-                At the time of graduation, will you have taken any courses, other than AP/IB, for college credit while in high school?*
+                At the time of graduation, will you have taken any courses, other than AP/IB, for college credit while in high school?<span className="required-asterisk">*</span>
               </h3>
-              <span className="high-school-curriculum-question-required">Required</span>
             </div>
-            <div className="high-school-curriculum-radio-group">
-              <label className="high-school-curriculum-radio-option">
-                <input
-                  type="radio"
-                  name="collegeCreditCourses"
-                  value="yes"
-                  checked={formData.collegeCreditCourses === 'yes'}
-                  onChange={(e) => handleInputChange('collegeCreditCourses', e.target.value)}
-                  className="high-school-curriculum-radio-input"
-                  disabled={saving}
-                />
-                <span className="high-school-curriculum-radio-label">Yes</span>
-              </label>
-              <label className="high-school-curriculum-radio-option">
-                <input
-                  type="radio"
-                  name="collegeCreditCourses"
-                  value="no"
-                  checked={formData.collegeCreditCourses === 'no'}
-                  onChange={(e) => handleInputChange('collegeCreditCourses', e.target.value)}
-                  className="high-school-curriculum-radio-input"
-                  disabled={saving}
-                />
-                <span className="high-school-curriculum-radio-label">No</span>
-              </label>
-            </div>
-            {(formData.collegeCreditCourses === 'yes' || formData.collegeCreditCourses === 'no') && (
+            <Select
+              styles={customSelectStyles}
+              options={yesNoOptions}
+              value={yesNoOptions.find(option => option.value === formData.collegeCreditCourses) || null}
+              onChange={(selectedOption) => handleSelectChange('collegeCreditCourses', selectedOption)}
+              placeholder="Choose an option"
+              isSearchable={false}
+              isDisabled={saving}
+              className="react-select-container"
+              classNamePrefix="react-select"
+              instanceId="college-credit-select"
+            />
+            {formData.collegeCreditCourses && (
               <button 
                 className="clear-answer-button"
                 onClick={() => handleClearAnswer('collegeCreditCourses')}
@@ -329,41 +430,26 @@ const HighSchoolCurriculum = () => {
             )}
           </div>
 
-          {/* AP Courses Question */}
+          {/* AP Courses Question - UPDATED to react-select */}
           <div className="high-school-curriculum-question-card">
             <div className="high-school-curriculum-question-header">
               <h3 className="high-school-curriculum-question-title">
-                At the time of graduation, will you have taken any AP courses while in high school?*
+                At the time of graduation, will you have taken any AP courses while in high school?<span className="required-asterisk">*</span>
               </h3>
-              <span className="high-school-curriculum-question-required">Required</span>
             </div>
-            <div className="high-school-curriculum-radio-group">
-              <label className="high-school-curriculum-radio-option">
-                <input
-                  type="radio"
-                  name="apCourses"
-                  value="yes"
-                  checked={formData.apCourses === 'yes'}
-                  onChange={(e) => handleInputChange('apCourses', e.target.value)}
-                  className="high-school-curriculum-radio-input"
-                  disabled={saving}
-                />
-                <span className="high-school-curriculum-radio-label">Yes</span>
-              </label>
-              <label className="high-school-curriculum-radio-option">
-                <input
-                  type="radio"
-                  name="apCourses"
-                  value="no"
-                  checked={formData.apCourses === 'no'}
-                  onChange={(e) => handleInputChange('apCourses', e.target.value)}
-                  className="high-school-curriculum-radio-input"
-                  disabled={saving}
-                />
-                <span className="high-school-curriculum-radio-label">No</span>
-              </label>
-            </div>
-            {(formData.apCourses === 'yes' || formData.apCourses === 'no') && (
+            <Select
+              styles={customSelectStyles}
+              options={yesNoOptions}
+              value={yesNoOptions.find(option => option.value === formData.apCourses) || null}
+              onChange={(selectedOption) => handleSelectChange('apCourses', selectedOption)}
+              placeholder="Choose an option"
+              isSearchable={false}
+              isDisabled={saving}
+              className="react-select-container"
+              classNamePrefix="react-select"
+              instanceId="ap-courses-select"
+            />
+            {formData.apCourses && (
               <button 
                 className="clear-answer-button"
                 onClick={() => handleClearAnswer('apCourses')}
@@ -374,41 +460,26 @@ const HighSchoolCurriculum = () => {
             )}
           </div>
 
-          {/* IB Courses Question */}
+          {/* IB Courses Question - UPDATED to react-select */}
           <div className="high-school-curriculum-question-card">
             <div className="high-school-curriculum-question-header">
               <h3 className="high-school-curriculum-question-title">
-                At the time of graduation, will you have taken any IB courses while in high school?*
+                At the time of graduation, will you have taken any IB courses while in high school?<span className="required-asterisk">*</span>
               </h3>
-              <span className="high-school-curriculum-question-required">Required</span>
             </div>
-            <div className="high-school-curriculum-radio-group">
-              <label className="high-school-curriculum-radio-option">
-                <input
-                  type="radio"
-                  name="ibCourses"
-                  value="yes"
-                  checked={formData.ibCourses === 'yes'}
-                  onChange={(e) => handleInputChange('ibCourses', e.target.value)}
-                  className="high-school-curriculum-radio-input"
-                  disabled={saving}
-                />
-                <span className="high-school-curriculum-radio-label">Yes</span>
-              </label>
-              <label className="high-school-curriculum-radio-option">
-                <input
-                  type="radio"
-                  name="ibCourses"
-                  value="no"
-                  checked={formData.ibCourses === 'no'}
-                  onChange={(e) => handleInputChange('ibCourses', e.target.value)}
-                  className="high-school-curriculum-radio-input"
-                  disabled={saving}
-                />
-                <span className="high-school-curriculum-radio-label">No</span>
-              </label>
-            </div>
-            {(formData.ibCourses === 'yes' || formData.ibCourses === 'no') && (
+            <Select
+              styles={customSelectStyles}
+              options={yesNoOptions}
+              value={yesNoOptions.find(option => option.value === formData.ibCourses) || null}
+              onChange={(selectedOption) => handleSelectChange('ibCourses', selectedOption)}
+              placeholder="Choose an option"
+              isSearchable={false}
+              isDisabled={saving}
+              className="react-select-container"
+              classNamePrefix="react-select"
+              instanceId="ib-courses-select"
+            />
+            {formData.ibCourses && (
               <button 
                 className="clear-answer-button"
                 onClick={() => handleClearAnswer('ibCourses')}
@@ -419,41 +490,26 @@ const HighSchoolCurriculum = () => {
             )}
           </div>
 
-          {/* IB Diploma Question */}
+          {/* IB Diploma Question - UPDATED to react-select */}
           <div className="high-school-curriculum-question-card">
             <div className="high-school-curriculum-question-header">
               <h3 className="high-school-curriculum-question-title">
-                At the time of graduation, will you have earned an IB diploma while in high school?*
+                At the time of graduation, will you have earned an IB diploma while in high school?<span className="required-asterisk">*</span>
               </h3>
-              <span className="high-school-curriculum-question-required">Required</span>
             </div>
-            <div className="high-school-curriculum-radio-group">
-              <label className="high-school-curriculum-radio-option">
-                <input
-                  type="radio"
-                  name="ibDiploma"
-                  value="yes"
-                  checked={formData.ibDiploma === 'yes'}
-                  onChange={(e) => handleInputChange('ibDiploma', e.target.value)}
-                  className="high-school-curriculum-radio-input"
-                  disabled={saving}
-                />
-                <span className="high-school-curriculum-radio-label">Yes</span>
-              </label>
-              <label className="high-school-curriculum-radio-option">
-                <input
-                  type="radio"
-                  name="ibDiploma"
-                  value="no"
-                  checked={formData.ibDiploma === 'no'}
-                  onChange={(e) => handleInputChange('ibDiploma', e.target.value)}
-                  className="high-school-curriculum-radio-input"
-                  disabled={saving}
-                />
-                <span className="high-school-curriculum-radio-label">No</span>
-              </label>
-            </div>
-            {(formData.ibDiploma === 'yes' || formData.ibDiploma === 'no') && (
+            <Select
+              styles={customSelectStyles}
+              options={yesNoOptions}
+              value={yesNoOptions.find(option => option.value === formData.ibDiploma) || null}
+              onChange={(selectedOption) => handleSelectChange('ibDiploma', selectedOption)}
+              placeholder="Choose an option"
+              isSearchable={false}
+              isDisabled={saving}
+              className="react-select-container"
+              classNamePrefix="react-select"
+              instanceId="ib-diploma-select"
+            />
+            {formData.ibDiploma && (
               <button 
                 className="clear-answer-button"
                 onClick={() => handleClearAnswer('ibDiploma')}
@@ -468,7 +524,7 @@ const HighSchoolCurriculum = () => {
           <div className="high-school-curriculum-actions">
             <button 
               className="high-school-curriculum-secondary-button" 
-              onClick={() => navigate(`/dashboard/colleges/${collegeId}`)}
+              onClick={handleSaveAndClose}
               disabled={saving}
             >
               Save and Close

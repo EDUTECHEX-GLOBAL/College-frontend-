@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import Select from 'react-select';
 import './General.css';
 
 const API_URL = process.env.REACT_APP_API_URL;
@@ -8,6 +9,7 @@ const API_URL = process.env.REACT_APP_API_URL;
 const General = () => {
   const { collegeId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [formData, setFormData] = useState({
     startTerm: '',
     housingPreference: '',
@@ -19,6 +21,117 @@ const General = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [progress, setProgress] = useState(0);
+
+  // Function to determine base path from current URL
+  const getBasePath = () => {
+    const path = location.pathname;
+    
+    // Extract the base path by finding the pattern
+    const match = path.match(/\/(firstyear|transfer|dashboard-test)\/dashboard/);
+    
+    if (match) {
+      return `/${match[1]}/dashboard`;
+    }
+    
+    // Default to firstyear if pattern not found
+    return '/firstyear/dashboard';
+  };
+
+  // Custom styles for react-select
+  const customSelectStyles = {
+    control: (base, state) => ({
+      ...base,
+      minHeight: '42px',
+      border: state.isFocused ? '1px solid #2563eb' : '1px solid #d1d5db',
+      borderRadius: '6px',
+      boxShadow: state.isFocused ? '0 0 0 3px rgba(37, 99, 235, 0.1)' : 'none',
+      '&:hover': {
+        borderColor: state.isFocused ? '#2563eb' : '#9ca3af'
+      },
+      backgroundColor: state.isDisabled ? '#f9fafb' : 'white',
+      cursor: 'pointer'
+    }),
+    placeholder: (base) => ({
+      ...base,
+      color: '#6b7280',
+      fontSize: '14px'
+    }),
+    singleValue: (base) => ({
+      ...base,
+      color: '#111827',
+      fontSize: '14px'
+    }),
+    input: (base) => ({
+      ...base,
+      color: '#111827',
+      fontSize: '14px'
+    }),
+    menu: (base) => ({
+      ...base,
+      borderRadius: '6px',
+      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+      marginTop: '4px',
+      zIndex: 9999
+    }),
+    menuList: (base) => ({
+      ...base,
+      padding: '4px'
+    }),
+    option: (base, state) => ({
+      ...base,
+      fontSize: '14px',
+      padding: '10px 12px',
+      backgroundColor: state.isSelected ? '#2563eb' : state.isFocused ? '#f3f4f6' : 'white',
+      color: state.isSelected ? 'white' : '#111827',
+      cursor: 'pointer',
+      '&:active': {
+        backgroundColor: '#dbeafe'
+      }
+    }),
+    dropdownIndicator: (base, state) => ({
+      ...base,
+      color: state.isFocused ? '#2563eb' : '#6b7280',
+      padding: '8px',
+      transition: 'transform 0.2s ease',
+      transform: state.selectProps.menuIsOpen ? 'rotate(180deg)' : 'none',
+      '&:hover': {
+        color: '#2563eb'
+      }
+    }),
+    indicatorSeparator: () => ({
+      display: 'none'
+    }),
+    clearIndicator: (base) => ({
+      ...base,
+      color: '#6b7280',
+      padding: '8px',
+      cursor: 'pointer',
+      '&:hover': {
+        color: '#dc2626'
+      }
+    }),
+    multiValue: (base) => ({
+      ...base,
+      backgroundColor: '#dbeafe',
+      borderRadius: '4px'
+    }),
+    multiValueLabel: (base) => ({
+      ...base,
+      color: '#1e40af',
+      fontSize: '13px',
+      fontWeight: '500',
+      padding: '4px 8px'
+    }),
+    multiValueRemove: (base) => ({
+      ...base,
+      color: '#1e40af',
+      borderRadius: '0 4px 4px 0',
+      '&:hover': {
+        backgroundColor: '#bfdbfe',
+        color: '#dc2626'
+      }
+    })
+  };
 
   // Use exact enum values that match the backend
   const applicationReasons = [
@@ -36,7 +149,7 @@ const General = () => {
     'Location/Distance from Home',
     'KU Recruitment Staff / Outreach',
     'Campus Visit Experience'
-  ];
+  ].map(reason => ({ value: reason, label: reason }));
 
   // Housing options with exact enum values matching backend
   const housingOptions = [
@@ -167,10 +280,7 @@ const General = () => {
   }, [collegeId]);
 
   const updateInternationalSectionVisibility = (visaAnswer) => {
-    // Store in localStorage to persist across page refreshes
     localStorage.setItem(`college_${collegeId}_show_international`, visaAnswer === 'yes' ? 'true' : 'false');
-    
-    // Dispatch event to notify DashboardLayout about the change
     window.dispatchEvent(new CustomEvent('collegeFormUpdated', {
       detail: {
         collegeId,
@@ -179,20 +289,45 @@ const General = () => {
     }));
   };
 
-  const handleInputChange = async (field, value) => {
+  const handleSelectChange = async (field, selectedOption) => {
+    const value = selectedOption ? selectedOption.value : '';
     const updatedData = { ...formData, [field]: value };
     setFormData(updatedData);
 
-    // Update international section visibility when visa classification changes
     if (field === 'visaClassification') {
       updateInternationalSectionVisibility(value);
     }
 
-    // Auto-save to backend
     try {
       await saveGeneralApplication(updatedData);
     } catch (error) {
-      // If backend save fails, fallback to localStorage
+      localStorage.setItem(`college_${collegeId}_general`, JSON.stringify(updatedData));
+    }
+  };
+
+  const handleMultiSelectChange = async (selectedOptions) => {
+    const selectedReasons = selectedOptions ? selectedOptions.map(option => option.value) : [];
+    const updatedData = { ...formData, applicationReason: selectedReasons };
+    setFormData(updatedData);
+
+    try {
+      await saveGeneralApplication(updatedData);
+    } catch (error) {
+      localStorage.setItem(`college_${collegeId}_general`, JSON.stringify(updatedData));
+    }
+  };
+
+  const handleInputChange = async (field, value) => {
+    const updatedData = { ...formData, [field]: value };
+    setFormData(updatedData);
+
+    if (field === 'visaClassification') {
+      updateInternationalSectionVisibility(value);
+    }
+
+    try {
+      await saveGeneralApplication(updatedData);
+    } catch (error) {
       localStorage.setItem(`college_${collegeId}_general`, JSON.stringify(updatedData));
     }
   };
@@ -222,7 +357,18 @@ const General = () => {
   const handleSaveAndContinue = async () => {
     try {
       await saveGeneralApplication(formData);
-      navigate(`/dashboard/colleges/${collegeId}/academics`);
+      const basePath = getBasePath();
+      navigate(`${basePath}/colleges/${collegeId}/academics`);
+    } catch (error) {
+      alert('Failed to save application data. Please try again.');
+    }
+  };
+
+  const handleSaveAndClose = async () => {
+    try {
+      await saveGeneralApplication(formData);
+      const basePath = getBasePath();
+      navigate(`${basePath}/colleges/${collegeId}`);
     } catch (error) {
       alert('Failed to save application data. Please try again.');
     }
@@ -239,12 +385,29 @@ const General = () => {
     );
   }
 
+  // Find current selected values for react-select
+  const getSelectedOption = (field, options) => {
+    return options.find(option => option.value === formData[field]) || null;
+  };
+
+  const getSelectedMultiOptions = () => {
+    return applicationReasons.filter(reason => 
+      formData.applicationReason.includes(reason.value)
+    );
+  };
+
   return (
     <div className="general-form-container">
       {/* Header Section */}
       <div className="general-form-header">
         <div className="general-header-nav">
-          <button className="general-back-button" onClick={() => navigate(`/dashboard/colleges/${collegeId}`)}>
+          <button 
+            className="general-back-button" 
+            onClick={() => {
+              const basePath = getBasePath();
+              navigate(`${basePath}/colleges/${collegeId}`);
+            }}
+          >
             ← Back to College Details
           </button>
         </div>
@@ -276,22 +439,22 @@ const General = () => {
           {/* Start Term Question */}
           <div className="general-question-card">
             <div className="general-question-header">
-              <h3 className="general-question-title">Start term*</h3>
-              <span className="general-question-required">Required</span>
+              <h3 className="general-question-title">
+                Start term<span className="required-asterisk">*</span>
+              </h3>
             </div>
-            <select 
-              className="general-form-select"
-              value={formData.startTerm}
-              onChange={(e) => handleInputChange('startTerm', e.target.value)}
-              disabled={saving}
-            >
-              <option value="">Choose an option</option>
-              {startTermOptions.map((option, index) => (
-                <option key={index} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+            <Select
+              styles={customSelectStyles}
+              options={startTermOptions}
+              value={getSelectedOption('startTerm', startTermOptions)}
+              onChange={(selectedOption) => handleSelectChange('startTerm', selectedOption)}
+              placeholder="Choose an option"
+              isSearchable={false}
+              isDisabled={saving}
+              className="react-select-container"
+              classNamePrefix="react-select"
+              instanceId="start-term-select"
+            />
             {formData.startTerm && (
               <button 
                 className="clear-answer-button"
@@ -306,22 +469,22 @@ const General = () => {
           {/* Housing Preference Question */}
           <div className="general-question-card">
             <div className="general-question-header">
-              <h3 className="general-question-title">Where would you like to live during your first year?*</h3>
-              <span className="general-question-required">Required</span>
+              <h3 className="general-question-title">
+                Where would you like to live during your first year?<span className="required-asterisk">*</span>
+              </h3>
             </div>
-            <select 
-              className="general-form-select"
-              value={formData.housingPreference}
-              onChange={(e) => handleInputChange('housingPreference', e.target.value)}
-              disabled={saving}
-            >
-              <option value="">Choose an option</option>
-              {housingOptions.map((option, index) => (
-                <option key={index} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+            <Select
+              styles={customSelectStyles}
+              options={housingOptions}
+              value={getSelectedOption('housingPreference', housingOptions)}
+              onChange={(selectedOption) => handleSelectChange('housingPreference', selectedOption)}
+              placeholder="Choose an option"
+              isSearchable={false}
+              isDisabled={saving}
+              className="react-select-container"
+              classNamePrefix="react-select"
+              instanceId="housing-select"
+            />
             {formData.housingPreference && (
               <button 
                 className="clear-answer-button"
@@ -336,22 +499,22 @@ const General = () => {
           {/* Participation Programs Question */}
           <div className="general-question-card">
             <div className="general-question-header">
-              <h3 className="general-question-title">Do you currently participate in any of the following programs?*</h3>
-              <span className="general-question-required">Required</span>
+              <h3 className="general-question-title">
+                Do you currently participate in any of the following programs?<span className="required-asterisk">*</span>
+              </h3>
             </div>
-            <select 
-              className="general-form-select"
-              value={formData.participationPrograms}
-              onChange={(e) => handleInputChange('participationPrograms', e.target.value)}
-              disabled={saving}
-            >
-              <option value="">Choose an option</option>
-              {programOptions.map((program, index) => (
-                <option key={index} value={program.value}>
-                  {program.label}
-                </option>
-              ))}
-            </select>
+            <Select
+              styles={customSelectStyles}
+              options={programOptions}
+              value={getSelectedOption('participationPrograms', programOptions)}
+              onChange={(selectedOption) => handleSelectChange('participationPrograms', selectedOption)}
+              placeholder="Choose an option"
+              isSearchable={false}
+              isDisabled={saving}
+              className="react-select-container"
+              classNamePrefix="react-select"
+              instanceId="programs-select"
+            />
             {formData.participationPrograms && (
               <button 
                 className="clear-answer-button"
@@ -366,8 +529,9 @@ const General = () => {
           {/* FAFSA Intent Question */}
           <div className="general-question-card">
             <div className="general-question-header">
-              <h3 className="general-question-title">Do you intend to file the FAFSA?*</h3>
-              <span className="general-question-required">Required</span>
+              <h3 className="general-question-title">
+                Do you intend to file the FAFSA?<span className="required-asterisk">*</span>
+              </h3>
             </div>
             <div className="general-radio-group">
               <label className="general-radio-option">
@@ -415,9 +579,8 @@ const General = () => {
           <div className="general-question-card">
             <div className="general-question-header">
               <h3 className="general-question-title">
-                Will you have a non-immigrant visa classification (e.g. F-1, J-1, E-2, H-4, etc) to begin studying at KU?*
+                Will you have a non-immigrant visa classification (e.g. F-1, J-1, E-2, H-4, etc) to begin studying at KU?<span className="required-asterisk">*</span>
               </h3>
-              <span className="general-question-required">Required</span>
             </div>
             <div className="general-radio-group">
               <label className="general-radio-option">
@@ -456,26 +619,26 @@ const General = () => {
             )}
           </div>
 
-          {/* Application Reasons Question */}
+          {/* Application Reasons Question - Using react-select multi-select */}
           <div className="general-question-card">
             <div className="general-question-header">
-              <h3 className="general-question-title">Why did you choose to apply to KU? (Choose all that apply.)*</h3>
-              <span className="general-question-required">Required</span>
+              <h3 className="general-question-title">
+                Why did you choose to apply to KU? (Choose all that apply.)<span className="required-asterisk">*</span>
+              </h3>
             </div>
-            <div className="general-checkbox-grid">
-              {applicationReasons.map((reason, index) => (
-                <label key={index} className="general-checkbox-option">
-                  <input
-                    type="checkbox"
-                    checked={formData.applicationReason.includes(reason)}
-                    onChange={() => handleCheckboxChange(reason)}
-                    className="general-checkbox-input"
-                    disabled={saving}
-                  />
-                  <span className="general-checkbox-label">{reason}</span>
-                </label>
-              ))}
-            </div>
+            <Select
+              styles={customSelectStyles}
+              options={applicationReasons}
+              value={getSelectedMultiOptions()}
+              onChange={handleMultiSelectChange}
+              placeholder="Select all that apply"
+              isMulti
+              isSearchable={true}
+              isDisabled={saving}
+              className="react-select-container"
+              classNamePrefix="react-select"
+              instanceId="reasons-select"
+            />
             {formData.applicationReason.length > 0 && (
               <button 
                 className="clear-answer-button"
@@ -491,7 +654,7 @@ const General = () => {
           <div className="general-actions">
             <button 
               className="general-secondary-button" 
-              onClick={() => navigate(`/dashboard/colleges/${collegeId}`)}
+              onClick={handleSaveAndClose}
               disabled={saving}
             >
               Save and Close

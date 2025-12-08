@@ -140,6 +140,7 @@
   border: 1px solid #d1d5db;
   border-radius: 8px;
   overflow: hidden;
+  position: relative;
 }
 
 .high-school-curriculum-section-title {
@@ -160,6 +161,8 @@
   padding: 24px;
   border-bottom: 1px solid #e5e7eb;
   background: white;
+  position: relative;
+  z-index: auto;
 }
 
 .high-school-curriculum-question-card:last-child {
@@ -188,78 +191,14 @@
   font-weight: 500;
   margin-left: 12px;
   white-space: nowrap;
+  display: none; /* Hide the old required badge */
 }
 
-/* =============================
-   Form Controls - Common App Style
-   ============================= */
-
-.high-school-curriculum-form-select {
-  width: 100%;
-  max-width: 400px;
-  padding: 10px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
-  font-family: inherit;
-  background: white;
-  color: #111827;
-  transition: all 0.2s ease;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-  background-position: right 8px center;
-  background-repeat: no-repeat;
-  background-size: 16px;
-}
-
-.high-school-curriculum-form-select:focus {
-  outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-}
-
-.high-school-curriculum-form-select:hover {
-  border-color: #9ca3af;
-}
-
-.high-school-curriculum-form-select:disabled {
-  background-color: #f9fafb;
-  color: #9ca3af;
-  cursor: not-allowed;
-}
-
-/* =============================
-   Radio Groups - Professional Style
-   ============================= */
-
-.high-school-curriculum-radio-group {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.high-school-curriculum-radio-option {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-  padding: 8px 0;
-}
-
-.high-school-curriculum-radio-input {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  accent-color: #2563eb;
-}
-
-.high-school-curriculum-radio-label {
-  font-size: 14px;
-  color: #374151;
-  cursor: pointer;
-  line-height: 1.4;
-  font-weight: 400;
+/* Required Asterisk - Red */
+.high-school-curriculum-question-title .required-asterisk {
+  color: #dc2626;
+  margin-left: 2px;
+  font-weight: 600;
 }
 
 /* =============================
@@ -415,10 +354,6 @@
     gap: 8px;
   }
 
-  .high-school-curriculum-question-required {
-    margin-left: 0;
-  }
-
   .high-school-curriculum-actions {
     flex-direction: column-reverse;
     padding: 20px 16px;
@@ -449,10 +384,6 @@
 
   .high-school-curriculum-title {
     font-size: 24px;
-  }
-
-  .high-school-curriculum-form-select {
-    max-width: 100%;
   }
 }
 
@@ -503,11 +434,6 @@
   letter-spacing: -0.01em;
 }
 
-.high-school-curriculum-radio-label {
-  font-weight: 400;
-  letter-spacing: -0.01em;
-}
-
 /* =============================
    Professional Spacing
    ============================= */
@@ -518,4 +444,145 @@
 
 .high-school-curriculum-progress {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* =============================
+   React-Select Custom Styles - ADDED
+   ============================= */
+
+.react-select-container {
+  max-width: 500px;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.react-select__control {
+  min-height: 42px !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-select__control--is-focused {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+}
+
+.react-select__control:hover {
+  border-color: #9ca3af !important;
+}
+
+.react-select__control--is-focused:hover {
+  border-color: #2563eb !important;
+}
+
+.react-select__placeholder {
+  color: #6b7280 !important;
+  font-size: 14px !important;
+}
+
+.react-select__single-value {
+  color: #111827 !important;
+  font-size: 14px !important;
+}
+
+.react-select__input {
+  color: #111827 !important;
+  font-size: 14px !important;
+}
+
+.react-select__menu {
+  border-radius: 6px !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  margin-top: 4px !important;
+  z-index: 100 !important;
+  max-height: 250px !important;
+  overflow-y: auto !important;
+  position: absolute !important;
+  width: 100% !important;
+}
+
+.react-select__menu-list {
+  padding: 4px !important;
+  max-height: 242px !important;
+}
+
+.react-select__option {
+  font-size: 14px !important;
+  padding: 10px 12px !important;
+  cursor: pointer !important;
+}
+
+.react-select__option--is-selected {
+  background-color: #2563eb !important;
+  color: white !important;
+}
+
+.react-select__option--is-focused {
+  background-color: #f3f4f6 !important;
+}
+
+.react-select__option:active {
+  background-color: #dbeafe !important;
+}
+
+.react-select__dropdown-indicator {
+  color: #6b7280 !important;
+  padding: 8px !important;
+  transition: transform 0.2s ease !important;
+}
+
+.react-select__dropdown-indicator:hover {
+  color: #2563eb !important;
+}
+
+.react-select__indicator-separator {
+  display: none !important;
+}
+
+.react-select__clear-indicator {
+  color: #6b7280 !important;
+  padding: 8px !important;
+  cursor: pointer !important;
+}
+
+.react-select__clear-indicator:hover {
+  color: #dc2626 !important;
+}
+
+.react-select__control--is-disabled {
+  background-color: #f9fafb !important;
+  cursor: not-allowed !important;
+}
+
+.react-select__control--is-disabled .react-select__dropdown-indicator {
+  color: #9ca3af !important;
+}
+
+@media (max-width: 768px) {
+  .react-select-container {
+    max-width: 100% !important;
+  }
+  
+  .react-select__menu {
+    position: fixed !important;
+    z-index: 1000 !important;
+    max-height: 200px !important;
+    width: calc(100vw - 32px) !important;
+    left: 16px !important;
+    right: 16px !important;
+  }
+}
+
+/* =============================
+   Dropdown Container Enhancement
+   ============================= */
+
+.high-school-curriculum-form-section {
+  isolation: isolate;
+}
+
+.high-school-curriculum-question-card + .high-school-curriculum-info-card {
+  margin-top: 24px;
 }
