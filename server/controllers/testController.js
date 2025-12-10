@@ -9,12 +9,18 @@ import TransferStudent from '../models/transferModel.js';
  */
 export const getTestingData = async (req, res) => {
   try {
-    // ✅ FIXED: Use req.userId from your auth middleware
-    const studentId = req.userId || req.user.id;
+    const studentId = req.user?.id;
+
+    if (!studentId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unable to determine student identity from token"
+      });
+    }
 
     console.log('📥 Fetching testing data for student:', studentId);
 
-    // Check if student exists
+    // Validate student exists in TransferStudent collection
     const student = await TransferStudent.findById(studentId);
     if (!student) {
       return res.status(404).json({
@@ -23,16 +29,15 @@ export const getTestingData = async (req, res) => {
       });
     }
 
-    // Find or create testing data
+    // Get or create testing data
     let testingData = await Testing.findOne({ studentId });
 
     if (!testingData) {
-      // Create new testing document if it doesn't exist
       testingData = await Testing.create({ studentId });
       console.log('✅ Created new testing document for student:', studentId);
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       testing: testingData
     });
@@ -54,14 +59,13 @@ export const getTestingData = async (req, res) => {
  */
 export const updateTestingData = async (req, res) => {
   try {
-    // ✅ FIXED: Use req.userId from your auth middleware
-    const studentId = req.userId || req.user.id;
+    const studentId = req.user?.id;
     const testingData = req.body;
 
     console.log('📝 Updating testing data for student:', studentId);
     console.log('📦 Testing data received:', JSON.stringify(testingData, null, 2));
 
-    // Check if student exists
+    // Validate student
     const student = await TransferStudent.findById(studentId);
     if (!student) {
       return res.status(404).json({
@@ -75,11 +79,11 @@ export const updateTestingData = async (req, res) => {
       { studentId },
       { 
         ...testingData,
-        studentId // Ensure studentId is always set
+        studentId 
       },
       { 
-        new: true, 
-        upsert: true, // Create if doesn't exist
+        new: true,
+        upsert: true,
         runValidators: true 
       }
     );
@@ -109,8 +113,7 @@ export const updateTestingData = async (req, res) => {
  */
 export const deleteTestEntry = async (req, res) => {
   try {
-    // ✅ FIXED: Use req.userId from your auth middleware
-    const studentId = req.userId || req.user.id;
+    const studentId = req.user?.id;
     const { testType, index } = req.params;
 
     console.log(`🗑️ Deleting ${testType} entry at index ${index} for student:`, studentId);
@@ -124,12 +127,11 @@ export const deleteTestEntry = async (req, res) => {
       });
     }
 
-    // Remove the test entry from the array
     const testArray = testingData[testType];
+
     if (testArray && testArray.length > index) {
       testArray.splice(index, 1);
-      
-      // Update the count
+
       const countField = `${testType}Count`;
       if (testingData[countField] !== undefined) {
         testingData[countField] = testArray.length;
@@ -139,17 +141,17 @@ export const deleteTestEntry = async (req, res) => {
 
       console.log('✅ Test entry deleted successfully');
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: 'Test entry deleted successfully',
         testing: testingData
       });
-    } else {
-      res.status(404).json({
-        success: false,
-        message: 'Test entry not found'
-      });
     }
+
+    return res.status(404).json({
+      success: false,
+      message: 'Test entry not found'
+    });
 
   } catch (error) {
     console.error('❌ Error deleting test entry:', error);
@@ -162,7 +164,7 @@ export const deleteTestEntry = async (req, res) => {
 };
 
 /**
- * @desc    Get all testing data for all students (Admin only)
+ * @desc    Get all testing data (Admin)
  * @route   GET /api/testing/all
  * @access  Private/Admin
  */
@@ -197,8 +199,7 @@ export const getAllTestingData = async (req, res) => {
  */
 export const deleteAllTestingData = async (req, res) => {
   try {
-    // ✅ FIXED: Use req.userId from your auth middleware
-    const studentId = req.userId || req.user.id;
+    const studentId = req.user?.id;
 
     console.log('🗑️ Deleting all testing data for student:', studentId);
 

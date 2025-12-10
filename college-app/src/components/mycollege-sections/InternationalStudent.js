@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Select from 'react-select';
 import './InternationalStudent.css';
 
 const API_URL = process.env.REACT_APP_API_URL;
@@ -27,39 +28,44 @@ const InternationalStudent = () => {
   const [saving, setSaving] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  // Immigration status options
+  // Immigration status options - formatted for react-select
   const immigrationStatusOptions = [
-    'F-1 student (most common)',
-    'J-1 exchange visitor',
-    'F-2 dependent',
-    'J-2 dependent',
-    'B-2 tourist',
-    'H-4 dependent',
-    'L-2 dependent',
-    'E-2 dependent',
-    'Other'
+    { value: 'F-1 student (most common)', label: 'F-1 student (most common)' },
+    { value: 'J-1 exchange visitor', label: 'J-1 exchange visitor' },
+    { value: 'F-2 dependent', label: 'F-2 dependent' },
+    { value: 'J-2 dependent', label: 'J-2 dependent' },
+    { value: 'B-2 tourist', label: 'B-2 tourist' },
+    { value: 'H-4 dependent', label: 'H-4 dependent' },
+    { value: 'L-2 dependent', label: 'L-2 dependent' },
+    { value: 'E-2 dependent', label: 'E-2 dependent' },
+    { value: 'Other', label: 'Other' }
   ];
 
-  // Information source options
+  // Information source options - formatted for react-select
   const hearAboutKUOptions = [
-    'Agent',
-    'Counselor/Advisor',
-    'Educational Fair',
-    'Friends or Family',
-    'Internet',
-    'KU Admissions Rep',
-    'KU alumni',
-    'KU Professor',
-    'KU Student',
-    'KU Study Abroad',
-    'Ranks',
-    'Recruitment Email',
-    'Social Media',
-    'Sponsor',
-    'Teacher/Professor',
-    'US University or College Fair',
-    'Other'
+    { value: 'Agent', label: 'Agent' },
+    { value: 'Counselor/Advisor', label: 'Counselor/Advisor' },
+    { value: 'Educational Fair', label: 'Educational Fair' },
+    { value: 'Friends or Family', label: 'Friends or Family' },
+    { value: 'Internet', label: 'Internet' },
+    { value: 'KU Admissions Rep', label: 'KU Admissions Rep' },
+    { value: 'KU alumni', label: 'KU alumni' },
+    { value: 'KU Professor', label: 'KU Professor' },
+    { value: 'KU Student', label: 'KU Student' },
+    { value: 'KU Study Abroad', label: 'KU Study Abroad' },
+    { value: 'Ranks', label: 'Ranks' },
+    { value: 'Recruitment Email', label: 'Recruitment Email' },
+    { value: 'Social Media', label: 'Social Media' },
+    { value: 'Sponsor', label: 'Sponsor' },
+    { value: 'Teacher/Professor', label: 'Teacher/Professor' },
+    { value: 'US University or College Fair', label: 'US University or College Fair' },
+    { value: 'Other', label: 'Other' }
   ];
+
+  // Helper function to find react-select value
+  const findSelectValue = (options, currentValue) => {
+    return options.find(option => option.value === currentValue) || null;
+  };
 
   // Fetch international student data
   const fetchInternationalData = async () => {
@@ -211,6 +217,10 @@ const InternationalStudent = () => {
     }
   };
 
+  const handleSelectChange = async (field, selectedOption) => {
+    await handleInputChange(field, selectedOption?.value || '');
+  };
+
   const handleClearAnswer = async (field) => {
     await clearField(field);
   };
@@ -240,10 +250,20 @@ const InternationalStudent = () => {
   const handleSaveAndContinue = async () => {
     try {
       await saveInternationalData(formData);
-      navigate(`/dashboard/colleges/${collegeId}/review`);
+      // FIXED NAVIGATION: Changed to firstyear/dashboard prefix
+      navigate(`/firstyear/dashboard/colleges/${collegeId}/review`);
     } catch (error) {
       alert('Failed to save international student information. Please try again.');
     }
+  };
+
+  const handleBack = () => {
+    // FIXED NAVIGATION: Changed to firstyear/dashboard prefix
+    navigate(`/firstyear/dashboard/colleges/${collegeId}`);
+  };
+
+  const handleSaveAndClose = () => {
+    handleBack();
   };
 
   if (loading) {
@@ -262,7 +282,8 @@ const InternationalStudent = () => {
       {/* Header Section */}
       <div className="international-form-header">
         <div className="international-header-nav">
-          <button className="international-back-button" onClick={() => navigate(`/dashboard/colleges/${collegeId}`)}>
+          {/* FIXED NAVIGATION: Updated onClick handler */}
+          <button className="international-back-button" onClick={handleBack}>
             ← Back to College Details
           </button>
         </div>
@@ -480,25 +501,43 @@ const InternationalStudent = () => {
             </div>
           )}
 
-          {/* Requested Immigration Status Question */}
+          {/* Requested Immigration Status Question - USING REACT-SELECT */}
           <div className="international-question-card">
             <div className="international-question-header">
               <h3 className="international-question-title">Which immigration status are you requesting to study at KU? *</h3>
               <span className="international-question-required">Required</span>
             </div>
-            <select 
-              className="international-form-select"
-              value={formData.requestedImmigrationStatus}
-              onChange={(e) => handleInputChange('requestedImmigrationStatus', e.target.value)}
-              disabled={saving}
-            >
-              <option value="">Choose an option</option>
-              {immigrationStatusOptions.map((status, index) => (
-                <option key={index} value={status}>
-                  {status}
-                </option>
-              ))}
-            </select>
+            <Select
+              value={findSelectValue(immigrationStatusOptions, formData.requestedImmigrationStatus)}
+              onChange={(selectedOption) => handleSelectChange('requestedImmigrationStatus', selectedOption)}
+              options={immigrationStatusOptions}
+              placeholder="Choose an option"
+              isDisabled={saving}
+              isClearable={true}
+              className="react-select-container"
+              classNamePrefix="react-select"
+              menuPortalTarget={document.body}
+              menuPosition="fixed"
+              styles={{
+                control: (base) => ({
+                  ...base,
+                  borderColor: '#d1d5db',
+                  '&:hover': { borderColor: '#9ca3af' },
+                  borderRadius: '6px',
+                  minHeight: '42px',
+                  fontSize: '14px',
+                  maxWidth: '500px'
+                }),
+                menu: (base) => ({
+                  ...base,
+                  zIndex: 9999
+                }),
+                menuPortal: (base) => ({
+                  ...base,
+                  zIndex: 9999
+                })
+              }}
+            />
             {formData.requestedImmigrationStatus && (
               <button 
                 className="clear-answer-button"
@@ -553,26 +592,44 @@ const InternationalStudent = () => {
             )}
           </div>
 
-          {/* Current Immigration Status Question - Conditional */}
+          {/* Current Immigration Status Question - Conditional - USING REACT-SELECT */}
           {formData.currentlyInUS === 'yes' && (
             <div className="international-question-card">
               <div className="international-question-header">
                 <h3 className="international-question-title">What is your current immigration status? *</h3>
                 <span className="international-question-required">Required</span>
               </div>
-              <select 
-                className="international-form-select"
-                value={formData.currentImmigrationStatus}
-                onChange={(e) => handleInputChange('currentImmigrationStatus', e.target.value)}
-                disabled={saving}
-              >
-                <option value="">Choose an option</option>
-                {immigrationStatusOptions.map((status, index) => (
-                  <option key={index} value={status}>
-                    {status}
-                  </option>
-                ))}
-              </select>
+              <Select
+                value={findSelectValue(immigrationStatusOptions, formData.currentImmigrationStatus)}
+                onChange={(selectedOption) => handleSelectChange('currentImmigrationStatus', selectedOption)}
+                options={immigrationStatusOptions}
+                placeholder="Choose an option"
+                isDisabled={saving}
+                isClearable={true}
+                className="react-select-container"
+                classNamePrefix="react-select"
+                menuPortalTarget={document.body}
+                menuPosition="fixed"
+                styles={{
+                  control: (base) => ({
+                    ...base,
+                    borderColor: '#d1d5db',
+                    '&:hover': { borderColor: '#9ca3af' },
+                    borderRadius: '6px',
+                    minHeight: '42px',
+                    fontSize: '14px',
+                    maxWidth: '500px'
+                  }),
+                  menu: (base) => ({
+                    ...base,
+                    zIndex: 9999
+                  }),
+                  menuPortal: (base) => ({
+                    ...base,
+                    zIndex: 9999
+                  })
+                }}
+              />
               {formData.currentImmigrationStatus && (
                 <button 
                   className="clear-answer-button"
@@ -585,25 +642,43 @@ const InternationalStudent = () => {
             </div>
           )}
 
-          {/* How did you hear about KU Question */}
+          {/* How did you hear about KU Question - USING REACT-SELECT */}
           <div className="international-question-card">
             <div className="international-question-header">
               <h3 className="international-question-title">How did you hear about KU? *</h3>
               <span className="international-question-required">Required</span>
             </div>
-            <select 
-              className="international-form-select"
-              value={formData.hearAboutKU}
-              onChange={(e) => handleInputChange('hearAboutKU', e.target.value)}
-              disabled={saving}
-            >
-              <option value="">Choose an option</option>
-              {hearAboutKUOptions.map((source, index) => (
-                <option key={index} value={source}>
-                  {source}
-                </option>
-              ))}
-            </select>
+            <Select
+              value={findSelectValue(hearAboutKUOptions, formData.hearAboutKU)}
+              onChange={(selectedOption) => handleSelectChange('hearAboutKU', selectedOption)}
+              options={hearAboutKUOptions}
+              placeholder="Choose an option"
+              isDisabled={saving}
+              isClearable={true}
+              className="react-select-container"
+              classNamePrefix="react-select"
+              menuPortalTarget={document.body}
+              menuPosition="fixed"
+              styles={{
+                control: (base) => ({
+                  ...base,
+                  borderColor: '#d1d5db',
+                  '&:hover': { borderColor: '#9ca3af' },
+                  borderRadius: '6px',
+                  minHeight: '42px',
+                  fontSize: '14px',
+                  maxWidth: '500px'
+                }),
+                menu: (base) => ({
+                  ...base,
+                  zIndex: 9999
+                }),
+                menuPortal: (base) => ({
+                  ...base,
+                  zIndex: 9999
+                })
+              }}
+            />
             {formData.hearAboutKU && (
               <button 
                 className="clear-answer-button"
@@ -728,9 +803,10 @@ const InternationalStudent = () => {
 
           {/* Action Buttons */}
           <div className="international-actions">
+            {/* FIXED NAVIGATION: Updated onClick handler */}
             <button 
               className="international-secondary-button" 
-              onClick={() => navigate(`/dashboard/colleges/${collegeId}`)}
+              onClick={handleSaveAndClose}
               disabled={saving}
             >
               Save and Close
@@ -742,12 +818,13 @@ const InternationalStudent = () => {
             >
               {saving ? 'Saving...' : 'Save'}
             </button>
+            {/* FIXED NAVIGATION: Updated button text to match other components */}
             <button 
               className="international-primary-button" 
               onClick={handleSaveAndContinue}
               disabled={saving}
             >
-              {saving ? 'Saving...' : 'Continue'}
+              {saving ? 'Saving...' : 'Save and Continue'}
             </button>
           </div>
         </section>

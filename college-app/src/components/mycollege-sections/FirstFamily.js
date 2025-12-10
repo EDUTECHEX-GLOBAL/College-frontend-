@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Select from 'react-select'; // ADD THIS
 import './FirstFamily.css';
 import { US_STATES } from '../../constants/states';
 import { COUNTRIES } from '../../constants/countries';
@@ -16,6 +17,14 @@ const emptyAddress = {
   state: '',
   country: '',
   zip: ''
+};
+
+// Format options for react-select
+const formatOptions = (options) => {
+  return options.map(option => ({
+    value: option.value || option,
+    label: option.label || option
+  }));
 };
 
 const FirstFamily = () => {
@@ -62,6 +71,20 @@ const FirstFamily = () => {
     'National Guard',
     'Retired'
   ];
+
+  // Parent/Guardian options
+  const parentGuardianOptions = [
+    { value: 'parent1', label: 'Parent 1' },
+    { value: 'parent2', label: 'Parent 2' },
+    { value: 'legal-guardian', label: 'Legal Guardian' }
+  ];
+
+  // Format options for react-select
+  const formattedUSStates = formatOptions(US_STATES);
+  const formattedCountries = formatOptions(COUNTRIES);
+  const formattedKuLocations = formatOptions(kuLocationOptions);
+  const formattedMilitaryStatus = formatOptions(militaryStatusOptions);
+  const formattedParentGuardian = formatOptions(parentGuardianOptions);
 
   // Fetch family application data from backend
   const fetchFamilyApplication = async () => {
@@ -272,15 +295,30 @@ const FirstFamily = () => {
   const handleSaveAndContinue = async () => {
     try {
       await saveFamilyApplication(formData);
-      navigate(`/dashboard/colleges/${collegeId}/residency`);
+      // FIXED: Add firstyear/dashboard prefix
+      navigate(`/firstyear/dashboard/colleges/${collegeId}/residency`);
     } catch (error) {
       alert('Failed to save family information. Please try again.');
     }
   };
 
+  const handleBack = () => {
+    // FIXED: Add firstyear/dashboard prefix
+    navigate(`/firstyear/dashboard/colleges/${collegeId}`);
+  };
+
+  const handleSaveAndClose = () => {
+    handleBack();
+  };
+
   // Safe value getter for address fields
   const getAddressValue = (parent, field) => {
     return formData[parent]?.[field] || '';
+  };
+
+  // Helper function to find react-select value
+  const findSelectValue = (options, currentValue) => {
+    return options.find(option => option.value === currentValue) || null;
   };
 
   if (loading) {
@@ -299,7 +337,7 @@ const FirstFamily = () => {
       {/* Header Section */}
       <div className="family-form-header">
         <div className="family-header-nav">
-          <button className="family-back-button" onClick={() => navigate(`/dashboard/colleges/${collegeId}`)}>
+          <button className="family-back-button" onClick={handleBack}>
             ← Back to College Details
           </button>
         </div>
@@ -340,22 +378,39 @@ const FirstFamily = () => {
             
             <div className="parent-address-section">
               <div className="parent-address-selector">
-                <select 
-                  className="family-form-select"
-                  value={formData.parentGuardianAddress}
-                  onChange={(e) => handleInputChange('parentGuardianAddress', e.target.value)}
-                  disabled={saving}
-                >
-                  <option value="">Choose an option</option>
-                  <option value="parent1">Parent 1</option>
-                  <option value="parent2">Parent 2</option>
-                  <option value="legal-guardian">Legal Guardian</option>
-                </select>
+                <Select
+                  value={findSelectValue(formattedParentGuardian, formData.parentGuardianAddress)}
+                  onChange={(selectedOption) => handleInputChange('parentGuardianAddress', selectedOption?.value || '')}
+                  options={formattedParentGuardian}
+                  placeholder="Choose an option"
+                  isDisabled={saving}
+                  isClearable={true}
+                  className="react-select-container"
+                  classNamePrefix="react-select"
+                  styles={{
+                    control: (base) => ({
+                      ...base,
+                      borderColor: '#d1d5db',
+                      '&:hover': { borderColor: '#9ca3af' },
+                      borderRadius: '6px',
+                      minHeight: '42px',
+                      fontSize: '14px',
+                      maxWidth: '400px'
+                    }),
+                    menu: (base) => ({
+                      ...base,
+                      zIndex: 9999
+                    })
+                  }}
+                />
               </div>
               
               {formData.parentGuardianAddress && (
                 <div className="address-form-fields">
-                  <h4 className="address-form-title">Address for {formData.parentGuardianAddress === 'parent1' ? 'Parent 1' : formData.parentGuardianAddress === 'parent2' ? 'Parent 2' : 'Legal Guardian'}</h4>
+                  <h4 className="address-form-title">
+                    Address for {formData.parentGuardianAddress === 'parent1' ? 'Parent 1' : 
+                    formData.parentGuardianAddress === 'parent2' ? 'Parent 2' : 'Legal Guardian'}
+                  </h4>
                   
                   <div className="address-field-group">
                     <label className="address-label">Street Address (line 1)*</label>
@@ -432,48 +487,72 @@ const FirstFamily = () => {
                     
                     <div className="address-field-group">
                       <label className="address-label">State/Province*</label>
-                      <select 
-                        className="family-form-select"
-                        value={getAddressValue(
+                      <Select
+                        value={findSelectValue(formattedUSStates, getAddressValue(
                           formData.parentGuardianAddress === 'parent1' ? 'parent1Address' : 'parent2Address', 
                           'state'
-                        )}
-                        onChange={(e) => handleAddressChange(
+                        ))}
+                        onChange={(selectedOption) => handleAddressChange(
                           formData.parentGuardianAddress === 'parent1' ? 'parent1Address' : 'parent2Address', 
                           'state', 
-                          e.target.value
+                          selectedOption?.value || ''
                         )}
-                      >
-                        {US_STATES.map((state) => (
-                          <option key={state.value} value={state.value}>
-                            {state.label}
-                          </option>
-                        ))}
-                      </select>
+                        options={formattedUSStates}
+                        placeholder="Select state"
+                        isDisabled={saving}
+                        className="react-select-container"
+                        classNamePrefix="react-select"
+                        styles={{
+                          control: (base) => ({
+                            ...base,
+                            borderColor: '#d1d5db',
+                            '&:hover': { borderColor: '#9ca3af' },
+                            borderRadius: '6px',
+                            minHeight: '42px',
+                            fontSize: '14px'
+                          }),
+                          menu: (base) => ({
+                            ...base,
+                            zIndex: 9999
+                          })
+                        }}
+                      />
                     </div>
                   </div>
                   
                   <div className="address-row">
                     <div className="address-field-group">
                       <label className="address-label">Country*</label>
-                      <select 
-                        className="family-form-select"
-                        value={getAddressValue(
+                      <Select
+                        value={findSelectValue(formattedCountries, getAddressValue(
                           formData.parentGuardianAddress === 'parent1' ? 'parent1Address' : 'parent2Address', 
                           'country'
-                        )}
-                        onChange={(e) => handleAddressChange(
+                        ))}
+                        onChange={(selectedOption) => handleAddressChange(
                           formData.parentGuardianAddress === 'parent1' ? 'parent1Address' : 'parent2Address', 
                           'country', 
-                          e.target.value
+                          selectedOption?.value || ''
                         )}
-                      >
-                        {COUNTRIES.map((country) => (
-                          <option key={country.value} value={country.value}>
-                            {country.label}
-                          </option>
-                        ))}
-                      </select>
+                        options={formattedCountries}
+                        placeholder="Select country"
+                        isDisabled={saving}
+                        className="react-select-container"
+                        classNamePrefix="react-select"
+                        styles={{
+                          control: (base) => ({
+                            ...base,
+                            borderColor: '#d1d5db',
+                            '&:hover': { borderColor: '#9ca3af' },
+                            borderRadius: '6px',
+                            minHeight: '42px',
+                            fontSize: '14px'
+                          }),
+                          menu: (base) => ({
+                            ...base,
+                            zIndex: 9999
+                          })
+                        }}
+                      />
                     </div>
                     
                     <div className="address-field-group">
@@ -594,34 +673,58 @@ const FirstFamily = () => {
                   
                   <div className="address-field-group">
                     <label className="address-label">Parent 2 State/Province*</label>
-                    <select 
-                      className="family-form-select"
-                      value={getAddressValue('parent2Address', 'state')}
-                      onChange={(e) => handleAddressChange('parent2Address', 'state', e.target.value)}
-                    >
-                      {US_STATES.map((state) => (
-                        <option key={state.value} value={state.value}>
-                          {state.label}
-                        </option>
-                      ))}
-                    </select>
+                    <Select
+                      value={findSelectValue(formattedUSStates, getAddressValue('parent2Address', 'state'))}
+                      onChange={(selectedOption) => handleAddressChange('parent2Address', 'state', selectedOption?.value || '')}
+                      options={formattedUSStates}
+                      placeholder="Select state"
+                      isDisabled={saving}
+                      className="react-select-container"
+                      classNamePrefix="react-select"
+                      styles={{
+                        control: (base) => ({
+                          ...base,
+                          borderColor: '#d1d5db',
+                          '&:hover': { borderColor: '#9ca3af' },
+                          borderRadius: '6px',
+                          minHeight: '42px',
+                          fontSize: '14px'
+                        }),
+                        menu: (base) => ({
+                          ...base,
+                          zIndex: 9999
+                        })
+                      }}
+                    />
                   </div>
                 </div>
                 
                 <div className="address-row">
                   <div className="address-field-group">
                     <label className="address-label">Parent 2 Country*</label>
-                    <select 
-                      className="family-form-select"
-                      value={getAddressValue('parent2Address', 'country')}
-                      onChange={(e) => handleAddressChange('parent2Address', 'country', e.target.value)}
-                    >
-                      {COUNTRIES.map((country) => (
-                        <option key={country.value} value={country.value}>
-                          {country.label}
-                        </option>
-                      ))}
-                    </select>
+                    <Select
+                      value={findSelectValue(formattedCountries, getAddressValue('parent2Address', 'country'))}
+                      onChange={(selectedOption) => handleAddressChange('parent2Address', 'country', selectedOption?.value || '')}
+                      options={formattedCountries}
+                      placeholder="Select country"
+                      isDisabled={saving}
+                      className="react-select-container"
+                      classNamePrefix="react-select"
+                      styles={{
+                        control: (base) => ({
+                          ...base,
+                          borderColor: '#d1d5db',
+                          '&:hover': { borderColor: '#9ca3af' },
+                          borderRadius: '6px',
+                          minHeight: '42px',
+                          fontSize: '14px'
+                        }),
+                        menu: (base) => ({
+                          ...base,
+                          zIndex: 9999
+                        })
+                      }}
+                    />
                   </div>
                   
                   <div className="address-field-group">
@@ -727,16 +830,31 @@ const FirstFamily = () => {
                 
                 <div className="address-field-group">
                   <label className="address-label">At which KU location is this person employed?</label>
-                  <select 
-                    className="family-form-select"
-                    value={formData.kuEmployeeLocation}
-                    onChange={(e) => handleInputChange('kuEmployeeLocation', e.target.value)}
-                  >
-                    <option value="">Choose an option</option>
-                    {kuLocationOptions.map((location, index) => (
-                      <option key={index} value={location}>{location}</option>
-                    ))}
-                  </select>
+                  <Select
+                    value={findSelectValue(formattedKuLocations, formData.kuEmployeeLocation)}
+                    onChange={(selectedOption) => handleInputChange('kuEmployeeLocation', selectedOption?.value || '')}
+                    options={formattedKuLocations}
+                    placeholder="Choose an option"
+                    isDisabled={saving}
+                    isClearable={true}
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    styles={{
+                      control: (base) => ({
+                        ...base,
+                        borderColor: '#d1d5db',
+                        '&:hover': { borderColor: '#9ca3af' },
+                        borderRadius: '6px',
+                        minHeight: '42px',
+                        fontSize: '14px',
+                        maxWidth: '400px'
+                      }),
+                      menu: (base) => ({
+                        ...base,
+                        zIndex: 9999
+                      })
+                    }}
+                  />
                 </div>
               </div>
             )}
@@ -789,16 +907,31 @@ const FirstFamily = () => {
               <div className="dependent-followup">
                 <div className="address-field-group">
                   <label className="address-label">Which category best describes the military status of your parent/guardian?*</label>
-                  <select 
-                    className="family-form-select"
-                    value={formData.militaryStatus}
-                    onChange={(e) => handleInputChange('militaryStatus', e.target.value)}
-                  >
-                    <option value="">Choose an option</option>
-                    {militaryStatusOptions.map((status, index) => (
-                      <option key={index} value={status}>{status}</option>
-                    ))}
-                  </select>
+                  <Select
+                    value={findSelectValue(formattedMilitaryStatus, formData.militaryStatus)}
+                    onChange={(selectedOption) => handleInputChange('militaryStatus', selectedOption?.value || '')}
+                    options={formattedMilitaryStatus}
+                    placeholder="Choose an option"
+                    isDisabled={saving}
+                    isClearable={true}
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    styles={{
+                      control: (base) => ({
+                        ...base,
+                        borderColor: '#d1d5db',
+                        '&:hover': { borderColor: '#9ca3af' },
+                        borderRadius: '6px',
+                        minHeight: '42px',
+                        fontSize: '14px',
+                        maxWidth: '400px'
+                      }),
+                      menu: (base) => ({
+                        ...base,
+                        zIndex: 9999
+                      })
+                    }}
+                  />
                 </div>
                 
                 <div className="address-field-group">
@@ -849,7 +982,7 @@ const FirstFamily = () => {
           <div className="family-actions">
             <button 
               className="family-secondary-button" 
-              onClick={() => navigate(`/dashboard/colleges/${collegeId}`)}
+              onClick={handleSaveAndClose}
               disabled={saving}
             >
               Save and Close

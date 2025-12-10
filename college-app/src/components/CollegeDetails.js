@@ -79,13 +79,20 @@ const CollegeDetails = () => {
       {/* Header Section */}
       <div className="common-app-header">
         <div className="header-nav">
-          <button className="back-button" onClick={() => navigate('/firstyear/dashboard/college-search')}>
+          
+          <button
+            className="college-back-button"
+            onClick={() => navigate('/firstyear/dashboard/college-search')}
+          >
             ← Back to Search
           </button>
+
         </div>
-        
+
         <div className="college-header-info">
-          <h1 className="college-name">{college.basicInfo?.name || "University of Kansas"}</h1>
+          <h1 className="college-name">
+            {college.basicInfo?.name || "University of Kansas"}
+          </h1>
           <div className="contact-info">
             <span className="email">adm@ku.edu</span>
             <span className="separator">·</span>
@@ -108,15 +115,21 @@ const CollegeDetails = () => {
           <div className="deadlines-grid">
             <div className="deadline-item">
               <span className="deadline-term">Fall 2026</span>
-              <span className="deadline-date">Rolling Admission · July 28, 2026</span>
+              <span className="deadline-date">
+                Rolling Admission · July 28, 2026
+              </span>
             </div>
             <div className="deadline-item">
               <span className="deadline-term">Spring 2026</span>
-              <span className="deadline-date">Rolling Admission · January 13, 2026</span>
+              <span className="deadline-date">
+                Rolling Admission · January 13, 2026
+              </span>
             </div>
             <div className="deadline-item">
               <span className="deadline-term">Summer 2026</span>
-              <span className="deadline-date">Rolling Admission · May 26, 2026</span>
+              <span className="deadline-date">
+                Rolling Admission · May 26, 2026
+              </span>
             </div>
           </div>
         </section>
@@ -125,19 +138,44 @@ const CollegeDetails = () => {
         <section className="content-section">
           <h2 className="section-title">Links</h2>
           <div className="links-grid">
-            <a href="https://ku.edu" target="_blank" rel="noopener noreferrer" className="link-item">
+            <a
+              href="https://ku.edu"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="link-item"
+            >
               College website
             </a>
-            <a href="https://admissions.ku.edu" target="_blank" rel="noopener noreferrer" className="link-item">
+            <a
+              href="https://admissions.ku.edu"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="link-item"
+            >
               Admissions office
             </a>
-            <a href="https://financialaid.ku.edu" target="_blank" rel="noopener noreferrer" className="link-item">
+            <a
+              href="https://financialaid.ku.edu"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="link-item"
+            >
               Financial aid
             </a>
-            <a href="https://visit.ku.edu" target="_blank" rel="noopener noreferrer" className="link-item">
+            <a
+              href="https://visit.ku.edu"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="link-item"
+            >
               Virtual tour
             </a>
-            <a href="https://nces.ed.gov/collegenavigator" target="_blank" rel="noopener noreferrer" className="link-item">
+            <a
+              href="https://nces.ed.gov/collegenavigator"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="link-item"
+            >
               College Navigator
             </a>
           </div>
@@ -147,18 +185,32 @@ const CollegeDetails = () => {
         <section className="content-section">
           <h2 className="section-title">Other deadline information</h2>
           <div className="text-content">
-            <p><strong>Other Deadline Information FY</strong></p>
-            <p><strong>Domestic students:</strong></p>
-            <p>Deadline for scholarship and priority admission consideration is December 1st.</p>
-            <p><strong>International students:</strong></p>
-            <p>Please review deadlines here: <a href="https://world.ku.edu/deadlines">https://world.ku.edu/deadlines</a></p>
+            <p>
+              <strong>Other Deadline Information FY</strong>
+            </p>
+            <p>
+              <strong>Domestic students:</strong>
+            </p>
+            <p>
+              Deadline for scholarship and priority admission consideration is
+              December 1st.
+            </p>
+            <p>
+              <strong>International students:</strong>
+            </p>
+            <p>
+              Please review deadlines here:{" "}
+              <a href="https://world.ku.edu/deadlines">
+                https://world.ku.edu/deadlines
+              </a>
+            </p>
           </div>
         </section>
 
         {/* Application Information */}
         <section className="content-section">
           <h2 className="section-title">Application information</h2>
-          
+
           <div className="info-subsection">
             <h3>Application Fees:</h3>
             <div className="fees-list">
@@ -171,7 +223,9 @@ const CollegeDetails = () => {
             <h3>Standardized test policy:</h3>
             <p>Sometimes required</p>
             <p>See website</p>
-            <a href="#" className="text-link">Test Policy Information</a>
+            <a href="#" className="text-link">
+              Test Policy Information
+            </a>
           </div>
 
           <div className="info-subsection">
@@ -214,10 +268,23 @@ const CollegeDetails = () => {
           <div className="info-subsection">
             <h3>Additional information:</h3>
             <div className="additional-text">
-              <p>*Please do not submit another application if you have already applied through https://apply.ku.edu/.</p>
-              <p>SAT scores include math and evidence-based reading and writing taken March 2016 and after.</p>
-              <p>ACT test scores include English, math & reading. (As of April 2025, science is optional)</p>
-              <p>Professional schools have different admission requirements which can be found at Major-Specific Admission Requirements | University of Kansas.</p>
+              <p>
+                *Please do not submit another application if you have already
+                applied through https://apply.ku.edu/.
+              </p>
+              <p>
+                SAT scores include math and evidence-based reading and writing
+                taken March 2016 and after.
+              </p>
+              <p>
+                ACT test scores include English, math &amp; reading. (As of
+                April 2025, science is optional)
+              </p>
+              <p>
+                Professional schools have different admission requirements which
+                can be found at Major-Specific Admission Requirements |
+                University of Kansas.
+              </p>
             </div>
           </div>
         </section>
@@ -225,27 +292,38 @@ const CollegeDetails = () => {
         {/* Writing Requirements */}
         <section className="content-section">
           <h2 className="section-title">Writing requirements</h2>
-          
-          <div className="writing-section">
-            <div className="writing-item">
-              <div className="writing-header">
-                <span className="writing-title">Common App personal essay</span>
-                <span className="writing-tag optional">Optional</span>
+
+          <div className="college-writing-section">
+            <div className="college-writing-item">
+              <div className="college-writing-header">
+                <span className="college-writing-title">
+                  Common App personal essay
+                </span>
+                <span className="college-writing-tag college-writing-tag-optional">
+                  Optional
+                </span>
               </div>
             </div>
 
-            <div className="writing-item">
-              <div className="writing-header">
-                <span className="writing-title">College questions</span>
+            <div className="college-writing-item">
+              <div className="college-writing-header">
+                <span className="college-writing-title">College questions</span>
               </div>
-              <p className="writing-desc">There are no writing questions for this college.</p>
+              <p className="college-writing-desc">
+                There are no writing questions for this college.
+              </p>
             </div>
 
-            <div className="writing-item">
-              <div className="writing-header">
-                <span className="writing-title">Writing Supplement</span>
+            <div className="college-writing-item">
+              <div className="college-writing-header">
+                <span className="college-writing-title">
+                  Writing Supplement
+                </span>
               </div>
-              <p className="writing-desc">This college does not use a writing supplement for any additional writing requirements.</p>
+              <p className="college-writing-desc">
+                This college does not use a writing supplement for any
+                additional writing requirements.
+              </p>
             </div>
           </div>
         </section>

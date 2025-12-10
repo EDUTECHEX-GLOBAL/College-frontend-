@@ -20,10 +20,7 @@ const ActivitiesForm = () => {
   const [showPreview, setShowPreview] = useState(false);
 
   // Define all activities sections in order
-  const sections = [
-    'activities',
-    'responsibilities'
-  ];
+  const sections = ['activities', 'responsibilities'];
 
   // Main activities form state
   const [activitiesData, setActivitiesData] = useState({
@@ -68,15 +65,33 @@ const ActivitiesForm = () => {
       }
 
       console.log('📥 Fetching activities data...');
-      
       const response = await axiosInstance.get('/api/transfer/activities');
 
       console.log('✅ Activities data received:', response.data);
 
       if (response.data.success && response.data.activities) {
         setActivitiesData(response.data.activities);
-        setProgress(response.data.activitiesProgress || 0);
-        console.log('📊 Activities progress:', response.data.activitiesProgress);
+        const serverProgress = response.data.activitiesProgress || 0;
+        setProgress(serverProgress);
+        console.log('📊 Activities progress:', serverProgress);
+
+        // ✅ NEW: sync progress to localStorage and notify dashboard
+        try {
+          const stored = JSON.parse(localStorage.getItem('userData') || '{}');
+          localStorage.setItem(
+            'userData',
+            JSON.stringify({ ...stored, activitiesProgress: serverProgress })
+          );
+          console.log('💾 Stored activitiesProgress in localStorage:', serverProgress);
+        } catch (e) {
+          console.error('Error storing activitiesProgress in localStorage', e);
+        }
+
+        window.dispatchEvent(
+          new CustomEvent('activitiesProgressUpdate', {
+            detail: { activitiesProgress: serverProgress }
+          })
+        );
       }
     } catch (error) {
       console.error('❌ Error fetching activities:');
@@ -176,9 +191,30 @@ const ActivitiesForm = () => {
           text: 'Activities data saved successfully!' 
         });
         
-        const newProgress = response.data.progress?.activities || response.data.activitiesProgress || 0;
+        const newProgress =
+          response.data.progress?.activities ||
+          response.data.activitiesProgress ||
+          0;
         setProgress(newProgress);
         console.log('📊 Updated progress:', newProgress);
+
+        // ✅ NEW: persist progress + notify dashboard
+        try {
+          const stored = JSON.parse(localStorage.getItem('userData') || '{}');
+          localStorage.setItem(
+            'userData',
+            JSON.stringify({ ...stored, activitiesProgress: newProgress })
+          );
+          console.log('💾 Updated activitiesProgress in localStorage');
+        } catch (e) {
+          console.error('Error updating activitiesProgress in localStorage', e);
+        }
+
+        window.dispatchEvent(
+          new CustomEvent('activitiesProgressUpdate', {
+            detail: { activitiesProgress: newProgress }
+          })
+        );
 
         console.log('✅ Activities saved');
         
@@ -271,13 +307,30 @@ const ActivitiesForm = () => {
         
         setProgress(100);
 
+        // ✅ NEW: store 100 and notify dashboard
+        try {
+          const stored = JSON.parse(localStorage.getItem('userData') || '{}');
+          localStorage.setItem(
+            'userData',
+            JSON.stringify({ ...stored, activitiesProgress: 100 })
+          );
+          console.log('💾 Stored final activitiesProgress = 100 in localStorage');
+        } catch (e) {
+          console.error('Error storing final activitiesProgress', e);
+        }
+
+        window.dispatchEvent(
+          new CustomEvent('activitiesProgressUpdate', {
+            detail: { activitiesProgress: 100 }
+          })
+        );
+
         console.log('✅ Activities submitted successfully!');
         console.log('🔄 Redirecting to dashboard in 3 seconds...');
         
         setTimeout(() => {
           navigate('/transfer/dashboard');
         }, 3000);
-        
       } else {
         throw new Error(response.data.message || 'Failed to save activities');
       }
@@ -287,7 +340,10 @@ const ActivitiesForm = () => {
       console.error('   Status:', error.response?.status);
       console.error('   Message:', error.response?.data?.message || error.message);
       
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to submit activities. Please try again.';
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        'Failed to submit activities. Please try again.';
       setMessage({ 
         type: 'error', 
         text: errorMessage

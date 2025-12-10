@@ -500,3 +500,383 @@
   font-style: italic;
   margin-top: 4px;
 }
+
+.react-select-container {
+  font-size: 14px;
+  position: relative;
+  max-width: 500px;
+}
+
+.react-select__control {
+  border: 1px solid #d1d5db !important;
+  border-radius: 6px !important;
+  min-height: 42px !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-select__control:hover {
+  border-color: #9ca3af !important;
+}
+
+.react-select__control--is-focused {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+}
+
+.react-select__value-container {
+  padding: 8px 12px !important;
+}
+
+.react-select__placeholder {
+  color: #6b7280 !important;
+  font-size: 14px !important;
+}
+
+.react-select__single-value {
+  color: #111827 !important;
+  font-size: 14px !important;
+}
+
+.react-select__indicator {
+  padding: 8px !important;
+  color: #6b7280 !important;
+}
+
+.react-select__indicator:hover {
+  color: #374151 !important;
+}
+
+.react-select__indicator-separator {
+  background-color: #e5e7eb !important;
+}
+
+.react-select__menu {
+  position: absolute !important;
+  width: 100% !important;
+  border-radius: 6px !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+  z-index: 9999 !important;
+  margin-top: 4px !important;
+  background: white !important;
+}
+
+.react-select__menu-list {
+  max-height: 200px !important;
+  overflow-y: auto !important;
+}
+
+.react-select__option {
+  font-size: 14px !important;
+  padding: 10px 12px !important;
+  color: #111827 !important;
+  background-color: white !important;
+  cursor: pointer !important;
+}
+
+.react-select__option:hover {
+  background-color: #f0f9ff !important;
+  color: #111827 !important;
+}
+
+.react-select__option--is-focused {
+  background-color: #f0f9ff !important;
+}
+
+.react-select__option--is-selected {
+  background-color: #2563eb !important;
+  color: white !important;
+}
+
+.react-select__clear-indicator {
+  cursor: pointer !important;
+}
+
+.react-select__clear-indicator:hover {
+  color: #dc2626 !important;
+}
+
+/* Ensure dropdowns don't get clipped */
+.international-question-card {
+  position: relative;
+  overflow: visible !important;
+}
+
+.international-form-section {
+  overflow: visible !important;
+}
+
+/* Z-index hierarchy */
+.international-question-card {
+  z-index: 1;
+}
+
+.react-select__menu {
+  z-index: 9999 !important;
+}
+
+/* Radio group styles */
+.international-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.international-radio-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 8px 0;
+}
+
+.international-radio-input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #2563eb;
+}
+
+.international-radio-label {
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+/* Ensure dropdown appears above other elements */
+.international-form-container {
+  position: relative;
+}
+
+/* Responsive adjustments for react-select */
+@media (max-width: 768px) {
+  .react-select-container {
+    max-width: 100% !important;
+  }
+  
+  .react-select__control {
+    min-height: 44px !important;
+  }
+  
+  .react-select__menu {
+    position: fixed !important;
+    width: calc(100vw - 32px) !important;
+    max-width: none !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .react-select__control {
+    min-height: 46px !important;
+  }
+}
+
+.react-select-container {
+  font-size: 14px;
+  position: relative;
+  max-width: 500px;
+  z-index: 1; /* Ensure it creates stacking context */
+}
+
+/* Remove !important from all declarations to allow inline styles to work */
+.react-select__control {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  min-height: 42px;
+  box-shadow: none;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.react-select__control:hover {
+  border-color: #9ca3af;
+}
+
+.react-select__control--is-focused {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.react-select__value-container {
+  padding: 8px 12px;
+}
+
+.react-select__placeholder {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.react-select__single-value {
+  color: #111827;
+  font-size: 14px;
+}
+
+.react-select__indicator {
+  padding: 8px;
+  color: #6b7280;
+}
+
+.react-select__indicator:hover {
+  color: #374151;
+}
+
+.react-select__indicator-separator {
+  background-color: #e5e7eb;
+}
+
+/* CRITICAL FIX: Menu should be rendered to body via menuPortalTarget */
+/* Remove the menu styles since they'll be handled by portal */
+
+.react-select__option {
+  font-size: 14px;
+  padding: 10px 12px;
+  color: #111827;
+  background-color: white;
+  cursor: pointer;
+}
+
+.react-select__option:hover {
+  background-color: #f0f9ff;
+  color: #111827;
+}
+
+.react-select__option--is-focused {
+  background-color: #f0f9ff;
+}
+
+.react-select__option--is-selected {
+  background-color: #2563eb;
+  color: white;
+}
+
+.react-select__clear-indicator {
+  cursor: pointer;
+}
+
+.react-select__clear-indicator:hover {
+  color: #dc2626;
+}
+
+/* =============================
+   Critical Container Fixes
+   ============================= */
+
+/* Remove overflow hidden from all containers that might clip dropdowns */
+.international-form-container,
+.international-form-content,
+.international-form-section,
+.international-question-card {
+  overflow: visible !important;
+}
+
+/* Ensure question cards allow dropdown overflow */
+.international-question-card {
+  position: relative;
+}
+
+/* Make sure the form sections don't clip content */
+.international-form-section {
+  position: relative;
+}
+
+/* =============================
+   Z-index Management
+   ============================= */
+
+/* Create proper stacking context */
+.international-form-container {
+  position: relative;
+  z-index: 1;
+}
+
+/* Form content should be above normal flow */
+.international-form-content {
+  position: relative;
+  z-index: 2;
+}
+
+/* Question cards should be below dropdowns */
+.international-question-card {
+  position: relative;
+  z-index: 1;
+}
+
+/* =============================
+   Alternative Solution: If menuPortalTarget doesn't work
+   ============================= */
+
+/* If you still have issues, try this approach: */
+.international-question-card {
+  overflow: visible !important;
+  position: relative;
+}
+
+/* Force dropdown to appear above everything */
+.react-select__menu {
+  z-index: 9999 !important;
+  position: absolute !important;
+}
+
+.react-select__menu-list {
+  max-height: 200px !important;
+  overflow-y: auto !important;
+}
+
+/* =============================
+   Responsive fixes
+   ============================= */
+
+@media (max-width: 768px) {
+  .react-select-container {
+    max-width: 100%;
+  }
+  
+  .react-select__control {
+    min-height: 44px;
+  }
+  
+  /* Ensure dropdown fits on mobile */
+  .react-select__menu {
+    position: fixed !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 90vw !important;
+    max-width: 400px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .react-select__control {
+    min-height: 46px;
+  }
+  
+  .react-select__menu {
+    width: 95vw !important;
+    max-width: 350px !important;
+  }
+}
+
+/* =============================
+   Prevent body scroll when dropdown is open
+   ============================= */
+
+body.react-select-dropdown-open {
+  overflow: hidden;
+}
+
+/* =============================
+   Ensure select is clickable
+   ============================= */
+
+.react-select__control {
+  cursor: pointer !important;
+}
+
+.react-select__dropdown-indicator {
+  cursor: pointer !important;
+}

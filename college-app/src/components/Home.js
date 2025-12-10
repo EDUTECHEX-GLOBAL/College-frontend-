@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import "./Home.css";
 import bgImage from "../assets/homebgimg.png";
+import logo from "../assets/Edutech-logo.svg"; // ✅ Added logo import
 
 const Home = () => {
   const navigate = useNavigate();
@@ -28,7 +29,9 @@ const Home = () => {
     >
       {/* ===== Header Section ===== */}
       <header className="header">
-        <div className="logo"> EduTechEX</div>
+        <div className="logo">
+          <img src={logo} alt="EduTechEX Logo" className="logo-img" />
+        </div>
 
         <div className="header-buttons">
           {/* ✅ Added navigation for Sign In */}

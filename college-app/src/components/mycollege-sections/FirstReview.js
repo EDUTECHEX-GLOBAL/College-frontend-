@@ -1,3 +1,5 @@
+// E:\COLLEGEAPPLICATION\college-app\src\components\mycollege-sections\FirstReview.js
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -8,6 +10,10 @@ const API_URL = process.env.REACT_APP_API_URL;
 const Review = () => {
   const { collegeId } = useParams();
   const navigate = useNavigate();
+
+  // 🔹 Fixed base path for FIRST-YEAR students
+  const basePath = '/firstyear/dashboard';
+
   const [reviewData, setReviewData] = useState({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -43,12 +49,12 @@ const Review = () => {
           });
           
           if (response.data.success) {
-            // ✅ FIXED: Handle different response structures properly
+            // ✅ Handle different response structures properly
             let sectionData;
             if (section === 'first-activities') {
               sectionData = response.data.activities || {};
             } else if (section === 'high-school-curriculum') {
-              sectionData = response.data.highSchoolCurriculum || {}; // ✅ FIX: Get from highSchoolCurriculum
+              sectionData = response.data.highSchoolCurriculum || {};
             } else {
               sectionData = response.data[section] || response.data[`${section}Application`] || {};
             }
@@ -71,7 +77,7 @@ const Review = () => {
       
       setReviewData(allData);
       
-      // ✅ FIXED: Get progress from the review endpoint instead of calculating in frontend
+      // ✅ Get progress from the review endpoint instead of calculating in frontend
       try {
         const reviewResponse = await axios.get(`${API_URL}/api/review/${collegeId}/review`, {
           headers: {
@@ -141,7 +147,8 @@ const Review = () => {
 
       if (response.data.success) {
         alert('Application submitted successfully!');
-        navigate('/dashboard/colleges');
+        // ✅ After submit, go to "My Colleges - Overview" (First-Year)
+        navigate(`${basePath}/colleges`);
       } else {
         alert('Failed to submit application. Please try again.');
       }
@@ -159,12 +166,14 @@ const Review = () => {
 
   // Handle save and close
   const handleSaveAndClose = () => {
-    navigate(`/dashboard/colleges/${collegeId}`);
+    // ✅ Back to this college's details for First-Year dashboard
+    navigate(`${basePath}/colleges/${collegeId}`);
   };
 
   // Handle edit section
   const handleEditSection = (section) => {
-    navigate(`/dashboard/colleges/${collegeId}/${section}`);
+    // ✅ Edit section under First-Year dashboard
+    navigate(`${basePath}/colleges/${collegeId}/${section}`);
   };
 
   if (loading) {
@@ -183,7 +192,10 @@ const Review = () => {
       {/* Header Section */}
       <div className="review-header">
         <div className="review-header-nav">
-          <button className="review-back-button" onClick={() => navigate(`/dashboard/colleges/${collegeId}`)}>
+          <button
+            className="review-back-button"
+            onClick={() => navigate(`${basePath}/colleges/${collegeId}`)}
+          >
             ← Back to College Details
           </button>
         </div>

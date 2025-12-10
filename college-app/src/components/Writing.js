@@ -78,8 +78,27 @@ const WritingForm = () => {
 
       if (response.data.success && response.data.writing) {
         setWritingData(response.data.writing);
-        setProgress(response.data.writingProgress || 0);
-        console.log('📊 Writing progress:', response.data.writingProgress);
+        const serverProgress = response.data.writingProgress || 0;
+        setProgress(serverProgress);
+        console.log('📊 Writing progress:', serverProgress);
+
+        // ✅ NEW: sync writingProgress to localStorage and notify dashboard
+        try {
+          const stored = JSON.parse(localStorage.getItem('userData') || '{}');
+          localStorage.setItem(
+            'userData',
+            JSON.stringify({ ...stored, writingProgress: serverProgress })
+          );
+          console.log('💾 Stored writingProgress in localStorage:', serverProgress);
+        } catch (e) {
+          console.error('Error storing writingProgress in localStorage', e);
+        }
+
+        window.dispatchEvent(
+          new CustomEvent('writingProgressUpdate', {
+            detail: { writingProgress: serverProgress }
+          })
+        );
       }
     } catch (error) {
       console.error('❌ Error fetching writing:');
@@ -142,9 +161,30 @@ const WritingForm = () => {
           text: 'Writing data saved successfully!' 
         });
         
-        const newProgress = response.data.progress?.writing || response.data.writingProgress || 0;
+        const newProgress =
+          response.data.progress?.writing ||
+          response.data.writingProgress ||
+          0;
         setProgress(newProgress);
         console.log('📊 Updated progress:', newProgress);
+
+        // ✅ NEW: persist writingProgress + notify dashboard
+        try {
+          const stored = JSON.parse(localStorage.getItem('userData') || '{}');
+          localStorage.setItem(
+            'userData',
+            JSON.stringify({ ...stored, writingProgress: newProgress })
+          );
+          console.log('💾 Updated writingProgress in localStorage');
+        } catch (e) {
+          console.error('Error updating writingProgress in localStorage', e);
+        }
+
+        window.dispatchEvent(
+          new CustomEvent('writingProgressUpdate', {
+            detail: { writingProgress: newProgress }
+          })
+        );
 
         console.log('✅ Writing saved');
         
@@ -237,6 +277,24 @@ const WritingForm = () => {
         
         setProgress(100);
 
+        // ✅ NEW: store 100 and notify dashboard
+        try {
+          const stored = JSON.parse(localStorage.getItem('userData') || '{}');
+          localStorage.setItem(
+            'userData',
+            JSON.stringify({ ...stored, writingProgress: 100 })
+          );
+          console.log('💾 Stored final writingProgress = 100 in localStorage');
+        } catch (e) {
+          console.error('Error storing final writingProgress', e);
+        }
+
+        window.dispatchEvent(
+          new CustomEvent('writingProgressUpdate', {
+            detail: { writingProgress: 100 }
+          })
+        );
+
         console.log('✅ Writing submitted successfully!');
         console.log('🔄 Redirecting to dashboard in 3 seconds...');
         
@@ -253,7 +311,10 @@ const WritingForm = () => {
       console.error('   Status:', error.response?.status);
       console.error('   Message:', error.response?.data?.message || error.message);
       
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to submit writing. Please try again.';
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        'Failed to submit writing. Please try again.';
       setMessage({ 
         type: 'error', 
         text: errorMessage

@@ -29,7 +29,7 @@ const EducationForm = () => {
   // Define all education sections in order
   const sections = [
     'current-school',
-    'other-schools', 
+    'other-schools',
     'colleges',
     'grades',
     'current-courses',
@@ -145,7 +145,7 @@ const EducationForm = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      
+
       if (!token) {
         console.warn('⚠️ No token found - redirecting to sign-in');
         navigate('/sign-in');
@@ -153,31 +153,53 @@ const EducationForm = () => {
       }
 
       console.log('📥 Fetching education data...');
-      
+
       const response = await axiosInstance.get('/api/education-transfer');
 
       console.log('✅ Education data received:', response.data);
 
       if (response.data.success && response.data.education) {
         setEducationData(response.data.education);
-        setProgress(response.data.educationProgress || 0);
-        console.log('📊 Education progress:', response.data.educationProgress);
+        const serverProgress = response.data.educationProgress || 0;
+        setProgress(serverProgress);
+        console.log('📊 Education progress:', serverProgress);
+
+        // NEW: persist progress locally so Dashboard can merge it on next load
+        try {
+          const storedUser = localStorage.getItem('userData');
+          if (storedUser) {
+            const parsed = JSON.parse(storedUser);
+            localStorage.setItem(
+              'userData',
+              JSON.stringify({ ...parsed, educationProgress: serverProgress })
+            );
+          }
+        } catch (e) {
+          console.error('Error storing educationProgress in localStorage', e);
+        }
+
+        // 🔔 Notify dashboard on initial load as well
+        window.dispatchEvent(
+          new CustomEvent('educationProgressUpdate', {
+            detail: { educationProgress: serverProgress }
+          })
+        );
       }
     } catch (error) {
       console.error('❌ Error fetching education:');
       console.error('   Status:', error.response?.status);
       console.error('   Message:', error.response?.data?.message || error.message);
-      
+
       if (error.response?.status === 401) {
         console.error('❌ Unauthorized - redirecting to sign-in');
         localStorage.removeItem('token');
         navigate('/sign-in');
         return;
       }
-      
-      setMessage({ 
-        type: 'error', 
-        text: 'Failed to load education data. Please try again.' 
+
+      setMessage({
+        type: 'error',
+        text: 'Failed to load education data. Please try again.'
       });
     } finally {
       setLoading(false);
@@ -255,7 +277,7 @@ const EducationForm = () => {
     try {
       setSaving(true);
       const token = localStorage.getItem('token');
-      
+
       if (!token) {
         console.warn('⚠️ No token found - redirecting to sign-in');
         navigate('/sign-in');
@@ -269,18 +291,43 @@ const EducationForm = () => {
       console.log('✅ Backend response:', response.data);
 
       if (response.data.success) {
-        setMessage({ 
-          type: 'success', 
-          text: 'Education data saved successfully!' 
+        setMessage({
+          type: 'success',
+          text: 'Education data saved successfully!'
         });
-        
-        // ✅ FIXED: Check both possible field names from backend
-        const newProgress = response.data.progress?.education || response.data.educationProgress || 0;
+
+        // Use backend educationProgress
+        const newProgress =
+          response.data.educationProgress ||
+          response.data.progress?.education ||
+          0;
+
         setProgress(newProgress);
         console.log('📊 Updated progress:', newProgress);
 
+        // NEW: persist progress locally
+        try {
+          const storedUser = localStorage.getItem('userData');
+          if (storedUser) {
+            const parsed = JSON.parse(storedUser);
+            localStorage.setItem(
+              'userData',
+              JSON.stringify({ ...parsed, educationProgress: newProgress })
+            );
+          }
+        } catch (e) {
+          console.error('Error storing educationProgress in localStorage', e);
+        }
+
+        // 🔔 Notify dashboard about updated education progress
+        window.dispatchEvent(
+          new CustomEvent('educationProgressUpdate', {
+            detail: { educationProgress: newProgress }
+          })
+        );
+
         console.log('✅ Education saved');
-        
+
         setTimeout(() => {
           setMessage({ type: '', text: '' });
         }, 3000);
@@ -291,10 +338,10 @@ const EducationForm = () => {
       console.error('❌ Error saving education:');
       console.error('   Status:', error.response?.status);
       console.error('   Message:', error.response?.data?.message || error.message);
-      
-      setMessage({ 
-        type: 'error', 
-        text: error.response?.data?.message || 'Failed to save education. Please try again.' 
+
+      setMessage({
+        type: 'error',
+        text: error.response?.data?.message || 'Failed to save education. Please try again.'
       });
     } finally {
       setSaving(false);
@@ -304,7 +351,7 @@ const EducationForm = () => {
   // Save and Continue with correct navigation
   const handleSaveAndContinue = () => {
     saveEducation(activeSection);
-    
+
     const currentIndex = sections.indexOf(activeSection);
     if (currentIndex < sections.length - 1) {
       setTimeout(() => {
@@ -335,12 +382,12 @@ const EducationForm = () => {
     try {
       setSaving(true);
       const token = localStorage.getItem('token');
-      
+
       if (!token) {
         console.warn('⚠️ No token found - redirecting to sign-in');
-        setMessage({ 
-          type: 'error', 
-          text: 'Session expired. Please sign in again.' 
+        setMessage({
+          type: 'error',
+          text: 'Session expired. Please sign in again.'
         });
         setTimeout(() => {
           navigate('/sign-in');
@@ -370,32 +417,54 @@ const EducationForm = () => {
       const response = await axiosInstance.put('/api/education-transfer', finalData);
 
       if (response.data.success) {
-        setMessage({ 
-          type: 'success', 
-          text: '🎉 Education information completed successfully!' 
+        setMessage({
+          type: 'success',
+          text: '🎉 Education information completed successfully!'
         });
-        
+
         setProgress(100);
+
+        // NEW: persist final 100% locally
+        try {
+          const storedUser = localStorage.getItem('userData');
+          if (storedUser) {
+            const parsed = JSON.parse(storedUser);
+            localStorage.setItem(
+              'userData',
+              JSON.stringify({ ...parsed, educationProgress: 100 })
+            );
+          }
+        } catch (e) {
+          console.error('Error storing final educationProgress in localStorage', e);
+        }
+
+        // 🔔 Notify dashboard that education is fully complete
+        window.dispatchEvent(
+          new CustomEvent('educationProgressUpdate', {
+            detail: { educationProgress: 100 }
+          })
+        );
 
         console.log('✅ Education submitted successfully!');
         console.log('🔄 Redirecting to dashboard in 3 seconds...');
-        
+
         setTimeout(() => {
           navigate('/transfer/dashboard');
         }, 3000);
-        
       } else {
         throw new Error(response.data.message || 'Failed to save education');
       }
-      
     } catch (error) {
       console.error('❌ Error submitting education:');
       console.error('   Status:', error.response?.status);
       console.error('   Message:', error.response?.data?.message || error.message);
-      
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to submit education. Please try again.';
-      setMessage({ 
-        type: 'error', 
+
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        'Failed to submit education. Please try again.';
+      setMessage({
+        type: 'error',
         text: errorMessage
       });
     } finally {
@@ -424,16 +493,16 @@ const EducationForm = () => {
     switch (activeSection) {
       case 'current-school':
         return (
-          <CurrentSchoolSection 
-            educationData={educationData} 
+          <CurrentSchoolSection
+            educationData={educationData}
             handleInputChange={handleInputChange}
             handleNestedChange={handleNestedChange}
           />
         );
       case 'other-schools':
         return (
-          <OtherSchoolsSection 
-            educationData={educationData} 
+          <OtherSchoolsSection
+            educationData={educationData}
             handleInputChange={handleInputChange}
             handleArrayChange={handleArrayChange}
             addArrayItem={addArrayItem}
@@ -442,8 +511,8 @@ const EducationForm = () => {
         );
       case 'colleges':
         return (
-          <CollegesSection 
-            educationData={educationData} 
+          <CollegesSection
+            educationData={educationData}
             handleInputChange={handleInputChange}
             handleArrayChange={handleArrayChange}
             addArrayItem={addArrayItem}
@@ -452,15 +521,15 @@ const EducationForm = () => {
         );
       case 'grades':
         return (
-          <GradesSection 
-            educationData={educationData} 
+          <GradesSection
+            educationData={educationData}
             handleInputChange={handleInputChange}
           />
         );
       case 'current-courses':
         return (
-          <CurrentCoursesSection 
-            educationData={educationData} 
+          <CurrentCoursesSection
+            educationData={educationData}
             handleInputChange={handleInputChange}
             handleArrayChange={handleArrayChange}
             addArrayItem={addArrayItem}
@@ -469,8 +538,8 @@ const EducationForm = () => {
         );
       case 'honors':
         return (
-          <HonorsSection 
-            educationData={educationData} 
+          <HonorsSection
+            educationData={educationData}
             handleInputChange={handleInputChange}
             handleArrayChange={handleArrayChange}
             addArrayItem={addArrayItem}
@@ -479,8 +548,8 @@ const EducationForm = () => {
         );
       case 'community-organizations':
         return (
-          <CommunityOrganizationsSection 
-            educationData={educationData} 
+          <CommunityOrganizationsSection
+            educationData={educationData}
             handleInputChange={handleInputChange}
             handleArrayChange={handleArrayChange}
             addArrayItem={addArrayItem}
@@ -489,15 +558,15 @@ const EducationForm = () => {
         );
       case 'future-plans':
         return (
-          <FuturePlansSection 
-            educationData={educationData} 
+          <FuturePlansSection
+            educationData={educationData}
             handleInputChange={handleInputChange}
           />
         );
       case 'documents':
         return (
-          <DocumentsUploadSection 
-            educationData={educationData} 
+          <DocumentsUploadSection
+            educationData={educationData}
             handleInputChange={handleInputChange}
           />
         );
@@ -516,8 +585,8 @@ const EducationForm = () => {
         <h1>Complete your Education Information</h1>
         <div className="progress-section">
           <div className="progress-bar">
-            <div 
-              className="progress-fill" 
+            <div
+              className="progress-fill"
               style={{ width: `${progress}%` }}
             ></div>
           </div>
@@ -534,7 +603,7 @@ const EducationForm = () => {
         )}
 
         {showPreview ? (
-          <EducationPreview 
+          <EducationPreview
             educationData={educationData}
             onEditSection={handleEditSection}
             onBackToForm={handleBackToForm}
@@ -548,17 +617,17 @@ const EducationForm = () => {
 
             {/* Action Buttons */}
             <div className="form-actions">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="secondary-button"
                 onClick={handleSaveOnly}
                 disabled={saving}
               >
                 {saving ? 'Saving...' : 'Save Section'}
               </button>
-              
-              <button 
-                type="button" 
+
+              <button
+                type="button"
                 className="primary-button"
                 onClick={handleSaveAndContinue}
                 disabled={saving}

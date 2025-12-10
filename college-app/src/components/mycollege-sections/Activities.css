@@ -717,3 +717,122 @@
 .activities-progress {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
+
+.react-select-wrapper {
+  margin-bottom: 8px;
+}
+
+.react-select-container {
+  font-size: 14px;
+}
+
+.react-select__control {
+  border: 1px solid #d1d5db !important;
+  border-radius: 6px !important;
+  min-height: 42px !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-select__control:hover {
+  border-color: #9ca3af !important;
+}
+
+.react-select__control--is-focused {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+}
+
+.react-select__value-container {
+  padding: 8px 12px !important;
+}
+
+.react-select__placeholder {
+  color: #6b7280 !important;
+  font-size: 14px !important;
+}
+
+.react-select__single-value {
+  color: #111827 !important;
+  font-size: 14px !important;
+}
+
+.react-select__indicator {
+  padding: 8px !important;
+  color: #6b7280 !important;
+}
+
+.react-select__indicator:hover {
+  color: #374151 !important;
+}
+
+.react-select__indicator-separator {
+  background-color: #e5e7eb !important;
+}
+
+.react-select__menu {
+  border-radius: 6px !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+  z-index: 1000 !important;
+}
+
+.react-select__option {
+  font-size: 14px !important;
+  padding: 10px 12px !important;
+  color: #111827 !important;
+  background-color: white !important;
+}
+
+.react-select__option--is-focused {
+  background-color: #f0f9ff !important;
+  color: #111827 !important;
+}
+
+.react-select__option--is-selected {
+  background-color: #2563eb !important;
+  color: white !important;
+}
+
+.react-select__option--is-disabled {
+  color: #9ca3af !important;
+  background-color: #f9fafb !important;
+  cursor: not-allowed !important;
+}
+
+.react-select__clear-indicator {
+  cursor: pointer !important;
+}
+
+.react-select__clear-indicator:hover {
+  color: #dc2626 !important;
+}
+
+/* Make sure dropdown appears above confirmation dialog */
+.react-select__menu {
+  z-index: 1001 !important;
+}
+
+.remove-confirmation-dialog {
+  z-index: 1002 !important;
+}
+
+/* =============================
+   Responsive adjustments for react-select
+   ============================= */
+
+@media (max-width: 768px) {
+  .react-select__control {
+    min-height: 44px !important;
+  }
+  
+  .react-select__value-container {
+    padding: 10px 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .react-select__control {
+    min-height: 46px !important;
+  }
+}

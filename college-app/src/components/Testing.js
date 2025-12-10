@@ -26,7 +26,7 @@ const TestingForm = () => {
   const [message, setMessage] = useState({ type: '', text: '' });
   const [activeSection, setActiveSection] = useState('tests-taken');
 
-  // ✅ Map selected tests to their route sections
+  // Map selected tests to their route sections
   const testTypeMapping = {
     'ACT Tests': 'act-tests',
     'SAT Tests': 'sat-tests',
@@ -83,30 +83,60 @@ const TestingForm = () => {
     }
   });
 
-  // ✅ Get active sections based on selections
-  const getActiveSections = () => {
-    const sections = ['tests-taken'];
-    
-    if (formData.selfReportTests === true) {
-      if (formData.selectedTests && formData.selectedTests.length > 0) {
-        formData.selectedTests.forEach(testName => {
-          const sectionName = testTypeMapping[testName];
-          if (sectionName && !sections.includes(sectionName)) {
-            sections.push(sectionName);
-          }
-        });
+  // Simple local testing progress (count non‑empty fields)
+  const calculateTestingProgressLocal = (testingData) => {
+    const testFields = [
+      'selfReportTests', 'selectedTests', 'internationalApplicant',
+      'actTests', 'satTests', 'satSubjectTests', 'apTests',
+      'ibTests', 'cambridgeTests', 'toeflTests', 'pteTests',
+      'ieltsTests', 'duolingoTests', 'seniorSecondaryExams'
+    ];
+
+    let completed = 0;
+
+    testFields.forEach(field => {
+      const fieldData = testingData[field];
+      if (!fieldData) return;
+
+      if (Array.isArray(fieldData)) {
+        if (fieldData.length > 0) completed++;
+      } else if (typeof fieldData === 'string' && fieldData.trim() !== '') {
+        completed++;
+      } else if (typeof fieldData === 'boolean') {
+        completed++;
+      } else if (typeof fieldData === 'number' && fieldData > 0) {
+        completed++;
+      } else if (typeof fieldData === 'object' && Object.keys(fieldData).length > 0) {
+        completed++;
       }
+    });
+
+    return Math.round((completed / testFields.length) * 100);
+  };
+
+  // Get active sections based on selections (can take override snapshot)
+  const getActiveSections = (dataOverride) => {
+    const data = dataOverride || formData;
+    const sections = ['tests-taken'];
+
+    if (data.selfReportTests === true && Array.isArray(data.selectedTests)) {
+      data.selectedTests.forEach(testName => {
+        const sectionName = testTypeMapping[testName];
+        if (sectionName && !sections.includes(sectionName)) {
+          sections.push(sectionName);
+        }
+      });
     }
-    
+
     if (!sections.includes('senior-secondary-exams')) {
       sections.push('senior-secondary-exams');
     }
-    
+
     console.log('📋 Active sections calculated:', sections);
     return sections;
   };
 
-  // ✅ Store active sections in localStorage for DashboardLayout to read
+  // Store active sections in localStorage for DashboardLayout to read
   useEffect(() => {
     const activeSections = getActiveSections();
     localStorage.setItem('testingActiveSections', JSON.stringify(activeSections));
@@ -115,10 +145,9 @@ const TestingForm = () => {
 
   // Extract section from URL path
   useEffect(() => {
-    const path = location.pathname;
-    const pathParts = path.split('/');
+    const pathParts = location.pathname.split('/');
     const sectionFromUrl = pathParts[pathParts.length - 1];
-    
+
     const allPossibleSections = [
       'tests-taken',
       'act-tests',
@@ -133,7 +162,7 @@ const TestingForm = () => {
       'duolingo-tests',
       'senior-secondary-exams'
     ];
-    
+
     if (allPossibleSections.includes(sectionFromUrl)) {
       setActiveSection(sectionFromUrl);
     } else {
@@ -141,12 +170,12 @@ const TestingForm = () => {
     }
   }, [location.pathname, navigate]);
 
-  // ✅ UPDATED: Fetch testing data from new API endpoint
+  // Fetch testing data from API
   const fetchTestingData = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      
+
       if (!token) {
         console.log('⚠️ No token found, redirecting to sign-in');
         navigate('/sign-in');
@@ -154,22 +183,15 @@ const TestingForm = () => {
       }
 
       console.log('📥 Fetching testing data from /api/testing...');
-      
-      // ✅ CHANGED: Use new testing endpoint
       const response = await axiosInstance.get('/api/testing');
-
       console.log('📦 Response received:', response.data);
 
       if (response.data.success && response.data.testing) {
         const testingData = response.data.testing;
-        
-        console.log('✅ Testing data loaded successfully');
-        console.log('📋 Data:', testingData);
-        
-        setFormData(prev => ({
-          ...prev,
+
+        const merged = {
+          ...formData,
           ...testingData,
-          // Ensure arrays exist even if empty
           actTests: testingData.actTests || [],
           satTests: testingData.satTests || [],
           satSubjectTests: testingData.satSubjectTests || [],
@@ -182,18 +204,22 @@ const TestingForm = () => {
           duolingoTests: testingData.duolingoTests || [],
           seniorSecondaryExams: testingData.seniorSecondaryExams || [],
           selectedTests: testingData.selectedTests || []
-        }));
+        };
+
+        setFormData(merged);
+
+        // also sync initial testingProgress into localStorage for dashboard
+        const initialProgress = calculateTestingProgressLocal(merged);
+        const storedUserData = JSON.parse(localStorage.getItem('userData') || '{}');
+        localStorage.setItem(
+          'userData',
+          JSON.stringify({ ...storedUserData, testingProgress: initialProgress })
+        );
       }
     } catch (error) {
       console.error('❌ Error fetching testing data:', error);
-      
-      if (error.response) {
-        console.error('Response status:', error.response.status);
-        console.error('Response data:', error.response.data);
-      }
-      
-      setMessage({ 
-        type: 'error', 
+      setMessage({
+        type: 'error',
         text: 'Failed to load testing data. ' + (error.response?.data?.message || error.message)
       });
     } finally {
@@ -206,7 +232,6 @@ const TestingForm = () => {
   }, []);
 
   const handleInputChange = (field, value) => {
-    console.log('📝 Input change:', field, '=', value);
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -214,7 +239,6 @@ const TestingForm = () => {
   };
 
   const handleArrayChange = (field, index, subField, value) => {
-    console.log('📝 Array change:', field, '[', index, '].', subField, '=', value);
     setFormData(prev => {
       const updatedArray = [...prev[field]];
       if (subField) {
@@ -230,7 +254,6 @@ const TestingForm = () => {
   };
 
   const addTestEntry = (field, template) => {
-    console.log('➕ Adding test entry to:', field);
     setFormData(prev => ({
       ...prev,
       [field]: [...prev[field], template]
@@ -238,89 +261,95 @@ const TestingForm = () => {
   };
 
   const removeTestEntry = (field, index) => {
-    console.log('➖ Removing test entry from:', field, 'at index:', index);
     setFormData(prev => ({
       ...prev,
       [field]: prev[field].filter((_, i) => i !== index)
     }));
   };
 
-  // ✅ UPDATED: Save testing data to new API endpoint
+  // Save testing data with localStorage support
   const saveTestingData = async () => {
     try {
       setSaving(true);
       const token = localStorage.getItem('token');
-      
+
       if (!token) {
         console.log('⚠️ No token found, redirecting to sign-in');
         navigate('/sign-in');
-        return false;
+        return { ok: false, data: null };
       }
 
       console.log('💾 Saving testing data to /api/testing...');
-      console.log('📦 Data to save:', formData);
-
-      // ✅ CHANGED: Use new testing endpoint and send data directly (not nested)
+      const localProgress = calculateTestingProgressLocal(formData);
       const response = await axiosInstance.put('/api/testing', formData);
-
       console.log('📦 Save response:', response.data);
 
       if (response.data.success) {
-        console.log('✅ Testing data saved successfully');
-        setMessage({ 
-          type: 'success', 
-          text: 'Testing data saved successfully!' 
+        setMessage({
+          type: 'success',
+          text: 'Testing data saved successfully!'
         });
-        
+
+        // persist testingProgress for dashboard cards
+        try {
+          const storedUserData = JSON.parse(localStorage.getItem('userData') || '{}');
+          const updatedUserData = {
+            ...storedUserData,
+            testingProgress: localProgress
+          };
+          localStorage.setItem('userData', JSON.stringify(updatedUserData));
+        } catch (e) {
+          console.error('Error updating userData.testingProgress in localStorage', e);
+        }
+
+        // dispatch progress event for Dashboard.js listener
+        window.dispatchEvent(
+          new CustomEvent('testingProgressUpdate', {
+            detail: { testingProgress: localProgress }
+          })
+        );
+
         setTimeout(() => {
           setMessage({ type: '', text: '' });
         }, 3000);
-        
-        return true;
+
+        // write latest activeSections snapshot as well
+        const sections = getActiveSections(formData);
+        localStorage.setItem('testingActiveSections', JSON.stringify(sections));
+
+        return { ok: true, data: { ...formData } };
       }
-      return false;
+      return { ok: false, data: null };
     } catch (error) {
       console.error('❌ Error saving testing data:', error);
-      
-      if (error.response) {
-        console.error('Response status:', error.response.status);
-        console.error('Response data:', error.response.data);
-      }
-      
-      setMessage({ 
-        type: 'error', 
+      setMessage({
+        type: 'error',
         text: 'Failed to save testing data. ' + (error.response?.data?.message || error.message)
       });
-      return false;
+      return { ok: false, data: null };
     } finally {
       setSaving(false);
     }
   };
 
+  // Save & continue through sections
   const handleSaveAndContinue = async () => {
-    const saved = await saveTestingData();
-    
-    if (!saved) {
-      console.log('❌ Save failed, not navigating');
+    const { ok, data } = await saveTestingData();
+
+    if (!ok || !data) {
       return;
     }
-    
-    const activeSections = getActiveSections();
-    const currentIndex = activeSections.indexOf(activeSection);
-    
-    console.log('➡️ Navigation Logic:');
-    console.log('   Current section:', activeSection);
-    console.log('   Current index:', currentIndex);
-    console.log('   Active sections:', activeSections);
-    
-    if (currentIndex < activeSections.length - 1) {
-      const nextSection = activeSections[currentIndex + 1];
-      console.log('➡️ Navigating to next section:', nextSection);
+
+    const sectionsFromSaved = getActiveSections(data);
+    const currentIndex = sectionsFromSaved.indexOf(activeSection);
+
+    if (currentIndex > -1 && currentIndex < sectionsFromSaved.length - 1) {
+      const nextSection = sectionsFromSaved[currentIndex + 1];
       setTimeout(() => {
+        setActiveSection(nextSection);
         navigate(`/transfer/dashboard/testing/${nextSection}`);
       }, 500);
     } else {
-      console.log('✅ Last section reached, returning to dashboard');
       setTimeout(() => {
         navigate('/transfer/dashboard');
       }, 500);
@@ -328,7 +357,6 @@ const TestingForm = () => {
   };
 
   const handleBackToDashboard = () => {
-    console.log('⬅️ Navigating back to dashboard');
     navigate('/transfer/dashboard');
   };
 
@@ -342,9 +370,9 @@ const TestingForm = () => {
   }
 
   const getButtonText = () => {
-    const activeSections = getActiveSections();
-    const currentIndex = activeSections.indexOf(activeSection);
-    const isLastSection = currentIndex === activeSections.length - 1;
+    const sections = getActiveSections();
+    const currentIndex = sections.indexOf(activeSection);
+    const isLastSection = currentIndex === sections.length - 1;
     return isLastSection ? 'Save & Finish' : 'Save & Continue →';
   };
 
@@ -365,59 +393,124 @@ const TestingForm = () => {
           </div>
         )}
 
-        {/* Debug info */}
-        <div style={{ padding: '10px', background: '#f0f0f0', marginBottom: '20px', borderRadius: '4px', fontSize: '12px' }}>
-          <div><strong>Debug Info:</strong></div>
-          <div>Active Section: <strong>{activeSection}</strong></div>
-          <div>Self Report Tests: <strong>{String(formData.selfReportTests)}</strong></div>
-          <div>Selected Tests: <strong>{formData.selectedTests?.join(', ') || 'None'}</strong></div>
-          <div>International Applicant: <strong>{String(formData.internationalApplicant)}</strong></div>
-          <div>Active Sections Flow: <strong>{getActiveSections().join(' → ')}</strong></div>
-          <div>Current Position: <strong>{getActiveSections().indexOf(activeSection) + 1} of {getActiveSections().length}</strong></div>
-        </div>
-
         {activeSection === 'tests-taken' && (
           <TestsTaken formData={formData} handleInputChange={handleInputChange} />
         )}
         {activeSection === 'act-tests' && (
-          <ACTTests formData={formData} handleInputChange={handleInputChange} handleArrayChange={handleArrayChange} addTestEntry={addTestEntry} removeTestEntry={removeTestEntry} />
+          <ACTTests
+            formData={formData}
+            handleInputChange={handleInputChange}
+            handleArrayChange={handleArrayChange}
+            addTestEntry={addTestEntry}
+            removeTestEntry={removeTestEntry}
+          />
         )}
         {activeSection === 'sat-tests' && (
-          <SATTests formData={formData} handleInputChange={handleInputChange} handleArrayChange={handleArrayChange} addTestEntry={addTestEntry} removeTestEntry={removeTestEntry} />
+          <SATTests
+            formData={formData}
+            handleInputChange={handleInputChange}
+            handleArrayChange={handleArrayChange}
+            addTestEntry={addTestEntry}
+            removeTestEntry={removeTestEntry}
+          />
         )}
         {activeSection === 'sat-subject-tests' && (
-          <SATSubjectTests formData={formData} handleInputChange={handleInputChange} handleArrayChange={handleArrayChange} addTestEntry={addTestEntry} removeTestEntry={removeTestEntry} />
+          <SATSubjectTests
+            formData={formData}
+            handleInputChange={handleInputChange}
+            handleArrayChange={handleArrayChange}
+            addTestEntry={addTestEntry}
+            removeTestEntry={removeTestEntry}
+          />
         )}
         {activeSection === 'ap-tests' && (
-          <APTests formData={formData} handleInputChange={handleInputChange} handleArrayChange={handleArrayChange} addTestEntry={addTestEntry} removeTestEntry={removeTestEntry} />
+          <APTests
+            formData={formData}
+            handleInputChange={handleInputChange}
+            handleArrayChange={handleArrayChange}
+            addTestEntry={addTestEntry}
+            removeTestEntry={removeTestEntry}
+          />
         )}
         {activeSection === 'ib-tests' && (
-          <IBTests formData={formData} handleInputChange={handleInputChange} handleArrayChange={handleArrayChange} addTestEntry={addTestEntry} removeTestEntry={removeTestEntry} />
+          <IBTests
+            formData={formData}
+            handleInputChange={handleInputChange}
+            handleArrayChange={handleArrayChange}
+            addTestEntry={addTestEntry}
+            removeTestEntry={removeTestEntry}
+          />
         )}
         {activeSection === 'cambridge-tests' && (
-          <CambridgeTests formData={formData} handleInputChange={handleInputChange} handleArrayChange={handleArrayChange} addTestEntry={addTestEntry} removeTestEntry={removeTestEntry} />
+          <CambridgeTests
+            formData={formData}
+            handleInputChange={handleInputChange}
+            handleArrayChange={handleArrayChange}
+            addTestEntry={addTestEntry}
+            removeTestEntry={removeTestEntry}
+          />
         )}
         {activeSection === 'toefl-tests' && (
-          <TOEFLTests formData={formData} handleInputChange={handleInputChange} handleArrayChange={handleArrayChange} addTestEntry={addTestEntry} removeTestEntry={removeTestEntry} />
+          <TOEFLTests
+            formData={formData}
+            handleInputChange={handleInputChange}
+            handleArrayChange={handleArrayChange}
+            addTestEntry={addTestEntry}
+            removeTestEntry={removeTestEntry}
+          />
         )}
         {activeSection === 'pte-tests' && (
-          <PTETests formData={formData} handleInputChange={handleInputChange} handleArrayChange={handleArrayChange} addTestEntry={addTestEntry} removeTestEntry={removeTestEntry} />
+          <PTETests
+            formData={formData}
+            handleInputChange={handleInputChange}
+            handleArrayChange={handleArrayChange}
+            addTestEntry={addTestEntry}
+            removeTestEntry={removeTestEntry}
+          />
         )}
         {activeSection === 'ielts-tests' && (
-          <IELTSTests formData={formData} handleInputChange={handleInputChange} handleArrayChange={handleArrayChange} addTestEntry={addTestEntry} removeTestEntry={removeTestEntry} />
+          <IELTSTests
+            formData={formData}
+            handleInputChange={handleInputChange}
+            handleArrayChange={handleArrayChange}
+            addTestEntry={addTestEntry}
+            removeTestEntry={removeTestEntry}
+          />
         )}
         {activeSection === 'duolingo-tests' && (
-          <DuolingoTests formData={formData} handleInputChange={handleInputChange} handleArrayChange={handleArrayChange} addTestEntry={addTestEntry} removeTestEntry={removeTestEntry} />
+          <DuolingoTests
+            formData={formData}
+            handleInputChange={handleInputChange}
+            handleArrayChange={handleArrayChange}
+            addTestEntry={addTestEntry}
+            removeTestEntry={removeTestEntry}
+          />
         )}
         {activeSection === 'senior-secondary-exams' && (
-          <SeniorSecondaryExams formData={formData} handleInputChange={handleInputChange} handleArrayChange={handleArrayChange} addTestEntry={addTestEntry} removeTestEntry={removeTestEntry} />
+          <SeniorSecondaryExams
+            formData={formData}
+            handleInputChange={handleInputChange}
+            handleArrayChange={handleArrayChange}
+            addTestEntry={addTestEntry}
+            removeTestEntry={removeTestEntry}
+          />
         )}
 
         <div className="form-actions">
-          <button type="button" className="secondary-button" onClick={saveTestingData} disabled={saving}>
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={saveTestingData}
+            disabled={saving}
+          >
             {saving ? 'Saving...' : 'Save Section'}
           </button>
-          <button type="button" className="primary-button" onClick={handleSaveAndContinue} disabled={saving}>
+          <button
+            type="button"
+            className="primary-button"
+            onClick={handleSaveAndContinue}
+            disabled={saving}
+          >
             {saving ? 'Saving...' : getButtonText()}
           </button>
         </div>

@@ -26,19 +26,28 @@
   padding: 20px 40px 0;
 }
 
-.back-button {
-  background: none;
+.college-back-button {
+  background: #2C5AA0;
+  color: white;
   border: none;
-  color: #1976d2;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  padding: 8px 0;
-  cursor: pointer;
-  margin-bottom: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s ease, transform 0.1s ease;
 }
 
-.back-button:hover {
-  text-decoration: underline;
+.college-back-button:hover {
+  background: #1E3D6F;
+  transform: translateY(-1px);
+}
+
+.college-back-button:active {
+  transform: translateY(0);
 }
 
 .college-header-info {
@@ -304,56 +313,57 @@
 }
 
 /* =============================
-   Writing Section
+   Writing Section (scoped for CollegeDetails)
    ============================= */
 
-.writing-section {
+.college-writing-section {
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
-.writing-item {
+.college-writing-item {
   padding-bottom: 24px;
   border-bottom: 1px solid #f0f0f0;
 }
 
-.writing-item:last-child {
+.college-writing-item:last-child {
   padding-bottom: 0;
   border-bottom: none;
 }
 
-.writing-header {
+.college-writing-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
 }
 
-.writing-title {
+.college-writing-title {
   font-weight: 600;
   color: #333;
   font-size: 15px;
 }
 
-.writing-tag {
+.college-writing-tag {
   font-size: 12px;
   font-weight: 600;
   padding: 4px 8px;
   border-radius: 4px;
 }
 
-.writing-tag.optional {
+.college-writing-tag-optional {
   background: #fff3e0;
   color: #e65100;
 }
 
-.writing-desc {
+.college-writing-desc {
   color: #666;
   font-size: 14px;
   margin: 0;
   line-height: 1.5;
 }
+
 
 /* =============================
    Remove College Button

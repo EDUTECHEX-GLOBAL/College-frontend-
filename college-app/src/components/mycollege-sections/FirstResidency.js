@@ -168,11 +168,20 @@ const FirstResidency = () => {
   const handleSaveAndContinue = async () => {
     try {
       await saveResidencyData(formData);
-      // Navigate to next section - adjust as needed
-      navigate(`/dashboard/colleges/${collegeId}/international`);
+      // FIXED: Changed to firstyear/dashboard prefix
+      navigate(`/firstyear/dashboard/colleges/${collegeId}/international`);
     } catch (error) {
       alert('Failed to save residency data. Please try again.');
     }
+  };
+
+  const handleBack = () => {
+    // FIXED: Changed to firstyear/dashboard prefix
+    navigate(`/firstyear/dashboard/colleges/${collegeId}`);
+  };
+
+  const handleSaveAndClose = () => {
+    handleBack();
   };
 
   // Helper function to format date for display
@@ -217,7 +226,8 @@ const FirstResidency = () => {
       {/* Header Section */}
       <div className="residency-form-header">
         <div className="residency-header-nav">
-          <button className="residency-back-button" onClick={() => navigate(`/dashboard/colleges/${collegeId}`)}>
+          {/* FIXED: Updated onClick handler */}
+          <button className="residency-back-button" onClick={handleBack}>
             ← Back to College Details
           </button>
         </div>
@@ -478,9 +488,10 @@ const FirstResidency = () => {
 
           {/* Action Buttons */}
           <div className="residency-actions">
+            {/* FIXED: Updated onClick handler */}
             <button 
               className="residency-secondary-button" 
-              onClick={() => navigate(`/dashboard/colleges/${collegeId}`)}
+              onClick={handleSaveAndClose}
               disabled={saving}
             >
               Save and Close
@@ -492,12 +503,13 @@ const FirstResidency = () => {
             >
               {saving ? 'Saving...' : 'Save'}
             </button>
+            {/* FIXED: Updated button text to be consistent with other components */}
             <button 
               className="residency-primary-button" 
               onClick={handleSaveAndContinue}
               disabled={saving}
             >
-              {saving ? 'Saving...' : 'Continue'}
+              {saving ? 'Saving...' : 'Save and Continue'}
             </button>
           </div>
         </section>

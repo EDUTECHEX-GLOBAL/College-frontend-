@@ -159,10 +159,20 @@ const FirstContacts = () => {
   const handleSaveAndContinue = async () => {
     try {
       await saveContactsData(formData);
-      navigate(`/dashboard/colleges/${collegeId}/family`);
+      // Fixed navigation path for first-year students
+      navigate(`/firstyear/dashboard/colleges/${collegeId}/family`);
     } catch (error) {
       alert('Failed to save contacts data. Please try again.');
     }
+  };
+
+  const handleBack = () => {
+    // Fixed navigation path for first-year students
+    navigate(`/firstyear/dashboard/colleges/${collegeId}`);
+  };
+
+  const handleSaveAndClose = () => {
+    handleBack();
   };
 
   if (loading) {
@@ -181,7 +191,7 @@ const FirstContacts = () => {
       {/* Header Section */}
       <div className="firstcontacts-header">
         <div className="firstcontacts-header-nav">
-          <button className="firstcontacts-back-button" onClick={() => navigate(`/dashboard/colleges/${collegeId}`)}>
+          <button className="firstcontacts-back-button" onClick={handleBack}>
             ← Back to College Details
           </button>
         </div>
@@ -436,7 +446,7 @@ const FirstContacts = () => {
           <div className="firstcontacts-actions">
             <button 
               className="firstcontacts-secondary-button" 
-              onClick={() => navigate(`/dashboard/colleges/${collegeId}`)}
+              onClick={handleSaveAndClose}
               disabled={saving}
             >
               Save and Close
