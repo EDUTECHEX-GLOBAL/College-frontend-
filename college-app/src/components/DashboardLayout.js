@@ -1,12 +1,10 @@
 // src/components/DashboardLayout.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
 
 const DashboardLayout = ({ userData, children, activeMainSection, onSectionChange, userColleges = [] }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [activeSections, setActiveSections] = useState(['tests-taken', 'senior-secondary-exams']);
   const [expandedSections, setExpandedSections] = useState({
     testing: false,
     colleges: false,
@@ -15,38 +13,6 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     expandedColleges: {}
   });
   const [forceUpdate, setForceUpdate] = useState(0);
-
-  const API_URL = process.env.REACT_APP_API_URL;
-
-  // ✅ Listen for changes to active testing sections from localStorage
-  useEffect(() => {
-    const updateActiveSections = () => {
-      const storedSections = localStorage.getItem('testingActiveSections');
-      if (storedSections) {
-        try {
-          const sections = JSON.parse(storedSections);
-          setActiveSections(sections);
-          console.log('📋 DashboardLayout: Active sections updated:', sections);
-        } catch (error) {
-          console.error('Error parsing testingActiveSections:', error);
-        }
-      }
-    };
-
-    // Initial load
-    updateActiveSections();
-
-    // Listen for storage changes (when TestingForm updates)
-    window.addEventListener('storage', updateActiveSections);
-    
-    // Also poll for changes (for same-window updates)
-    const interval = setInterval(updateActiveSections, 1000);
-
-    return () => {
-      window.removeEventListener('storage', updateActiveSections);
-      clearInterval(interval);
-    };
-  }, []);
 
   // Auto-expand sections when on their pages
   useEffect(() => {
@@ -167,7 +133,6 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
   const handleSignOut = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('userData');
-    localStorage.removeItem('testingActiveSections');
     navigate('/');
   };
 
@@ -188,7 +153,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     }));
   };
 
-  // Get selected tests from userData or localStorage
+  // Get selected tests from localStorage (real-time data)
   const getSelectedTests = () => {
     // Always read directly from localStorage for the most current data
     const storedUserData = localStorage.getItem('userData');
@@ -215,18 +180,18 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
   const studentType = location.pathname.includes('/transfer/') ? 'transfer' : 'firstyear';
   const basePath = `/${studentType}/dashboard`;
 
-  // Test types mapping - Make sure these match exactly with what's stored in formData.testsToReport
+  // Test types mapping - Match exactly with TestingForm.js
   const testTypes = [
     { id: 'act-tests', name: 'ACT Tests', route: `${basePath}/testing/act-tests` },
     { id: 'sat-tests', name: 'SAT Tests', route: `${basePath}/testing/sat-tests` },
     { id: 'sat-subject-tests', name: 'SAT Subject Tests', route: `${basePath}/testing/sat-subject-tests` },
-    { id: 'ap-tests', name: 'AP Tests', route: `${basePath}/testing/ap-tests` },
-    { id: 'ib-tests', name: 'IB Tests', route: `${basePath}/testing/ib-tests` },
-    { id: 'cambridge-tests', name: 'Cambridge Tests', route: `${basePath}/testing/cambridge-tests` },
-    { id: 'toefl-tests', name: 'TOEFL iBT', route: `${basePath}/testing/toefl-tests` },
-    { id: 'pte-tests', name: 'PTE Academic', route: `${basePath}/testing/pte-tests` },
-    { id: 'ielts-tests', name: 'IELTS', route: `${basePath}/testing/ielts-tests` },
-    { id: 'duolingo-tests', name: 'Duolingo English Test', route: `${basePath}/testing/duolingo-tests` }
+    { id: 'ap-subject-tests', name: 'AP Tests', route: `${basePath}/testing/ap-subject-tests` },
+    { id: 'ib-subject-tests', name: 'IB Tests', route: `${basePath}/testing/ib-subject-tests` },
+    { id: 'cambridge', name: 'Cambridge Tests', route: `${basePath}/testing/cambridge` },
+    { id: 'toefl-ibt', name: 'TOEFL iBT', route: `${basePath}/testing/toefl-ibt` },
+    { id: 'pte-academic-tests', name: 'PTE Academic', route: `${basePath}/testing/pte-academic-tests` },
+    { id: 'ielts', name: 'IELTS', route: `${basePath}/testing/ielts` },
+    { id: 'duolingo-english-test', name: 'Duolingo English Test', route: `${basePath}/testing/duolingo-english-test` }
   ];
 
   // Filter test types to show only selected ones
@@ -235,14 +200,14 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     ? testTypes.filter(test => selectedTests.includes(test.id))
     : [];
 
-  // Debug: Log the selected tests to see what's actually being stored
+  // Debug: Log the selected tests
   useEffect(() => {
     console.log('🔄 DashboardLayout re-rendering, forceUpdate:', forceUpdate);
     console.log('📋 Selected tests:', selectedTests);
     console.log('📋 Selected test types:', selectedTestTypes);
   }, [forceUpdate, selectedTests, selectedTestTypes]);
 
-  // CollegeSidebarItem Component with proper active states
+  // CollegeSidebarItem Component
   const CollegeSidebarItem = ({ college, isExpanded, onToggle, onNavigate }) => {
     const [showInternational, setShowInternational] = useState(false);
 
@@ -277,7 +242,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
       ...(showInternational ? [{ id: 'international', name: 'International Student Information' }] : []),
     ];
 
-    // Check if this college is active (any of its pages)
+    // Check if this college is active
     const isCollegeActive = location.pathname.includes(`/colleges/${college.collegeId}`);
 
     return (
@@ -518,29 +483,33 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
       );
     }
 
-    // ✅ UPDATED - Dynamic Testing sidebar section
     if (activeMainSection === 'testing') {
-      // ✅ Map section names to display names
+      // Map section names to display names - UPDATED to match TestingForm.js
       const sectionDisplayNames = {
         'tests-taken': 'Tests Taken',
         'act-tests': 'ACT Tests',
         'sat-tests': 'SAT Tests',
         'sat-subject-tests': 'SAT Subject Tests',
-        'ap-tests': 'AP Tests',
-        'ib-tests': 'IB Tests',
-        'cambridge-tests': 'Cambridge Tests',
-        'toefl-tests': 'TOEFL iBT',
-        'pte-tests': 'PTE Academic',
-        'ielts-tests': 'IELTS',
-        'duolingo-tests': 'Duolingo English Test',
-        'senior-secondary-exams': 'Senior Secondary Leaving Examinations'
+        'ap-subject-tests': 'AP Tests',
+        'ib-subject-tests': 'IB Tests',
+        'cambridge': 'Cambridge Tests',
+        'toefl-ibt': 'TOEFL iBT',
+        'pte-academic-tests': 'PTE Academic',
+        'ielts': 'IELTS',
+        'duolingo-english-test': 'Duolingo English Test'
       };
+      
+      // Show all test sections that are either "tests-taken" or in selectedTests
+      const sectionsToShow = [
+        'tests-taken',
+        ...selectedTests.filter(test => test !== 'tests-taken')
+      ];
       
       return (
         <div className="nav-section">
           <h4 className="nav-section-title">Testing</h4>
           <ul className="nav-menu">
-            {activeSections.map((section) => (
+            {sectionsToShow.map((section) => (
               <li
                 key={section}
                 className={`nav-item ${location.pathname.includes(`/${section}`) ? 'active' : ''}`}
@@ -549,7 +518,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
                   className="nav-content"
                   onClick={() => navigate(`${basePath}/testing/${section}`)}
                 >
-                  <span className="nav-text">{sectionDisplayNames[section]}</span>
+                  <span className="nav-text">{sectionDisplayNames[section] || section}</span>
                 </div>
               </li>
             ))}
