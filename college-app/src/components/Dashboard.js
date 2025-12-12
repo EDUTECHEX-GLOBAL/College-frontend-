@@ -21,7 +21,8 @@ import FirstResidency from './mycollege-sections/FirstResidency';
 import InternationalStudent from './mycollege-sections/InternationalStudent';
 import Review from './mycollege-sections/FirstReview';
 import WritingSection from './writing-sections/WritingSection';
-import FamilySection from './family-sections/FamilySection'; // ✅ Added
+import FamilySection from './family-sections/FamilySection';
+import ChatWidget from './Chatbot/ChatWidget'; // ✅ Added Chat Widget
 
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -633,44 +634,49 @@ const Dashboard = () => {
   }
 
   return (
-    <DashboardLayout 
-      userData={userData} 
-      activeMainSection={activeMainSection}
-      onSectionChange={handleSectionChange}
-      userColleges={userColleges}
-      onRefreshColleges={fetchUserColleges}
-    >
-      <Routes>
-        <Route path="/" element={<DashboardHome />} />
-        <Route path="/colleges" element={<CollegesSection />} />
-        <Route path="/colleges/:collegeId" element={<CollegeDetails />} />
-        <Route path="/colleges/:collegeId/:subsection" element={<CollegeSubsection />} />
-        <Route path="/profile/*" element={<ProfileForm />} />
-        {/* PASS THE COMPLETION HANDLER TO FAMILYSECTION */}
-        <Route 
-          path="/family/*" 
-          element={<FamilySection onComplete={handleFamilyComplete} />} 
-        />
-        <Route path="/education/*" element={<EducationForm />} />
-        <Route path="/testing/*" element={<TestingForm />} />
-        
-        <Route path="/activities" element={<ActivitiesSection />} />
-        <Route path="/activities/responsibilities" element={<ResponsibilitiesSection />} />
-        
-        <Route path="/writing/*" element={<WritingSection />} />
-        <Route path="/college-search" element={<CollegeSearch onCollegeUpdate={fetchUserColleges} />} />
-        
-        <Route path="/colleges/:collegeId/general" element={<General />} />
-        <Route path="/colleges/:collegeId/academics" element={<Academics />} />
-        <Route path="/colleges/:collegeId/high-school" element={<HighSchoolCurriculum />} />
-        <Route path="/colleges/:collegeId/activities" element={<Activities />} />
-        <Route path="/colleges/:collegeId/contacts" element={<FirstContacts />} />
-        <Route path="/colleges/:collegeId/family" element={<FirstFamily />} />
-        <Route path="/colleges/:collegeId/residency" element={<FirstResidency />} />
-        <Route path="/colleges/:collegeId/international" element={<InternationalStudent />} />
-        <Route path="/colleges/:collegeId/review" element={<Review />} />
-      </Routes>
-    </DashboardLayout>
+    <>
+      <DashboardLayout 
+        userData={userData} 
+        activeMainSection={activeMainSection}
+        onSectionChange={handleSectionChange}
+        userColleges={userColleges}
+        onRefreshColleges={fetchUserColleges}
+      >
+        <Routes>
+          <Route path="/" element={<DashboardHome />} />
+          <Route path="/colleges" element={<CollegesSection />} />
+          <Route path="/colleges/:collegeId" element={<CollegeDetails />} />
+          <Route path="/colleges/:collegeId/:subsection" element={<CollegeSubsection />} />
+          <Route path="/profile/*" element={<ProfileForm />} />
+          {/* PASS THE COMPLETION HANDLER TO FAMILYSECTION */}
+          <Route 
+            path="/family/*" 
+            element={<FamilySection onComplete={handleFamilyComplete} />} 
+          />
+          <Route path="/education/*" element={<EducationForm />} />
+          <Route path="/testing/*" element={<TestingForm />} />
+          
+          <Route path="/activities" element={<ActivitiesSection />} />
+          <Route path="/activities/responsibilities" element={<ResponsibilitiesSection />} />
+          
+          <Route path="/writing/*" element={<WritingSection />} />
+          <Route path="/college-search" element={<CollegeSearch onCollegeUpdate={fetchUserColleges} />} />
+          
+          <Route path="/colleges/:collegeId/general" element={<General />} />
+          <Route path="/colleges/:collegeId/academics" element={<Academics />} />
+          <Route path="/colleges/:collegeId/high-school" element={<HighSchoolCurriculum />} />
+          <Route path="/colleges/:collegeId/activities" element={<Activities />} />
+          <Route path="/colleges/:collegeId/contacts" element={<FirstContacts />} />
+          <Route path="/colleges/:collegeId/family" element={<FirstFamily />} />
+          <Route path="/colleges/:collegeId/residency" element={<FirstResidency />} />
+          <Route path="/colleges/:collegeId/international" element={<InternationalStudent />} />
+          <Route path="/colleges/:collegeId/review" element={<Review />} />
+        </Routes>
+      </DashboardLayout>
+      
+      {/* Add the Chat Widget component here */}
+      <ChatWidget />
+    </>
   );
 };
 
