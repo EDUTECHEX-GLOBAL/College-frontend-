@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { getUniversityInfo } from './controllers/universityController.js';
+import { getUniversityInfo, getChatResponse, testEndpoint } from './controllers/universityController.js';
 
 // Load environment variables FIRST
 dotenv.config();
@@ -31,7 +31,14 @@ app.use((req, res, next) => {
 });
 
 // API Routes
+// 🎓 Legacy university info endpoint (unchanged)
 app.post('/api/university-info', getUniversityInfo);
+
+// 💬 New universal chatbot endpoint
+app.post('/api/chat-response', getChatResponse);
+
+// 🔍 Optional test endpoint from your controller
+app.get('/api/test', testEndpoint);
 
 // Health endpoint
 app.get('/api/health', (req, res) => {
@@ -61,6 +68,11 @@ app.get('/', (req, res) => {
         path: '/api/university-info',
         body: { universityName: 'University Name' }
       },
+      chatResponse: {
+        method: 'POST',
+        path: '/api/chat-response',
+        body: { message: 'Your question or university name', context: 'auto' }
+      },
       health: {
         method: 'GET',
         path: '/api/health'
@@ -68,6 +80,10 @@ app.get('/', (req, res) => {
       config: {
         method: 'GET',
         path: '/api/config'
+      },
+      test: {
+        method: 'GET',
+        path: '/api/test'
       }
     }
   });
@@ -98,7 +114,9 @@ app.listen(PORT, () => {
   console.log(`🔗 http://localhost:${PORT}`);
   console.log(`\n📌 Available endpoints:`);
   console.log(`   POST /api/university-info - Get university information`);
-  console.log(`   GET  /api/health         - Health check`);
-  console.log(`   GET  /api/config         - Configuration`);
-  console.log(`   GET  /                   - API documentation`);
+  console.log(`   POST /api/chat-response   - Universal chatbot (general + university)`);
+  console.log(`   GET  /api/test            - Chatbot capability test`);
+  console.log(`   GET  /api/health          - Health check`);
+  console.log(`   GET  /api/config          - Configuration`);
+  console.log(`   GET  /                    - API documentation`);
 });

@@ -384,3 +384,10 @@
     font-size: 12px;
   }
 }
+.chat-widget.closed {
+  display: none;
+}
+
+.chat-widget.open {
+  display: flex; /* or whatever layout you currently use */
+}
