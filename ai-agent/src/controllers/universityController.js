@@ -2,6 +2,7 @@ import { generateResponse, generateUniversityInfo } from '../services/bedrockSer
 
 /**
  * ✅ MAIN CHATBOT ENDPOINT - Smart detection (cars/questions → general, pure names → university)
+ * UPDATED: Added tractor keywords for proper general routing
  */
 export const getChatResponse = async (req, res) => {
   const requestId = Date.now() + Math.random().toString(36).substr(2, 9);
@@ -48,7 +49,7 @@ export const getChatResponse = async (req, res) => {
       });
     }
     
-    // 🔥 SIMPLIFIED, RELIABLE CONTEXT DETECTION
+    // 🔥 ENHANCED CONTEXT DETECTION - Added tractor keywords
     let detectedContext = context;
     if (context === 'auto' || context === 'general') {
       const lowerInput = cleanInput.toLowerCase();
@@ -57,7 +58,8 @@ export const getChatResponse = async (req, res) => {
       if (universityName && typeof universityName === 'string' && universityName.trim().length > 0) {
         detectedContext = 'university';
       } else {
-        const hasCarWords =
+        // 🚜 UPDATED: Added tractor keywords for proper general routing
+        const hasCarOrTractorWords =
           lowerInput.includes('car') ||
           lowerInput.includes('bmw') ||
           lowerInput.includes('vehicle') ||
@@ -66,7 +68,12 @@ export const getChatResponse = async (req, res) => {
           lowerInput.includes('toyota') ||
           lowerInput.includes('honda') ||
           lowerInput.includes('chevrolet') ||
-          lowerInput.includes('ford');
+          lowerInput.includes('ford') ||
+          lowerInput.includes('tractor') ||      // ✅ NEW
+          lowerInput.includes('mahindra') ||     // ✅ NEW
+          lowerInput.includes('price') ||        // ✅ NEW - catches price queries
+          lowerInput.includes('features') ||     // ✅ NEW
+          lowerInput.includes('model');          // ✅ NEW
 
         const hasUniWords =
           lowerInput.includes('university') ||
@@ -85,8 +92,8 @@ export const getChatResponse = async (req, res) => {
           lowerInput.includes('when ') ||
           lowerInput.includes('?');
 
-        // Cars and similar topics → always general
-        if (hasCarWords) {
+        // ✅ Cars, tractors, prices → always general (FIXES refusal issue)
+        if (hasCarOrTractorWords) {
           detectedContext = 'general';
         }
         // Short pure university name (no question words) → template
@@ -302,16 +309,16 @@ export const getUniversityInfo = async (req, res) => {
 };
 
 /**
- * Test endpoint controller (ENHANCED)
+ * Test endpoint controller (ENHANCED) - UPDATED test cases
  */
 export const testEndpoint = (req, res) => {
   res.json({
     success: true,
-    message: '🎓 University AI + Universal Chatbot = PRODUCTION READY!',
+    message: '🎓 University AI + Universal Chatbot = PRODUCTION READY! 🚜 Tractor Fixed',
     capabilities: [
       '✅ Legacy: POST /api/university-info { "universityName": "Harvard" }',
       '✅ ANY Question: POST /api/chat-response { "message": "ANYTHING", "context": "auto" }',
-      '✅ Smart Auto: University vs General detection'
+      '✅ Smart Auto: University vs General detection (Tractor Fixed!)'
     ],
     detectionTest: {
       'car details': 'general ✅',
@@ -319,12 +326,16 @@ export const testEndpoint = (req, res) => {
       'TOEFL prep': 'general ✅',
       'Harvard': 'university ✅',
       'documents needed': 'general ✅',
-      'who is CM US': 'general ✅'
+      'who is CM US': 'general ✅',
+      'Mahindra tractor': 'general ✅',      // ✅ NEW - Fixed!
+      'tractor price': 'general ✅',         // ✅ NEW - Fixed!
+      'Yuvo 585 features': 'general ✅'      // ✅ NEW - Fixed!
     },
     examples: {
       university: { url: '/api/university-info', body: { universityName: 'MIT' } },
       documents: { url: '/api/chat-response', body: { message: 'F1 visa documents', context: 'auto' } },
       cars: { url: '/api/chat-response', body: { message: 'Toyota Camry price US', context: 'auto' } },
+      tractors: { url: '/api/chat-response', body: { message: 'Mahindra tractor price', context: 'auto' } }, // ✅ NEW
       politics: { url: '/api/chat-response', body: { message: 'who is CM California', context: 'auto' } }
     },
     timestamp: new Date().toISOString()

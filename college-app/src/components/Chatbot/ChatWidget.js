@@ -60,7 +60,9 @@ const ChatWidget = () => {
     console.log(`Frontend: Sending chat request "${userMessage}"`);
 
     try {
-      const response = await fetch('http://localhost:5001/api/chat-response', {
+    const response = await fetch(
+  'http://localhost:5001/api/university-info/chat-response',
+      {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

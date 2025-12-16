@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { getUniversityInfo, getChatResponse, testEndpoint } from './controllers/universityController.js';
+import universityRoutes from './routes/universityRoutes.js';  // ✅ ADDED ROUTER IMPORT
 
 // Load environment variables FIRST
 dotenv.config();
@@ -19,10 +19,16 @@ console.log('================================\n');
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// 🔥 FIXED CORS - SOLVES <!DOCTYPE HTML ERROR
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:3000'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Request logging
 app.use((req, res, next) => {
@@ -30,22 +36,37 @@ app.use((req, res, next) => {
   next();
 });
 
-// API Routes
-// 🎓 Legacy university info endpoint (unchanged)
-app.post('/api/university-info', getUniversityInfo);
+// 🚀 API Routes - ROUTER INTEGRATION (Replaces direct controller calls)
+// ✅ MOUNTS router at /api/university-info
+app.use('/api/university-info', universityRoutes);
 
-// 💬 New universal chatbot endpoint
-app.post('/api/chat-response', getChatResponse);
-
-// 🔍 Optional test endpoint from your controller
-app.get('/api/test', testEndpoint);
+// 🔥 BACKWARD COMPATIBILITY - WORKING DIRECT CONTROLLER CALL (FIXED!)
+app.post('/api/chat-response', async (req, res) => {
+  console.log('🔄 [BACKWARD COMPAT] /api/chat-response → Direct controller call');
+  
+  try {
+    const { getChatResponse } = await import('./controllers/universityController.js');
+    await getChatResponse(req, res);
+  } catch (error) {
+    console.error('🔄 Backward compat error:', error.message);
+    res.status(500).json({ 
+      success: false,
+      error: 'Internal server error',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
 
 // Health endpoint
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
-    service: 'University Info API'
+    service: 'University Info API + Universal Chatbot 🚀',
+    endpoints: {
+      legacy: '/api/chat-response ✅ (direct controller)',
+      primary: '/api/university-info/chat-response ✅'
+    }
   });
 });
 
@@ -54,24 +75,35 @@ app.get('/api/config', (req, res) => {
   res.json({
     awsRegion: process.env.AWS_REGION || 'not-set',
     port: PORT,
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    routerEnabled: true,
+    backwardCompat: true  // ✅ Shows compat route active
   });
 });
 
-// Root endpoint
+// Root endpoint - UPDATED with router paths + backward compat
 app.get('/', (req, res) => {
   res.json({
-    message: 'University Information API',
+    message: 'University Information API + Universal Chatbot 🚀',
     endpoints: {
       getUniversityInfo: {
         method: 'POST',
-        path: '/api/university-info',
+        path: '/api/university-info/',
         body: { universityName: 'University Name' }
       },
       chatResponse: {
         method: 'POST',
-        path: '/api/chat-response',
+        path: '/api/university-info/chat-response',
         body: { message: 'Your question or university name', context: 'auto' }
+      },
+      chatResponseLegacy: {  // ✅ Shows both options
+        method: 'POST',
+        path: '/api/chat-response',  // ← Your old client works!
+        note: '← Backward compatible (direct controller)'
+      },
+      test: {
+        method: 'GET',
+        path: '/api/university-info/test'
       },
       health: {
         method: 'GET',
@@ -80,10 +112,6 @@ app.get('/', (req, res) => {
       config: {
         method: 'GET',
         path: '/api/config'
-      },
-      test: {
-        method: 'GET',
-        path: '/api/test'
       }
     }
   });
@@ -95,7 +123,13 @@ app.all('*', (req, res) => {
   res.status(404).json({
     error: 'Route not found',
     path: req.originalUrl,
-    method: req.method
+    method: req.method,
+    available: [
+      '/api/university-info/',
+      '/api/university-info/chat-response',
+      '/api/chat-response ← (legacy, direct controller)', 
+      '/api/health'
+    ]
   });
 });
 
@@ -108,15 +142,17 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server
+// Start server - UPDATED startup message
 app.listen(PORT, () => {
   console.log(`\n🚀 Server started on port ${PORT}`);
   console.log(`🔗 http://localhost:${PORT}`);
   console.log(`\n📌 Available endpoints:`);
-  console.log(`   POST /api/university-info - Get university information`);
-  console.log(`   POST /api/chat-response   - Universal chatbot (general + university)`);
-  console.log(`   GET  /api/test            - Chatbot capability test`);
-  console.log(`   GET  /api/health          - Health check`);
-  console.log(`   GET  /api/config          - Configuration`);
-  console.log(`   GET  /                    - API documentation`);
+  console.log(`   POST /api/university-info/               - Get university information`);
+  console.log(`   POST /api/university-info/chat-response  - Universal chatbot (NEW)`);
+  console.log(`   POST /api/chat-response                 - Universal chatbot (OLD ← WORKS!)`);
+  console.log(`   GET  /api/university-info/test          - Chatbot capability test (tractor fixed ✅)`);
+  console.log(`   GET  /api/health                        - Health check`);
+  console.log(`   GET  /api/config                        - Configuration`);
+  console.log(`   GET  /                                   - API documentation`);
+  console.log(`\n🎉 CORS FIXED + ROUTER + BACKWARD COMPAT COMPLETE! 🚀`);
 });
