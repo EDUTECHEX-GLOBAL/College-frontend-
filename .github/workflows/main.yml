@@ -3,7 +3,7 @@ name: Deploy to Server
 on:
   push:
     branches:
-      - feature/edutechex
+      - feature/chatbot
 
 jobs:
   deploy:
@@ -25,5 +25,5 @@ jobs:
         run: |
           ssh -A -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             cd /home/ubuntu/
-            ./deploy.sh feature/edutechex
+            ./deploy.sh feature/chatbot
           EOF
