@@ -13,7 +13,7 @@ import LanguageSection from './profile-sections/LanguageSection';
 import GeographySection from './profile-sections/GeographySection';
 import ProfilePreview from './ProfilePreview';
 
-const API_URL = process.env.REACT_APP_API_URL;
+const API_URL = process.env.REACT_APP_API_BASE_URL;
 
 const ProfileForm = () => {
   const navigate = useNavigate();

@@ -24,7 +24,8 @@ import WritingSection from './writing-sections/WritingSection';
 import FamilySection from './family-sections/FamilySection';
 import ChatWidget from './Chatbot/ChatWidget'; // ✅ Added Chat Widget
 
-const API_URL = process.env.REACT_APP_API_URL;
+const API_URL = process.env.REACT_APP_API_BASE_URL
+;
 
 const Dashboard = () => {
   const navigate = useNavigate();

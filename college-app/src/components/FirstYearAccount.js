@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import "./FirstYearAccount.css";
 import OtpVerification from "./OtpVerification";
 
-const API_URL = process.env.REACT_APP_API_URL;
+const API_URL = process.env.REACT_APP_API_BASE_URL
+;
 
 const FirstYearAccount = () => {
   const navigate = useNavigate();
