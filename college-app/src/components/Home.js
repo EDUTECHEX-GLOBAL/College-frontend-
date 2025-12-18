@@ -36,7 +36,7 @@ const Home = () => {
         <div className="header-buttons">
           {/* ✅ Added navigation for Sign In */}
           <button className="header-btn" onClick={handleSignIn}>
-            Sign In
+            Sign I
           </button>
           <button className="header-btn" onClick={handleCreateAccount}>
             Create Account

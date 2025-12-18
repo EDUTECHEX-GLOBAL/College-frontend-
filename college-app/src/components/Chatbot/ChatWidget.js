@@ -61,7 +61,7 @@ const ChatWidget = () => {
 
     try {
     const response = await fetch(
-  'http://localhost:5001/api/university-info/chat-response',
+  'https://ups.edutechex.com/api/university-info/chat-response',
       {
         method: 'POST',
         headers: {
