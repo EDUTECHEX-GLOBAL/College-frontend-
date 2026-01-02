@@ -471,7 +471,7 @@ const EducationForm = () => {
   const handleEditSection = (section) => {
     setShowPreview(false);
     const urlSection = REVERSE_SECTION_MAP[section];
-    navigate(`/dashboard/education/${urlSection}`);
+    navigate(`/firstyear/dashboard/education/${urlSection}`);
   };
 
   const handleBackToForm = () => {

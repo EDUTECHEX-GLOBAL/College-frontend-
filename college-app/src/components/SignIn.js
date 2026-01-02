@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axiosInstance from '../api/axiosInstance';
+import axiosInstance from "../api/axiosInstance";
 import "./SignIn.css";
 
 const SignIn = () => {
@@ -9,7 +9,7 @@ const SignIn = () => {
   const [studentType, setStudentType] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  
+
   // New state for password visibility
   const [showPassword, setShowPassword] = useState(false);
   const [showTransferPassword, setShowTransferPassword] = useState(false);
@@ -52,49 +52,68 @@ const SignIn = () => {
     try {
       console.log("📤 Signing in (First-Year):", email);
 
-      const response = await axiosInstance.post('/api/students/login', {
+      const response = await axiosInstance.post("/api/students/login", {
         email,
-        password
+        password,
       });
 
       console.log("📩 Response data:", response.data);
 
       if (response.data.success && response.data.token) {
-        console.log("🔑 Token received:", response.data.token.substring(0, 20) + "...");
+        console.log(
+          "🔑 Token received:",
+          response.data.token.substring(0, 20) + "..."
+        );
         console.log("📦 Full response:", response.data);
-        
+
         // ✅ Store token
         localStorage.setItem("token", response.data.token);
         console.log("💾 Token stored in localStorage");
-        console.log("🔍 Verify token in localStorage:", localStorage.getItem("token") ? "✅ Present" : "❌ Missing");
-        
+        console.log(
+          "🔍 Verify token in localStorage:",
+          localStorage.getItem("token") ? "✅ Present" : "❌ Missing"
+        );
+
         // ✅ Store user data
         localStorage.setItem("userData", JSON.stringify(response.data.user));
         localStorage.setItem("studentType", "firstyear");
-        
-        console.log("✅ All data stored. Token exists:", !!localStorage.getItem("token"));
-        console.log("✅ First-year login successful → Redirecting to dashboard");
-        
+
+        console.log(
+          "✅ All data stored. Token exists:",
+          !!localStorage.getItem("token")
+        );
+        console.log(
+          "✅ First-year login successful → Redirecting to dashboard"
+        );
+
         navigate("/firstyear/dashboard"); // ✅ Use the correct dashboard path
       } else {
         console.error("❌ Response missing success or token:", {
           success: response.data?.success,
-          hasToken: !!response.data?.token
+          hasToken: !!response.data?.token,
         });
-        setError(response.data.message || "Sign in failed. Please try again.");
+        setError(
+          response.data.message || "Sign in failed. Please try again."
+        );
       }
     } catch (err) {
       console.error("❌ Sign in error:", err);
       console.error("   Response:", err.response?.data);
-      
+
       if (err.response?.status === 401) {
         setError("Invalid email or password. Please try again.");
       } else if (err.response?.status === 400) {
-        setError(err.response?.data?.message || "Invalid request. Please check your details.");
+        setError(
+          err.response?.data?.message ||
+            "Invalid request. Please check your details."
+        );
       } else if (err instanceof TypeError) {
         setError("Network error. Please ensure your backend is running.");
       } else {
-        setError(err.response?.data?.message || "An unexpected error occurred. Please try again.");
+        setError(
+          err.response?.data?.message ||
+            "An unexpected error occurred. Please try again."
+        );
       }
     } finally {
       setLoading(false);
@@ -119,9 +138,9 @@ const SignIn = () => {
     try {
       console.log("📤 Signing in (Transfer Student):", username);
 
-      const response = await axiosInstance.post('/api/transfer/login', {
+      const response = await axiosInstance.post("/api/transfer/login", {
         username: username, // Remove .toLowerCase() to preserve original case
-        password
+        password,
       });
 
       console.log("📩 Response data:", response.data);
@@ -140,7 +159,9 @@ const SignIn = () => {
           navigate("/extended-profile");
         }
       } else {
-        setError(response.data.message || "Sign in failed. Please try again.");
+        setError(
+          response.data.message || "Sign in failed. Please try again."
+        );
       }
     } catch (err) {
       console.error("❌ Sign in error:", err);
@@ -150,13 +171,24 @@ const SignIn = () => {
       if (err.response?.status === 401) {
         setError("Invalid username or password. Please try again.");
       } else if (err.response?.status === 400) {
-        setError(err.response?.data?.message || "Invalid request. Please check your credentials.");
+        setError(
+          err.response?.data?.message ||
+            "Invalid request. Please check your credentials."
+        );
       } else if (err.response?.status === 404) {
         setError("User not found. Please check your username.");
-      } else if (err.code === 'NETWORK_ERROR' || err.message?.includes('Network Error')) {
-        setError("Network error. Please check your connection and try again.");
+      } else if (
+        err.code === "NETWORK_ERROR" ||
+        err.message?.includes("Network Error")
+      ) {
+        setError(
+          "Network error. Please check your connection and try again."
+        );
       } else {
-        setError(err.response?.data?.message || "An unexpected error occurred. Please try again.");
+        setError(
+          err.response?.data?.message ||
+            "An unexpected error occurred. Please try again."
+        );
       }
     } finally {
       setLoading(false);
@@ -240,15 +272,15 @@ const SignIn = () => {
             </div>
 
             <div className="extra-login">
-              <button 
-                className="link" 
+              <button
+                className="link"
                 type="button"
                 onClick={() => navigate("/recommender-login")}
               >
                 Recommender login →
               </button>
-              <button 
-                className="link" 
+              <button
+                className="link"
                 type="button"
                 onClick={() => navigate("/member-college-login")}
               >
@@ -262,8 +294,8 @@ const SignIn = () => {
             <h2>Sign in to your account</h2>
 
             {error && (
-              <div 
-                className="error-message" 
+              <div
+                className="error-message"
                 role="alert"
                 aria-live="polite"
               >
@@ -301,22 +333,75 @@ const SignIn = () => {
                   className="password-toggle-btn"
                   onClick={togglePasswordVisibility}
                   disabled={loading}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-label={
+                    showPassword ? "Hide password" : "Show password"
+                  }
                 >
                   {showPassword ? (
                     <svg className="eye-icon" viewBox="0 0 24 24" fill="none">
-                      <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path
+                        d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   ) : (
-                    <svg className="eye-off-icon" viewBox="0 0 24 24" fill="none">
-                      <path d="M17.94 17.94C16.2306 19.243 14.1491 19.9649 12 20C5 20 1 12 1 12C2.24389 9.68192 3.96914 7.65663 6.06 6.06L17.94 17.94Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M9.9 4.24C10.5883 4.07888 11.2931 3.99834 12 4C19 4 23 12 23 12C22.393 13.1356 21.6691 14.2048 20.84 15.19L9.9 4.24Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M1 1L23 23" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <svg
+                      className="eye-off-icon"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
+                      <path
+                        d="M17.94 17.94C16.2306 19.243 14.1491 19.9649 12 20C5 20 1 12 1 12C2.24389 9.68192 3.96914 7.65663 6.06 6.06L17.94 17.94Z"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M9.9 4.24C10.5883 4.07888 11.2931 3.99834 12 4C19 4 23 12 23 12C22.393 13.1356 21.6691 14.2048 20.84 15.19L9.9 4.24Z"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M1 1L23 23"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   )}
                 </button>
               </div>
+
+              {/* 🔗 First-year forgot password */}
+              <p className="forgot-password-text">
+                <span
+                  className="link"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => navigate("/firstyear/forgot-password")}
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      navigate("/firstyear/forgot-password");
+                    }
+                  }}
+                >
+                  Forgot password?
+                </span>
+              </p>
 
               <div className="form-actions">
                 <button
@@ -349,8 +434,8 @@ const SignIn = () => {
             <h2>Transfer Student Sign In</h2>
 
             {error && (
-              <div 
-                className="error-message" 
+              <div
+                className="error-message"
                 role="alert"
                 aria-live="polite"
               >
@@ -388,22 +473,75 @@ const SignIn = () => {
                   className="password-toggle-btn"
                   onClick={toggleTransferPasswordVisibility}
                   disabled={loading}
-                  aria-label={showTransferPassword ? "Hide password" : "Show password"}
+                  aria-label={
+                    showTransferPassword ? "Hide password" : "Show password"
+                  }
                 >
                   {showTransferPassword ? (
                     <svg className="eye-icon" viewBox="0 0 24 24" fill="none">
-                      <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path
+                        d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   ) : (
-                    <svg className="eye-off-icon" viewBox="0 0 24 24" fill="none">
-                      <path d="M17.94 17.94C16.2306 19.243 14.1491 19.9649 12 20C5 20 1 12 1 12C2.24389 9.68192 3.96914 7.65663 6.06 6.06L17.94 17.94Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M9.9 4.24C10.5883 4.07888 11.2931 3.99834 12 4C19 4 23 12 23 12C22.393 13.1356 21.6691 14.2048 20.84 15.19L9.9 4.24Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M1 1L23 23" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <svg
+                      className="eye-off-icon"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
+                      <path
+                        d="M17.94 17.94C16.2306 19.243 14.1491 19.9649 12 20C5 20 1 12 1 12C2.24389 9.68192 3.96914 7.65663 6.06 6.06L17.94 17.94Z"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M9.9 4.24C10.5883 4.07888 11.2931 3.99834 12 4C19 4 23 12 23 12C22.393 13.1356 21.6691 14.2048 20.84 15.19L9.9 4.24Z"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M1 1L23 23"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   )}
                 </button>
               </div>
+
+              {/* 🔗 Transfer forgot password */}
+              <p className="forgot-password-text">
+                <span
+                  className="link"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => navigate("/transfer/forgot-password")}
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      navigate("/transfer/forgot-password");
+                    }
+                  }}
+                >
+                  Forgot password?
+                </span>
+              </p>
 
               <div className="form-actions">
                 <button

@@ -43,28 +43,27 @@ const OtpVerificationTransfer = ({ email, onVerified, onClose }) => {
     try {
       setLoading(true);
 
-      console.log("📧 Verifying OTP for Transfer Student:", email);
-      console.log("🔐 OTP:", otp);
-      console.log("🔗 API URL:", API_URL);
-      console.log("📍 Full endpoint:", `${API_URL}/api/transfer/verify-otp`);
+      // ✅ FIXED: Forgot Password flow - use correct endpoint + username
+      console.log("🔐 Verifying Password Reset OTP for Transfer Student:", email);
+      console.log("🔢 OTP:", otp);
+      console.log("🔗 Correct endpoint:", `${API_URL}/api/transfer/forgot-password/verify-otp`);
 
-      // ✅ For Transfer Student - use /api/transfer endpoint
-      const response = await axios.post(`${API_URL}/api/transfer/verify-otp`, {
-        email,
+      const response = await axios.post(`${API_URL}/api/transfer/forgot-password/verify-otp`, {
+        username: email,  // ✅ CHANGED: username (passed as 'email' prop from ForgotPassword)
         otp,
       }, {
-        timeout: 10000,  // 10 second timeout
+        timeout: 10000,
         headers: {
           "Content-Type": "application/json",
         }
       });
 
-      console.log("✅ OTP Verification successful:", response.data);
+      console.log("✅ Password Reset OTP Verification successful:", response.data);
 
       setLoading(false);
       setMessage({ 
         type: "success", 
-        text: "✅ " + (response.data.message || "Email verified successfully!") 
+        text: "✅ " + (response.data.message || "Password reset authorized!") 
       });
 
       // Call onVerified after short delay
@@ -108,21 +107,20 @@ const OtpVerificationTransfer = ({ email, onVerified, onClose }) => {
     try {
       setResendLoading(true);
 
-      console.log("📧 Resending OTP to Transfer Student:", email);
-      console.log("🔗 API URL:", API_URL);
-      console.log("📍 Full endpoint:", `${API_URL}/api/transfer/send-otp`);
+      console.log("🔄 Resending Password Reset OTP for:", email);
+      console.log("🔗 Correct endpoint:", `${API_URL}/api/transfer/forgot-password/request-otp`);
 
-      // ✅ For Transfer Student - use /api/transfer endpoint
-      const response = await axios.post(`${API_URL}/api/transfer/send-otp`, {
-        email,
+      // ✅ FIXED: Forgot Password resend - correct endpoint + username
+      const response = await axios.post(`${API_URL}/api/transfer/forgot-password/request-otp`, {
+        username: email,  // ✅ CHANGED: username for forgot password flow
       }, {
-        timeout: 10000,  // 10 second timeout
+        timeout: 10000,
         headers: {
           "Content-Type": "application/json",
         }
       });
 
-      console.log("✅ OTP Resent:", response.data);
+      console.log("✅ Password Reset OTP Resent:", response.data);
 
       setResendLoading(false);
       setOtp("");
@@ -175,11 +173,11 @@ const OtpVerificationTransfer = ({ email, onVerified, onClose }) => {
         </button>
 
         <div className="otp-header">
-          <h3 className="modal-title">Verify Your Email</h3>
+          <h3 className="modal-title">Verify Password Reset</h3> {/* ✅ Updated title */}
         </div>
 
         <p className="modal-message">
-          We've sent a 6-digit OTP to your email: <b>{email}</b>
+          We've sent a 6-digit OTP to your email for: <b>{email}</b>
         </p>
 
         {message.text && (

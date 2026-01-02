@@ -1,4 +1,4 @@
-// src/App.js
+// src/App.js - FULL UPDATED CODE
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
@@ -9,10 +9,11 @@ import FirstYearAccount from "./components/FirstYearAccount";
 import TransferStudent from "./components/TransferStudent";
 import SignIn from "./components/SignIn";
 import ExtendedProfile from "./components/ExtendedProfile/ExtendedProfile";
+import ForgotPassword from "./components/ForgotPassword";  // ✅ NEW IMPORT
 
 // Dashboards
-import Dashboard from "./components/Dashboard";          // First-year main dashboard
-import DashboardTest from "./components/Dashboardtest";  // Transfer dashboard
+import Dashboard from "./components/Dashboard";           // First-year main dashboard
+import DashboardTest from "./components/Dashboardtest";   // Transfer dashboard
 
 function App() {
   return (
@@ -33,11 +34,15 @@ function App() {
         {/* 🔐 Sign In */}
         <Route path="/sign-in" element={<SignIn />} />
 
+        {/* ✅ FORGOT PASSWORD ROUTES - NEW */}
+        <Route path="/firstyear/forgot-password" element={<ForgotPassword />} />
+        <Route path="/transfer/forgot-password" element={<ForgotPassword />} />
+
         {/* 📋 Transfer Extended Profile */}
         <Route path="/extended-profile" element={<ExtendedProfile />} />
 
         {/* ================================
-            DASHBOARD ROUTING SECTION
+           DASHBOARD ROUTING SECTION
         ================================= */}
 
         {/* ⭐ First-Year Dashboard */}

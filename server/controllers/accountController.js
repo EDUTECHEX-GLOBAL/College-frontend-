@@ -61,6 +61,153 @@ const calculateProfileProgress = (profileCompletion) => {
 };
 
 // ================================
+// 🔐 FORGOT PASSWORD - First Year Students
+// ================================
+
+// 1. REQUEST OTP for password reset
+export const forgotPasswordRequestOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    console.log("🔄 Forgot password OTP request for:", email);
+
+    if (!email) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Email is required" 
+      });
+    }
+
+    const account = await Account.findOne({ 
+      email: email.toLowerCase() 
+    });
+
+    // Don't reveal if account exists (security)
+    if (!account) {
+      return res.status(200).json({ 
+        success: true, 
+        message: "If an account exists, an OTP has been sent to your email." 
+      });
+    }
+
+    // Delete old password reset OTPs only
+    await Otp.deleteMany({ 
+      email: email.toLowerCase(),
+      purpose: "password_reset"
+    });
+
+    // Generate new OTP (10 min expiry)
+    const otpCode = generateOTP();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
+    await Otp.create({
+      email: email.toLowerCase(),
+      otp: otpCode,
+      expiresAt: otpExpiry,
+      purpose: "password_reset"
+    });
+
+    // Send OTP email
+    const htmlContent = `
+      <h2>Password Reset Code</h2>
+      <p>Hi ${account.firstName || 'there'},</p>
+      <p>You requested to reset your password. Your code is:</p>
+      <h1 style="letter-spacing: 3px;">${otpCode}</h1>
+      <p>This code expires in <b>10 minutes</b>.</p>
+      <p>If you did not request this, please ignore this email.</p>
+    `;
+
+    await sendEmail(email, "College App - Reset Your Password", htmlContent);
+
+    console.log(`✅ Password reset OTP sent to: ${email}`);
+    
+    res.status(200).json({ 
+      success: true, 
+      message: "If an account exists, an OTP has been sent to your email." 
+    });
+
+  } catch (error) {
+    console.error("❌ Forgot password OTP error:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Server error sending OTP" 
+    });
+  }
+};
+
+// 2. RESET PASSWORD after OTP verification
+export const forgotPasswordReset = async (req, res) => {
+  try {
+    const { email, password, confirmPassword } = req.body;
+
+    console.log("🔄 Password reset attempt for:", email);
+
+    if (!email || !password || !confirmPassword) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Email, password, and confirmPassword are required" 
+      });
+    }
+
+    if (password !== confirmPassword) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Passwords do not match" 
+      });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Password must be at least 8 characters" 
+      });
+    }
+
+    const normalizedEmail = email.toLowerCase();
+    const account = await Account.findOne({ email: normalizedEmail });
+
+    if (!account) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Account not found" 
+      });
+    }
+
+    // Generate & return JWT (auto-login)
+    const token = generateToken(account._id, account.email, account.studentType);
+
+    // Update password
+    account.password = password;
+    await account.save();
+
+    // Clean up password reset OTPs
+    await Otp.deleteMany({ 
+      email: normalizedEmail, 
+      purpose: "password_reset" 
+    });
+
+    console.log(`✅ Password reset successful for: ${email}`);
+
+    const accountResponse = account.toObject();
+    delete accountResponse.password;
+
+    res.status(200).json({ 
+      success: true, 
+      message: "Password reset successful. You are now logged in.",
+      token,
+      account: accountResponse 
+    });
+
+  } catch (error) {
+    console.error("❌ Password reset error:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Server error resetting password" 
+    });
+  }
+};
+
+// ================================
 // 🟢 Register (First Year Student)
 // ================================
 export const createFirstYearAccount = async (req, res) => {
@@ -164,7 +311,7 @@ export const createFirstYearAccount = async (req, res) => {
 };
 
 // ================================
-// 🔐 Verify OTP
+// 🔐 Verify OTP (UPDATED - handles password reset OTPs)
 // ================================
 export const verifyOtp = async (req, res) => {
   try {
@@ -194,7 +341,17 @@ export const verifyOtp = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid OTP" });
     }
 
-    // Mark verified
+    // Handle password reset OTPs separately
+    if (otpRecord.purpose === "password_reset") {
+      await Otp.deleteOne({ _id: otpRecord._id });
+      return res.status(200).json({
+        success: true,
+        message: "Password reset OTP verified successfully. You can now reset your password.",
+        otpValid: true
+      });
+    }
+
+    // Original registration verification flow
     await Account.updateOne({ email: normalizedEmail }, { isVerified: true });
     await Otp.deleteOne({ _id: otpRecord._id });
 

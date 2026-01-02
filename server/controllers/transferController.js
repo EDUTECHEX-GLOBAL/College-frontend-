@@ -15,8 +15,7 @@ const generateToken = (id, email, username) => {
   console.log('🔐 Generating token with ID:', id);
   
   // ✅ FIXED: Use same fallback secret as authMiddleware
- const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
-
+  const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
   
   if (!process.env.JWT_SECRET) {
     console.warn('⚠️  WARNING: JWT_SECRET not in .env, using fallback: "your-secret-key"');
@@ -347,6 +346,259 @@ export const loginTransferStudent = async (req, res) => {
   }
 };
 
+// ================================
+// 🔐 FORGOT PASSWORD - Transfer Students
+// ================================
+
+/**
+ * 1. REQUEST OTP for password reset (username-based)
+ * POST /api/transfer/forgot-password/request-otp
+ */
+/**
+ * 1. REQUEST OTP for password reset (username-based)
+ * POST /api/transfer/forgot-password/request-otp
+ */
+export const forgotPasswordRequestOtp = async (req, res) => {
+  try {
+    const { username } = req.body;
+
+    console.log("🔄 Transfer forgot password OTP request for:", username);
+
+    if (!username) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Username is required" 
+      });
+    }
+
+    const student = await TransferStudent.findOne({ 
+      username: username.toLowerCase() 
+    });
+
+    // Don't reveal if account exists (security)
+    if (!student) {
+      return res.status(200).json({ 
+        success: true, 
+        message: "If an account exists, an OTP has been sent to your email." 
+      });
+    }
+
+    // ✅ FIX 1: Use updateOne instead of save() to avoid full validation
+    await TransferStudent.updateOne(
+      { _id: student._id },
+      { 
+        $set: { 
+          otpCode: null,
+          otpExpiry: null 
+        }
+      }
+    );
+
+    // Generate new OTP (10 min expiry)
+    const otpCode = generateOTP();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
+    // ✅ FIX 2: Use updateOne again - ONLY update OTP fields
+    await TransferStudent.updateOne(
+      { _id: student._id },
+      { 
+        $set: { 
+          otpCode,
+          otpExpiry 
+        }
+      }
+    );
+
+    console.log(`🔢 New OTP generated for ${student.email}: ${otpCode}`);
+
+    // Send OTP email
+    const htmlContent = `
+      <h2>Password Reset Code</h2>
+      <p>Hi ${student.firstName || 'there'},</p>
+      <p>You requested to reset your password. Your code is:</p>
+      <h1 style="letter-spacing: 3px;">${otpCode}</h1>
+      <p>This code expires in <b>10 minutes</b>.</p>
+      <p>If you did not request this, please ignore this email.</p>
+    `;
+
+    await sendEmail(student.email, "College App - Reset Your Password", htmlContent);
+
+    console.log(`✅ Password reset OTP sent to: ${student.email}`);
+    
+    res.status(200).json({ 
+      success: true, 
+      message: "If an account exists, an OTP has been sent to your email." 
+    });
+
+  } catch (error) {
+    console.error("❌ Transfer forgot password OTP error:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Server error sending OTP" 
+    });
+  }
+};
+
+
+/**
+ * 2. RESET PASSWORD after OTP verification
+ * POST /api/transfer/forgot-password/reset
+ */
+export const forgotPasswordReset = async (req, res) => {
+  try {
+    const { username, password, confirmPassword } = req.body;
+
+    console.log("🔄 Transfer password reset attempt for:", username);
+
+    if (!username || !password || !confirmPassword) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Username, password, and confirmPassword are required" 
+      });
+    }
+
+    if (password !== confirmPassword) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Passwords do not match" 
+      });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Password must be at least 8 characters" 
+      });
+    }
+
+    const student = await TransferStudent.findOne({ 
+      username: username.toLowerCase() 
+    });
+
+    if (!student) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Transfer student not found" 
+      });
+    }
+
+    // Generate & return JWT (auto-login)
+    const token = generateToken(student._id, student.email, student.username);
+
+    // ✅ FIXED: Single updateOne replaces TWO save() calls
+    await TransferStudent.updateOne(
+      { _id: student._id },
+      { 
+        $set: { 
+          password: password,  // bcrypt middleware will hash automatically
+          otpCode: null,
+          otpExpiry: null 
+        }
+      }
+    );
+
+    console.log(`✅ Transfer password reset successful for: ${username}`);
+
+    const studentResponse = {
+      id: student._id,
+      firstName: student.firstName,
+      lastName: student.lastName,
+      email: student.email,
+      username: student.username,
+      accountType: student.accountType,
+      hasCompletedExtendedProfile: student.hasCompletedExtendedProfile || false
+    };
+
+    res.status(200).json({ 
+      success: true, 
+      message: "Password reset successful. You are now logged in.",
+      token,
+      user: studentResponse 
+    });
+
+  } catch (error) {
+    console.error("❌ Transfer password reset error:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Server error resetting password" 
+    });
+  }
+};
+
+
+/**
+ * 3. UPDATE verifyOTP to handle password reset OTPs
+ * POST /api/transfer/verify-otp (for password reset)
+ */
+/**
+ * 3. UPDATE verifyOTP to handle password reset OTPs
+ * POST /api/transfer/forgot-password/verify-otp (for password reset)
+ */
+export const verifyOTPForPasswordReset = async (req, res) => {
+  try {
+    const { username, otp } = req.body;
+
+    if (!username || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Username and OTP are required",
+      });
+    }
+
+    const student = await TransferStudent.findOne({ 
+      username: username.toLowerCase() 
+    }).select("+otpCode +otpExpiry");
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Transfer student not found",
+      });
+    }
+
+    if (student.otpCode !== otp) {
+      console.log("⚠️ Invalid OTP attempt for:", username);
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP",
+      });
+    }
+
+    if (new Date() > student.otpExpiry) {
+      console.log("⚠️ OTP expired for:", username);
+      return res.status(400).json({
+        success: false,
+        message: "OTP has expired. Please request a new OTP.",
+      });
+    }
+
+    // ✅ FIXED: Use updateOne instead of save()
+    await TransferStudent.updateOne(
+      { _id: student._id },
+      { 
+        $set: { 
+          otpCode: null,
+          otpExpiry: null 
+        }
+      }
+    );
+
+    console.log("✅ Transfer OTP verified successfully for:", username);
+    return res.status(200).json({
+      success: true,
+      message: "Password reset OTP verified successfully. You can now reset your password.",
+      otpValid: true,
+    });
+  } catch (error) {
+    console.error("❌ Error verifying transfer OTP:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error verifying OTP",
+    });
+  }
+};
+
+
 /**
  * 👤 Get Current Transfer Student Profile (using JWT token)
  * GET /api/transfer/profile
@@ -396,10 +648,6 @@ export const getCurrentTransferStudentProfile = async (req, res) => {
   }
 };
 
-/**
- * 💾 Update Current Transfer Student Profile (using JWT token)
- * PUT /api/transfer/profile
- */
 /**
  * 💾 Update Current Transfer Student Profile (using JWT token)
  * PUT /api/transfer/profile
@@ -488,7 +736,6 @@ export const updateCurrentTransferStudentProfile = async (req, res) => {
     });
   }
 };
-
 
 /**
  * 📊 Helper: Calculate profile completion progress
@@ -747,7 +994,7 @@ export const sendOTP = async (req, res) => {
 };
 
 /**
- * ✔️ Verify OTP
+ * ✔️ Verify OTP (for email verification - kept separate from password reset OTP)
  * POST /api/transfer/verify-otp
  */
 export const verifyOTP = async (req, res) => {
