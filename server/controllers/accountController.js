@@ -19,46 +19,64 @@ const generateToken = (userId, email, studentType) => {
 // Enhanced Profile Validation Helper (Fixed)
 const validateProfileSection = (section, data) => {
   switch (section) {
+
     case 'personal':
       return !!(data.firstName && data.lastName && data.birthDate);
-    
+
     case 'contact':
       return !!(data.phone && data.preferredPhoneType);
-    
+
     case 'address':
-      return !!(data.addressLine1 && data.city && data.state && data.zipCode && data.country);
-    
+      return !!(
+        data.addressLine1 &&
+        data.city &&
+        data.state &&
+        data.zipCode &&
+        data.country
+      );
+
     case 'demographics':
-      return !!(data.legalSex && data.legalSex !== '' && data.hispanicOrLatino && data.hispanicOrLatino !== '');
-    
+  return true;  // ✅ Always complete - optional section
+
+
     case 'language':
-      return !!(data.languagesProficient && 
-                data.languages && 
-                data.languages.length > 0 && 
-                data.languages[0].language &&
-                data.languages[0].language.trim() !== '');
-    
+      return (
+        Array.isArray(data.languages) &&
+        data.languages.length > 0 &&
+        data.languages.every(
+          l => l.language && l.language.trim() !== ''
+        )
+      );
+
     case 'geography':
-      return !!(data.citizenshipStatus && data.citizenshipStatus !== '');
-    
-    case 'feewaiver':
-      return true; // Fee waiver is optional
-    
+      return !!data.citizenshipStatus;
+
     default:
       return false;
   }
 };
 
+
 // Calculate overall profile progress
 const calculateProfileProgress = (profileCompletion) => {
   if (!profileCompletion) return 0;
-  
-  const completionFields = Object.values(profileCompletion);
-  const completedCount = completionFields.filter(Boolean).length;
-  const totalSections = completionFields.length;
-  
-  return Math.round((completedCount / totalSections) * 100);
+
+  const VALID_KEYS = [
+    'personalInfo',
+    'contactDetails',
+    'address',
+    'demographics',
+    'language',
+    'geography'
+  ];
+
+  const completedCount = VALID_KEYS.filter(
+    key => profileCompletion[key] === true
+  ).length;
+
+  return Math.round((completedCount / VALID_KEYS.length) * 100);
 };
+
 
 // ================================
 // 🔐 FORGOT PASSWORD - First Year Students
@@ -467,20 +485,44 @@ export const getProfile = async (req, res) => {
 // ================================
 export const updateProfile = async (req, res) => {
   try {
+    // ================================
+    // 1️⃣ AUTH CHECK
+    // ================================
     const userId = req.user?.userId;
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
+    // ================================
+    // 2️⃣ FETCH EXISTING ACCOUNT (STEP 1)
+    // ================================
+    const existingAccount = await Account.findById(userId);
+    if (!existingAccount) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    // ================================
+    // 3️⃣ UPDATED DATA
+    // ================================
     const updatedData = { ...req.body };
-    
-    // Remove password from update data for security
+
+    // Security: never update password here
     delete updatedData.password;
-    
-    // CLEAN UP: Convert empty strings to undefined for enum fields
+
+    // ================================
+    // 4️⃣ CLEANUP / NORMALIZATION
+    // ================================
     const enumFields = [
-      'gender', 'legalSex', 'pronouns', 'armedForcesStatus', 
-      'hispanicOrLatino', 'citizenshipStatus', 'preferredPhoneType',
+      'gender',
+      'legalSex',
+      'pronouns',
+      'armedForcesStatus',
+      'hispanicOrLatino',
+      'citizenshipStatus',
+      'preferredPhoneType',
       'alternatePhoneType'
     ];
 
@@ -490,31 +532,38 @@ export const updateProfile = async (req, res) => {
       }
     });
 
-    // CLEAN UP: Remove empty strings from array fields
-    if (updatedData.ethnicity && Array.isArray(updatedData.ethnicity)) {
-      updatedData.ethnicity = updatedData.ethnicity.filter(item => item !== '');
-    }
-    if (updatedData.feeWaiverCriteria && Array.isArray(updatedData.feeWaiverCriteria)) {
-      updatedData.feeWaiverCriteria = updatedData.feeWaiverCriteria.filter(item => item !== '');
+    if (Array.isArray(updatedData.ethnicity)) {
+      updatedData.ethnicity = updatedData.ethnicity.filter(e => e !== '');
     }
 
-    // CLEAN UP: Remove empty language entries
-    if (updatedData.languages && Array.isArray(updatedData.languages)) {
-      updatedData.languages = updatedData.languages.filter(lang => 
-        lang.language && lang.language.trim() !== ''
+  
+
+    if (Array.isArray(updatedData.languages)) {
+      updatedData.languages = updatedData.languages.filter(
+        lang => lang.language && lang.language.trim() !== ''
       );
     }
 
-    // Auto-calculate profile completion based on ALL sections
-    const completionStatus = {
-      personalInfo: validateProfileSection('personal', updatedData),
-      contactDetails: validateProfileSection('contact', updatedData),
-      address: validateProfileSection('address', updatedData),
-      demographics: validateProfileSection('demographics', updatedData),
-      language: validateProfileSection('language', updatedData),
-      geography: validateProfileSection('geography', updatedData),
-      feeWaiver: validateProfileSection('feewaiver', updatedData)
+    // ================================
+    // 5️⃣ MERGE EXISTING + UPDATED DATA (🔥 IMPORTANT)
+    // ================================
+    const mergedData = {
+      ...existingAccount.toObject(),
+      ...updatedData
     };
+
+    // ================================
+    // 6️⃣ PROFILE COMPLETION VALIDATION
+    // ================================
+    const completionStatus = {
+      personalInfo: validateProfileSection('personal', mergedData),
+      contactDetails: validateProfileSection('contact', mergedData),
+      address: validateProfileSection('address', mergedData),
+      demographics: validateProfileSection('demographics', mergedData),
+      language: validateProfileSection('language', mergedData),
+      geography: validateProfileSection('geography', mergedData)
+    };
+
 
     // Update completion status
     updatedData.profileCompletion = completionStatus;
@@ -524,9 +573,10 @@ export const updateProfile = async (req, res) => {
     
     // Update application progress
     updatedData.applicationProgress = {
-      ...updatedData.applicationProgress,
-      profile: profileProgress
-    };
+  ...existingAccount.applicationProgress,
+  profile: profileProgress
+};
+
 
     console.log('📊 Profile completion calculated:', {
       completionStatus,

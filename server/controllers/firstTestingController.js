@@ -2,22 +2,71 @@
 import FirstTesting from "../models/firstTestingModel.js";
 import Account from "../models/accountModel.js";
 
-// Calculate testing progress based on completion status
-const calculateTestingProgress = (testingCompletion) => {
+// Calculate testing progress based on ONLY RELEVANT sections
+const calculateTestingProgress = (testingCompletion, testsToReport = []) => {
   if (!testingCompletion) return 0;
 
-  const completionFields = Object.values(testingCompletion);
-  const completedCount = completionFields.filter(Boolean).length;
-  const totalSections = completionFields.length;
+  // Define which completion field corresponds to which test
+  const testToCompletionMap = {
+    'act-tests': 'actTests',
+    'sat-tests': 'satTests',
+    'sat-subject-tests': 'satSubjectTests',
+    'ap-subject-tests': 'apSubjectTests',
+    'ib-subject-tests': 'ibSubjectTests',
+    'cambridge': 'cambridge',
+    'toefl-ibt': 'toeflIbt',
+    'pte-academic-tests': 'pteAcademic',
+    'ielts': 'ielts',
+    'duolingo-english-test': 'duolingo',
+    'senior-secondary-exams': 'seniorSecondary',
+  };
 
-  return Math.round((completedCount / totalSections) * 100);
+  // Always include testsTaken section (mandatory)
+  const mandatorySections = ['testsTaken'];
+  
+  // Determine which sections are relevant based on selected tests
+  const relevantSections = [...mandatorySections];
+  
+  // Add sections for selected tests
+  testsToReport.forEach(test => {
+    const completionField = testToCompletionMap[test];
+    if (completionField && testingCompletion[completionField] !== undefined) {
+      relevantSections.push(completionField);
+    }
+  });
+
+  // Calculate progress based only on relevant sections
+  let completedCount = 0;
+  let totalRelevantSections = relevantSections.length;
+
+  relevantSections.forEach(section => {
+    if (testingCompletion[section]) {
+      completedCount++;
+    }
+  });
+
+  // Ensure we don't divide by zero
+  if (totalRelevantSections === 0) return 0;
+
+  return Math.round((completedCount / totalRelevantSections) * 100);
 };
 
 // Validate individual testing sections
 const validateTestingSection = (section, data) => {
   switch (section) {
     case "tests-taken":
-      return !!(data.selfReportScores && data.internationalPromotionExams);
+      // User must answer both questions
+      if (!data.selfReportScores || !data.internationalPromotionExams) {
+        return false;
+      }
+      
+      // If user says "Yes" to self-reporting, they must select at least one test
+      if (data.selfReportScores === "yes") {
+        return Array.isArray(data.testsToReport) && data.testsToReport.length > 0;
+      }
+      
+      // If user says "No" to self-reporting, they don't need to select tests
+      return true;
 
     case "act-tests":
       return !!(data.pastACTScores && data.futureACTSittings);
@@ -199,8 +248,8 @@ export const createOrUpdateFirstTesting = async (req, res) => {
       ),
     };
 
-    // Calculate overall testing progress
-    const testingProgress = calculateTestingProgress(completionStatus);
+    // Calculate overall testing progress based on relevant sections only
+    const testingProgress = calculateTestingProgress(completionStatus, updateData.testsToReport || []);
     updateData.testingCompletion = completionStatus;
     updateData.testingProgress = testingProgress;
 
@@ -225,9 +274,10 @@ export const createOrUpdateFirstTesting = async (req, res) => {
 
     console.log("📊 Testing progress updated:", {
       testingProgress,
-      completedSections: Object.values(completionStatus).filter(Boolean)
-        .length,
+      testsToReport: updateData.testsToReport || [],
+      completedSections: Object.values(completionStatus).filter(Boolean).length,
       totalSections: Object.values(completionStatus).length,
+      calculatedForSections: testingProgress === 0 ? 0 : Math.round(testingProgress * (1 + (updateData.testsToReport?.length || 0)) / 100)
     });
 
     res.status(200).json({

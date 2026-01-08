@@ -81,7 +81,7 @@ const DemographicsSection = ({ formData, handleInputChange, handleArrayChange })
         </div>
       </div>
 
-      <div className="form-group">
+      {/* <div className="form-group">
         <label>U.S. Armed Forces status</label>
         <div className="radio-group">
           <label>
@@ -125,9 +125,9 @@ const DemographicsSection = ({ formData, handleInputChange, handleArrayChange })
             Current Dependent
           </label>
         </div>
-      </div>
+      </div> */}
 
-      <div className="form-group">
+      {/* <div className="form-group">
         <label>Are you Hispanic or Latino/a/x?</label>
         <div className="radio-group">
           <label>
@@ -151,7 +151,7 @@ const DemographicsSection = ({ formData, handleInputChange, handleArrayChange })
             No
           </label>
         </div>
-      </div>
+      </div> */}
 
       <div className="form-group">
         <label>Regardless of your answer to the prior question, please indicate how you identify yourself. (You may select one or more)</label>

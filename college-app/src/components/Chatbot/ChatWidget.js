@@ -15,26 +15,25 @@ const ChatWidget = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
-  // Toggle chat widget
+  // Toggle chat widget - FIXED: Clear everything when closing
   const handleToggle = () => {
     const next = !isOpen;
     setIsOpen(next);
 
     if (next) {
-      // OPENING: start a fresh conversation every time
+      // OPENING: Start fresh conversation every time
       setMessages([
         {
           id: Date.now(),
           sender: 'bot',
-          text:
-            'Hi 👋 Type ANY university name or question and I will fetch deadlines, documents, fees, and requirements.',
+          text: 'Hi 👋 Type ANY university name or question and I will fetch deadlines, documents, fees, and requirements.',
         },
       ]);
       setSelectedUniversity(null);
       setCurrentInput('');
       setIsTyping(false);
     } else {
-      // CLOSING: clear current state (optional but explicit)
+      // CLOSING: Clear everything
       setMessages([]);
       setSelectedUniversity(null);
       setCurrentInput('');
@@ -52,27 +51,37 @@ const ChatWidget = () => {
   };
 
   /**
-   * NEW: General chat endpoint – uses smart auto context (university / general)
-   * Backend route: POST http://localhost:5001/api/chat-response
-   * Body: { message: string, context: 'auto' }
+   * Enhanced chat endpoint with conversation history
+   * Backend route: POST http://localhost:5001/api/university-info/chat-response
+   * Body: { message: string, context: 'auto', history: array }
    */
   const fetchChatResponse = async (userMessage) => {
     console.log(`Frontend: Sending chat request "${userMessage}"`);
 
+    // Prepare conversation history for context (last 10 messages)
+    const recentHistory = messages
+      .slice(-10) // Last 10 messages for context
+      .map(msg => ({
+        role: msg.sender === 'user' ? 'user' : 'assistant',
+        content: msg.text
+      }));
+
     try {
-    const response = await fetch(
-  ' http://localhost:5001/api/university-info/chat-response',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify({
-          message: userMessage,
-          context: 'auto',
-        }),
-      });
+      const response = await fetch(
+        'http://localhost:5001/api/university-info/chat-response',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            message: userMessage,
+            context: 'auto',
+            history: recentHistory, // Send conversation history
+          }),
+        }
+      );
 
       console.log('Frontend: Response status:', response.status);
 
@@ -84,12 +93,10 @@ const ChatWidget = () => {
         return `❌ ${data.error || 'Unable to fetch data. Please try again.'}`;
       }
 
-      // New endpoint returns `response` as the main text field
       if (data.success && data.response) {
         return data.response;
       }
 
-      // Legacy compatibility (in case backend still sends `information`)
       if (data.success && data.information) {
         return data.information;
       }
@@ -109,15 +116,20 @@ const ChatWidget = () => {
 
     addUserMessage(trimmed);
 
-    // Only treat as "selected university" on the first message
-    if (!selectedUniversity) {
+    // Check if this is a university-related message
+    const uniKeywords = ['university', 'college', 'institute', 'school'];
+    const hasUniKeyword = uniKeywords.some(keyword => 
+      trimmed.toLowerCase().includes(keyword)
+    );
+    
+    if (hasUniKeyword && !selectedUniversity) {
       setSelectedUniversity(trimmed);
     }
 
     setCurrentInput('');
     setIsTyping(true);
 
-    // Call general chat backend (auto-detects university vs general)
+    // Call chat backend with conversation context
     const reply = await fetchChatResponse(trimmed);
 
     addBotMessage(reply);
@@ -207,8 +219,8 @@ const ChatWidget = () => {
               value={currentInput}
               onChange={(e) => setCurrentInput(e.target.value)}
             />
-            <button type="submit" disabled={!currentInput.trim()}>
-              Send
+            <button type="submit" disabled={!currentInput.trim() || isTyping}>
+              {isTyping ? '...' : 'Send'}
             </button>
           </form>
         </div>

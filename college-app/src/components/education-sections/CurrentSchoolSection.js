@@ -33,7 +33,7 @@ const CurrentSchoolSection = ({ educationData, handleInputChange, handleNestedCh
         </div>
 
         {/* CEEB Code */}
-        <div className="current-school-form-group">
+        {/* <div className="current-school-form-group">
           <label className="current-school-label">
             School CEEB Code
           </label>
@@ -44,7 +44,7 @@ const CurrentSchoolSection = ({ educationData, handleInputChange, handleNestedCh
             value={currentSchool.schoolCEEBCode || ''}
             onChange={(e) => handleInputChange('currentSchool', 'schoolCEEBCode', e.target.value)}
           />
-        </div>
+        </div> */}
 
         {/* Date of Entry */}
         <div className="current-school-form-group">

@@ -84,12 +84,14 @@ const ProfileForm = () => {
 
     // Profile completion
     profileCompletion: {
-      personalInfo: false,
-      contactDetails: false,
-      demographics: false,
-      language: false,
-      geography: false
-    }
+  personalInfo: false,
+  contactDetails: false,
+  address: false, // ✅ ADD THIS
+  demographics: false,
+  language: false,
+  geography: false
+}
+
   });
 
   useEffect(() => {
@@ -304,9 +306,10 @@ const ProfileForm = () => {
       } else if (section === 'demographics') {
         updatedCompletion.demographics = !!(formData.legalSex && formData.hispanicOrLatino);
       } else if (section === 'language') {
-        updatedCompletion.language =
-          formData.languages.length > 0 &&
-          formData.languages[0].language.trim() !== '';
+  // ✅ Backend-exact validation: ALL languages must have names
+  updatedCompletion.language =
+    formData.languages.length > 0 &&
+    formData.languages.every(lang => lang.language && lang.language.trim() !== '');
       } else if (section === 'geography') {
         updatedCompletion.geography = !!formData.citizenshipStatus;
       }
@@ -368,13 +371,15 @@ const ProfileForm = () => {
     try {
       setSaving(true);
 
-      const finalCompletion = {
-        personalInfo: true,
-        contactDetails: true,
-        demographics: true,
-        language: true,
-        geography: true
-      };
+     const finalCompletion = {
+  personalInfo: true,
+  contactDetails: true,
+  address: true,      // ✅ ADD THIS
+  demographics: true,
+  language: true,
+  geography: true
+};
+
 
       const token = localStorage.getItem('token');
       const response = await axios.put(

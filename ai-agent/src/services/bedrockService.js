@@ -72,13 +72,88 @@ const retryWithBackoff = async (fn, retries = 5, initialDelay = 3000) => {
 };
 
 /**
- * ✅ FIXED: UNIVERSAL AI CHATBOT - Handles ANY message (cars, tractors, XUV700, TOEFL, etc.)
+ * 🆕 CONVERSATION HISTORY MANAGEMENT
+ * Stores conversation history by user/session
  */
-export const generateResponse = async (message, context = 'general') => {
+const conversationHistory = new Map();
+
+/**
+ * Clean old conversations to prevent memory leaks
+ */
+const cleanupOldConversations = () => {
+  const now = Date.now();
+  const ONE_HOUR = 60 * 60 * 1000;
+  
+  for (const [sessionId, data] of conversationHistory.entries()) {
+    if (now - data.lastActivity > ONE_HOUR) {
+      conversationHistory.delete(sessionId);
+      console.log(`🗑️  Cleaned up old conversation: ${sessionId}`);
+    }
+  }
+};
+
+/**
+ * Get or create conversation history for a session
+ */
+const getConversationHistory = (sessionId, maxMessages = 20) => {
+  cleanupOldConversations();
+  
+  if (!conversationHistory.has(sessionId)) {
+    conversationHistory.set(sessionId, {
+      messages: [],
+      lastActivity: Date.now()
+    });
+  }
+  
+  const session = conversationHistory.get(sessionId);
+  session.lastActivity = Date.now();
+  
+  // Return only the last N messages to avoid token limits
+  return session.messages.slice(-maxMessages);
+};
+
+/**
+ * Add message to conversation history
+ */
+const addToConversationHistory = (sessionId, role, content) => {
+  if (!conversationHistory.has(sessionId)) {
+    conversationHistory.set(sessionId, {
+      messages: [],
+      lastActivity: Date.now()
+    });
+  }
+  
+  const session = conversationHistory.get(sessionId);
+  session.messages.push({ role, content });
+  session.lastActivity = Date.now();
+  
+  // Keep conversation manageable (max 30 messages)
+  if (session.messages.length > 30) {
+    session.messages = session.messages.slice(-30);
+  }
+};
+
+/**
+ * Clear conversation history for a session
+ */
+export const clearConversationHistory = (sessionId) => {
+  if (conversationHistory.has(sessionId)) {
+    conversationHistory.delete(sessionId);
+    console.log(`🧹 Cleared conversation history for: ${sessionId}`);
+    return true;
+  }
+  return false;
+};
+
+/**
+ * ✅ FIXED: UNIVERSAL AI CHATBOT WITH CONVERSATION HISTORY
+ * Now maintains context across multiple messages
+ */
+export const generateResponse = async (message, context = 'general', sessionId = 'default') => {
   const startTime = Date.now();
   
   try {
-    console.log(`\n💬 Processing [${context}]: "${message.substring(0, 50)}..."`);
+    console.log(`\n💬 Processing [${context}] for session ${sessionId}: "${message.substring(0, 50)}..."`);
     
     if (!message?.trim()) {
       throw new Error('Invalid message');
@@ -86,49 +161,76 @@ export const generateResponse = async (message, context = 'general') => {
     
     const cleanMessage = message.trim();
     
-    let prompt;
+    // Get conversation history for this session
+    const historyMessages = getConversationHistory(sessionId);
+    
+    // Add user's new message to history
+    addToConversationHistory(sessionId, 'user', cleanMessage);
+    
+    // Build system prompt based on context
+    let systemPrompt;
     if (context === 'university') {
-      prompt = `You are an expert on universities and international admissions.
-
-User query: "${cleanMessage}"
+      systemPrompt = `You are an expert on universities and international admissions.
+      
+You have access to previous conversation history. Reference it when relevant.
+Current conversation context: ${historyMessages.length > 0 ? 'Continuing discussion about universities/admissions' : 'Starting new conversation'}
 
 Instructions:
-- If the user mentions a university name (for example "Harvard University", "MIT", "Stanford"):
-  - Briefly describe the university only if it helps answer the question.
-  - Then answer exactly what the user is asking (deadlines, required documents, fees, programs, scholarships, etc.).
-- Use short markdown headings (##, ###) only when helpful.
-- Do NOT follow any fixed pre-defined template.
-- Do NOT invent specific emails, phone numbers, or URLs; use generic wording if needed.
-- If the question is not really about a university, just answer it normally as a helpful assistant.`;
+- Consider the full conversation history when answering.
+- If the user mentions a university name, provide relevant information about it.
+- Answer follow-up questions based on what was discussed earlier.
+- Use markdown for formatting when helpful.
+- Keep responses informative and accurate.`;
     } else {
-      // 🔥 FIXED: UNIVERSAL AI - NO MORE COLLEGE CONSULTANT ROLE
-      prompt = `You are a universal AI assistant that answers ALL questions accurately using web search tools.
+      // 🔥 FIXED: UNIVERSAL AI WITH CONTEXT AWARENESS
+      systemPrompt = `You are a universal AI assistant that answers ALL questions accurately.
 
-<tools_workflow>
-Always use search_web tool first for factual queries (prices, specs, current info).
-Make at most 3 tool calls, then provide comprehensive answer with citations [web:1].
-
-</tools_workflow>
+CONVERSATION CONTEXT:
+- You have access to the full conversation history with this user.
+- Reference previous topics when answering follow-up questions.
+- If the user asks about something discussed earlier, continue from there.
+- Provide comprehensive, accurate information on any topic.
 
 <response_guidelines>
+- Acknowledge context from previous messages when relevant
 - Begin with 1-2 short factual sentences
-- Use ## headers for sections
+- Use ## headers for sections when needed
 - Use markdown tables for comparisons
-- Cite every fact: [web:1][web:2]
-- Cover cars, tractors, prices, specs, ANY topic
-- NEVER say "I apologize", "no expertise", or refuse any question
-
-User query: "${cleanMessage}"
-
-Provide detailed, structured answer with latest 2025 data.`;
+- Cover any topic: cars, tractors, technology, education, etc.
+- Be conversational and follow the flow of discussion
+</response_guidelines>`;
     }
-
+    
+    // Build messages array with history and current message
+    const messages = [];
+    
+    // Add system message first
+    messages.push({
+      role: "user",
+      content: [{ type: "text", text: systemPrompt }]
+    });
+    
+    // Add conversation history (limited to last 10 exchanges)
+    const recentHistory = historyMessages.slice(-10);
+    recentHistory.forEach(msg => {
+      messages.push({
+        role: msg.role === 'assistant' ? 'assistant' : 'user',
+        content: [{ type: "text", text: msg.content }]
+      });
+    });
+    
+    // Add current user message
+    messages.push({
+      role: "user",
+      content: [{ type: "text", text: cleanMessage }]
+    });
+    
     // 🔥 RATE LIMIT FIX: Use Haiku for general (faster), Sonnet for university
     const modelId = context === 'university' ? 
       "anthropic.claude-3-5-sonnet-20240620-v1:0" : 
       "anthropic.claude-3-haiku-20240307-v1:0";
     
-    console.log(`🤖 Using: ${modelId} [${context}]`);
+    console.log(`🤖 Using: ${modelId} [${context}] | History: ${recentHistory.length} messages`);
     
     const params = {
       modelId,
@@ -136,13 +238,10 @@ Provide detailed, structured answer with latest 2025 data.`;
       accept: "application/json",
       body: JSON.stringify({
         anthropic_version: "bedrock-2023-05-31",
-        max_tokens: context === 'university' ? 5000 : 2000,
+        max_tokens: context === 'university' ? 5000 : 2500,
         temperature: context === 'university' ? 0.0 : 0.1,
         top_p: 1.0,
-        messages: [{
-          role: "user",
-          content: [{ type: "text", text: prompt }]
-        }]
+        messages: messages
       })
     };
     
@@ -166,6 +265,9 @@ Provide detailed, structured answer with latest 2025 data.`;
       throw new Error('No content in response');
     }
     
+    // Add assistant's response to conversation history
+    addToConversationHistory(sessionId, 'assistant', content);
+    
     const duration = Date.now() - startTime;
     console.log(`✅ Success: ${content.length} chars (${duration}ms)`);
     
@@ -187,10 +289,26 @@ Provide detailed, structured answer with latest 2025 data.`;
 };
 
 /**
- * ✅ YOUR ORIGINAL UNIVERSITY FUNCTION (100% UNCHANGED)
+ * ✅ YOUR ORIGINAL UNIVERSITY FUNCTION (UPDATED WITH SESSION SUPPORT)
  */
-export const generateUniversityInfo = async (universityName) => {
-  return generateResponse(universityName, 'university');
+export const generateUniversityInfo = async (universityName, sessionId = 'default') => {
+  return generateResponse(universityName, 'university', sessionId);
+};
+
+/**
+ * 🆕 Get conversation history for debugging
+ */
+export const getDebugConversationHistory = (sessionId = 'default') => {
+  if (conversationHistory.has(sessionId)) {
+    const session = conversationHistory.get(sessionId);
+    return {
+      sessionId,
+      messageCount: session.messages.length,
+      lastActivity: new Date(session.lastActivity).toISOString(),
+      messages: session.messages.slice(-5) // Last 5 messages
+    };
+  }
+  return { sessionId, messageCount: 0, messages: [] };
 };
 
 export { bedrockClient };

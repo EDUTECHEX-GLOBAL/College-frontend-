@@ -189,7 +189,7 @@ const accountSchema = new mongoose.Schema(
       demographics: { type: Boolean, default: false },
       language: { type: Boolean, default: false },
       geography: { type: Boolean, default: false },
-      feeWaiver: { type: Boolean, default: false },
+     
     },
 
     // =============================

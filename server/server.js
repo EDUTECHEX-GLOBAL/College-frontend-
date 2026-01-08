@@ -21,7 +21,7 @@ import transferActivitiesRoutes from "./routes/activitiestestRoutes.js"; // ✅ 
 import firstYearActivitiesRoutes from "./routes/activitiesRoutes.js"; // ✅ RENAMED for first-year
 import responsibilitiesRoutes from "./routes/responsibilitiesRoutes.js";
 import writingRoutes from "./routes/writingRoutes.js";
-
+import adminRoutes from "./routes/adminRoutes.js";
 // Import transfer and extended profile routes from previous code
 import transferRoutes from "./routes/transferRoutes.js";
 import extendedProfileRoutes from "./routes/extendedProfileRoutes.js";
@@ -101,6 +101,7 @@ app.use("/api/family-background", familyRoutes);
 app.use("/api/education-transfer", educationtestRoutes);
 app.use("/api/testing", testRoutes); // ✅ ADDED - Testing routes
 app.use("/api/writingtest", writingtestRoutes); // ✅ ADDED - Writing test routes
+app.use("/api/admin", adminRoutes);
 
 // Root health check
 app.get("/", (req, res) => {
@@ -113,6 +114,7 @@ app.get("/", (req, res) => {
       register: "POST /api/students/register",
       login: "POST /api/students/login",
       profile: "GET /api/students/profile (Protected)",
+      adminProfile: "GET /api/admin/profile (Admin Protected)", // ✅ ADDED
       education: "GET /api/education (Protected)",
       collegeSearch: "GET /api/college-search",
       colleges: "GET /api/colleges (Protected)",
@@ -251,6 +253,14 @@ app.listen(PORT, () => {
    🏠 Residency:        /api/residency
    🌍 International:    /api/international
    📊 Review:           /api/review
+
+   🔐 Admin Endpoints:
+   - POST   /api/admin/login
+   - POST   /api/admin/logout
+   - GET    /api/admin/profile
+   - PUT    /api/admin/profile
+   - PUT    /api/admin/change-password
+   - POST   /api/admin/setup (first-time only)
 
 🏥 Health:
    - GET /api/health
