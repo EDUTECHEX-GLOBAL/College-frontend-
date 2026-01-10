@@ -9,258 +9,397 @@ const AdminUserManagement = () => {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
 
-  // Initial users data
-  const initialUsers = [
-    {
-      id: 1,
-      name: "Mounika",
-      email: "mounikatrunnala1901@gmail.com",
-      role: "User",
-      status: "active",
-      lastLogin: "Never",
-      joinDate: "07 Jan 2026",
-      avatar: "M"
-    },
-    {
-      id: 2,
-      name: "aravind",
-      email: "bondalagatharavind@gmail.com",
-      role: "User",
-      status: "active",
-      lastLogin: "Never",
-      joinDate: "07 Jan 2026",
-      avatar: "A"
-    },
-    {
-      id: 3,
-      name: "mounika",
-      email: "mounika196@gmail.com",
-      role: "User",
-      status: "active",
-      lastLogin: "Never",
-      joinDate: "07 Jan 2026",
-      avatar: "M"
-    },
-    {
-      id: 4,
-      name: "Mounika",
-      email: "admin@educourses.com",
-      role: "Admin",
-      status: "active",
-      lastLogin: "Never",
-      joinDate: "06 Jan 2026",
-      avatar: "M"
-    },
-    {
-      id: 5,
-      name: "Mounika",
-      email: "tirumalamounika25@gmail.com",
-      role: "User",
-      status: "active",
-      lastLogin: "21 hours ago",
-      joinDate: "02 Dec 2025",
-      avatar: "M"
-    },
-    {
-      id: 6,
-      name: "Aravind",
-      email: "aravindbonda2003@gmail.com",
-      role: "User",
-      status: "active",
-      lastLogin: "22 minutes ago",
-      joinDate: "06 Nov 2025",
-      avatar: "A"
-    },
-    {
-      id: 7,
-      name: "Astrth",
-      email: "raghavacowdary66666@gmail.com",
-      role: "User",
-      status: "active",
-      lastLogin: "05 Nov 2025",
-      joinDate: "05 Nov 2025",
-      avatar: "A"
-    },
-    {
-      id: 8,
-      name: "uday",
-      email: "udaysankar9858@gmail.com",
-      role: "User",
-      status: "active",
-      lastLogin: "04 Nov 2025",
-      joinDate: "04 Nov 2025",
-      avatar: "U"
-    },
-    {
-      id: 9,
-      name: "John Doe",
-      email: "john@example.com",
-      role: "User",
-      status: "inactive",
-      lastLogin: "1 month ago",
-      joinDate: "15 Oct 2025",
-      avatar: "J"
-    },
-    {
-      id: 10,
-      name: "Jane Smith",
-      email: "jane@example.com",
-      role: "Admin",
-      status: "active",
-      lastLogin: "2 days ago",
-      joinDate: "20 Sep 2025",
-      avatar: "J"
-    },
-    {
-      id: 11,
-      name: "Robert Johnson",
-      email: "robert@example.com",
-      role: "User",
-      status: "suspended",
-      lastLogin: "3 months ago",
-      joinDate: "01 Aug 2025",
-      avatar: "R"
-    },
-    {
-      id: 12,
-      name: "Sarah Williams",
-      email: "sarah@example.com",
-      role: "User",
-      status: "active",
-      lastLogin: "1 week ago",
-      joinDate: "10 Jul 2025",
-      avatar: "S"
-    }
-  ];
-
-  // User statistics
   const [userStats, setUserStats] = useState({
-    totalUsers: 12,
-    activeUsers: 10,
-    adminUsers: 2
+    totalUsers: 0,
+    activeUsers: 0,
+    adminUsers: 0,
+    inactiveUsers: 0
   });
 
-  // Load initial data
+  const API_BASE_URL = "http://localhost:5000/api/admin/users";
+
+  const getAdminHeaders = () => ({
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${localStorage.getItem("adminToken") || ""}`,
+  });
+
   useEffect(() => {
     loadUsersData();
   }, []);
 
-  // Filter users when search or filters change
   useEffect(() => {
     filterUsers();
   }, [searchQuery, roleFilter, statusFilter, users]);
 
-  const loadUsersData = () => {
+  // ===== Load Users Data =====
+  const loadUsersData = async () => {
     setLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setUsers(initialUsers);
-      
-      // Calculate stats
-      const totalUsers = initialUsers.length;
-      const activeUsers = initialUsers.filter(user => user.status === "active").length;
-      const adminUsers = initialUsers.filter(user => user.role === "Admin").length;
-      
-      setUserStats({
-        totalUsers,
-        activeUsers,
-        adminUsers
+    try {
+      const queryParams = new URLSearchParams();
+      if (searchQuery) queryParams.append("search", searchQuery);
+      if (roleFilter !== "all") queryParams.append("role", roleFilter);
+      if (statusFilter !== "all") queryParams.append("status", statusFilter);
+
+      const response = await fetch(`${API_BASE_URL}?${queryParams.toString()}`, {
+        headers: getAdminHeaders(),
       });
-      
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (!data.success) {
+        console.error("API Error:", data.message);
+        setUsers([]);
+        setFilteredUsers([]);
+        setUserStats({ totalUsers: 0, activeUsers: 0, adminUsers: 0, inactiveUsers: 0 });
+        return;
+      }
+
+      // Transform users from API response
+      const transformedUsers = (data.users || data.data || []).map((user) => {
+        const name = (user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || "Unknown").trim();
+        const role = (user.role || "User").trim();
+        const status = user.status || "inactive";
+        
+        return {
+          id: user._id || user.id,
+          name,
+          email: user.email || "unknown@example.com",
+          role: role.charAt(0).toUpperCase() + role.slice(1),
+          status: status,
+          lastLogin: user.lastLogin || user.formattedLastLogin || "Never",
+          joinDate: user.joinDate || user.formattedJoinDate || 
+                   (user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"),
+          avatar: user.avatar || (name[0] ? name[0].toUpperCase() : "?"),
+          otpVerified: user.otpVerified || user.isVerified || false,
+          signupDate: user.createdAt || new Date().toISOString(),
+        };
+      });
+
+      setUsers(transformedUsers);
+
+      // Calculate stats - use data.stats if available, otherwise calculate locally
+      if (data.stats) {
+        setUserStats({
+          totalUsers: data.stats.totalUsers || transformedUsers.length,
+          activeUsers: data.stats.activeUsers || transformedUsers.filter((u) => u.status === "active").length,
+          adminUsers: data.stats.adminUsers || transformedUsers.filter((u) => u.role.toLowerCase() === "admin").length,
+          inactiveUsers: transformedUsers.filter((u) => u.status === "inactive").length,
+        });
+      } else {
+        const totalUsers = transformedUsers.length;
+        const activeUsers = transformedUsers.filter((u) => u.status === "active").length;
+        const adminUsers = transformedUsers.filter((u) => u.role.toLowerCase() === "admin").length;
+        const inactiveUsers = transformedUsers.filter((u) => u.status === "inactive").length;
+        
+        setUserStats({ totalUsers, activeUsers, adminUsers, inactiveUsers });
+      }
+
+    } catch (error) {
+      console.error("Error loading users:", error);
+      alert("Failed to fetch users. Check console for details.");
+    } finally {
       setLoading(false);
-    }, 500);
+    }
   };
 
+  // ===== Filter Users =====
   const filterUsers = () => {
     let filtered = [...users];
 
-    // Apply search filter
     if (searchQuery) {
-      filtered = filtered.filter(user =>
-        user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchQuery.toLowerCase())
+      filtered = filtered.filter(
+        (user) =>
+          (user.name || "")
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          (user.email || "")
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())
       );
     }
 
-    // Apply role filter
     if (roleFilter !== "all") {
-      filtered = filtered.filter(user => user.role.toLowerCase() === roleFilter.toLowerCase());
+      filtered = filtered.filter(
+        (user) => (user.role || "").toLowerCase() === roleFilter.toLowerCase()
+      );
     }
 
-    // Apply status filter
     if (statusFilter !== "all") {
-      filtered = filtered.filter(user => user.status === statusFilter);
+      filtered = filtered.filter((user) => (user.status || "").toLowerCase() === statusFilter.toLowerCase());
     }
 
     setFilteredUsers(filtered);
   };
 
-  const handleSearch = (e) => {
-    setSearchQuery(e.target.value);
-  };
+  // ===== Event Handlers =====
+  const handleSearch = (e) => setSearchQuery(e.target.value);
+  const handleRoleFilterChange = (e) => setRoleFilter(e.target.value);
+  const handleStatusFilterChange = (e) => setStatusFilter(e.target.value);
 
-  const handleRoleFilterChange = (e) => {
-    setRoleFilter(e.target.value);
-  };
+  // ===== Approve User Function =====
+  const handleApproveUser = async (userId) => {
+    try {
+      // Use PATCH method instead of POST
+      const response = await fetch(`${API_BASE_URL}/${userId}/approve`, {
+        method: "PATCH", // CHANGED FROM POST TO PATCH
+        headers: getAdminHeaders(),
+        body: JSON.stringify({ 
+          approvedBy: localStorage.getItem("adminEmail") || "Admin",
+          approvedAt: new Date().toISOString()
+        }),
+      });
 
-  const handleStatusFilterChange = (e) => {
-    setStatusFilter(e.target.value);
-  };
+      const data = await response.json();
 
-  const handleUpdateUser = (userId, field, value) => {
-    setUsers(users.map(user => 
-      user.id === userId ? { ...user, [field]: value } : user
-    ));
-  };
-
-  const handleDeleteUser = (userId) => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
-      setUsers(users.filter(user => user.id !== userId));
-      setUserStats(prev => ({
-        ...prev,
-        totalUsers: prev.totalUsers - 1
-      }));
+      if (data && data.success) {
+        // Update user status locally
+        setUsers(users.map((user) => 
+          user.id === userId ? { ...user, status: "active" } : user
+        ));
+        
+        // Update stats if provided
+        if (data.stats) {
+          setUserStats(data.stats);
+        }
+        
+        // Show success message
+        alert("admin approved successfully! They can now access the dashboard.");
+      } else {
+        alert(data.message || "Failed to approve user");
+      }
+    } catch (error) {
+      console.error("Error approving user:", error);
+      alert("Failed to approve user. Check console for details.");
     }
   };
 
-  const handleAddUser = () => {
-    const newUser = {
-      id: users.length + 1,
-      name: "New User",
-      email: `newuser${users.length + 1}@example.com`,
-      role: "User",
-      status: "active",
-      lastLogin: "Never",
-      joinDate: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
-      avatar: "NU"
-    };
-    
-    setUsers([...users, newUser]);
-    setUserStats(prev => ({
-      ...prev,
-      totalUsers: prev.totalUsers + 1
-    }));
+  // ===== Reject User Function =====
+  const handleRejectUser = async (userId) => {
+    if (!window.confirm("Are you sure you want to reject this user? Their status will be set to 'suspended'.")) return;
+
+    try {
+      // Use the status endpoint instead of non-existent /reject endpoint
+      const response = await fetch(`${API_BASE_URL}/${userId}/status`, {
+        method: "PATCH",
+        headers: getAdminHeaders(),
+        body: JSON.stringify({ 
+          status: "suspended",
+          rejectedBy: localStorage.getItem("adminEmail") || "Admin",
+          rejectedAt: new Date().toISOString()
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data && data.success) {
+        // Update user status locally
+        setUsers(users.map((user) => 
+          user.id === userId ? { ...user, status: "suspended" } : user
+        ));
+        
+        // Update stats if provided
+        if (data.stats) {
+          setUserStats(data.stats);
+        }
+        
+        alert("User rejected (suspended) successfully!");
+      } else {
+        alert(data.message || "Failed to reject user");
+      }
+    } catch (error) {
+      console.error("Error rejecting user:", error);
+      alert("Failed to reject user. Check console for details.");
+    }
   };
 
+  // ===== Activate/Deactivate User =====
+  const handleUpdateUser = async (userId, field, value) => {
+    try {
+      let endpoint = `${API_BASE_URL}/${userId}`;
+      let method = "PUT";
+      let bodyData = {};
+
+      if (field === "status") {
+        endpoint = `${API_BASE_URL}/${userId}/status`;
+        method = "PATCH";
+        bodyData = { status: value };
+      } else if (field === "role") {
+        endpoint = `${API_BASE_URL}/${userId}/role`;
+        method = "PATCH";
+        bodyData = { role: value.toLowerCase() };
+      } else {
+        bodyData = { [field]: value };
+      }
+
+      const response = await fetch(endpoint, {
+        method,
+        headers: getAdminHeaders(),
+        body: JSON.stringify(bodyData),
+      });
+
+      const data = await response.json();
+
+      if (data && data.success) {
+        // Update local state
+        setUsers(users.map((u) => (u.id === userId ? { ...u, [field]: value } : u)));
+        
+        // Update stats if provided
+        if (data.stats) {
+          setUserStats(data.stats);
+        }
+        
+        // Show success message
+        alert(`User ${field} updated successfully!`);
+      } else {
+        alert(data.message || "Failed to update user");
+      }
+    } catch (error) {
+      console.error("Error updating user:", error);
+      alert("Failed to update user. Check console for details.");
+    }
+  };
+
+  // ===== Delete User =====
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/${userId}`, {
+        method: "DELETE",
+        headers: getAdminHeaders(),
+      });
+
+      const data = await response.json();
+
+      if (data && data.success) {
+        // Remove user from local state
+        setUsers(users.filter((u) => u.id !== userId));
+        
+        // Update stats if provided
+        if (data.stats) {
+          setUserStats(data.stats);
+        }
+        
+        alert("User deleted successfully!");
+      } else {
+        alert(data.message || "Failed to delete user");
+      }
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      alert("Failed to delete user. Check console for details.");
+    }
+  };
+
+  // ===== Add User =====
+  const handleAddUser = async () => {
+    const newUser = {
+      firstName: "New",
+      lastName: "User",
+      email: `newuser${users.length + 1}@example.com`,
+      password: "password123",
+      role: "user",
+      status: "active"
+    };
+
+    try {
+      const response = await fetch(API_BASE_URL, {
+        method: "POST",
+        headers: getAdminHeaders(),
+        body: JSON.stringify(newUser),
+      });
+
+      const data = await response.json();
+
+      if (data && data.success) {
+        // Transform and add new user to local state
+        const transformedUser = {
+          id: data.user?._id || data.user?.id || `temp-${Date.now()}`,
+          name: `${newUser.firstName} ${newUser.lastName}`,
+          email: newUser.email,
+          role: (newUser.role || "User").charAt(0).toUpperCase() + (newUser.role || "User").slice(1),
+          status: newUser.status || "active",
+          lastLogin: "Never",
+          joinDate: new Date().toLocaleDateString(),
+          avatar: newUser.firstName.charAt(0).toUpperCase(),
+        };
+
+        setUsers([...users, transformedUser]);
+        
+        // Update stats if provided
+        if (data.stats) {
+          setUserStats(data.stats);
+        }
+        
+        alert("User added successfully!");
+      } else {
+        alert(data.message || "Failed to add user");
+      }
+    } catch (error) {
+      console.error("Error adding user:", error);
+      alert("Failed to add user. Check console for details.");
+    }
+  };
+
+  // ===== Seed Users =====
+  const handleSeedUsers = async () => {
+    if (!window.confirm("This will create sample users. Are you sure?")) return;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/seed`, {
+        method: "POST",
+        headers: getAdminHeaders(),
+      });
+
+      const data = await response.json();
+
+      if (data && data.success) {
+        alert(`${data.count || 'Sample'} users created successfully!`);
+        loadUsersData();
+      } else {
+        alert(data.message || "Failed to seed users");
+      }
+    } catch (error) {
+      console.error("Error seeding users:", error);
+      alert("Failed to seed users. Check console for details.");
+    }
+  };
+
+  // ===== Helpers =====
   const getStatusBadgeClass = (status) => {
-    switch(status) {
-      case 'active': return 'status-active';
-      case 'inactive': return 'status-inactive';
-      case 'suspended': return 'status-suspended';
-      default: return 'status-pending';
+    switch ((status || "").toLowerCase()) {
+      case "active":
+        return "status-active";
+      case "inactive":
+        return "status-inactive";
+      case "pending":
+        return "status-pending";
+      case "suspended":
+        return "status-suspended";
+      default:
+        return "status-inactive";
     }
   };
 
   const getAvatarColor = (name) => {
-    const colors = [
-      '#3498db', '#2ecc71', '#e74c3c', '#f39c12', 
-      '#9b59b6', '#1abc9c', '#d35400', '#c0392b'
-    ];
-    const index = name.charCodeAt(0) % colors.length;
-    return colors[index];
+    const colors = ["#4d7cfe", "#36d389", "#9f7aea", "#e53e3e", "#f6ad55", "#68d391", "#ed64a6", "#667eea"];
+    return colors[(name || "U")[0].charCodeAt(0) % colors.length];
   };
 
+  // ===== Get Status Display Text =====
+  const getStatusDisplay = (status) => {
+    return status.charAt(0).toUpperCase() + status.slice(1);
+  };
+
+  // ===== Check if user needs approval =====
+  const needsApproval = (user) => {
+    return user.status === "inactive" || user.status === "pending";
+  };
+
+  // ===== Render Loading =====
   if (loading) {
     return (
       <div className="loading-container">
@@ -278,37 +417,33 @@ const AdminUserManagement = () => {
           <h1>Users & Roles Management</h1>
           <p>Manage user accounts and permissions</p>
         </div>
-        <button className="add-user-btn" onClick={handleAddUser}>
-          + Add User
-        </button>
+        <div className="header-buttons">
+          <button className="add-user-btn" onClick={handleAddUser}>
+            + Add User
+          </button>
+          <button className="seed-users-btn" onClick={handleSeedUsers}>
+            🔄 Seed Users
+          </button>
+        </div>
       </div>
 
       {/* Stats Cards */}
       <div className="users-stats-grid">
-        <div className="user-stat-card">
-          <div className="stat-icon total-users-icon">
-            <span>👥</span>
-          </div>
+        <div className="user-stat-card total-users">
           <div className="stat-content">
             <h3>TOTAL USERS</h3>
             <div className="stat-value">{userStats.totalUsers}</div>
           </div>
         </div>
 
-        <div className="user-stat-card">
-          <div className="stat-icon active-users-icon">
-            <span>✅</span>
-          </div>
+        <div className="user-stat-card active-users">
           <div className="stat-content">
             <h3>ACTIVE USERS</h3>
             <div className="stat-value">{userStats.activeUsers}</div>
           </div>
         </div>
 
-        <div className="user-stat-card">
-          <div className="stat-icon admin-users-icon">
-            <span>👑</span>
-          </div>
+        <div className="user-stat-card admin-users">
           <div className="stat-content">
             <h3>ADMIN USERS</h3>
             <div className="stat-value">{userStats.adminUsers}</div>
@@ -316,48 +451,63 @@ const AdminUserManagement = () => {
         </div>
       </div>
 
+      {/* Divider */}
+      <div className="divider"></div>
+
       {/* User Management Section */}
       <div className="user-management-section">
         <div className="section-header">
           <h2>User Management</h2>
-          <div className="controls">
-            <div className="search-box">
-              <input
-                type="text"
-                placeholder="Search users..."
-                value={searchQuery}
-                onChange={handleSearch}
-                className="search-input"
-              />
-              <button className="search-btn">🔍</button>
-            </div>
-          </div>
+          <button className="refresh-btn" onClick={loadUsersData}>
+            🔄 Refresh
+          </button>
         </div>
 
-        {/* Filters */}
-        <div className="filter-section">
-          <div className="filter-group">
-            <label>ROLE</label>
-            <select value={roleFilter} onChange={handleRoleFilterChange}>
-              <option value="all">All Roles</option>
-              <option value="admin">Admin</option>
-              <option value="user">User</option>
-              <option value="moderator">Moderator</option>
-            </select>
+        {/* Search and Filters */}
+        <div className="controls-container">
+          <div className="search-box">
+            <input
+              type="text"
+              placeholder="Search users..."
+              value={searchQuery}
+              onChange={handleSearch}
+              className="search-input"
+            />
           </div>
 
-          <div className="filter-group">
-            <label>STATUS</label>
-            <select value={statusFilter} onChange={handleStatusFilterChange}>
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="suspended">Suspended</option>
-            </select>
-          </div>
+          <div className="filter-container">
+            <div className="filter-group">
+              <span className="filter-label">ROLE</span>
+              <select 
+                value={roleFilter} 
+                onChange={handleRoleFilterChange}
+                className="filter-select"
+              >
+                <option value="all">All Roles</option>
+                <option value="admin">Admin</option>
+                <option value="user">User</option>
+                <option value="moderator">Moderator</option>
+              </select>
+            </div>
 
-          <div className="results-count">
-            Showing {filteredUsers.length} of {users.length} users
+            <div className="filter-group">
+              <span className="filter-label">STATUS</span>
+              <select 
+                value={statusFilter} 
+                onChange={handleStatusFilterChange}
+                className="filter-select"
+              >
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="pending">Pending</option>
+                <option value="suspended">Suspended</option>
+              </select>
+            </div>
+
+            <div className="results-count">
+              Showing {filteredUsers.length} of {users.length} users
+            </div>
           </div>
         </div>
 
@@ -376,8 +526,8 @@ const AdminUserManagement = () => {
             </thead>
             <tbody>
               {filteredUsers.length > 0 ? (
-                filteredUsers.map(user => (
-                  <tr key={user.id}>
+                filteredUsers.map((user) => (
+                  <tr key={user.id} className={user.status === "inactive" ? "user-inactive" : ""}>
                     <td>
                       <div className="user-info">
                         <div 
@@ -389,44 +539,75 @@ const AdminUserManagement = () => {
                         <div className="user-details">
                           <div className="user-name">{user.name}</div>
                           <div className="user-email">{user.email}</div>
+                          {user.status === "inactive" && !user.otpVerified && (
+                            <div className="user-note">Needs OTP verification</div>
+                          )}
                         </div>
                       </div>
                     </td>
                     <td>
                       <select 
                         className="role-select"
-                        value={user.role}
+                        value={user.role.toLowerCase()}
                         onChange={(e) => handleUpdateUser(user.id, 'role', e.target.value)}
                       >
-                        <option value="User">User</option>
-                        <option value="Admin">Admin</option>
-                        <option value="Moderator">Moderator</option>
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                        <option value="moderator">Moderator</option>
                       </select>
                     </td>
                     <td>
                       <span className={`status-badge ${getStatusBadgeClass(user.status)}`}>
-                        {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                        {getStatusDisplay(user.status)}
                       </span>
                     </td>
-                    <td>{user.lastLogin}</td>
-                    <td>{user.joinDate}</td>
+                    <td className="last-login">{user.lastLogin}</td>
+                    <td className="join-date">{user.joinDate}</td>
                     <td>
                       <div className="action-buttons">
-                        <button 
-                          className="btn-edit"
-                          onClick={() => {
-                            const newStatus = user.status === 'active' ? 'inactive' : 'active';
-                            handleUpdateUser(user.id, 'status', newStatus);
-                          }}
-                        >
-                          {user.status === 'active' ? 'Deactivate' : 'Activate'}
-                        </button>
-                        <button 
-                          className="btn-delete"
-                          onClick={() => handleDeleteUser(user.id)}
-                        >
-                          Delete
-                        </button>
+                        {/* Show Approve button for inactive/pending users */}
+                        {needsApproval(user) ? (
+                          <>
+                            <button 
+                              className="btn-approve"
+                              onClick={() => handleApproveUser(user.id)}
+                              title="Approve user access"
+                            >
+                              ✓ Approve
+                            </button>
+                            <button 
+                              className="btn-reject"
+                              onClick={() => handleRejectUser(user.id)}
+                              title="Reject user access"
+                            >
+                              ✗ Reject
+                            </button>
+                            <button 
+                              className="btn-delete"
+                              onClick={() => handleDeleteUser(user.id)}
+                            >
+                              Delete
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button 
+                              className="btn-activate"
+                              onClick={() => {
+                                const newStatus = user.status === 'active' ? 'inactive' : 'active';
+                                handleUpdateUser(user.id, 'status', newStatus);
+                              }}
+                            >
+                              {user.status === 'active' ? 'Deactivate' : 'Activate'}
+                            </button>
+                            <button 
+                              className="btn-delete"
+                              onClick={() => handleDeleteUser(user.id)}
+                            >
+                              Delete
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -440,6 +621,13 @@ const AdminUserManagement = () => {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination */}
+        <div className="pagination-container">
+          <div className="pagination-info">
+            Page 1 of 1
+          </div>
         </div>
       </div>
     </div>

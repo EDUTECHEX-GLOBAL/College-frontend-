@@ -659,4 +659,29 @@ export const getDetailedProfile = async (req, res) => {
       message: "Server error fetching profile" 
     });
   }
+  
 };
+
+
+// ================================
+// 🛡️ ADMIN: Get All Users
+// ================================
+export const getAllUsersForAdmin = async (req, res) => {
+  try {
+    const users = await Account.find()
+      .select("-password -otp");
+
+    res.status(200).json({
+      success: true,
+      count: users.length,
+      users
+    });
+  } catch (error) {
+    console.error("❌ Admin get users error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch users"
+    });
+  }
+};
+

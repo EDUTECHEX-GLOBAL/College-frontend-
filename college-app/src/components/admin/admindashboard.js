@@ -27,7 +27,7 @@ const AdminDashboard = () => {
     upcomingTests: 2,
     nextTest: "Tomorrow",
     registrationTrend: {
-      labels: ["Nov 1", "Nov 3", "Nov 4", "Nov 5", "Nov 6", "Dec 4"],
+      labels: ["Nov 1", "Nov 3", "Nov 4", "Nov 5"],
       data: [5, 7, 8, 6, 9, 12]
     },
     paymentFunnel: {
@@ -73,7 +73,7 @@ const AdminDashboard = () => {
         upcomingTests: 2,
         nextTest: "Tomorrow",
         registrationTrend: {
-          labels: ["Nov 1", "Nov 3", "Nov 4", "Nov 5", "Nov 6", "Dec 4"],
+          labels: ["Nov 1", "Nov 3", "Nov 4", "Nov 5"],
           data: [5, 7, 8, 6, 9, 12]
         },
         paymentFunnel: {
@@ -188,9 +188,7 @@ const AdminDashboard = () => {
   const renderPaymentFunnel = () => {
     const stages = [
       { label: "Registrations", value: dashboardData.paymentFunnel.registrations, percentage: 100 },
-      { label: "Started Payment", value: dashboardData.paymentFunnel.startedPayment, percentage: 0 },
-      { label: "Completed Payment", value: dashboardData.paymentFunnel.completedPayment, percentage: 10 },
-      { label: "Confirmed", value: dashboardData.paymentFunnel.confirmed, percentage: 10 }
+      
     ];
 
     return (
