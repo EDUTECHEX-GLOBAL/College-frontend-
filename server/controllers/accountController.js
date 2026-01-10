@@ -228,6 +228,9 @@ export const forgotPasswordReset = async (req, res) => {
 // ================================
 // 🟢 Register (First Year Student)
 // ================================
+// ================================
+// 🟢 Register (First Year Student) - UPDATED
+// ================================
 export const createFirstYearAccount = async (req, res) => {
   try {
     const {
@@ -243,7 +246,7 @@ export const createFirstYearAccount = async (req, res) => {
 
     console.log("📥 Registration attempt for email:", email);
 
-    // Validation
+    // Validation (EXISTING CODE - NO CHANGES)
     if (!email || !password || !firstName || !lastName) {
       return res.status(400).json({
         success: false,
@@ -269,7 +272,7 @@ export const createFirstYearAccount = async (req, res) => {
       return res.status(409).json({ success: false, message: "Email already registered" });
     }
 
-    // Create unverified account
+    // Create unverified account with admin approval fields
     const newAccount = await Account.create({
       email: email.toLowerCase(),
       password,
@@ -278,10 +281,13 @@ export const createFirstYearAccount = async (req, res) => {
       agreeToTerms,
       studentType: studentType || "first-year",
       isVerified: false,
+      status: 'pending', // 🔥 Set initial status as pending
+      isApprovedByAdmin: false, // 🔥 Initially not approved
+      role: 'student', // 🔥 Default role as student
       ...otherData,
     });
 
-    // Generate OTP valid for 10 minutes
+    // Generate OTP valid for 10 minutes (EXISTING CODE - NO CHANGES)
     const otpCode = generateOTP();
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
@@ -291,7 +297,7 @@ export const createFirstYearAccount = async (req, res) => {
       expiresAt: otpExpiry,
     });
 
-    // Send OTP email
+    // Send OTP email (EXISTING CODE - NO CHANGES)
     const htmlContent = `
       <h2>College App Verification Code</h2>
       <p>Hi ${firstName},</p>
@@ -387,6 +393,9 @@ export const verifyOtp = async (req, res) => {
 // ================================
 // 🔑 Login
 // ================================
+// ================================
+// 🔑 Login (UPDATED with admin approval check)
+// ================================
 export const loginAccount = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -394,22 +403,70 @@ export const loginAccount = async (req, res) => {
     console.log("🔐 Login attempt for email:", email);
 
     if (!email || !password) {
-      return res.status(400).json({ success: false, message: "Please provide email and password" });
+      return res.status(400).json({ 
+        success: false, 
+        message: "Please provide email and password" 
+      });
     }
 
     const account = await Account.findOne({ email: email.toLowerCase() });
     if (!account) {
-      return res.status(401).json({ success: false, message: "Invalid email or password" });
+      return res.status(401).json({ 
+        success: false, 
+        message: "Invalid email or password" 
+      });
     }
 
     const isMatch = await account.comparePassword(password);
     if (!isMatch) {
-      return res.status(401).json({ success: false, message: "Invalid email or password" });
+      return res.status(401).json({ 
+        success: false, 
+        message: "Invalid email or password" 
+      });
     }
 
     if (!account.isVerified) {
-      return res.status(403).json({ success: false, message: "Please verify your email before logging in." });
+      return res.status(403).json({ 
+        success: false, 
+        message: "Please verify your email before logging in." 
+      });
     }
+
+    // 🔥 NEW: Check if admin has approved the user
+    if (!account.isApprovedByAdmin || account.status === 'pending') {
+      return res.status(403).json({
+        success: false,
+        message: "Your account is pending admin approval. Please wait for approval to access the dashboard.",
+        requiresAdminApproval: true,
+        isVerified: account.isVerified,
+        isApprovedByAdmin: account.isApprovedByAdmin,
+        status: account.status
+      });
+    }
+
+    // Check if account is suspended
+    if (account.status === 'suspended') {
+      return res.status(403).json({
+        success: false,
+        message: "Your account has been suspended. Please contact support.",
+        isSuspended: true,
+        status: account.status
+      });
+    }
+
+    // Check if account is inactive
+    if (account.status === 'inactive') {
+      return res.status(403).json({
+        success: false,
+        message: "Your account is inactive. Please contact support to reactivate.",
+        isInactive: true,
+        status: account.status
+      });
+    }
+
+    // Update last login timestamp
+    account.lastLogin = new Date();
+    await account.save();
 
     const token = generateToken(account._id, account.email, account.studentType);
     const accountResponse = account.toObject();
@@ -434,6 +491,9 @@ export const loginAccount = async (req, res) => {
 // ================================
 // 🔍 Verify Token (JWT validation)
 // ================================
+// ================================
+// 🔍 Verify Token (JWT validation) - UPDATED
+// ================================
 export const verifyToken = async (req, res) => {
   try {
     const { token } = req.body;
@@ -447,10 +507,18 @@ export const verifyToken = async (req, res) => {
       process.env.JWT_SECRET || "your-secret-key-change-in-production"
     );
 
+    // Fetch user to get current status
+    const account = await Account.findById(decoded.userId).select('status isApprovedByAdmin role');
+    
     res.status(200).json({
       success: true,
       message: "Token verified successfully",
-      user: decoded,
+      user: {
+        ...decoded,
+        status: account?.status || 'unknown',
+        isApprovedByAdmin: account?.isApprovedByAdmin || false,
+        role: account?.role || 'student'
+      },
     });
   } catch (error) {
     console.error("❌ Token verification error:", error);

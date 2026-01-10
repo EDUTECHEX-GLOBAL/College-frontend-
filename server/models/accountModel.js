@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 const accountSchema = new mongoose.Schema(
   {
     // =============================
-    // 🧾 Basic Account Info
+    // 🧾 Basic Account Info (EXISTING FIELDS - NO CHANGES)
     // =============================
     email: {
       type: String,
@@ -63,13 +63,13 @@ const accountSchema = new mongoose.Schema(
     lastLogin: { type: Date },
 
     // =============================
-    // 👤 Enhanced Personal Info
+    // 👤 Enhanced Personal Info (EXISTING FIELDS - NO CHANGES)
     // =============================
     middleName: { type: String, trim: true },
     suffix: { type: String, trim: true },
 
     // =============================
-    // ☎️ Contact Details
+    // ☎️ Contact Details (EXISTING FIELDS - NO CHANGES)
     // =============================
     preferredPhoneType: {
       type: String,
@@ -84,7 +84,7 @@ const accountSchema = new mongoose.Schema(
     },
 
     // =============================
-    // 🌈 Demographics
+    // 🌈 Demographics (EXISTING FIELDS - NO CHANGES)
     // =============================
     gender: {
       type: String,
@@ -122,7 +122,7 @@ const accountSchema = new mongoose.Schema(
     ],
 
     // =============================
-    // 🌐 Language
+    // 🌐 Language (EXISTING FIELDS - NO CHANGES)
     // =============================
     languagesProficient: { type: Number, default: 1 },
     languages: [
@@ -139,7 +139,7 @@ const accountSchema = new mongoose.Schema(
     ],
 
     // =============================
-    // 🗺️ Geography & Citizenship
+    // 🗺️ Geography & Citizenship (EXISTING FIELDS - NO CHANGES)
     // =============================
     birthCountry: { type: String, trim: true },
     cityOfBirth: { type: String, trim: true },
@@ -158,7 +158,7 @@ const accountSchema = new mongoose.Schema(
     },
 
     // =============================
-    // 💰 Fee Waiver
+    // 💰 Fee Waiver (EXISTING FIELDS - NO CHANGES)
     // =============================
     feeWaiverEligible: { type: Boolean, default: false },
     feeWaiverCriteria: [
@@ -180,7 +180,7 @@ const accountSchema = new mongoose.Schema(
     ustriveMentor: { type: Boolean, default: false },
 
     // =============================
-    // 📊 Profile Completion
+    // 📊 Profile Completion (EXISTING FIELDS - NO CHANGES)
     // =============================
     profileCompletion: {
       personalInfo: { type: Boolean, default: false },
@@ -189,11 +189,10 @@ const accountSchema = new mongoose.Schema(
       demographics: { type: Boolean, default: false },
       language: { type: Boolean, default: false },
       geography: { type: Boolean, default: false },
-     
     },
 
     // =============================
-    // 🧭 Application Progress
+    // 🧭 Application Progress (EXISTING FIELDS - NO CHANGES)
     // =============================
     applicationProgress: {
       profile: { type: Number, default: 0 },
@@ -204,6 +203,46 @@ const accountSchema = new mongoose.Schema(
       writing: { type: Number, default: 0 },
       residency: { type: Number, default: 0 },
     },
+
+    // =============================
+    // 🛡️ NEW: ADMIN APPROVAL FIELDS (ADD THESE)
+    // =============================
+    status: {
+      type: String,
+      enum: ['pending', 'active', 'inactive', 'suspended'],
+      default: 'pending'
+    },
+    
+    role: {
+      type: String,
+      enum: ['student', 'admin', 'moderator'],
+      default: 'student'
+    },
+    
+    isApprovedByAdmin: {
+      type: Boolean,
+      default: false
+    },
+    
+    avatar: {
+      type: String,
+      default: function() {
+        return this.firstName?.charAt(0).toUpperCase() || 'U';
+      }
+    },
+    
+    joinDate: {
+      type: Date,
+      default: Date.now
+    },
+    
+    // =============================
+    // 📝 NEW: ADMIN NOTES (ADD THIS)
+    // =============================
+    adminNotes: {
+      type: String,
+      default: ''
+    }
   },
   {
     timestamps: true,
@@ -211,7 +250,7 @@ const accountSchema = new mongoose.Schema(
 );
 
 // =============================
-// 🔒 Password Hash Middleware
+// 🔒 Password Hash Middleware (EXISTING - NO CHANGES)
 // =============================
 accountSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
@@ -225,20 +264,57 @@ accountSchema.pre("save", async function (next) {
 });
 
 // =============================
-// 🔑 Compare Password
+// 🔑 Compare Password (EXISTING - NO CHANGES)
 // =============================
 accountSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
 // =============================
-// 🧾 Public Profile
+// 🧾 Public Profile (EXISTING - NO CHANGES)
 // =============================
 accountSchema.methods.getPublicProfile = function () {
   const accountObj = this.toObject();
   delete accountObj.password;
   return accountObj;
 };
+
+// =============================
+// 📊 NEW: Virtual for formatted join date
+// =============================
+accountSchema.virtual('formattedJoinDate').get(function() {
+  if (!this.joinDate) return 'Not available';
+  return this.joinDate.toLocaleDateString('en-US', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  });
+});
+
+// =============================
+// 🔄 NEW: Virtual for formatted last login
+// =============================
+accountSchema.virtual('formattedLastLogin').get(function() {
+  if (!this.lastLogin) return 'Never logged in';
+  
+  const now = new Date();
+  const diffMs = now - this.lastLogin;
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHour = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHour / 24);
+  
+  if (diffSec < 60) return 'Just now';
+  if (diffMin < 60) return `${diffMin} minute${diffMin > 1 ? 's' : ''} ago`;
+  if (diffHour < 24) return `${diffHour} hour${diffHour > 1 ? 's' : ''} ago`;
+  if (diffDay < 30) return `${diffDay} day${diffDay > 1 ? 's' : ''} ago`;
+  
+  return this.lastLogin.toLocaleDateString('en-US', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  });
+});
 
 const Account = mongoose.model("Account", accountSchema);
 export default Account;

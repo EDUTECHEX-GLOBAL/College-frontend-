@@ -32,12 +32,12 @@ const validateUser = (req, res, next) => {
 // Validation for status update
 const validateStatus = (req, res, next) => {
   const { status } = req.body;
-  const validStatuses = ['active', 'inactive', 'suspended'];
+  const validStatuses = ['active', 'inactive', 'suspended', 'pending']; // Added 'pending'
   
   if (!status || !validStatuses.includes(status)) {
     return res.status(400).json({ 
       success: false, 
-      message: "Valid status is required (active, inactive, or suspended)" 
+      message: "Valid status is required (active, inactive, suspended, or pending)" 
     });
   }
   next();
@@ -46,12 +46,12 @@ const validateStatus = (req, res, next) => {
 // Validation for role update
 const validateRole = (req, res, next) => {
   const { role } = req.body;
-  const validRoles = ['user', 'admin', 'moderator'];
+  const validRoles = ['student', 'admin', 'moderator']; // Changed 'user' to 'student'
   
   if (!role || !validRoles.includes(role)) {
     return res.status(400).json({ 
       success: false, 
-      message: "Valid role is required (user, admin, or moderator)" 
+      message: "Valid role is required (student, admin, or moderator)" 
     });
   }
   next();
@@ -61,10 +61,10 @@ const validateRole = (req, res, next) => {
 // 👥 ADMIN USER ROUTES
 // =======================================
 
-// Get all users with filtering
+// Get all users with filtering - UPDATED
 router.get("/", async (req, res) => {
   try {
-    const { search, role, status } = req.query;
+    const { search, role, status, page = 1, limit = 20 } = req.query;
     
     // Build filter object
     const filter = {};
@@ -85,12 +85,28 @@ router.get("/", async (req, res) => {
       filter.status = status;
     }
     
-    const users = await Account.find(filter).select("-password");
+    // Pagination
+    const skip = (page - 1) * limit;
     
-    // Calculate statistics
+    const users = await Account.find(filter)
+      .select("-password")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+    
+    // Calculate statistics - ENHANCED
     const totalUsers = await Account.countDocuments();
-    const activeUsers = await Account.countDocuments({ status: 'active' });
+    const activeUsers = await Account.countDocuments({ 
+      status: 'active',
+      isApprovedByAdmin: true 
+    });
     const adminUsers = await Account.countDocuments({ role: 'admin' });
+    const pendingApprovalUsers = await Account.countDocuments({ 
+      isApprovedByAdmin: false,
+      isVerified: true,
+      status: { $in: ['pending', 'active'] }
+    });
+    const suspendedUsers = await Account.countDocuments({ status: 'suspended' });
     
     res.status(200).json({ 
       success: true, 
@@ -99,7 +115,15 @@ router.get("/", async (req, res) => {
       stats: {
         totalUsers,
         activeUsers,
-        adminUsers
+        adminUsers,
+        pendingApprovalUsers,
+        suspendedUsers
+      },
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: totalUsers,
+        pages: Math.ceil(totalUsers / limit)
       }
     });
   } catch (error) {
@@ -108,22 +132,28 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Get single user
+// Get single user - UPDATED
 router.get("/:id", async (req, res) => {
   try {
     const user = await Account.findById(req.params.id).select("-password");
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
-    res.status(200).json({ success: true, user });
+    
+    // Add virtual properties to response
+    const userObj = user.toObject();
+    userObj.formattedJoinDate = user.formattedJoinDate;
+    userObj.formattedLastLogin = user.formattedLastLogin;
+    
+    res.status(200).json({ success: true, user: userObj });
   } catch (error) {
     console.error("❌ Admin get user by ID error:", error);
     res.status(500).json({ success: false, message: "Failed to fetch user" });
   }
 });
 
-// Create new user
+// Create new user - UPDATED
 router.post("/", validateUser, async (req, res) => {
   try {
-    const { firstName, lastName, email, password, studentType, role = 'user', status = 'active' } = req.body;
+    const { firstName, lastName, email, password, studentType, role = 'student', status = 'active' } = req.body;
 
     const existingUser = await Account.findOne({ email: email.toLowerCase() });
     if (existingUser) return res.status(409).json({ success: false, message: "Email already exists" });
@@ -136,7 +166,8 @@ router.post("/", validateUser, async (req, res) => {
       studentType: studentType || "first-year",
       role,
       status,
-      isVerified: true
+      isVerified: true,
+      isApprovedByAdmin: true // Auto-approve admin-created users
     });
 
     const userResponse = newUser.toObject();
@@ -144,7 +175,10 @@ router.post("/", validateUser, async (req, res) => {
 
     // Calculate updated statistics
     const totalUsers = await Account.countDocuments();
-    const activeUsers = await Account.countDocuments({ status: 'active' });
+    const activeUsers = await Account.countDocuments({ 
+      status: 'active',
+      isApprovedByAdmin: true 
+    });
     const adminUsers = await Account.countDocuments({ role: 'admin' });
 
     res.status(201).json({ 
@@ -163,7 +197,7 @@ router.post("/", validateUser, async (req, res) => {
   }
 });
 
-// Update user (general update)
+// Update user (general update) - UPDATED
 router.put("/:id", validateUser, async (req, res) => {
   try {
     const { firstName, lastName, email, role, status } = req.body;
@@ -176,7 +210,13 @@ router.put("/:id", validateUser, async (req, res) => {
 
     // Add role and status if provided
     if (role) updateData.role = role;
-    if (status) updateData.status = status;
+    if (status) {
+      updateData.status = status;
+      // Auto-approve when setting status to active
+      if (status === 'active') {
+        updateData.isApprovedByAdmin = true;
+      }
+    }
 
     const updatedUser = await Account.findByIdAndUpdate(
       req.params.id,
@@ -188,7 +228,10 @@ router.put("/:id", validateUser, async (req, res) => {
 
     // Calculate updated statistics
     const totalUsers = await Account.countDocuments();
-    const activeUsers = await Account.countDocuments({ status: 'active' });
+    const activeUsers = await Account.countDocuments({ 
+      status: 'active',
+      isApprovedByAdmin: true 
+    });
     const adminUsers = await Account.countDocuments({ role: 'admin' });
 
     res.status(200).json({ 
@@ -207,14 +250,23 @@ router.put("/:id", validateUser, async (req, res) => {
   }
 });
 
-// Update user status - NEW ENDPOINT
+// Update user status - UPDATED ENDPOINT
 router.patch("/:id/status", validateStatus, async (req, res) => {
   try {
     const { status } = req.body;
+    
+    const updateData = { status };
+    
+    // Auto-approve when setting status to active
+    if (status === 'active') {
+      updateData.isApprovedByAdmin = true;
+    } else if (status === 'suspended' || status === 'inactive') {
+      updateData.isApprovedByAdmin = false;
+    }
 
     const updatedUser = await Account.findByIdAndUpdate(
       req.params.id,
-      { status },
+      updateData,
       { new: true }
     ).select("-password");
 
@@ -222,7 +274,10 @@ router.patch("/:id/status", validateStatus, async (req, res) => {
 
     // Calculate updated statistics
     const totalUsers = await Account.countDocuments();
-    const activeUsers = await Account.countDocuments({ status: 'active' });
+    const activeUsers = await Account.countDocuments({ 
+      status: 'active',
+      isApprovedByAdmin: true 
+    });
     const adminUsers = await Account.countDocuments({ role: 'admin' });
 
     res.status(200).json({ 
@@ -241,7 +296,7 @@ router.patch("/:id/status", validateStatus, async (req, res) => {
   }
 });
 
-// Update user role - NEW ENDPOINT
+// Update user role - UPDATED ENDPOINT
 router.patch("/:id/role", validateRole, async (req, res) => {
   try {
     const { role } = req.body;
@@ -256,7 +311,10 @@ router.patch("/:id/role", validateRole, async (req, res) => {
 
     // Calculate updated statistics
     const totalUsers = await Account.countDocuments();
-    const activeUsers = await Account.countDocuments({ status: 'active' });
+    const activeUsers = await Account.countDocuments({ 
+      status: 'active',
+      isApprovedByAdmin: true 
+    });
     const adminUsers = await Account.countDocuments({ role: 'admin' });
 
     res.status(200).json({ 
@@ -275,12 +333,16 @@ router.patch("/:id/role", validateRole, async (req, res) => {
   }
 });
 
-// Approve user - NEW ENDPOINT
+// Approve user - UPDATED ENDPOINT (FIXED THE BUG)
 router.patch("/:id/approve", async (req, res) => {
   try {
     const updatedUser = await Account.findByIdAndUpdate(
       req.params.id,
-      { status: 'active', isVerified: true },
+      { 
+        status: 'active', 
+        isVerified: true,
+        isApprovedByAdmin: true // 🔥 THIS IS THE CRITICAL FIX
+      },
       { new: true }
     ).select("-password");
 
@@ -288,8 +350,16 @@ router.patch("/:id/approve", async (req, res) => {
 
     // Calculate updated statistics
     const totalUsers = await Account.countDocuments();
-    const activeUsers = await Account.countDocuments({ status: 'active' });
+    const activeUsers = await Account.countDocuments({ 
+      status: 'active',
+      isApprovedByAdmin: true 
+    });
     const adminUsers = await Account.countDocuments({ role: 'admin' });
+    const pendingApprovalUsers = await Account.countDocuments({ 
+      isApprovedByAdmin: false,
+      isVerified: true,
+      status: { $in: ['pending', 'active'] }
+    });
 
     res.status(200).json({ 
       success: true, 
@@ -298,12 +368,95 @@ router.patch("/:id/approve", async (req, res) => {
       stats: {
         totalUsers,
         activeUsers,
-        adminUsers
+        adminUsers,
+        pendingApprovalUsers
       }
     });
   } catch (error) {
     console.error("❌ Admin approve user error:", error);
     res.status(500).json({ success: false, message: "Failed to approve user" });
+  }
+});
+
+// Bulk approve users - NEW ENDPOINT
+router.post("/bulk-approve", async (req, res) => {
+  try {
+    const { userIds } = req.body;
+    
+    if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "User IDs array is required" 
+      });
+    }
+    
+    const result = await Account.updateMany(
+      { _id: { $in: userIds } },
+      { 
+        status: 'active',
+        isApprovedByAdmin: true 
+      }
+    );
+    
+    // Calculate updated statistics
+    const totalUsers = await Account.countDocuments();
+    const activeUsers = await Account.countDocuments({ 
+      status: 'active',
+      isApprovedByAdmin: true 
+    });
+    const adminUsers = await Account.countDocuments({ role: 'admin' });
+    const pendingApprovalUsers = await Account.countDocuments({ 
+      isApprovedByAdmin: false,
+      isVerified: true,
+      status: { $in: ['pending', 'active'] }
+    });
+    
+    res.status(200).json({ 
+      success: true, 
+      message: `${result.modifiedCount} users approved successfully`,
+      stats: {
+        totalUsers,
+        activeUsers,
+        adminUsers,
+        pendingApprovalUsers
+      },
+      modifiedCount: result.modifiedCount
+    });
+  } catch (error) {
+    console.error("❌ Bulk approve users error:", error);
+    res.status(500).json({ success: false, message: "Failed to approve users" });
+  }
+});
+
+// Get user statistics - NEW ENDPOINT
+router.get("/stats/summary", async (req, res) => {
+  try {
+    const stats = {
+      totalUsers: await Account.countDocuments(),
+      activeUsers: await Account.countDocuments({ 
+        status: 'active',
+        isApprovedByAdmin: true 
+      }),
+      adminUsers: await Account.countDocuments({ role: 'admin' }),
+      pendingApprovalUsers: await Account.countDocuments({ 
+        isApprovedByAdmin: false,
+        isVerified: true,
+        status: { $in: ['pending', 'active'] }
+      }),
+      suspendedUsers: await Account.countDocuments({ status: 'suspended' }),
+      inactiveUsers: await Account.countDocuments({ status: 'inactive' }),
+      firstYearStudents: await Account.countDocuments({ studentType: 'first-year' }),
+      transferStudents: await Account.countDocuments({ studentType: 'transfer' }),
+      unverifiedUsers: await Account.countDocuments({ isVerified: false })
+    };
+    
+    res.status(200).json({ 
+      success: true, 
+      stats 
+    });
+  } catch (error) {
+    console.error("❌ Get stats error:", error);
+    res.status(500).json({ success: false, message: "Failed to get statistics" });
   }
 });
 
@@ -315,7 +468,10 @@ router.delete("/:id", async (req, res) => {
 
     // Calculate updated statistics
     const totalUsers = await Account.countDocuments();
-    const activeUsers = await Account.countDocuments({ status: 'active' });
+    const activeUsers = await Account.countDocuments({ 
+      status: 'active',
+      isApprovedByAdmin: true 
+    });
     const adminUsers = await Account.countDocuments({ role: 'admin' });
 
     res.status(200).json({ 
