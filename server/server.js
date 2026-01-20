@@ -31,6 +31,7 @@ import testRoutes from "./routes/testRoutes.js"; // ✅ ADDED - Testing routes
 import writingtestRoutes from "./routes/writingtestRoutes.js"; // ✅ ADDED - Writing test routes
 import firstfamilydashbRoutes from "./routes/firstfamilydashbRoutes.js";
 import adminUserRoutes from "./routes/adminuserroutes.js";
+import adminApplicationRoutes from "./routes/adminapplicationroutes.js";
 
 // Load env
 dotenv.config();
@@ -104,7 +105,7 @@ app.use("/api/testing", testRoutes); // ✅ ADDED - Testing routes
 app.use("/api/writingtest", writingtestRoutes); // ✅ ADDED - Writing test routes
 app.use("/api/admin", adminRoutes);
 app.use("/api/admin/users", adminUserRoutes);
-
+app.use("/api/admin", adminApplicationRoutes); // ← ADD THIS
 // IMPORTANT: Since you have CommonJS files, we need to import them differently
 // Remove the user routes import and route for now to test
 

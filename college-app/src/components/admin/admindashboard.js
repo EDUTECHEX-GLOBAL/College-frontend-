@@ -48,9 +48,11 @@ const AdminDashboard = () => {
       return;
     }
 
-    // Load dashboard data
-    loadDashboardData();
-  }, [navigate]);
+    // Load dashboard data only when on dashboard tab
+    if (activeTab === "dashboard") {
+      loadDashboardData();
+    }
+  }, [navigate, activeTab]);
 
   const loadDashboardData = () => {
     setLoading(true);
@@ -102,13 +104,27 @@ const AdminDashboard = () => {
     setSearchQuery(e.target.value);
   };
 
-  const handleFilterChange = (e) => {
-    setUserFilter(e.target.value);
-  };
-
   const refreshDashboard = () => {
     loadDashboardData();
   };
+
+  // Lazy load components for better performance
+  const [ApplicationsComponent, setApplicationsComponent] = useState(null);
+  const [applicationsLoading, setApplicationsLoading] = useState(false);
+
+  // Load Applications component when activeTab changes to 'applications'
+  useEffect(() => {
+    if (activeTab === "applications" && !ApplicationsComponent) {
+      setApplicationsLoading(true);
+      import("./Applications").then(module => {
+        setApplicationsComponent(() => module.default);
+        setApplicationsLoading(false);
+      }).catch(error => {
+        console.error("Error loading Applications component:", error);
+        setApplicationsLoading(false);
+      });
+    }
+  }, [activeTab, ApplicationsComponent]);
 
   // Format number with Indian Rupee symbol
   const formatIndianRupee = (amount) => {
@@ -243,6 +259,30 @@ const AdminDashboard = () => {
     );
   };
 
+  // Render applications content
+  const renderApplicationsContent = () => {
+    if (applicationsLoading) {
+      return (
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Loading applications...</p>
+        </div>
+      );
+    }
+    
+    if (ApplicationsComponent) {
+      return <ApplicationsComponent />;
+    }
+    
+    return (
+      <div className="empty-state">
+        <div className="empty-state-icon">📋</div>
+        <h3>Applications</h3>
+        <p>Loading applications management system...</p>
+      </div>
+    );
+  };
+
   // Render users content using the imported component
   const renderUsersContent = () => {
     return <AdminUserManagement />;
@@ -299,12 +339,30 @@ const AdminDashboard = () => {
     switch (activeTab) {
       case "dashboard":
         return renderDashboardContent();
+      case "applications":
+        return renderApplicationsContent();
       case "users":
         return renderUsersContent();
       case "settings":
         return renderSettingsContent();
       default:
         return renderDashboardContent();
+    }
+  };
+
+  // Update navbar title based on active tab
+  const getNavbarTitle = () => {
+    switch (activeTab) {
+      case "dashboard":
+        return "Admin Dashboard";
+      case "applications":
+        return "Applications Management";
+      case "users":
+        return "User Management";
+      case "settings":
+        return "Settings";
+      default:
+        return "Admin Dashboard";
     }
   };
 
@@ -337,6 +395,13 @@ const AdminDashboard = () => {
             {sidebarOpen && <span>Dashboard</span>}
           </li>
           <li 
+            className={activeTab === "applications" ? "active" : ""}
+            onClick={() => setActiveTab("applications")}
+          >
+            <span className="menu-icon">📋</span>
+            {sidebarOpen && <span>Applications</span>}
+          </li>
+          <li 
             className={activeTab === "users" ? "active" : ""}
             onClick={() => setActiveTab("users")}
           >
@@ -365,11 +430,7 @@ const AdminDashboard = () => {
         {/* Top Navbar */}
         <nav className="navbar">
           <div className="navbar-left">
-            <h1>
-              {activeTab === "dashboard" && "Admin Dashboard"}
-              {activeTab === "users" && "User Management"}
-              {activeTab === "settings" && "Settings"}
-            </h1>
+            <h1>{getNavbarTitle()}</h1>
           </div>
           
           <div className="navbar-center">

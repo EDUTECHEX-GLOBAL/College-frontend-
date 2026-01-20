@@ -1,3 +1,4 @@
+// middleware/adminauthmiddleware.js
 import jwt from 'jsonwebtoken';
 
 // Hardcoded admin info (for token verification)
@@ -5,6 +6,63 @@ const HARDCODED_ADMIN = {
   email: 'admin@edutechex.com',
   name: 'Super Admin',
   role: 'super_admin'
+};
+
+// Hardcoded admin credentials for login
+const ADMIN_CREDENTIALS = {
+  email: 'admin@edutechex.com',
+  password: 'admin123', // Change this in production
+  name: 'Super Admin',
+  role: 'super_admin',
+  id: 'admin-001'
+};
+
+// Admin login function
+export const adminLogin = (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    // Validate credentials
+    if (email !== ADMIN_CREDENTIALS.email || password !== ADMIN_CREDENTIALS.password) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid email or password'
+      });
+    }
+
+    // Create JWT token
+    const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+    const token = jwt.sign(
+      {
+        id: ADMIN_CREDENTIALS.id,
+        email: ADMIN_CREDENTIALS.email,
+        name: ADMIN_CREDENTIALS.name,
+        role: ADMIN_CREDENTIALS.role
+      },
+      jwtSecret,
+      { expiresIn: '24h' }
+    );
+
+    res.json({
+      success: true,
+      message: 'Login successful',
+      data: {
+        token,
+        admin: {
+          id: ADMIN_CREDENTIALS.id,
+          email: ADMIN_CREDENTIALS.email,
+          name: ADMIN_CREDENTIALS.name,
+          role: ADMIN_CREDENTIALS.role
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Login failed'
+    });
+  }
 };
 
 export const authenticateAdmin = async (req, res, next) => {

@@ -4,13 +4,28 @@ import "./OtpVerificationTransfer.css";
 
 const API_URL = process.env.REACT_APP_API_BASE_URL;
 
-const OtpVerificationTransfer = ({ email, onVerified, onClose }) => {
+const OtpVerificationTransfer = ({ 
+  email, 
+  onVerified, 
+  onClose,
+  mode = "password-reset", // "password-reset" or "email-verification"
+  title = "Verify OTP",
+  onSuccessMessage = "Verification successful!"
+}) => {
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
   const [resendLoading, setResendLoading] = useState(false);
   const [canResend, setCanResend] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
+
+  // Initialize resend timer
+  useEffect(() => {
+    if (email) {
+      setCanResend(false);
+      setResendTimer(mode === "password-reset" ? 60 : 30);
+    }
+  }, [email, mode]);
 
   // ⏱️ Resend Timer Effect
   useEffect(() => {
@@ -21,6 +36,25 @@ const OtpVerificationTransfer = ({ email, onVerified, onClose }) => {
       setCanResend(true);
     }
   }, [resendTimer, canResend]);
+
+  // ✅ ALL 4 ENDPOINTS HANDLED HERE:
+  const getEndpoints = () => {
+    if (mode === "password-reset") {
+      return {
+        verifyEndpoint: `${API_URL}/api/transfer/forgot-password/verify-otp`,
+        resendEndpoint: `${API_URL}/api/transfer/forgot-password/request-otp`,
+        requestBody: { username: email }
+      };
+    } else {
+      // email-verification mode
+      return {
+        verifyEndpoint: `${API_URL}/api/transfer/verify-otp`,
+        resendEndpoint: `${API_URL}/api/transfer/send-otp`,
+        requestBody: { username: email }
+      };
+    }
+  };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,37 +76,42 @@ const OtpVerificationTransfer = ({ email, onVerified, onClose }) => {
 
     try {
       setLoading(true);
-
-      // ✅ FIXED: Forgot Password flow - use correct endpoint + username
-      console.log("🔐 Verifying Password Reset OTP for Transfer Student:", email);
+      const endpoints = getEndpoints();
+      
+      console.log(`🔐 ${mode === "password-reset" ? "Password Reset" : "Email Verification"} OTP Verification for:`, email);
       console.log("🔢 OTP:", otp);
-      console.log("🔗 Correct endpoint:", `${API_URL}/api/transfer/forgot-password/verify-otp`);
+      console.log("🔗 Endpoint:", endpoints.verifyEndpoint);
+      console.log("📦 Request Body:", { ...endpoints.requestBody, otp });
 
-      const response = await axios.post(`${API_URL}/api/transfer/forgot-password/verify-otp`, {
-        username: email,  // ✅ CHANGED: username (passed as 'email' prop from ForgotPassword)
-        otp,
-      }, {
-        timeout: 10000,
-        headers: {
-          "Content-Type": "application/json",
+      // ✅ USING CORRECT ENDPOINT BASED ON MODE
+      const response = await axios.post(
+        endpoints.verifyEndpoint, 
+        {
+          ...endpoints.requestBody,
+          otp
+        }, 
+        {
+          timeout: 10000,
+          headers: {
+            "Content-Type": "application/json",
+          }
         }
-      });
+      );
 
-      console.log("✅ Password Reset OTP Verification successful:", response.data);
+      console.log(`✅ ${mode === "password-reset" ? "Password Reset" : "Email"} OTP Verification successful:`, response.data);
 
       setLoading(false);
       setMessage({ 
         type: "success", 
-        text: "✅ " + (response.data.message || "Password reset authorized!") 
+        text: "✅ " + (response.data.message || onSuccessMessage)
       });
 
-      // Call onVerified after short delay
       setTimeout(() => {
-        onVerified();
+        onVerified(response.data);
       }, 1500);
     } catch (error) {
       setLoading(false);
-      console.error("❌ OTP verification failed:", error);
+      console.error(`❌ ${mode === "password-reset" ? "Password reset" : "Email verification"} OTP verification failed:`, error);
       console.error("Error status:", error.response?.status);
       console.error("Error data:", error.response?.data);
       console.error("Error message:", error.message);
@@ -80,16 +119,20 @@ const OtpVerificationTransfer = ({ email, onVerified, onClose }) => {
       let errorMessage = "Failed to verify OTP. Please try again.";
 
       if (error.response) {
-        // Server responded with error
-        console.error("🔴 Server Error - Status:", error.response.status);
         errorMessage = error.response.data?.message || `Error: ${error.response.status}`;
+        
+        if (error.response.status === 400) {
+          errorMessage = mode === "password-reset" 
+            ? "Invalid or expired OTP. Please request a new one." 
+            : "Invalid OTP or email. Please try again.";
+        } else if (error.response.status === 404) {
+          errorMessage = mode === "password-reset" 
+            ? "User not found. Please check your email/username." 
+            : "Email not found in our system.";
+        }
       } else if (error.request) {
-        // Request made but no response
-        console.error("🔴 No response from server");
-        errorMessage = "No response from server. Please check if server is running.";
+        errorMessage = "No response from server. Please check your connection.";
       } else {
-        // Error in request setup
-        console.error("🔴 Request setup error:", error.message);
         errorMessage = error.message;
       }
 
@@ -100,57 +143,55 @@ const OtpVerificationTransfer = ({ email, onVerified, onClose }) => {
     }
   };
 
-  // 🔄 Resend OTP Handler
   const handleResendOTP = async () => {
     setMessage({ type: "", text: "" });
 
     try {
       setResendLoading(true);
+      const endpoints = getEndpoints();
 
-      console.log("🔄 Resending Password Reset OTP for:", email);
-      console.log("🔗 Correct endpoint:", `${API_URL}/api/transfer/forgot-password/request-otp`);
+      console.log(`🔄 Resending ${mode === "password-reset" ? "Password Reset" : "Email Verification"} OTP for:`, email);
+      console.log("🔗 Endpoint:", endpoints.resendEndpoint);
+      console.log("📦 Request Body:", endpoints.requestBody);
 
-      // ✅ FIXED: Forgot Password resend - correct endpoint + username
-      const response = await axios.post(`${API_URL}/api/transfer/forgot-password/request-otp`, {
-        username: email,  // ✅ CHANGED: username for forgot password flow
-      }, {
-        timeout: 10000,
-        headers: {
-          "Content-Type": "application/json",
+      // ✅ USING CORRECT ENDPOINT BASED ON MODE
+      const response = await axios.post(
+        endpoints.resendEndpoint,
+        endpoints.requestBody,
+        {
+          timeout: 10000,
+          headers: {
+            "Content-Type": "application/json",
+          }
         }
-      });
+      );
 
-      console.log("✅ Password Reset OTP Resent:", response.data);
+      console.log(`✅ ${mode === "password-reset" ? "Password Reset" : "Email Verification"} OTP Resent:`, response.data);
 
       setResendLoading(false);
       setOtp("");
       setCanResend(false);
-      setResendTimer(60);
+      setResendTimer(mode === "password-reset" ? 60 : 30);
 
       setMessage({
         type: "success",
-        text: "✅ New OTP sent to your email! Check your inbox.",
+        text: `✅ New OTP sent to ${mode === "password-reset" ? "your email" : email}!`,
       });
     } catch (error) {
       setResendLoading(false);
-      console.error("❌ Error resending OTP:", error);
-      console.error("Error status:", error.response?.status);
-      console.error("Error data:", error.response?.data);
-      console.error("Error message:", error.message);
+      console.error(`❌ Error resending ${mode} OTP:`, error);
 
       let errorMessage = "Failed to resend OTP. Please try again.";
 
       if (error.response) {
-        // Server responded with error
-        console.error("🔴 Server Error - Status:", error.response.status);
         errorMessage = error.response.data?.message || `Error: ${error.response.status}`;
+        
+        if (error.response.status === 429) {
+          errorMessage = "Too many requests. Please wait before trying again.";
+        }
       } else if (error.request) {
-        // Request made but no response
-        console.error("🔴 No response from server");
-        errorMessage = "No response from server. Please check if server is running.";
+        errorMessage = "No response from server. Please check your connection.";
       } else {
-        // Error in request setup
-        console.error("🔴 Request setup error:", error.message);
         errorMessage = error.message;
       }
 
@@ -160,6 +201,28 @@ const OtpVerificationTransfer = ({ email, onVerified, onClose }) => {
       });
     }
   };
+
+  const getModeSpecificText = () => {
+    if (mode === "password-reset") {
+      return {
+        title: "Verify Password Reset",
+        message: `We've sent a 6-digit OTP to your email for password reset:`,
+        placeholder: "Enter 6-digit OTP",
+        buttonText: "Verify OTP",
+        hint: "Enter the 6-digit code for password reset"
+      };
+    } else {
+      return {
+        title: "Verify Your Email",
+        message: `We've sent a 6-digit OTP to verify your email:`,
+        placeholder: "Enter 6-digit OTP",
+        buttonText: "Verify OTP",
+        hint: "Enter the 6-digit code to verify your email"
+      };
+    }
+  };
+
+  const modeText = getModeSpecificText();
 
   return (
     <div className="modal-overlay">
@@ -168,16 +231,17 @@ const OtpVerificationTransfer = ({ email, onVerified, onClose }) => {
           className="modal-close-btn" 
           onClick={onClose}
           title="Close"
+          disabled={loading}
         >
           ✕
         </button>
 
         <div className="otp-header">
-          <h3 className="modal-title">Verify Password Reset</h3> {/* ✅ Updated title */}
+          <h3 className="modal-title">{title || modeText.title}</h3>
         </div>
 
         <p className="modal-message">
-          We've sent a 6-digit OTP to your email for: <b>{email}</b>
+          {modeText.message} <b>{email}</b>
         </p>
 
         {message.text && (
@@ -194,14 +258,17 @@ const OtpVerificationTransfer = ({ email, onVerified, onClose }) => {
             <input
               type="text"
               className="otp-input"
-              placeholder="Enter 6-digit OTP"
+              placeholder={modeText.placeholder}
               value={otp}
               onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
               maxLength="6"
               disabled={loading}
               autoComplete="off"
+              autoFocus
             />
-            <small className="hint-text">Enter the 6-digit code from your email</small>
+            <small className="hint-text">
+              {modeText.hint}
+            </small>
           </div>
 
           <div className="modal-actions">
@@ -216,9 +283,9 @@ const OtpVerificationTransfer = ({ email, onVerified, onClose }) => {
             <button 
               type="submit" 
               className="modal-btn primary" 
-              disabled={loading || !otp}
+              disabled={loading || !otp || otp.length < 6}
             >
-              {loading ? "Verifying..." : "Verify OTP"}
+              {loading ? "Verifying..." : modeText.buttonText}
             </button>
           </div>
         </form>
