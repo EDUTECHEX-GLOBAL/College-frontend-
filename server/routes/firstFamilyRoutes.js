@@ -5,28 +5,45 @@ import {
   clearFamilyField,
   getUserFamilyApplications,
   deleteFamilyApplication,
+  getAllFamilyRecordsForAdmin, // ✅ NEW (ADMIN)
 } from "../controllers/firstFamilyController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 // ==============================
-// 🔐 Protected Routes (require JWT)
+// 🔐 Protected Routes (JWT)
 // ==============================
+router.use(authMiddleware);
 
-// Get family application for specific college
-router.get("/:collegeId", authMiddleware, getFamilyApplication);
+/**
+ * ===============================
+ * STUDENT ROUTES
+ * ===============================
+ */
 
-// Save/update family application for specific college
-router.post("/:collegeId", authMiddleware, saveFamilyApplication);
+// Get / create family data for a specific college
+router.get("/:collegeId", getFamilyApplication);
 
-// Clear specific field in family application
-router.delete("/:collegeId/clear/:field", authMiddleware, clearFamilyField);
+// Save / update family data
+router.post("/:collegeId", saveFamilyApplication);
 
-// Get all family applications for user
-router.get("/", authMiddleware, getUserFamilyApplications);
+// Clear a specific field
+router.delete("/:collegeId/clear/:field", clearFamilyField);
 
-// Delete family application for specific college
-router.delete("/:collegeId", authMiddleware, deleteFamilyApplication);
+// Get all family records for logged-in student
+router.get("/", getUserFamilyApplications);
+
+// Delete family record for a specific college
+router.delete("/:collegeId", deleteFamilyApplication);
+
+/**
+ * ===============================
+ * ADMIN ROUTE
+ * ===============================
+ */
+
+// Get all family records (ADMIN)
+router.get("/admin/all", getAllFamilyRecordsForAdmin);
 
 export default router;

@@ -1,4 +1,5 @@
 import FirstAcademic from '../models/FirstAcademicModel.js';
+import mongoose from 'mongoose'; // ✅ needed for ObjectId validation
 
 // Get academic application for a specific college
 const getAcademicApplication = async (req, res) => {
@@ -278,6 +279,28 @@ const deleteAcademicApplication = async (req, res) => {
     });
   }
 };
+const getAllAcademicApplicationsForAdmin = async (req, res) => {
+  try {
+    console.log('🔹 Admin fetching all academic applications');
+
+    const academicApplications = await FirstAcademic.find()
+      .populate('studentId', 'firstName lastName email') // populate student info
+      .sort({ lastSaved: -1 }); // most recently updated first
+
+    res.status(200).json({
+      success: true,
+      message: 'All academic applications retrieved successfully',
+      academicApplications,
+      count: academicApplications.length,
+    });
+  } catch (error) {
+    console.error('❌ Error fetching admin academic applications:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching academic applications for admin',
+    });
+  }
+};
 
 export {
   getAcademicApplication,
@@ -285,5 +308,6 @@ export {
   updateAcademicApplication,
   clearField,
   getAllAcademicApplications,
-  deleteAcademicApplication
+  deleteAcademicApplication,
+  getAllAcademicApplicationsForAdmin, // ✅ export new admin function
 };

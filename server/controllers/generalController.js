@@ -263,6 +263,43 @@ const deleteGeneralApplication = async (req, res) => {
     });
   }
 };
+// Get all general applications for admin (similar to academic/international admin)
+const getAllGeneralApplicationsForAdmin = async (req, res) => {
+  try {
+    const allApplications = await GeneralApplication.find()
+      .populate('studentId', 'firstName lastName email phone')
+      .sort({ lastSaved: -1 });
+
+    const mappedApplications = allApplications.map((app) => ({
+      _id: app._id,
+      collegeId: app.collegeId,
+      status: app.status || "not-started",
+      progress: app.progress || 0,
+      submittedAt: app.lastSaved || app.createdAt,
+      student: {
+        name: app.studentId
+          ? `${app.studentId.firstName || ""} ${app.studentId.lastName || ""}`.trim()
+          : "N/A",
+        email: app.studentId?.email || "N/A",
+        phone: app.studentId?.phone || "N/A",
+      },
+      details: app, // Send full document as details for modal
+      type: "general" // tag for type
+    }));
+
+    res.json({
+      success: true,
+      generalApplications: mappedApplications,
+      count: mappedApplications.length
+    });
+  } catch (error) {
+    console.error("Error fetching all general applications for admin:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching general applications for admin"
+    });
+  }
+};
 
 export {
   getGeneralApplication,
@@ -270,5 +307,6 @@ export {
   updateGeneralApplication,
   clearField,
   getAllGeneralApplications,
+  getAllGeneralApplicationsForAdmin, // ✅ new
   deleteGeneralApplication
 };

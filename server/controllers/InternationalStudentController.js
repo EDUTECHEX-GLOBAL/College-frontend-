@@ -1,6 +1,11 @@
 import InternationalStudent from "../models/InternationalStudentModel.js";
+import mongoose from "mongoose";
 
-// Get or create international student data for a specific college
+/**
+ * ===============================
+ * GET / CREATE INTERNATIONAL DATA (STUDENT)
+ * ===============================
+ */
 export const getInternationalData = async (req, res) => {
   try {
     const { collegeId } = req.params;
@@ -8,26 +13,10 @@ export const getInternationalData = async (req, res) => {
 
     let international = await InternationalStudent.findOne({ studentId, collegeId });
 
-    // If no record exists, create a new one with defaults
     if (!international) {
       international = new InternationalStudent({
         studentId,
         collegeId,
-        highSchoolGraduated: "",
-        attendedClassesSinceGraduation: "",
-        addAnotherSchool: "",
-        schoolName: "",
-        schoolStartDate: null,
-        schoolEndDate: null,
-        requestedImmigrationStatus: "",
-        currentlyInUS: "",
-        currentImmigrationStatus: "",
-        hearAboutKU: "",
-        applicationFeeAgreement: "",
-        certificationAgreement: "",
-        thirdPartyPreparation: "",
-        progress: 0,
-        status: "not-started",
       });
       await international.save();
     }
@@ -39,49 +28,33 @@ export const getInternationalData = async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Error fetching international student data:", error);
-    
     res.status(500).json({
       success: false,
       message: "Server error while fetching international student data",
-      error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 };
 
-// Save international student data - simplified approach
+/**
+ * ===============================
+ * SAVE INTERNATIONAL DATA (STUDENT)
+ * ===============================
+ */
 export const saveInternationalData = async (req, res) => {
   try {
     const { collegeId } = req.params;
     const studentId = req.user.userId;
     const updateData = req.body;
 
-    // Find or create the document
     let international = await InternationalStudent.findOne({ studentId, collegeId });
-    
+
     if (!international) {
-      // Create new document with the update data and defaults
       international = new InternationalStudent({
         studentId,
         collegeId,
-        highSchoolGraduated: "",
-        attendedClassesSinceGraduation: "",
-        addAnotherSchool: "",
-        schoolName: "",
-        schoolStartDate: null,
-        schoolEndDate: null,
-        requestedImmigrationStatus: "",
-        currentlyInUS: "",
-        currentImmigrationStatus: "",
-        hearAboutKU: "",
-        applicationFeeAgreement: "",
-        certificationAgreement: "",
-        thirdPartyPreparation: "",
-        progress: 0,
-        status: "not-started",
-        ...updateData // Spread the update data to override defaults
+        ...updateData,
       });
     } else {
-      // Update existing document - only update fields that are provided
       const allowedFields = [
         "highSchoolGraduated",
         "attendedClassesSinceGraduation",
@@ -95,17 +68,16 @@ export const saveInternationalData = async (req, res) => {
         "hearAboutKU",
         "applicationFeeAgreement",
         "certificationAgreement",
-        "thirdPartyPreparation"
+        "thirdPartyPreparation",
       ];
 
-      allowedFields.forEach(field => {
+      allowedFields.forEach((field) => {
         if (updateData[field] !== undefined) {
           international[field] = updateData[field];
         }
       });
     }
 
-    // Progress is automatically calculated in pre-save middleware
     await international.save();
 
     res.status(200).json({
@@ -115,30 +87,23 @@ export const saveInternationalData = async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Error saving international student data:", error);
-    
-    if (error.name === "ValidationError") {
-      return res.status(400).json({
-        success: false,
-        message: "Validation error: Please check your input data",
-        error: process.env.NODE_ENV === "development" ? error.message : undefined,
-      });
-    }
-
     res.status(500).json({
       success: false,
       message: "Server error while saving international student data",
-      error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 };
 
-// Clear specific field
+/**
+ * ===============================
+ * CLEAR SINGLE FIELD (STUDENT)
+ * ===============================
+ */
 export const clearInternationalField = async (req, res) => {
   try {
     const { collegeId, field } = req.params;
     const studentId = req.user.userId;
 
-    // Validate field name
     const allowedFields = [
       "highSchoolGraduated",
       "attendedClassesSinceGraduation",
@@ -152,17 +117,14 @@ export const clearInternationalField = async (req, res) => {
       "hearAboutKU",
       "applicationFeeAgreement",
       "certificationAgreement",
-      "thirdPartyPreparation"
+      "thirdPartyPreparation",
     ];
 
     if (!allowedFields.includes(field)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid field name",
-      });
+      return res.status(400).json({ success: false, message: "Invalid field name" });
     }
 
-    let international = await InternationalStudent.findOne({ studentId, collegeId });
+    const international = await InternationalStudent.findOne({ studentId, collegeId });
 
     if (!international) {
       return res.status(404).json({
@@ -171,11 +133,7 @@ export const clearInternationalField = async (req, res) => {
       });
     }
 
-    // Determine the value to set based on field type
-    const valueToSet = field.includes("Date") ? null : "";
-    international[field] = valueToSet;
-
-    // Progress is automatically calculated in pre-save middleware
+    international[field] = field.includes("Date") ? null : "";
     await international.save();
 
     res.status(200).json({
@@ -184,23 +142,58 @@ export const clearInternationalField = async (req, res) => {
       international,
     });
   } catch (error) {
-    console.error("❌ Error clearing international student field:", error);
+    console.error("❌ Error clearing field:", error);
     res.status(500).json({
       success: false,
       message: "Server error while clearing field",
-      error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 };
 
-// Get all international student records for a student
+/**
+ * ===============================
+ * GET ALL INTERNATIONAL RECORDS (STUDENT)
+ * ===============================
+ */
 export const getAllStudentInternationalRecords = async (req, res) => {
   try {
     const studentId = req.user.userId;
 
-    const internationalRecords = await InternationalStudent.find({ studentId }).sort({
-      updatedAt: -1,
+    const query = mongoose.Types.ObjectId.isValid(studentId)
+      ? { studentId: new mongoose.Types.ObjectId(studentId) }
+      : { studentId };
+
+    const internationalRecords = await InternationalStudent.find(query)
+      .sort({ updatedAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      message: "International records retrieved successfully",
+      internationalRecords,
+      count: internationalRecords.length,
     });
+  } catch (error) {
+    console.error("❌ Error fetching student records:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching international records",
+    });
+  }
+};
+
+/**
+ * ===============================
+ * GET ALL INTERNATIONAL RECORDS (ADMIN)
+ * ===============================
+ */
+export const getAllInternationalRecordsForAdmin = async (req, res) => {
+  try {
+    console.log("🔹 Admin fetching international student records");
+
+    const internationalRecords = await InternationalStudent.find()
+      .populate("studentId", "firstName lastName email")
+
+      .sort({ updatedAt: -1 });
 
     res.status(200).json({
       success: true,
@@ -209,11 +202,10 @@ export const getAllStudentInternationalRecords = async (req, res) => {
       count: internationalRecords.length,
     });
   } catch (error) {
-    console.error("❌ Error fetching all international student records:", error);
+    console.error("❌ Error fetching admin records:", error);
     res.status(500).json({
       success: false,
       message: "Server error while fetching international student records",
-      error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 };

@@ -5,7 +5,8 @@ import {
   updateAcademicApplication,
   clearField,
   getAllAcademicApplications,
-  deleteAcademicApplication
+  deleteAcademicApplication,
+  getAllAcademicApplicationsForAdmin, // ✅ new admin controller
 } from '../controllers/FirstAcademicController.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 
@@ -13,8 +14,12 @@ const router = express.Router();
 
 console.log('✅ FirstAcademicRoutes.js loaded successfully');
 
-// All routes are protected and require authentication
-router.use(authMiddleware);
+// Protect all routes
+router.use(authMiddleware); // ✅ All routes now require valid token
+
+// ===============================
+// STUDENT ROUTES
+// ===============================
 
 // GET /api/academics/:collegeId - Get academic application for specific college
 router.get('/:collegeId', getAcademicApplication);
@@ -28,10 +33,17 @@ router.put('/:collegeId', updateAcademicApplication);
 // DELETE /api/academics/:collegeId - Delete academic application
 router.delete('/:collegeId', deleteAcademicApplication);
 
+// DELETE /api/academics/:collegeId/clear/:field - Clear specific field
+router.delete('/:collegeId/clear/:field', clearField);
+
 // GET /api/academics - Get all academic applications for student
 router.get('/', getAllAcademicApplications);
 
-// DELETE /api/academics/:collegeId/clear/:field - Clear specific field
-router.delete('/:collegeId/clear/:field', clearField);
+// ===============================
+// ADMIN ROUTES
+// ===============================
+
+// GET /api/academics/admin/all - Get all academic applications for admin
+router.get('/admin/all', authMiddleware, getAllAcademicApplicationsForAdmin);
 
 export default router;

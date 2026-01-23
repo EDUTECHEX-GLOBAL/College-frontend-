@@ -4,28 +4,19 @@ import {
   saveInternationalData,
   clearInternationalField,
   getAllStudentInternationalRecords,
+  getAllInternationalRecordsForAdmin,
 } from "../controllers/InternationalStudentController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// All routes are protected
-router.use(authMiddleware);
+// Protected routes
+router.use(authMiddleware); // ✅ All routes now require valid token
 
-// ==============================
-// 🔐 Protected Routes
-// ==============================
-
-// Get international student data for specific college
 router.get("/:collegeId", getInternationalData);
-
-// Save international student data for specific college
 router.post("/:collegeId", saveInternationalData);
-
-// Clear specific field
 router.delete("/:collegeId/clear/:field", clearInternationalField);
-
-// Get all international student records for student
 router.get("/", getAllStudentInternationalRecords);
+router.get("/admin/all", authMiddleware, getAllInternationalRecordsForAdmin);
 
 export default router;

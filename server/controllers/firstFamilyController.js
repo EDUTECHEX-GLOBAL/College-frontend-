@@ -1,5 +1,6 @@
 import FirstFamily from "../models/firstFamilyModel.js";
 import Account from "../models/accountModel.js";
+import mongoose from "mongoose";
 
 // ================================
 // 🟢 Get Family Application Data
@@ -20,10 +21,10 @@ export const getFamilyApplication = async (req, res) => {
     }
 
     let familyApplication = await FirstFamily.findOne({
-      // ✅ FIXED: Changed from userId to studentId
-      studentId,
-      collegeId,
-    });
+  studentId,
+  collegeId,
+}).populate("studentId", "firstName lastName email");
+
 
     // If no existing record, create a default one
     if (!familyApplication) {
@@ -370,7 +371,11 @@ export const deleteFamilyApplication = async (req, res) => {
 const updateUserApplicationProgress = async (studentId) => {
   try {
     // Get all family applications for the student
-    const familyApplications = await FirstFamily.find({ studentId });
+   const familyApplications = await FirstFamily.find({ studentId })
+  .populate("studentId", "firstName lastName email phone")
+
+  .sort({ updatedAt: -1 });
+
     
     if (familyApplications.length === 0) {
       // No family applications, set progress to 0
@@ -392,5 +397,31 @@ const updateUserApplicationProgress = async (studentId) => {
     console.log(`📊 Updated family progress for student ${studentId}: ${averageProgress}%`);
   } catch (error) {
     console.error("❌ Error updating user application progress:", error);
+  }
+};
+// ================================
+// 🔐 ADMIN: Get All Family Records
+// ================================
+export const getAllFamilyRecordsForAdmin = async (req, res) => {
+  try {
+    console.log("🔹 Admin fetching family records");
+
+    const familyRecords = await FirstFamily.find()
+      .populate("studentId", "firstName lastName email phone")
+
+      .sort({ updatedAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      message: "All family records retrieved successfully",
+      familyRecords,
+      count: familyRecords.length,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching family records for admin:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching family records",
+    });
   }
 };

@@ -1,4 +1,5 @@
 import FirstResidency from "../models/FirstResidencyModel.js";
+import mongoose from "mongoose";
 
 // Get or create residency data for a specific college
 export const getResidencyData = async (req, res) => {
@@ -285,6 +286,51 @@ export const saveResidencyDataAtomic = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Server error while saving residency data",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
+// Get all residency records for admin (like InternationalStudent admin)
+export const getAllResidencyRecordsForAdmin = async (req, res) => {
+  try {
+    const residencies = await FirstResidency.find()
+      .populate("studentId", "firstName lastName email phone") // populate student info
+      .sort({ updatedAt: -1 });
+
+    // Map to frontend-friendly structure
+    const mappedResidencies = residencies.map((residency) => ({
+      _id: residency._id,
+      collegeId: residency.collegeId,
+      status:
+        residency.progress === 100
+          ? "completed"
+          : residency.progress > 0
+          ? "in-progress"
+          : "not-started",
+      progress: residency.progress || 0,
+      submittedAt: residency.updatedAt || residency.createdAt,
+      student: {
+        name: residency.studentId
+          ? `${residency.studentId.firstName || ""} ${residency.studentId.lastName || ""}`.trim()
+          : "N/A",
+        email: residency.studentId?.email || "N/A",
+        phone: residency.studentId?.phone || "N/A",
+      },
+      details: residency,
+      type: "residency",
+    }));
+
+    res.status(200).json({
+      success: true,
+      message: "All residency records retrieved successfully",
+      residencyRecords: mappedResidencies,
+      count: mappedResidencies.length,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching all residency records for admin:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching all residency records",
       error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }

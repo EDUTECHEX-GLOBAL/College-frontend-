@@ -1,4 +1,6 @@
 import FirstContacts from "../models/firstContactsModel.js";
+import mongoose from "mongoose";
+
 
 // ================================
 // 📥 Get Contacts Data
@@ -6,7 +8,9 @@ import FirstContacts from "../models/firstContactsModel.js";
 export const getContacts = async (req, res) => {
   try {
     const { collegeId } = req.params;
-    const studentId = req.user.userId;
+    const query = mongoose.Types.ObjectId.isValid(studentId)
+  ? { studentId: new mongoose.Types.ObjectId(studentId) }
+  : { studentId };
 
     if (!collegeId) {
       return res.status(400).json({
@@ -143,7 +147,7 @@ export const saveContacts = async (req, res) => {
 // ================================
 // 🗑️ Clear Specific Field - FIXED VERSION
 // ================================
-export const clearField = async (req, res) => {
+export const clearContactField = async (req, res) => {
   try {
     const { collegeId, field } = req.params;
     const studentId = req.user.userId;
@@ -245,3 +249,30 @@ export const getAllStudentContacts = async (req, res) => {
     });
   }
 };
+// ================================
+// 📊 Get All Contacts for Admin
+// ================================
+export const getAllContactsForAdmin = async (req, res) => {
+  try {
+    console.log("🔹 Admin fetching all contacts records");
+
+    const contactsRecords = await FirstContacts.find()
+      .populate("studentId", "firstName lastName email") // if your user model is referenced
+      .sort({ updatedAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      message: "All contacts records retrieved successfully",
+      contactsRecords,
+      count: contactsRecords.length,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching admin contacts records:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching contacts records",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
+

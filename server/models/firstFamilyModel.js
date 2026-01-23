@@ -113,7 +113,9 @@ const firstFamilySchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true,
+   timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
 
@@ -124,6 +126,7 @@ firstFamilySchema.index({ studentId: 1, collegeId: 1 }, { unique: true });
 firstFamilySchema.pre("save", function (next) {
   let completedFields = 0;
   let totalFields = 4; // Base required fields
+  
 
   // Base required fields
   if (this.parentGuardianAddress && this.parentGuardianAddress !== "") completedFields++;
@@ -149,6 +152,11 @@ firstFamilySchema.pre("save", function (next) {
   this.lastUpdated = new Date();
   next();
 });
-
+firstFamilySchema.virtual("student", {
+  ref: "Account",
+  localField: "studentId",
+  foreignField: "_id",
+  justOne: true,
+});
 const FirstFamily = mongoose.model("FirstFamily", firstFamilySchema);
 export default FirstFamily;
