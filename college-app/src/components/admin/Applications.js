@@ -1,6 +1,8 @@
 // Applications.js – INTERNATIONAL APPLICATIONS (ADMIN)
 import axios from "axios";
 import React, { useEffect, useState, useCallback } from "react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import "./Applications.css";
 
 const Applications = () => {
@@ -10,7 +12,9 @@ const Applications = () => {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedApp, setSelectedApp] = useState(null); // 🔥 modal data
+  const [selectedApp, setSelectedApp] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
 
   const [stats, setStats] = useState({
     total: 0,
@@ -72,7 +76,6 @@ const Applications = () => {
     return "low";
   };
 
-  // Helper to format field names
   const formatFieldName = (key) => {
     const nameMap = {
       _id: "Application ID",
@@ -108,7 +111,6 @@ const Applications = () => {
       .trim();
   };
 
-  // Helper to format field values
   const formatFieldValue = (key, value) => {
     if (value === null || value === undefined || value === "") {
       return "N/A";
@@ -134,7 +136,6 @@ const Applications = () => {
     }
 
     if (typeof value === "object") {
-      // Address object formatting
       if (
         value.street1 !== undefined ||
         value.city !== undefined ||
@@ -157,72 +158,157 @@ const Applications = () => {
     }
 
     return String(value);
-
   };
- const groupByStudent = (records) => {
-  const map = {};
 
-  records.forEach((app) => {
-    // ✅ Always derive key from studentId
-    const studentKey =
-      app.details?.studentId?._id ||
-      app.studentId?._id ||
-      app.student?._id;
+  const downloadPDF = (app) => {
+    const doc = new jsPDF("p", "mm", "a4");
+    let y = 10;
 
-    if (!studentKey) return; // safety
+    doc.setFontSize(16);
+    doc.text("Application Details", 105, y, { align: "center" });
+    y += 10;
 
-    if (!map[studentKey]) {
-      map[studentKey] = {
-        studentId: studentKey,
-        collegeId: app.collegeId,
-        student: app.student,
-        submittedAt: app.submittedAt,
-        latestStatus: app.status,
-        latestProgress: app.progress,
-        applications: [],
-      };
-    }
+    doc.setFontSize(12);
+    doc.text("Student Information", 10, y);
+    y += 6;
 
-    map[studentKey].applications.push(app);
+    autoTable(doc, {
+      startY: y,
+      body: [
+        ["Name", app.student.name],
+        ["Email", app.student.email],
+        ["Phone", app.student.phone || "N/A"],
+        ["College ID", app.collegeId],
+        ["Status", formatStatus(app.latestStatus)],
+        ["Progress", `${app.latestProgress}%`],
+        ["Submitted", formatDate(app.submittedAt)],
+      ],
+      theme: "grid",
+      styles: { fontSize: 10 },
+      columnStyles: {
+        0: { fontStyle: "bold", cellWidth: 40 },
+        1: { cellWidth: 140 },
+      },
+    });
 
-    // keep latest submission info
-    if (
-      app.submittedAt &&
-      new Date(app.submittedAt) > new Date(map[studentKey].submittedAt)
-    ) {
-      map[studentKey].submittedAt = app.submittedAt;
-      map[studentKey].latestStatus = app.status;
-      map[studentKey].latestProgress = app.progress;
-    }
-  });
+    y = doc.lastAutoTable.finalY + 8;
 
-  return Object.values(map);
-};
+    app.applications.forEach((section) => {
+      doc.setFontSize(12);
+      doc.text(`${section.type.toUpperCase()} DETAILS`, 10, y);
+      y += 5;
+
+      const rows = Object.entries(section.details || {})
+        .filter(([key]) =>
+          !["_id", "collegeId", "status", "progress", "createdAt", "updatedAt", "__v", "studentId"].includes(key)
+        )
+        .map(([key, value]) => [
+          formatFieldName(key),
+          formatFieldValue(key, value),
+        ]);
+
+      if (rows.length) {
+        autoTable(doc, {
+          startY: y,
+          body: rows,
+          theme: "grid",
+          styles: { fontSize: 9 },
+          columnStyles: {
+            0: { fontStyle: "bold", cellWidth: 50 },
+            1: { cellWidth: 130 },
+          },
+        });
+
+        y = doc.lastAutoTable.finalY + 8;
+      }
+    });
+
+    doc.save(`${app.student.name.replace(/\s+/g, "_")}_Application.pdf`);
+  };
+
+  const groupByStudent = (records) => {
+    const map = {};
+
+    records.forEach((app) => {
+      const studentKey =
+        app.details?.studentId?._id ||
+        app.studentId?._id ||
+        app.student?._id;
+
+      if (!studentKey) return;
+
+      if (!map[studentKey]) {
+        map[studentKey] = {
+          studentId: studentKey,
+          collegeId: app.collegeId,
+          student: app.student,
+          submittedAt: app.submittedAt,
+          latestStatus: app.status,
+          latestProgress: app.progress,
+          applications: [],
+        };
+      }
+
+      map[studentKey].applications.push(app);
+
+      if (
+        app.submittedAt &&
+        new Date(app.submittedAt) > new Date(map[studentKey].submittedAt)
+      ) {
+        map[studentKey].submittedAt = app.submittedAt;
+        map[studentKey].latestStatus = app.status;
+        map[studentKey].latestProgress = app.progress;
+      }
+    });
+
+    return Object.values(map);
+  };
 
   // ===============================
-  // LOAD APPLICATIONS (INTERNATIONAL + ACADEMIC + GENERAL + FAMILY + CONTACTS)
+  // FILTER APPLICATIONS
+  // ===============================
+  const filteredApplications = applications.filter(app => {
+    const matchesSearch = 
+      app.student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      app.student.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      app.collegeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      app.latestStatus.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesStatus = 
+      filterStatus === "all" || 
+      app.latestStatus === filterStatus ||
+      (filterStatus === "incomplete" && (app.latestStatus === "not-started" || app.latestStatus === "in-progress"));
+    
+    return matchesSearch && matchesStatus;
+  });
+
+  // ===============================
+  // LOAD APPLICATIONS
   // ===============================
   const loadApplications = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Fetch all APIs in parallel, including Contacts
       const [
-        internationalRes,
-        academicRes,
-        generalRes,
-        familyRes,
-        contactsRes,
-        residencyRes // ✅ add this
-      ] = await Promise.all([
-        api.get("/international/admin/all"),
-        api.get("/academics/admin/all"),
-        api.get("/general/admin/all"),
-        api.get("/family/admin/all"),
-        api.get("/contacts/admin/all"),// ✅ Contacts API
-        api.get("/residency/admin/all"), // 🔥 Residency API
-      ]);
+  internationalRes,
+  academicRes,
+  generalRes,
+  familyRes,
+  contactsRes,
+  residencyRes,
+  highSchoolRes
+] = await Promise.all([
+  api.get("/international/admin/all"),
+  api.get("/academics/admin/all"),
+  api.get("/general/admin/all"),
+  api.get("/family/admin/all"),
+  api.get("/contacts/admin/all"),
+  api.get("/residency/admin/all"),
+ api.get("/high-school-curriculum/admin/all") // ✅ correct route
+
+]);
+
 
       const internationalRecords = internationalRes.data?.internationalRecords || [];
       const academicRecords = academicRes.data?.academicApplications || [];
@@ -230,11 +316,8 @@ const Applications = () => {
       const familyRecords = familyRes.data?.familyRecords || [];
       const contactsRecords = contactsRes.data?.contactsRecords || [];
       const residencyRecords = residencyRes.data?.residencyRecords || [];
+      const highSchoolRecords = highSchoolRes.data.highSchoolCurricula || [];
 
-
-      // -------------------------------
-      // Map International records
-      // -------------------------------
       const mappedInternational = internationalRecords.map((app) => ({
         _id: app._id,
         collegeId: app.collegeId,
@@ -252,9 +335,6 @@ const Applications = () => {
         type: "international",
       }));
 
-      // -------------------------------
-      // Map Academic records
-      // -------------------------------
       const mappedAcademic = academicRecords.map((app) => ({
         _id: app._id,
         collegeId: app.collegeId,
@@ -283,14 +363,10 @@ const Applications = () => {
           email: app.student?.email || "N/A",
           phone: app.student?.phone || "N/A",
         },
-        details: app.details || {}, // 🔥 THIS IS THE KEY FIX
+        details: app.details || {},
         type: "general",
       }));
 
-
-      // -------------------------------
-      // Map Family records
-      // -------------------------------
       const mappedFamily = familyRecords
         .filter(app => app.studentId && typeof app.studentId === "object")
         .map((app) => ({
@@ -310,30 +386,26 @@ const Applications = () => {
             phone: app.studentId.phone || "N/A",
           },
           details: {
-  studentId: app.studentId, // 🔥 ADD THIS LINE
-  parentGuardianAddress: app.parentGuardianAddress || "",
-  parent1Address: app.parent1Address || {},
-  parent2Address: app.parent2Address || {},
-  showParent2Address: app.showParent2Address || false,
-  kuGraduates: app.kuGraduates || [],
-  kuEmployeeDependent: app.kuEmployeeDependent || "",
-  kuEmployeeName: app.kuEmployeeName || "",
-  kuEmployeeLocation: app.kuEmployeeLocation || "",
-  militaryDependent: app.militaryDependent || "",
-  militaryStatus: app.militaryStatus || "",
-  vaBenefitsIntent: app.vaBenefitsIntent || "",
-  lastUpdated: app.lastUpdated,
-  createdAt: app.createdAt,
-  updatedAt: app.updatedAt,
-  progress: app.progress || 0,
-},
-
+            studentId: app.studentId,
+            parentGuardianAddress: app.parentGuardianAddress || "",
+            parent1Address: app.parent1Address || {},
+            parent2Address: app.parent2Address || {},
+            showParent2Address: app.showParent2Address || false,
+            kuGraduates: app.kuGraduates || [],
+            kuEmployeeDependent: app.kuEmployeeDependent || "",
+            kuEmployeeName: app.kuEmployeeName || "",
+            kuEmployeeLocation: app.kuEmployeeLocation || "",
+            militaryDependent: app.militaryDependent || "",
+            militaryStatus: app.militaryStatus || "",
+            vaBenefitsIntent: app.vaBenefitsIntent || "",
+            lastUpdated: app.lastUpdated,
+            createdAt: app.createdAt,
+            updatedAt: app.updatedAt,
+            progress: app.progress || 0,
+          },
           type: "family",
         }));
 
-      // -------------------------------
-      // Map Contacts records
-      // -------------------------------
       const mappedContacts = contactsRecords
         .map((contact) => ({
           _id: contact._id,
@@ -351,6 +423,7 @@ const Applications = () => {
           details: contact,
           type: "contacts",
         }));
+
       const mappedResidency = residencyRecords.map((residency) => ({
         _id: residency._id,
         collegeId: residency.collegeId,
@@ -365,29 +438,40 @@ const Applications = () => {
         details: residency.details,
         type: "residency",
       }));
+      const mappedHighSchool = highSchoolRecords.map((app) => ({
+  _id: app._id,
+  collegeId: app.collegeId,
+  status: app.progress === 100 ? "completed" : "incomplete",
+  progress: app.progress || 0,
+  submittedAt: app.updatedAt || app.createdAt,
+  student: {
+    name: app.studentId
+      ? `${app.studentId.firstName || ""} ${app.studentId.lastName || ""}`.trim()
+      : "Unknown Student",
+    email: app.studentId?.email || "N/A",
+    phone: app.studentId?.phone || "N/A",
+  },
+  details: app,
+  type: "highschool",
+}));
 
 
-      // -------------------------------
-      // Combine all datasets
-      // -------------------------------
       const combined = [
-        ...mappedInternational,
-        ...mappedAcademic,
-        ...mappedGeneral,
-        ...mappedFamily,
-        ...mappedContacts, // ✅ added Contacts
-        ...mappedResidency,
-      ];
+  ...mappedInternational,
+  ...mappedAcademic,
+  ...mappedGeneral,
+  ...mappedFamily,
+  ...mappedContacts,
+  ...mappedResidency,
+  ...mappedHighSchool, // ✅ added
+];
 
-      // Sort by most recently submitted
+
       combined.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
 
-      // Update state
       const groupedApplications = groupByStudent(combined);
       setApplications(groupedApplications);
 
-
-      // Update stats
       setStats({
         total: groupedApplications.length,
         pending: groupedApplications.filter(a => a.latestStatus === "pending").length,
@@ -398,7 +482,6 @@ const Applications = () => {
         ).length,
       });
 
-
     } catch (err) {
       console.error("Error loading applications:", err);
       setError("Failed to load applications");
@@ -406,7 +489,6 @@ const Applications = () => {
       setLoading(false);
     }
   }, []);
-
 
   // ===============================
   // INITIAL LOAD
@@ -448,19 +530,64 @@ const Applications = () => {
     <div className="applications-container">
       <div className="applications-header">
         <h1>International Applications</h1>
+        <div className="header-subtitle">
+          <p>Manage and review all student applications</p>
+        </div>
+      </div>
+
+      {/* Search and Filter Bar */}
+      <div className="applications-controls">
+        <div className="search-box">
+          <input
+            type="text"
+            placeholder="Search by name, email, college ID, or status..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="search-input"
+          />
+        </div>
+        
+        <div className="filter-controls">
+          <select 
+            value={filterStatus} 
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="status-filter"
+          >
+            <option value="all">All Status</option>
+            <option value="completed">Completed</option>
+            <option value="in-progress">In Progress</option>
+            <option value="not-started">Not Started</option>
+            <option value="incomplete">Incomplete</option>
+            <option value="pending">Pending</option>
+            <option value="accepted">Accepted</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
       </div>
 
       {/* Overview Stats Cards */}
       <div className="applications-overview">
         <div className="stat-card total">
-          <h3>Total Applications</h3>
-          <span className="stat-number">{stats.total}</span>
+          <div className="stat-icon">📋</div>
+          <div className="stat-content">
+            <h3>Total Applications</h3>
+            <span className="stat-number">{stats.total}</span>
+          </div>
         </div>
         
         <div className="stat-card incomplete">
-          <h3>Incomplete</h3>
-          <span className="stat-number">{stats.incomplete}</span>
+          <div className="stat-icon">⏳</div>
+          <div className="stat-content">
+            <h3>Incomplete</h3>
+            <span className="stat-number">{stats.incomplete}</span>
+          </div>
         </div>
+
+        
+
+        
+
+        
       </div>
 
       {/* Applications Table */}
@@ -478,52 +605,80 @@ const Applications = () => {
           </thead>
 
           <tbody>
-            {applications.map((app) => (
-              <tr key={app.studentId}>
-
-                <td>{app.collegeId}</td>
-
-                <td className="student-info">
-                  <strong>{app.student.name}</strong>
-                  <small>{app.student.email}</small>
-                  {app.student.phone && app.student.phone !== "N/A" && (
-                    <small>{app.student.phone}</small>
-                  )}
-                </td>
-
-                <td>
-                  <span className={`status-badge status-${app.latestStatus}`}>
-                    {formatStatus(app.latestStatus)}
-                  </span>
-
-                </td>
-
-                <td>{formatDate(app.submittedAt)}</td>
-
-                <td>
-                  <div className="progress-container">
-                    <div
-                      className={`progress-bar progress-${getProgressClass(app.latestProgress)}`}
-                      style={{ width: `${app.latestProgress}%` }}
-                    />
-
-                  </div>
-                  <small>{app.latestProgress}%</small>
-                </td>
-
-                <td>
-                  <div className="action-buttons-simple">
-                    <button
-                      className="btn-single-view"
-                      onClick={() => setSelectedApp(app)}
-
-                    >
-                      View
-                    </button>
+            {filteredApplications.length === 0 ? (
+              <tr>
+                <td colSpan="6" className="no-results">
+                  <div className="empty-table-state">
+                    <p>No applications found</p>
                   </div>
                 </td>
               </tr>
-            ))}
+            ) : (
+              filteredApplications.map((app) => (
+                <tr key={app.studentId}>
+                  <td>
+                    <span className="college-id-badge">{app.collegeId}</span>
+                  </td>
+
+                  <td className="student-info">
+                    <div className="student-avatar">
+                      {app.student.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="student-details">
+                      <strong>{app.student.name}</strong>
+                      <small>{app.student.email}</small>
+                      {app.student.phone && app.student.phone !== "N/A" && (
+                        <small className="student-phone">{app.student.phone}</small>
+                      )}
+                    </div>
+                  </td>
+
+                  <td>
+                    <span className={`status-badge status-${app.latestStatus}`}>
+                      {formatStatus(app.latestStatus)}
+                    </span>
+                  </td>
+
+                  <td className="submission-date">
+                    {formatDate(app.submittedAt)}
+                  </td>
+
+                  <td>
+                    <div className="progress-container">
+                      <div className="progress-info">
+                        <span className="progress-percentage">{app.latestProgress}%</span>
+                      </div>
+                      <div className="progress-track">
+                        <div
+                          className={`progress-fill progress-${getProgressClass(app.latestProgress)}`}
+                          style={{ width: `${app.latestProgress}%` }}
+                        />
+                      </div>
+                    </div>
+                  </td>
+
+                  <td>
+                    <div className="action-buttons">
+                      <button
+                        className="btn-view"
+                        onClick={() => setSelectedApp(app)}
+                        title="View Details"
+                      >
+                        <span className="btn-icon">👁️</span>
+                        View
+                      </button>
+                      <button
+                        className="btn-download"
+                        onClick={() => downloadPDF(app)}
+                        title="Download PDF"
+                      >
+                        <span className="btn-icon">📥</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -533,7 +688,13 @@ const Applications = () => {
         <div className="modal-overlay">
           <div className="modal-box">
             <div className="modal-header">
-              <h2>Application Details</h2>
+              <div className="modal-title-section">
+                <h2>Application Details</h2>
+                <div className="modal-subtitle">
+                  <span className="student-name">{selectedApp.student.name}</span>
+                  <span className="college-id">{selectedApp.collegeId}</span>
+                </div>
+              </div>
               <button
                 className="modal-close-btn"
                 onClick={() => setSelectedApp(null)}
@@ -545,7 +706,15 @@ const Applications = () => {
             <div className="modal-content">
               {/* Student Information Section */}
               <div className="info-section">
-                <h3>Student Information</h3>
+                <div className="section-header">
+                  <h3>Student Information</h3>
+                  <div className="status-display">
+                    <span className={`status-badge status-${selectedApp.latestStatus}`}>
+                      {formatStatus(selectedApp.latestStatus)}
+                    </span>
+                    <span className="progress-display">{selectedApp.latestProgress}% Complete</span>
+                  </div>
+                </div>
                 <div className="info-grid">
                   <div className="info-row">
                     <span className="info-label">Student Name:</span>
@@ -553,12 +722,12 @@ const Applications = () => {
                   </div>
                   <div className="info-row">
                     <span className="info-label">Email:</span>
-                    <span className="info-value">{selectedApp.student.email}</span>
+                    <span className="info-value email-value">{selectedApp.student.email}</span>
                   </div>
                   {selectedApp.student.phone && selectedApp.student.phone !== "N/A" && (
                     <div className="info-row">
                       <span className="info-label">Phone:</span>
-                      <span className="info-value">{selectedApp.student.phone}</span>
+                      <span className="info-value phone-value">{selectedApp.student.phone}</span>
                     </div>
                   )}
                   <div className="info-row">
@@ -567,21 +736,8 @@ const Applications = () => {
                   </div>
                   <div className="info-row">
                     <span className="info-label">Application ID:</span>
-                    <span className="info-value">{selectedApp.applications[0]?._id}</span>
-
+                    <span className="info-value app-id">{selectedApp.applications[0]?._id}</span>
                   </div>
-                  <div className="info-row">
-                    <span className="info-label">Status:</span>
-                    <span className={`status-badge status-${selectedApp.latestStatus}`}>
-                      {formatStatus(selectedApp.latestStatus)}
-                    </span>
-                  </div>
-
-                  <div className="info-row">
-                    <span className="info-label">Progress:</span>
-                    <span className="info-value">{selectedApp.latestProgress}%</span>
-                  </div>
-
                   <div className="info-row">
                     <span className="info-label">Submitted:</span>
                     <span className="info-value">{formatDate(selectedApp.submittedAt)}</span>
@@ -589,11 +745,10 @@ const Applications = () => {
                 </div>
               </div>
 
-              {/* Application Details Section */}
+              {/* Application Sections */}
               {selectedApp.applications.map((app, index) => (
                 <div className="info-section" key={index}>
-                  <h3>{app.type.toUpperCase()} DETAILS</h3>
-
+                  <h3 className="section-title">{app.type.toUpperCase()} DETAILS</h3>
                   <div className="info-grid">
                     {Object.entries(app.details || {})
                       .filter(([key]) =>
@@ -622,42 +777,46 @@ const Applications = () => {
                 </div>
               ))}
 
-
               {/* System Information Section */}
-              <div className="info-section">
+              <div className="info-section system-info">
                 <h3>System Information</h3>
                 <div className="info-grid">
                   <div className="info-row">
                     <span className="info-label">Created At:</span>
                     <span className="info-value">
-                      {formatDate(selectedApp.details?.createdAt)}
+                      {formatDate(selectedApp.applications[0]?.details?.createdAt)}
                     </span>
                   </div>
                   <div className="info-row">
                     <span className="info-label">Last Updated:</span>
                     <span className="info-value">
-                      {formatDate(selectedApp.details?.updatedAt || selectedApp.details?.lastSaved)}
+                      {formatDate(selectedApp.applications[0]?.details?.updatedAt || selectedApp.applications[0]?.details?.lastSaved)}
                     </span>
                   </div>
                   <div className="info-row">
                     <span className="info-label">Document Version:</span>
                     <span className="info-value">
-                      {selectedApp.details?._v || "0"}
+                      {selectedApp.applications[0]?.details?._v || "0"}
                     </span>
                   </div>
                 </div>
               </div>
 
-
               {/* Action Buttons */}
               <div className="modal-actions">
-                <button className="btn-secondary" onClick={() => setSelectedApp(null)}>
+                <button
+                  className="btn-secondary"
+                  onClick={() => setSelectedApp(null)}
+                >
                   Close
                 </button>
-                <button className="btn-primary" onClick={() => {
-                  console.log("Process refund for:", selectedApp._id);
-                }}>
-                  Process Refund
+
+                <button
+                  className="btn-primary"
+                  onClick={() => downloadPDF(selectedApp)}
+                >
+                  <span className="btn-icon">📥</span>
+                  Download PDF
                 </button>
               </div>
             </div>

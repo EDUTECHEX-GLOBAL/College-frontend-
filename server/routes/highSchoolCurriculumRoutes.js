@@ -4,6 +4,7 @@ import {
   saveHighSchoolCurriculum,
   clearHighSchoolCurriculumField,
   getAllHighSchoolCurricula,
+  getAllHighSchoolCurriculaForAdmin, // ✅ NEW
 } from "../controllers/highSchoolCurriculumController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
@@ -13,19 +14,24 @@ const router = express.Router();
 router.use(authMiddleware);
 
 // ==============================
-// 🎓 High School Curriculum Routes
+// 🎓 STUDENT ROUTES
 // ==============================
 
-// Get high school curriculum for a specific college
+// Get or create curriculum
 router.get("/:collegeId", getHighSchoolCurriculum);
 
-// Save/update high school curriculum for a specific college
+// Save / update curriculum
 router.post("/:collegeId", saveHighSchoolCurriculum);
 
 // Clear specific field
 router.delete("/:collegeId/clear/:field", clearHighSchoolCurriculumField);
 
-// Get all high school curricula for the student
+// Get all curricula for logged-in student
 router.get("/", getAllHighSchoolCurricula);
+
+// ==============================
+// 👨‍💼 ADMIN ROUTE (🔥 REQUIRED)
+// ==============================
+router.get("/admin/all", authMiddleware, getAllHighSchoolCurriculaForAdmin);
 
 export default router;

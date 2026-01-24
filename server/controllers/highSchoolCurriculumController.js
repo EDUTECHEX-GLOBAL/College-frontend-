@@ -1,4 +1,5 @@
 import HighSchoolCurriculum from "../models/highSchoolCurriculumModel.js";
+import mongoose from "mongoose";
 
 // Calculate progress based on completed fields
 const calculateProgress = (highSchoolCurriculum) => {
@@ -190,6 +191,32 @@ export const getAllHighSchoolCurricula = async (req, res) => {
       success: false,
       message: "Server error while fetching high school curricula",
       error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
+/**
+ * ===============================
+ * GET ALL HIGH SCHOOL CURRICULA (ADMIN)
+ * ===============================
+ */
+export const getAllHighSchoolCurriculaForAdmin = async (req, res) => {
+  try {
+    console.log("🔹 Admin fetching high school curriculum records");
+
+    const highSchoolCurricula = await HighSchoolCurriculum.find()
+      .populate("studentId", "firstName lastName email phone")
+      .sort({ updatedAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      highSchoolCurricula,
+      count: highSchoolCurricula.length,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching admin high school curricula:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching high school curricula (admin)",
     });
   }
 };
