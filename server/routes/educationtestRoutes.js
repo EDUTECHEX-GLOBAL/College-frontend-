@@ -49,7 +49,8 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  const allowedExt = [".pdf", ".jpg", ".jpeg", ".png", ".doc", ".docx"];
+  const allowedExt = [".pdf"];
+
   const ext = path.extname(file.originalname).toLowerCase();
   if (!allowedExt.includes(ext)) {
     req.fileValidationError = `Invalid file type. Allowed: ${allowedExt.join(", ")}`;
@@ -222,7 +223,12 @@ router.post(
 // PDF VALIDATION (WITH MOCK PASSPORT SUPPORT AND BETTER ERROR HANDLING)
 // ========================================================================
 const ext = path.extname(req.file.filename).toLowerCase();
-let validation = { valid: true, confidence: 100, matchedKeywords: [] };
+let validation = { 
+  valid: false, 
+  confidence: 0, 
+  matchedKeywords: [] 
+};
+
 
 if (ext === ".pdf") {
   console.log("\n🔍 Starting PDF validation...");
@@ -276,13 +282,37 @@ if (ext === ".pdf") {
 
     console.log("✅ PDF validation passed");
   } catch (validationError) {
-    console.warn("⚠️ PDF validation skipped:", validationError.message);
-    // Continue without validation if validator fails
-    validation = { valid: true, confidence: 100, matchedKeywords: [], skipped: true };
+  console.error("❌ PDF validation failed:", validationError.message);
+
+  if (fs.existsSync(req.file.path)) {
+    fs.unlinkSync(req.file.path);
   }
-} else {
-  console.log("ℹ️ Non-PDF file, skipping validation");
+
+  return res.status(500).json({
+    success: false,
+    message: "Document validation service unavailable",
+    error: "VALIDATOR_ERROR"
+  });
 }
+
+} else {
+  console.log("❌ Non-PDF document uploaded");
+
+  if (fs.existsSync(req.file.path)) {
+    fs.unlinkSync(req.file.path);
+  }
+
+  return res.status(400).json({
+    success: false,
+    message: "Only PDF documents are allowed for verification",
+    validation: {
+      valid: false,
+      confidence: 0,
+      reason: "IMAGE_UPLOAD_NOT_ALLOWED"
+    }
+  });
+}
+
 
       // ========================================================================
       // FETCH OR CREATE EDUCATION RECORD
@@ -448,7 +478,12 @@ router.delete("/documents/:documentType", authenticateToken, async (req, res) =>
       console.log("🗑️ Deleted file:", filePath);
     }
 
-    await education.save();
+   education.educationCompletion.documents =
+  education.documents.passport?.validated === true &&
+  education.documents.tenthMarksheet?.validated === true;
+
+await education.save();
+
 
     return res.json({ success: true, message: `${documentType} deleted successfully` });
   } catch (err) {
