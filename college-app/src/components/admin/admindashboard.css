@@ -786,3 +786,269 @@
 .admin-dashboard ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, #2980b9 0%, #1c6ea4 100%);
 }
+/* Notifications in Sidebar */
+.notification-menu-item {
+  position: relative;
+}
+
+.notification-indicator {
+  position: absolute;
+  top: -5px;
+  left: 20px;
+  background: #ff4757;
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-badge {
+  background: #ff4757;
+  color: white;
+  border-radius: 10px;
+  padding: 2px 8px;
+  font-size: 12px;
+  margin-left: auto;
+}
+
+/* Notifications Panel in Sidebar */
+.notifications-panel {
+  background: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  padding: 15px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.notifications-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.notifications-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.mark-all-read {
+  background: none;
+  border: 1px solid #007bff;
+  color: #007bff;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.mark-all-read:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Notification Items */
+.notification-item {
+  background: white;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+  border-left: 4px solid #007bff;
+}
+
+.notification-item.unread {
+  background: #e3f2fd;
+  border-left-color: #007bff;
+}
+
+.notification-item.read {
+  background: #f8f9fa;
+  border-left-color: #6c757d;
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-message {
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.notification-time {
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.notification-action-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.notification-empty {
+  text-align: center;
+  padding: 30px;
+  color: #6c757d;
+}
+
+.empty-icon {
+  font-size: 40px;
+  margin-bottom: 10px;
+  opacity: 0.5;
+}
+
+.notifications-footer {
+  text-align: center;
+  padding-top: 10px;
+  border-top: 1px solid #e9ecef;
+  color: #6c757d;
+  font-size: 12px;
+}
+
+/* Full Page Notifications */
+.notifications-full-page {
+  padding: 20px;
+}
+
+.notifications-header-full {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.btn-mark-all {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-mark-all:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.notification-card {
+  background: white;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.notification-card.unread {
+  background: #f0f7ff;
+  border-left: 4px solid #007bff;
+}
+
+.notification-icon {
+  font-size: 24px;
+  margin-right: 15px;
+}
+
+.notification-content-full {
+  flex: 1;
+}
+
+.notification-content-full h4 {
+  margin: 0 0 5px 0;
+  font-size: 16px;
+}
+
+.notification-content-full p {
+  margin: 0 0 5px 0;
+  color: #495057;
+}
+
+.notification-time-full {
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.notification-actions-full {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-approve {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-dismiss {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.no-notifications {
+  text-align: center;
+  padding: 50px;
+}
+
+.no-notifications-icon {
+  font-size: 60px;
+  opacity: 0.3;
+  margin-bottom: 20px;
+}
+
+.no-notifications h3 {
+  color: #6c757d;
+  margin-bottom: 10px;
+}
+
+.no-notifications p {
+  color: #adb5bd;
+}
+
+/* Navbar Notification Bell */
+.navbar-notifications .notification-bell {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  position: relative;
+  padding: 5px 10px;
+}
+
+.notification-counter {
+  position: absolute;
+  top: -5px;
+  right: 0;
+  background: #ff4757;
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-bell.active {
+  color: #007bff;
+}

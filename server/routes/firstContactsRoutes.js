@@ -10,30 +10,21 @@ import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
+// 🔐 Apply auth middleware
+router.use(authMiddleware);
+
 // ==============================
-// 🔐 Protected Routes (require JWT)
+// ADMIN ROUTES (place FIRST)
 // ==============================
-router.use(authMiddleware); // Apply auth to all routes
+router.get("/admin/all", getAllContactsForAdmin);
 
-// ------------------------------
-// Student Routes
-// ------------------------------
-// Get contacts data for a specific college
-router.get("/:collegeId", getContacts);
-
-// Save/update contacts data for a specific college
-router.post("/:collegeId", saveContacts);
-
-// Clear a specific field
-router.delete("/:collegeId/clear/:field", clearContactField);
-
-// Get all contacts for the logged-in student
+// ==============================
+// STUDENT ROUTES
+// ==============================
 router.get("/", getAllStudentContacts);
 
-// ------------------------------
-// Admin Routes
-// ------------------------------
-// Get all contacts (admin view)
-router.get("/admin/all", getAllContactsForAdmin);
+router.get("/:collegeId", getContacts);
+router.post("/:collegeId", saveContacts);
+router.delete("/:collegeId/clear/:field", clearContactField);
 
 export default router;

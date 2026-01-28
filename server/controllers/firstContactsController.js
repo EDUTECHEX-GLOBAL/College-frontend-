@@ -8,9 +8,7 @@ import mongoose from "mongoose";
 export const getContacts = async (req, res) => {
   try {
     const { collegeId } = req.params;
-    const query = mongoose.Types.ObjectId.isValid(studentId)
-  ? { studentId: new mongoose.Types.ObjectId(studentId) }
-  : { studentId };
+    const studentId = req.user.userId; // ✅ FIXED
 
     if (!collegeId) {
       return res.status(400).json({
@@ -50,10 +48,10 @@ export const getContacts = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Server error while fetching contacts data",
-      error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 };
+
 
 // ================================
 // 💾 Save Contacts Data - FIXED VERSION
