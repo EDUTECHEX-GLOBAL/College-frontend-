@@ -20,87 +20,103 @@ const Review = () => {
   const [progress, setProgress] = useState(0);
 
   // Fetch all application data for review
-  const fetchAllApplicationData = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem('token');
-      
-      // Fetch data from all sections
-      const sections = [
-        'general',
-        'academics', 
-        'high-school-curriculum',
-        'first-activities',
-        'contacts',
-        'family',
-        'residency',
-        'international'
-      ];
+ const fetchAllApplicationData = async () => {
+  setLoading(true);
 
-      const allData = {};
-      
-      for (const section of sections) {
-        try {
-          const response = await axios.get(`${API_URL}/api/${section}/${collegeId}`, {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          });
-          
-          if (response.data.success) {
-            // ✅ Handle different response structures properly
-            let sectionData;
-            if (section === 'first-activities') {
-              sectionData = response.data.activities || {};
-            } else if (section === 'high-school-curriculum') {
-              sectionData = response.data.highSchoolCurriculum || {};
-            } else {
-              sectionData = response.data[section] || response.data[`${section}Application`] || {};
-            }
-            allData[section] = sectionData;
-          }
-        } catch (error) {
-          console.warn(`Error fetching ${section} data:`, error);
-          // Try localStorage fallback
-          const localStorageKey = section === 'first-activities' ? 'activities' : section.replace('-', '_');
-          const localStorageData = localStorage.getItem(`college_${collegeId}_${localStorageKey}`);
-          if (localStorageData) {
-            try {
-              allData[section] = JSON.parse(localStorageData);
-            } catch (parseError) {
-              console.error(`Error parsing localStorage data for ${section}:`, parseError);
-            }
-          }
-        }
-      }
-      
-      setReviewData(allData);
-      
-      // ✅ Get progress from the review endpoint instead of calculating in frontend
+  const token = localStorage.getItem('token');
+
+  const sections = [
+    'general',
+    'academics',
+    'high-school-curriculum',
+    'first-activities',
+    'contacts',
+    'family',
+    'residency',
+    'international'
+  ];
+
+  try {
+    // 🔹 Fetch all sections in parallel
+    const fetchPromises = sections.map(async (section) => {
       try {
-        const reviewResponse = await axios.get(`${API_URL}/api/review/${collegeId}/review`, {
+        const response = await axios.get(`${API_URL}/api/${section}/${collegeId}`, {
           headers: {
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
         });
-        
-        if (reviewResponse.data.success) {
-          setProgress(reviewResponse.data.overallProgress || 0);
+
+        if (response.data.success) {
+          let sectionData;
+          if (section === 'first-activities') {
+            sectionData = response.data.activities || {};
+          } else if (section === 'high-school-curriculum') {
+            sectionData = response.data.highSchoolCurriculum || {};
+          } else {
+            sectionData = response.data[section] || response.data[`${section}Application`] || {};
+          }
+          return { section, data: sectionData };
+        } else {
+          throw new Error(`API returned unsuccessful for ${section}`);
         }
-      } catch (progressError) {
-        console.warn('Error fetching progress:', progressError);
-        // Fallback to 0 if progress fetch fails
+      } catch (apiError) {
+        console.warn(`Error fetching ${section} from API:`, apiError);
+
+        // 🔹 Fallback to localStorage
+        const localStorageKey = section === 'first-activities' ? 'activities' : section.replace(/-/g, '_');
+        const localStorageData = localStorage.getItem(`college_${collegeId}_${localStorageKey}`);
+        if (localStorageData) {
+          try {
+            return { section, data: JSON.parse(localStorageData) };
+          } catch (parseError) {
+            console.error(`Error parsing localStorage data for ${section}:`, parseError);
+            return { section, data: {} };
+          }
+        }
+
+        return { section, data: {} }; // Default empty object
+      }
+    });
+
+    // Wait for all sections to fetch
+    const results = await Promise.all(fetchPromises);
+
+    // Combine into a single object
+    const allData = results.reduce((acc, curr) => {
+      acc[curr.section] = curr.data;
+      return acc;
+    }, {});
+
+    setReviewData(allData);
+
+    // 🔹 Fetch overall progress
+    try {
+      const reviewResponse = await axios.get(`${API_URL}/api/review/${collegeId}/review`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (reviewResponse.data.success) {
+        setProgress(reviewResponse.data.overallProgress || 0);
+      } else {
         setProgress(0);
       }
-      
-    } catch (error) {
-      console.error('Error fetching review data:', error);
-    } finally {
-      setLoading(false);
+    } catch (progressError) {
+      console.warn('Error fetching progress:', progressError);
+      setProgress(0);
     }
-  };
+
+  } catch (error) {
+    console.error('Unexpected error fetching application data:', error);
+    setProgress(0);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     fetchAllApplicationData();

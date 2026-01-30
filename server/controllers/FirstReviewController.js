@@ -8,6 +8,8 @@ import FirstFamily from '../models/firstFamilyModel.js';
 import FirstResidency from '../models/FirstResidencyModel.js';
 import InternationalStudent from '../models/InternationalStudentModel.js';
 import { sendEmail } from "../utils/sendEmail.js";
+import Account from "../models/accountModel.js";
+
 
 // Get all application data for review
 const getApplicationReview = async (req, res) => {
@@ -116,7 +118,6 @@ const getApplicationReview = async (req, res) => {
   }
 };
 
-// Submit application
 const submitApplication = async (req, res) => {
   try {
     const { collegeId } = req.params;
@@ -124,17 +125,7 @@ const submitApplication = async (req, res) => {
 
     console.log(`🚀 Submitting application for college: ${collegeId}, student: ${studentId}`);
 
-    // Check if all required sections are complete
-    const requiredSections = [
-      'general',
-      'academics', 
-      'high-school-curriculum',
-      'activities',
-      'contacts',
-      'family'
-    ];
-
-    // Fetch all sections to check completion
+    // Fetch all required sections
     const [
       generalApplication,
       academicApplication,
@@ -168,10 +159,10 @@ const submitApplication = async (req, res) => {
       });
     }
 
-    // Update review record with submission
+    // Update / create review record
     const reviewApplication = await FirstReview.findOneAndUpdate(
       { studentId, collegeId },
-      { 
+      {
         status: 'submitted',
         submittedAt: new Date(),
         lastReviewed: new Date()
@@ -181,7 +172,41 @@ const submitApplication = async (req, res) => {
 
     console.log(`✅ Application submitted successfully for college: ${collegeId}`);
 
-    res.status(200).json({
+    // --------------------------------
+    // 📧 SEND EMAIL (CORRECT WAY)
+    // --------------------------------
+    try {
+      const { email, firstName } = req.user;
+
+      if (email) {
+        const htmlContent = `
+          <div style="font-family: Arial, sans-serif;">
+            <h2>Application Submitted Successfully 🎉</h2>
+            <p>Hi ${firstName || 'Student'},</p>
+            <p>Your application has been successfully submitted.</p>
+            <p><strong>College ID:</strong> ${collegeId}</p>
+            <p><strong>Submission Date:</strong> ${new Date().toLocaleDateString()}</p>
+            <p>You can log in to your dashboard to track the application status.</p>
+            <br/>
+            <p>Best regards,<br/><b>Admissions Team</b></p>
+          </div>
+        `;
+
+        await sendEmail(
+          email,
+          'Application Submitted Successfully',
+          htmlContent
+        );
+
+        console.log(`📧 Submission email sent to ${email}`);
+      } else {
+        console.warn('⚠️ Email not found in req.user');
+      }
+    } catch (emailError) {
+      console.error('❌ Failed to send submission email:', emailError.message);
+    }
+
+    return res.status(200).json({
       success: true,
       message: 'Application submitted successfully!',
       submission: {
@@ -194,12 +219,13 @@ const submitApplication = async (req, res) => {
 
   } catch (error) {
     console.error('❌ Error submitting application:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Server error while submitting application'
     });
   }
 };
+
 
 // Get application status
 const getApplicationStatus = async (req, res) => {
