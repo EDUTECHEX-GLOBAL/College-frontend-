@@ -1,42 +1,49 @@
-import express from 'express';
-import { body } from 'express-validator';
+import express from "express";
+import { body } from "express-validator";
+
 import {
   loginAdmin,
   getAdminProfile,
   logoutAdmin,
   updateAdminProfile,
   changePassword,
-  createInitialAdmin
-} from '../controllers/adminController.js';
-import { authenticateAdmin, authorize } from '../middleware/adminAuthMiddleware.js';
+  createInitialAdmin,
+} from "../controllers/adminController.js";
+
+// ✅ CORRECT IMPORT (case-sensitive)
+import authenticateAdmin, {
+  authorize,
+} from "../middleware/adminAuthMiddleware.js";
 
 const router = express.Router();
 
-// Validation middleware
+// ==============================
+// ✅ Validation
+// ==============================
 const loginValidation = [
-  body('email')
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('Please provide a valid email'),
-  body('password')
-    .notEmpty()
-    .withMessage('Password is required')
+  body("email").isEmail().normalizeEmail(),
+  body("password").notEmpty(),
 ];
 
-// Public routes
-router.post('/login', loginValidation, loginAdmin);
-router.post('/setup', createInitialAdmin); // Keep it but it will just return message
+// ==============================
+// 🌐 Public Routes
+// ==============================
+router.post("/login", loginValidation, loginAdmin);
+router.post("/setup", createInitialAdmin);
 
-// Protected routes - require admin authentication
-router.use(authenticateAdmin); // All routes below require admin authentication
+// ==============================
+// 🔐 Protected Routes
+// ==============================
+router.use(authenticateAdmin);
 
-router.get('/profile', getAdminProfile);
-router.post('/logout', logoutAdmin);
-router.put('/profile', updateAdminProfile);
-router.put('/change-password', changePassword);
+router.get("/profile", getAdminProfile);
+router.post("/logout", logoutAdmin);
+router.put("/profile", updateAdminProfile);
+router.put("/change-password", changePassword);
 
-// Super admin only routes
-router.use(authorize('super_admin'));
-// Add super admin routes here
+// ==============================
+// 🔒 Super Admin Only
+// ==============================
+router.use(authorize("super_admin"));
 
 export default router;

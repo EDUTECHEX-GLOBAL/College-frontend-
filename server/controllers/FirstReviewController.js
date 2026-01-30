@@ -7,6 +7,7 @@ import FirstContacts from '../models/firstContactsModel.js';
 import FirstFamily from '../models/firstFamilyModel.js';
 import FirstResidency from '../models/FirstResidencyModel.js';
 import InternationalStudent from '../models/InternationalStudentModel.js';
+import { sendEmail } from "../utils/sendEmail.js";
 
 // Get all application data for review
 const getApplicationReview = async (req, res) => {

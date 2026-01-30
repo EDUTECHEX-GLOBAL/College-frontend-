@@ -1,259 +1,404 @@
-import React, { useEffect, useState } from "react";
+// src/components/admin/Notifications.js
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import "./Notifications.css";
 
-const Notifications = ({ adminId, fullView = false, onUnreadCountChange }) => {
+const Notifications = ({ fullView = false, onUnreadCountChange }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [open, setOpen] = useState(fullView ? true : false);
+  const [open, setOpen] = useState(fullView);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [filter, setFilter] = useState("all");
 
-  const fetchNotifications = async () => {
-    try {
-      // Mock data for demonstration - replace with actual API call
-      const mockNotifications = [
-        {
-          _id: "1",
-          userId: "user001",
-          userName: "Aravind Bonda",
-          message: "New application submitted for review",
-          read: false,
-          timestamp: new Date(Date.now() - 10 * 60000).toISOString() // 10 minutes ago
-        },
-        {
-          _id: "2",
-          userId: "user002",
-          userName: "John Doe",
-          message: "Payment received for application",
-          read: false,
-          timestamp: new Date(Date.now() - 60 * 60000).toISOString() // 1 hour ago
-        },
-        {
-          _id: "3",
-          userId: "user003",
-          userName: "Jane Smith",
-          message: "Profile updated successfully",
-          read: true,
-          timestamp: new Date(Date.now() - 120 * 60000).toISOString() // 2 hours ago
-        },
-        {
-          _id: "4",
-          userId: "user004",
-          userName: "Robert Johnson",
-          message: "New user registration completed",
-          read: false,
-          timestamp: new Date(Date.now() - 180 * 60000).toISOString() // 3 hours ago
-        },
-      ];
-      
-      setNotifications(mockNotifications);
-      const count = mockNotifications.filter(n => !n.read).length;
-      setUnreadCount(count);
-      
-      // Notify parent component about unread count
-      if (onUnreadCountChange) {
-        onUnreadCountChange(count);
-      }
-      
-      // For actual API call, uncomment this:
-      // const { data } = await axios.get(`/api/admin/notifications/${adminId}`);
-      // setNotifications(data.notifications || []);
-      // const count = data.notifications.filter(n => !n.read).length;
-      // setUnreadCount(count);
-      // if (onUnreadCountChange) onUnreadCountChange(count);
-      
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
+  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+  const adminToken = localStorage.getItem("adminToken");
+
+  const fetchNotifications = useCallback(async () => {
+    if (!adminToken) {
+      setError("Authentication required");
+      return;
     }
-  };
+
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await axios.get(`${API_URL}/api/notifications`, {
+        headers: { Authorization: `Bearer ${adminToken}` },
+      });
+
+      const list = res.data?.data || [];
+      list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setNotifications(list);
+
+      const unread = list.filter((n) => !n.isRead).length;
+      setUnreadCount(unread);
+      onUnreadCountChange?.(unread);
+    } catch (err) {
+      console.error("Failed to fetch admin notifications:", err);
+      setError(err.response?.data?.message || "Failed to load notifications");
+    } finally {
+      setLoading(false);
+    }
+  }, [adminToken, onUnreadCountChange, API_URL]); // Added API_URL to dependencies
 
   useEffect(() => {
     fetchNotifications();
     const interval = setInterval(fetchNotifications, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchNotifications]);
 
-  const handleApprove = async (notificationId, userId) => {
+  const markAsRead = async (id) => {
+    const originalNotifications = [...notifications];
+    
+    // Optimistic update
+    setNotifications((prev) =>
+      prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
+    );
+    setUnreadCount((prev) => Math.max(prev - 1, 0));
+    onUnreadCountChange?.((prev) => Math.max(prev - 1, 0));
+
     try {
-      // Mock API call
-      console.log(`Approving user ${userId} for notification ${notificationId}`);
-      
-      // Update local state
-      setNotifications(prev =>
-        prev.map(n => (n._id === notificationId ? { ...n, read: true } : n))
+      await axios.post(
+        `${API_URL}/api/notifications/mark-read`,
+        { notificationId: id },
+        { headers: { Authorization: `Bearer ${adminToken}` } }
       );
-      const newUnreadCount = unreadCount - 1;
-      setUnreadCount(newUnreadCount);
-      
-      // Notify parent component
-      if (onUnreadCountChange) {
-        onUnreadCountChange(newUnreadCount);
-      }
-      
-      // For actual API call, uncomment this:
-      // await axios.post(`/api/admin/approve-user`, { userId });
-      // setNotifications(prev =>
-      //   prev.map(n => (n._id === notificationId ? { ...n, read: true } : n))
-      // );
-      // const newUnreadCount = unreadCount - 1;
-      // setUnreadCount(newUnreadCount);
-      // if (onUnreadCountChange) onUnreadCountChange(newUnreadCount);
-      
-    } catch (error) {
-      console.error("Error approving user:", error);
+    } catch {
+      // Revert on error
+      setNotifications(originalNotifications);
+      fetchNotifications();
     }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  const markAllAsRead = async () => {
+    if (unreadCount === 0) return;
+    
+    const originalNotifications = [...notifications];
+    
+    // Optimistic update
+    setNotifications((prev) =>
+      prev.map((n) => ({ ...n, isRead: true }))
+    );
+    const previousUnread = unreadCount;
     setUnreadCount(0);
-    if (onUnreadCountChange) {
-      onUnreadCountChange(0);
+    onUnreadCountChange?.(0);
+
+    try {
+      await axios.post(
+        `${API_URL}/api/notifications/mark-all-read`,
+        {},
+        { headers: { Authorization: `Bearer ${adminToken}` } }
+      );
+    } catch {
+      // Revert on error
+      setNotifications(originalNotifications);
+      setUnreadCount(previousUnread);
+      onUnreadCountChange?.(previousUnread);
     }
   };
 
-  const formatTime = (timestamp) => {
-    const date = new Date(timestamp);
+  const deleteNotification = async (id) => {
+    const originalNotifications = [...notifications];
+    const notificationToDelete = notifications.find(n => n._id === id);
+    
+    // Optimistic update
+    setNotifications((prev) => prev.filter((n) => n._id !== id));
+    if (!notificationToDelete?.isRead) {
+      setUnreadCount((prev) => Math.max(prev - 1, 0));
+      onUnreadCountChange?.((prev) => Math.max(prev - 1, 0));
+    }
+
+    try {
+      await axios.delete(
+        `${API_URL}/api/notifications/${id}`,
+        { headers: { Authorization: `Bearer ${adminToken}` } }
+      );
+    } catch {
+      // Revert on error
+      setNotifications(originalNotifications);
+      if (!notificationToDelete?.isRead) {
+        setUnreadCount((prev) => prev + 1);
+        onUnreadCountChange?.((prev) => prev + 1);
+      }
+    }
+  };
+
+  const getNotificationIcon = (type) => {
+    switch (type?.toLowerCase()) {
+      case 'warning':
+      case 'alert':
+        return <span className="notification-icon warning">⚠️</span>;
+      case 'success':
+        return <span className="notification-icon success">✅</span>;
+      case 'info':
+      default:
+        return <span className="notification-icon info">ℹ️</span>;
+    }
+  };
+
+  const formatTime = (date) => {
     const now = new Date();
-    const diffMs = now - date;
+    const notificationDate = new Date(date);
+    const diffMs = now - notificationDate;
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 60) {
-      return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
-    } else if (diffHours < 24) {
-      return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
-    } else if (diffDays < 7) {
-      return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
-    } else {
-      return date.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric'
-      });
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return notificationDate.toLocaleDateString();
+  };
+
+  const getFilteredNotifications = () => {
+    switch (filter) {
+      case 'unread':
+        return notifications.filter(n => !n.isRead);
+      case 'read':
+        return notifications.filter(n => n.isRead);
+      default:
+        return notifications;
     }
   };
 
-  // Full view mode (for notifications page)
+  const filteredNotifications = getFilteredNotifications();
+
+  // Full panel view
   if (fullView) {
     return (
       <div className="notifications-full-view">
-        <div className="notifications-header-full">
-          <h3>All Notifications</h3>
-          {unreadCount > 0 && (
-            <button className="mark-all-btn" onClick={markAllAsRead}>
-              Mark all as read
-            </button>
-          )}
-        </div>
-        
-        <div className="notifications-list-full">
-          {notifications.length === 0 ? (
-            <div className="notification-empty-full">
-              <div className="empty-icon">📭</div>
-              <h4>No notifications yet</h4>
-              <p>When you receive notifications, they'll appear here</p>
+        <div className="notifications-header">
+          <h2>
+            🔔 Notifications
+            {unreadCount > 0 && (
+              <span className="unread-counter">{unreadCount} unread</span>
+            )}
+          </h2>
+          <div className="header-actions">
+            <div className="filter-tabs">
+              <button
+                className={`filter-btn ${filter === "all" ? "active" : ""}`}
+                onClick={() => setFilter("all")}
+              >
+                All
+              </button>
+              <button
+                className={`filter-btn ${filter === "unread" ? "active" : ""}`}
+                onClick={() => setFilter("unread")}
+              >
+                Unread
+              </button>
+              <button
+                className={`filter-btn ${filter === "read" ? "active" : ""}`}
+                onClick={() => setFilter("read")}
+              >
+                Read
+              </button>
             </div>
-          ) : (
-            notifications.map(n => (
+            <button
+              className="icon-btn"
+              onClick={fetchNotifications}
+              disabled={loading}
+              title="Refresh"
+            >
+              {loading ? "🔄" : "↻"}
+            </button>
+            <button
+              className="mark-all-read-btn"
+              onClick={markAllAsRead}
+              disabled={unreadCount === 0}
+            >
+              ✓ Mark all as read
+            </button>
+          </div>
+        </div>
+
+        <div className="notifications-list">
+          {loading && (
+            <div className="loading-state">
+              <div className="spinner">🔄</div>
+              <p>Loading notifications...</p>
+            </div>
+          )}
+
+          {error && (
+            <div className="error-state">
+              <div className="error-icon">⚠️</div>
+              <p>{error}</p>
+              <button onClick={fetchNotifications} className="retry-btn">
+                Retry
+              </button>
+            </div>
+          )}
+
+          {!loading && !error && filteredNotifications.length === 0 && (
+            <div className="empty-state">
+              <div className="empty-icon">🔔</div>
+              <p>No notifications found</p>
+              {filter !== "all" && (
+                <button
+                  className="clear-filter-btn"
+                  onClick={() => setFilter("all")}
+                >
+                  Clear filter
+                </button>
+              )}
+            </div>
+          )}
+
+          {!loading &&
+            !error &&
+            filteredNotifications.map((n) => (
               <div
                 key={n._id}
-                className={`notification-card ${n.read ? "read" : "unread"}`}
+                className={`notification-card ${n.isRead ? "read" : "unread"}`}
               >
-                <div className="notification-icon">
-                  {n.read ? "📩" : "📨"}
-                </div>
-                <div className="notification-content">
-                  <div className="notification-title">
-                    <strong>{n.userName}</strong> - {n.message}
+                <div className="notification-main">
+                  {getNotificationIcon(n.type)}
+                  <div className="notification-content">
+                    <p className="notification-message">{n.message}</p>
+                    <div className="notification-meta">
+                      <span className="notification-time">
+                        {formatTime(n.createdAt)}
+                      </span>
+                      {n.type && (
+                        <span className={`notification-type ${n.type.toLowerCase()}`}>
+                          {n.type}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div className="notification-time">
-                    {formatTime(n.timestamp)}
-                  </div>
                 </div>
-                {!n.read && (
+                <div className="notification-actions">
+                  {!n.isRead && (
+                    <button
+                      className="action-btn read-btn"
+                      onClick={() => markAsRead(n._id)}
+                      title="Mark as read"
+                    >
+                      ✓
+                    </button>
+                  )}
                   <button
-                    className="approve-btn"
-                    onClick={() => handleApprove(n._id, n.userId)}
+                    className="action-btn delete-btn"
+                    onClick={() => deleteNotification(n._id)}
+                    title="Delete notification"
                   >
-                    Approve
+                    ×
                   </button>
-                )}
+                </div>
               </div>
-            ))
-          )}
-        </div>
-        
-        <div className="notifications-footer">
-          <span className="notification-count">
-            {notifications.length} notifications total
-          </span>
-          <span className="unread-count">
-            {unreadCount} unread
-          </span>
+            ))}
         </div>
       </div>
     );
   }
 
-  // Dropdown mode (for navbar)
+  // Navbar/dropdown view
   return (
     <div className="notifications-navbar">
-      <div className="bell-icon" onClick={() => setOpen(!open)}>
-        🔔
-        {unreadCount > 0 && <span className="badge">{unreadCount}</span>}
+      <div className="bell-container" onClick={() => setOpen(!open)}>
+        <div className="bell-icon">
+          🔔
+          {unreadCount > 0 && (
+            <span className="badge">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
+        </div>
       </div>
 
       {open && (
-        <div className="notifications-dropdown">
-          <div className="dropdown-header">
-            <h4>Notifications</h4>
-            {unreadCount > 0 && (
-              <span className="unread-badge">{unreadCount} unread</span>
-            )}
-          </div>
-          
-          <div className="notifications-list">
-            {notifications.length === 0 ? (
-              <div className="notification-empty">No new notifications</div>
-            ) : (
-              notifications.slice(0, 5).map(n => (
-                <div
-                  key={n._id}
-                  className={`notification-item ${n.read ? "read" : "unread"}`}
+        <>
+          <div className="dropdown-backdrop" onClick={() => setOpen(false)} />
+          <div className="notifications-dropdown">
+            <div className="dropdown-header">
+              <h3>Notifications</h3>
+              <div className="dropdown-actions">
+                <button
+                  className="icon-btn small"
+                  onClick={markAllAsRead}
+                  disabled={unreadCount === 0}
+                  title="Mark all as read"
                 >
-                  <div className="notification-info">
-                    <div className="notification-text">
-                      <strong>{n.userName}</strong> - {n.message}
-                    </div>
-                    <div className="notification-time">
-                      {formatTime(n.timestamp)}
-                    </div>
-                  </div>
-                  {!n.read && (
-                    <button
-                      className="approve-btn-small"
-                      onClick={() => handleApprove(n._id, n.userId)}
-                    >
-                      ✓
-                    </button>
-                  )}
+                  ✓
+                </button>
+                <button
+                  className="icon-btn small"
+                  onClick={() => setOpen(false)}
+                  title="Close"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+
+            <div className="dropdown-content">
+              {loading && (
+                <div className="dropdown-loading">
+                  <span className="spinner-small">🔄</span>
+                  <span>Loading...</span>
                 </div>
-              ))
+              )}
+
+              {error && (
+                <div className="dropdown-error">
+                  <span>⚠️</span>
+                  <span>{error}</span>
+                </div>
+              )}
+
+              {!loading && !error && notifications.length === 0 && (
+                <div className="dropdown-empty">
+                  <div className="empty-icon-small">🔔</div>
+                  <p>No notifications yet</p>
+                </div>
+              )}
+
+              {!loading &&
+                !error &&
+                notifications.slice(0, 5).map((n) => (
+                  <div
+                    key={n._id}
+                    className={`notification-item ${n.isRead ? "read" : "unread"}`}
+                    onClick={() => !n.isRead && markAsRead(n._id)}
+                  >
+                    <div className="item-icon">
+                      {getNotificationIcon(n.type)}
+                    </div>
+                    <div className="item-content">
+                      <p className="item-message">{n.message}</p>
+                      <div className="item-meta">
+                        <span className="item-time">
+                          {formatTime(n.createdAt)}
+                        </span>
+                        {!n.isRead && <span className="unread-dot" />}
+                      </div>
+                    </div>
+                    <button
+                      className="item-delete-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteNotification(n._id);
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+            </div>
+
+            {notifications.length > 5 && (
+              <div className="dropdown-footer">
+                <a href="/admin/notifications" className="view-all-link">
+                  View all notifications →
+                </a>
+              </div>
             )}
           </div>
-          
-          {notifications.length > 0 && (
-            <div className="dropdown-footer">
-              <a href="#" onClick={(e) => {
-                e.preventDefault();
-                // In a real app, this would navigate to notifications page
-                window.location.hash = '#/admin/notifications';
-              }}>
-                View all notifications
-              </a>
-            </div>
-          )}
-        </div>
+        </>
       )}
     </div>
   );

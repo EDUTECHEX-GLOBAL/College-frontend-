@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import AdminUserManagement from "./adminuser"; // Import the user management component
+import AdminUserManagement from "./adminuser";
 import "./admindashboard.css";
+import Notifications from "./Notifications";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -10,6 +11,8 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [userFilter, setUserFilter] = useState("all");
+  // Add unreadCount state
+  const [unreadCount, setUnreadCount] = useState(0);
 
   // Dashboard stats - updated to match reference
   const [dashboardData, setDashboardData] = useState({
@@ -359,6 +362,8 @@ const AdminDashboard = () => {
         return "Applications Management";
       case "users":
         return "User Management";
+      case "notifications":
+        return "Notification Management";
       case "settings":
         return "Settings";
       default:
@@ -408,6 +413,28 @@ const AdminDashboard = () => {
             <span className="menu-icon">👥</span>
             {sidebarOpen && <span>Users</span>}
           </li>
+          
+          {/* Notification Menu Item */}
+          <li 
+            className={activeTab === "notifications" ? "active" : ""}
+            onClick={() => setActiveTab("notifications")}
+          >
+            <span className="menu-icon">
+              🔔
+              {unreadCount > 0 && (
+                <span className="notification-badge-sidebar">{unreadCount}</span>
+              )}
+            </span>
+            {sidebarOpen && (
+              <>
+                <span>Notifications</span>
+                {unreadCount > 0 && (
+                  <span className="notification-count-sidebar">{unreadCount}</span>
+                )}
+              </>
+            )}
+          </li>
+          
           <li 
             className={activeTab === "settings" ? "active" : ""}
             onClick={() => setActiveTab("settings")}
@@ -447,6 +474,11 @@ const AdminDashboard = () => {
           </div>
           
           <div className="navbar-right">
+            {/* Pass setUnreadCount to the Notifications component */}
+            <Notifications 
+              adminId={localStorage.getItem("adminEmail")} 
+              onUnreadCountChange={setUnreadCount}
+            />
             <div className="admin-profile">
               <span className="profile-icon">👨‍💼</span>
               <span className="profile-name">
@@ -458,7 +490,22 @@ const AdminDashboard = () => {
 
         {/* Content Area */}
         <div className="content-area">
-          {renderContent()}
+          {activeTab === "notifications" ? (
+            <div className="notifications-page">
+              <div className="notifications-header">
+                <h2>Notifications</h2>
+                <p>Manage and view all your notifications here</p>
+              </div>
+              {/* Your Notifications component will render here */}
+              <Notifications 
+                adminId={localStorage.getItem("adminEmail")} 
+                fullView={true}
+                onUnreadCountChange={setUnreadCount}
+              />
+            </div>
+          ) : (
+            renderContent()
+          )}
         </div>
 
         {/* Footer */}

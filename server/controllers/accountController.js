@@ -2,6 +2,9 @@
 import Account from "../models/accountModel.js";
 import Otp from "../models/otpModel.js";
 import { sendEmail } from "../utils/sendEmail.js";
+import Notification from "../models/notificationModel.js";
+import { createNewUserNotification } from "./notificationController.js";
+
 import jwt from "jsonwebtoken";
 
 // Helper to generate OTP
@@ -308,6 +311,31 @@ export const createFirstYearAccount = async (req, res) => {
     `;
 
     await sendEmail(email, "College App - Verify Your Email", htmlContent);
+    // 🔔 NEW: Create notification for admin
+ // 🔔 Create notification for admin
+// 🔔 NEW: Create notification for admin
+await createNewUserNotification(newAccount);
+
+// 🔔 Create notification for the student themselves
+await Notification.create({
+  type: "WELCOME",
+  title: "Welcome to EduTechEx",
+  message: `Hi ${firstName}, your account has been created successfully!`,
+  userId: newAccount._id,
+  targetRole: "student",
+  isRead: false
+});
+
+// Optional: notify about pending approval
+await Notification.create({
+  type: "PENDING_APPROVAL",
+  title: "Account Pending Approval",
+  message: "Your account is awaiting admin approval before you can fully access the system.",
+  userId: newAccount._id,
+  targetRole: "student",
+  isRead: false
+});
+
 
     console.log(`📧 Email sent successfully to: ${email}`);
     console.log(`🟩 Generated OTP for ${email}: ${otpCode}`);
@@ -750,6 +778,63 @@ export const getAllUsersForAdmin = async (req, res) => {
       success: false,
       message: "Failed to fetch users"
     });
+  }
+};
+// ==========================
+// Get user notifications
+export const getUserNotifications = async (req, res) => {
+  try {
+    const userId = req.user?.userId; // <-- changed from _id to userId
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const notifications = await Notification.find({ userId })
+      .sort({ createdAt: -1 });
+
+    const unread = notifications.filter(n => !n.isRead).length;
+
+    res.status(200).json({
+      success: true,
+      notifications,
+      total: notifications.length,
+      unread,
+    });
+  } catch (error) {
+    console.error("❌ Failed to fetch user notifications:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch notifications" });
+  }
+};
+
+
+// ==========================
+// Mark notification as read
+// ==========================
+export const markNotificationRead = async (req, res) => {
+  try {
+    const { notificationId } = req.body;
+
+    // Use userId from JWT payload
+    const userId = req.user?.userId;
+    if (!userId || !notificationId) {
+      return res.status(400).json({ success: false, message: "Invalid request" });
+    }
+
+    // Find the notification belonging to this user and mark it as read
+    const notification = await Notification.findOneAndUpdate(
+      { _id: notificationId, userId },
+      { isRead: true },
+      { new: true }
+    );
+
+    if (!notification) {
+      return res.status(404).json({ success: false, message: "Notification not found" });
+    }
+
+    res.status(200).json({ success: true, notification });
+  } catch (error) {
+    console.error("❌ Mark as read failed:", error);
+    res.status(500).json({ success: false, message: "Failed to mark as read" });
   }
 };
 

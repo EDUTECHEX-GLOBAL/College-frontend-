@@ -31,7 +31,8 @@ import testRoutes from "./routes/testRoutes.js"; // ✅ ADDED - Testing routes
 import writingtestRoutes from "./routes/writingtestRoutes.js"; // ✅ ADDED - Writing test routes
 import firstfamilydashbRoutes from "./routes/firstfamilydashbRoutes.js";
 import adminUserRoutes from "./routes/adminuserroutes.js";
-// import adminApplicationRoutes from "./routes/adminapplicationroutes.js";
+// Add this import with your other route imports
+import notificationRoutes from "./routes/notificationRoutes.js"; // Add this line
 
 // Load env
 dotenv.config();
@@ -79,6 +80,7 @@ app.use("/uploads", express.static(uploadStaticPath));
 app.use("/api/students", accountRoutes);
 app.use("/api/education", educationRoutes);
 app.use("/api/college-search", collegesearchRoutes);
+app.use("/api/notifications", notificationRoutes); // Add this line
 app.use("/api/colleges", collegeRoutes);
 app.use("/api/general", generalRoutes); 
 app.use("/api/academics", firstAcademicRoutes);
