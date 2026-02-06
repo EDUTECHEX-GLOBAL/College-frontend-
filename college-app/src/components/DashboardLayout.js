@@ -10,9 +10,47 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     colleges: false,
     writing: false,
     activities: false,
+    courses: false, // ✅ ADDED: Courses section state
     expandedColleges: {}
   });
   const [forceUpdate, setForceUpdate] = useState(0);
+
+  // Calculate completed sections for "My Common Application" in sidebar
+  const calculateCommonAppProgress = () => {
+    if (!userData) return '0/76';
+    
+    const sections = [
+      userData.profileProgress || 0,
+      userData.applicationProgress?.family || 0,
+      userData.applicationProgress?.education || 0,
+      userData.applicationProgress?.testing || 0,
+      userData.applicationProgress?.activities || 0,
+      userData.applicationProgress?.writing || 0
+    ];
+    
+    // Count sections with 100% completion
+    const completed = sections.filter(progress => progress >= 100).length;
+    const total = sections.length;
+    
+    return `${completed}/${total}`;
+  };
+
+  // Calculate overall progress percentage
+  const calculateOverallProgress = () => {
+    if (!userData) return 0;
+    
+    const sections = [
+      userData.profileProgress || 0,
+      userData.applicationProgress?.family || 0,
+      userData.applicationProgress?.education || 0,
+      userData.applicationProgress?.testing || 0,
+      userData.applicationProgress?.activities || 0,
+      userData.applicationProgress?.writing || 0
+    ];
+    
+    const totalProgress = sections.reduce((sum, progress) => sum + progress, 0);
+    return Math.round(totalProgress / sections.length);
+  };
 
   // Auto-expand sections when on their pages
   useEffect(() => {
@@ -43,6 +81,14 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
       setExpandedSections(prev => ({
         ...prev,
         activities: true
+      }));
+    }
+    
+    // ✅ ADDED: Auto-expand courses section
+    if (path.includes('/courses')) {
+      setExpandedSections(prev => ({
+        ...prev,
+        courses: true
       }));
     }
   }, [location.pathname]);
@@ -205,6 +251,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     console.log('🔄 DashboardLayout re-rendering, forceUpdate:', forceUpdate);
     console.log('📋 Selected tests:', selectedTests);
     console.log('📋 Selected test types:', selectedTestTypes);
+    console.log('📊 Common App Progress:', calculateCommonAppProgress());
   }, [forceUpdate, selectedTests, selectedTestTypes]);
 
   // CollegeSidebarItem Component
@@ -527,22 +574,84 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
       );
     }
 
+    // ✅ ADDED: Courses Section
+    if (activeMainSection === 'courses') {
+      return (
+        <div className="nav-section">
+          <h4 className="nav-section-title">Courses</h4>
+          <ul className="nav-menu">
+            <li className={`nav-item ${location.pathname.includes('/courses') ? 'active' : ''}`}>
+              <div className="nav-content" onClick={() => navigate(`${basePath}/college-search`)}>
+                {/* <span className="nav-text">Browse University Courses</span> */}
+                <span className="nav-hint">← Go to College Search</span>
+              </div>
+            </li>
+            <li className="nav-item">
+              <div className="nav-content" onClick={() => {
+                // Navigate to college search and show GUS universities
+                navigate(`${basePath}/college-search`);
+                // Optionally, you could add a query parameter to filter GUS universities
+                setTimeout(() => {
+                  // Dispatch an event to filter GUS universities
+                  window.dispatchEvent(new CustomEvent('filterGUSUniversities'));
+                }, 100);
+              }}>
+                <span className="nav-text">GUS Portal Universities</span>
+              </div>
+            </li>
+            <li className="nav-item">
+              <div className="nav-content" onClick={() => {
+                // Check for saved programs
+                const savedPrograms = JSON.parse(localStorage.getItem('savedPrograms') || '[]');
+                if (savedPrograms.length > 0) {
+                  alert(`You have ${savedPrograms.length} saved programs`);
+                } else {
+                  alert('No saved programs yet. Browse universities to save programs.');
+                  navigate(`${basePath}/college-search`);
+                }
+              }}>
+                <span className="nav-text">Saved Programs</span>
+                <span className="nav-count">
+                  {(() => {
+                    const savedPrograms = JSON.parse(localStorage.getItem('savedPrograms') || '[]');
+                    return savedPrograms.length > 0 ? savedPrograms.length : '';
+                  })()}
+                </span>
+              </div>
+            </li>
+            <li className="nav-item">
+              <div className="nav-content" onClick={() => {
+                // Show application timeline
+                alert('Course Application Timeline:\n\n1. Browse universities in College Search\n2. Click on any GUS university\n3. View available programs and courses\n4. Select a program to apply\n5. Add to My Colleges');
+              }}>
+                <span className="nav-text">Application Timeline</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      );
+    }
+
     // Default dashboard sidebar with expandable sections
     return (
       <div className="nav-section">
         <h4 className="nav-section-title">Dashboard</h4>
         <ul className="nav-menu">
+          {/* FIXED: Now calculates progress dynamically */}
           <li className={`nav-item ${activeMainSection === 'application' ? 'active' : ''}`}>
             <div className="nav-content" onClick={() => onSectionChange('application')}>
               <span className="nav-text">My Common Application</span>
-              <div className="nav-progress">0/76</div>
+              <div className="nav-progress">{calculateCommonAppProgress()}</div>
             </div>
           </li>
           
-          {/* Family Section */}
+          {/* Family Section - Fixed to show correct progress */}
           <li className={`nav-item ${activeMainSection === 'family' ? 'active' : ''}`}>
             <div className="nav-content" onClick={() => onSectionChange('family')}>
               <span className="nav-text">Family</span>
+              <div className="nav-progress">
+                {userData?.applicationProgress?.family >= 100 ? 'Review' : 'Start'}
+              </div>
             </div>
           </li>
           
@@ -588,6 +697,66 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
                     </div>
                   </li>
                 )}
+              </ul>
+            )}
+          </li>
+          
+          {/* ✅ ADDED: Expandable Courses Section */}
+          <li className="nav-section-expandable">
+            <div 
+              className={`nav-header ${expandedSections.courses ? 'expanded' : ''}`}
+              onClick={() => toggleSection('courses')}
+            >
+              <span className="nav-text">Courses & Programs</span>
+              <div className="nav-header-right">
+                <span className="expand-icon">{expandedSections.courses ? '▼' : '►'}</span>
+              </div>
+            </div>
+            {expandedSections.courses && (
+              <ul className="nav-submenu">
+                <li className={`nav-subitem ${location.pathname.includes('/college-search') ? 'active' : ''}`}>
+                  <div className="nav-content" onClick={() => onSectionChange('courses')}>
+                    {/* <span className="nav-text">Browse University Courses</span> */}
+                    {/* <span className="nav-hint-small">Access via College Search</span> */}
+                  </div>
+                </li>
+                <li className="nav-subitem">
+                  <div className="nav-content" onClick={() => {
+                    onSectionChange('courses');
+                    // Optionally filter for GUS universities
+                    setTimeout(() => {
+                      window.dispatchEvent(new CustomEvent('filterGUSUniversities'));
+                    }, 100);
+                  }}>
+                    <span className="nav-text">GUS Portal Universities</span>
+                  </div>
+                </li>
+                <li className="nav-subitem">
+                  <div className="nav-content" onClick={() => {
+                    const savedPrograms = JSON.parse(localStorage.getItem('savedPrograms') || '[]');
+                    if (savedPrograms.length > 0) {
+                      alert(`You have ${savedPrograms.length} saved program(s):\n\n${savedPrograms.map(p => `• ${p.program.title} at ${p.university}`).join('\n')}`);
+                    } else {
+                      alert('No saved programs yet. Browse universities to save programs.');
+                      onSectionChange('courses');
+                    }
+                  }}>
+                    <span className="nav-text">Saved Programs</span>
+                    <span className="nav-count-small">
+                      {(() => {
+                        const savedPrograms = JSON.parse(localStorage.getItem('savedPrograms') || '[]');
+                        return savedPrograms.length > 0 ? savedPrograms.length : '';
+                      })()}
+                    </span>
+                  </div>
+                </li>
+                <li className="nav-subitem">
+                  <div className="nav-content" onClick={() => {
+                    alert('How to use Courses:\n\n1. Go to College Search\n2. Click on any GUS university (non-Kansas)\n3. View all available programs\n4. Filter by major area or study mode\n5. Select programs to save or apply');
+                  }}>
+                    {/* <span className="nav-text">How to Use</span> */}
+                  </div>
+                </li>
               </ul>
             )}
           </li>

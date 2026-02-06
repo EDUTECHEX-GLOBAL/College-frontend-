@@ -1,40 +1,41 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import "./Home.css";
+
 import bgImage from "../assets/homebgimg.png";
-import logo from "../assets/Edutech-logo.svg"; // ✅ Added logo import
+import logo from "../assets/Edutech-logo.svg";
 
 const Home = () => {
   const navigate = useNavigate();
 
-  // Navigate to Create Account page
   const handleCreateAccount = () => {
     navigate("/create-account");
   };
 
-  // Navigate to Start Application page (same as Create Account)
   const handleStartApplication = () => {
     navigate("/create-account");
   };
 
-  // ✅ Navigate to Sign In page
   const handleSignIn = () => {
     navigate("/sign-in");
   };
 
   return (
-    <div
-      className="home-wrapper"
-      style={{ backgroundImage: `url(${bgImage})` }}
-    >
-      {/* ===== Header Section ===== */}
+    <>
+      {/* ===== HEADER ===== */}
       <header className="header">
         <div className="logo">
-          <img src={logo} alt="EduTechEX Logo" className="logo-img" />
+          {/* ✅ FIX IS HERE */}
+          <Link to="/">
+            <img
+              src={logo}
+              alt="EduTechEX Logo"
+              className="logo-img"
+            />
+          </Link>
         </div>
 
         <div className="header-buttons">
-          {/* ✅ Added navigation for Sign In */}
           <button className="header-btn" onClick={handleSignIn}>
             Sign In
           </button>
@@ -44,19 +45,26 @@ const Home = () => {
         </div>
       </header>
 
-      {/* ===== Main Content ===== */}
-      <main className="home-content">
-        <h1 className="headline">Your future starts here</h1>
-        <p className="description">
-          Apply to college for the first time or transfer to complete your
-          degree. Navigate your entire college application journey with{" "}
-          <span className="highlight">College App</span>.
-        </p>
-        <button className="cta-button" onClick={handleStartApplication}>
-          Start your application
-        </button>
-      </main>
-    </div>
+      {/* ===== HERO / HOME SECTION ===== */}
+      <div
+        className="home-wrapper"
+        style={{ backgroundImage: `url(${bgImage})` }}
+      >
+        <main className="home-content">
+          <h1 className="headline">Your future starts here</h1>
+
+          <p className="description">
+            Apply to college for the first time or transfer to complete your
+            degree. Navigate your entire college application journey with{" "}
+            <span className="highlight">College App</span>.
+          </p>
+
+          <button className="cta-button" onClick={handleStartApplication}>
+            Start your application
+          </button>
+        </main>
+      </div>
+    </>
   );
 };
 

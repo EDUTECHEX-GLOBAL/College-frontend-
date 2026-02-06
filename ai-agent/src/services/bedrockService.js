@@ -274,18 +274,40 @@ CONVERSATION CONTEXT:
     return content;
     
   } catch (error) {
-    const duration = Date.now() - startTime;
-    console.error(`❌ Error (${duration}ms): ${error.message}`);
-    
-    let userMessage = 'AI service busy. Please try again in 30 seconds.';
-    if (error.name === 'ValidationException') {
-      userMessage = 'AI model unavailable - using backup data';
-    }
-    
-    const enhancedError = new Error(userMessage);
-    enhancedError.originalError = error;
-    throw enhancedError;
+  const duration = Date.now() - startTime;
+
+  console.error(`❌ Bedrock Error (${duration}ms):`, {
+    name: error.name,
+    message: error.message,
+    stack: error.stack
+  });
+
+  // 🔹 Known Bedrock / Claude issues
+  const isModelUnavailable =
+    error.name === 'ValidationException' ||
+    error.name === 'ThrottlingException' ||
+    error.name === 'TooManyRequestsException' ||
+    error.message?.includes('model') ||
+    error.message?.includes('unavailable');
+
+  if (isModelUnavailable) {
+    console.warn('⚠️ AI unavailable → returning fallback response');
+
+    return {
+      type: 'fallback',
+      message: 'AI model unavailable - using backup data',
+      data: {
+        answer:
+          'Our AI is temporarily unavailable. Please try again shortly or continue browsing university information.',
+        source: 'backup'
+      }
+    };
   }
+
+  // 🔴 REAL unexpected errors → still throw
+  throw error;
+}
+
 };
 
 /**

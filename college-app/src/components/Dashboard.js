@@ -22,10 +22,10 @@ import InternationalStudent from './mycollege-sections/InternationalStudent';
 import Review from './mycollege-sections/FirstReview';
 import WritingSection from './writing-sections/WritingSection';
 import FamilySection from './family-sections/FamilySection';
-import ChatWidget from './Chatbot/ChatWidget'; // ✅ Added Chat Widget
+import ChatWidget from './Chatbot/ChatWidget';
+import Courses from './Courses'; // ✅ ADDED: Import Courses component
 
-const API_URL = process.env.REACT_APP_API_BASE_URL
-;
+const API_URL = process.env.REACT_APP_API_BASE_URL;
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -35,7 +35,6 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeMainSection, setActiveMainSection] = useState('application');
   const [userColleges, setUserColleges] = useState([]);
-  // ADD THIS LINE: State to track family section completion locally
   const [familyCompleted, setFamilyCompleted] = useState(false);
 
   // ✅ DYNAMIC BASE PATH DETECTION
@@ -108,13 +107,11 @@ const Dashboard = () => {
     await fetchUserColleges();
   };
 
-  // ADD THIS FUNCTION: Handle family completion
+  // Handle family completion
   const handleFamilyComplete = (isComplete) => {
     setFamilyCompleted(isComplete);
-    // Update local storage for persistence
     localStorage.setItem('familySectionComplete', isComplete ? 'true' : 'false');
     
-    // Update userData if it exists
     if (userData) {
       setUserData(prev => ({
         ...prev,
@@ -145,7 +142,6 @@ const Dashboard = () => {
 
         if (response.data.success && response.data.account) {
           const user = response.data.account;
-          // ADD THIS: Check local storage for family completion status
           const storedFamilyComplete = localStorage.getItem('familySectionComplete') === 'true';
           setFamilyCompleted(storedFamilyComplete);
           
@@ -160,7 +156,6 @@ const Dashboard = () => {
             testingProgress: user.applicationProgress?.testing || 0,
             writingProgress: user.applicationProgress?.writing || 0,
             activitiesProgress: user.applicationProgress?.activities || 0,
-            // ADD THIS: Include family progress
             applicationProgress: {
               ...user.applicationProgress,
               family: storedFamilyComplete ? 100 : (user.applicationProgress?.family || 0)
@@ -178,7 +173,6 @@ const Dashboard = () => {
           try {
             const parsedData = JSON.parse(storedUserData);
             setUserData(parsedData);
-            // Check local storage for family completion
             const storedFamilyComplete = localStorage.getItem('familySectionComplete') === 'true';
             setFamilyCompleted(storedFamilyComplete);
           } catch (parseError) {
@@ -216,7 +210,7 @@ const Dashboard = () => {
     };
   }, []);
 
-  // ADD THIS: Listen for family completion events
+  // Listen for family completion events
   useEffect(() => {
     const handleFamilyCompletion = (event) => {
       if (event.detail && event.detail.section === 'family') {
@@ -231,7 +225,7 @@ const Dashboard = () => {
     };
   }, []);
 
-  // Update active section based on route
+  // ✅ UPDATED: Update active section based on route
   useEffect(() => {
     const path = location.pathname;
     if (path.includes('/profile')) {
@@ -250,12 +244,14 @@ const Dashboard = () => {
       setActiveMainSection('college-search');
     } else if (path.includes('/family')) {
       setActiveMainSection('family');
+    } else if (path.includes('/courses')) { // ✅ ADDED: Courses section
+      setActiveMainSection('courses');
     } else {
       setActiveMainSection('application');
     }
   }, [location.pathname]);
 
-  // ✅ FIXED: Sidebar navigation with correct base path
+  // ✅ UPDATED: Sidebar navigation with Courses added
   const handleSectionChange = (section) => {
     console.log('🔄 Section change requested:', section);
     switch (section) {
@@ -299,6 +295,10 @@ const Dashboard = () => {
       case 'family':
         navigate(`${basePath}/family`);
         break;
+      case 'courses': // ✅ ADDED: Courses navigation
+        // Navigate to college search first, then user can click on a university to see courses
+        navigate(`${basePath}/college-search`);
+        break;
       default:
         if (section.startsWith('college-')) {
           const parts = section.split('-');
@@ -318,14 +318,13 @@ const Dashboard = () => {
       Object.values(userData.applicationProgress).length 
     : 0;
 
-  // FIX THIS: Update completedSections to use 100% as completion threshold
   const completedSections = userData?.applicationProgress 
     ? Object.values(userData.applicationProgress).filter(progress => progress >= 100).length 
     : 0;
 
   const totalSections = 6;
 
-  // ✅ FIXED: applicationSections with dynamic base path
+  // Application sections with progress
   const applicationSections = [
     { 
       name: "Profile", 
@@ -335,7 +334,6 @@ const Dashboard = () => {
     },
     { 
       name: "Family", 
-      // FIX THIS: Use familyCompleted state OR backend progress
       completed: familyCompleted || (userData?.applicationProgress?.family >= 100),
       progress: familyCompleted ? 100 : (userData?.applicationProgress?.family || 0), 
       path: `${basePath}/family`
@@ -393,153 +391,25 @@ const Dashboard = () => {
     }
   };
 
-  // ✅ FIXED: CollegesSection with correct navigation paths
+  // CollegesSection Component
   const CollegesSection = () => (
-  <>
-    <header className="main-header">
-      <div className="header-content">
-        <div className="welcome-section-centered">
-          <h1 className="welcome-title">My Colleges - Overview</h1>
-          <p className="welcome-subtitle">Manage your college applications and track progress</p>
-        </div>
-      </div>
-    </header>
-
-    <div className="main-content">
-      <section className="content-section">
-        <div className="section-header">
-          <h2 className="section-title">Your College List</h2>
-          <div className="college-count">{userColleges.length} colleges</div>
-        </div>
-        
-        {userColleges.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-state-icon">
-              <div className="icon-background">
-                🏫
-              </div>
-            </div>
-            <div className="empty-state-content">
-              <h3 className="empty-state-title">No colleges added yet</h3>
-              <p className="empty-state-description">
-                Start by searching for colleges to add to your list. You can manage your applications from the sidebar.
-              </p>
-              <button 
-                className="primary-action-button"
-                onClick={() => navigate(`${basePath}/college-search`)}
-              >
-                Search Colleges
-              </button>
-            </div>
+    <>
+      <header className="main-header">
+        <div className="header-content">
+          <div className="welcome-section-centered">
+            <h1 className="welcome-title">My Colleges - Overview</h1>
+            <p className="welcome-subtitle">Manage your college applications and track progress</p>
           </div>
-        ) : (
-          <div className="college-list">
-            {userColleges.map((college) => (
-              <div key={college.collegeId} className="college-list-item">
-                <div className="college-info">
-                  <div className="college-text">
-                    <h4 
-                      className="college-name-link"
-                      onClick={() => navigate(`${basePath}/colleges/${college.collegeId}`)}
-                    >
-                      {college.name}
-                    </h4>
-                    <p className="college-location-small">
-                      {college.city}, {college.state} - USA
-                    </p>
-                    <div className="college-status">
-                      <span className={`status-badge ${college.status}`}>
-                        {college.status || 'Not Started'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <button 
-                  className="view-details-button"
-                  onClick={() => navigate(`${basePath}/colleges/${college.collegeId}`)}
-                >
-                  View Details
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+        </div>
+      </header>
 
-      {userColleges.length > 0 && (
+      <div className="main-content">
         <section className="content-section">
-          <h2 className="section-title">Application Progress Summary</h2>
-          <div className="progress-summary">
-            <p>Click on any college in the sidebar to start working on your application sections.</p>
-            <p>Each college has its own set of application requirements and deadlines.</p>
-          </div>
-        </section>
-      )}
-    </div>
-  </>
-);
-
-  // ✅ FIXED: DashboardHome with correct Add Colleges button
-  const DashboardHome = () => (
-  <>
-    <header className="main-header">
-      <div className="header-content">
-        <div className="welcome-section-centered">
-          <h1 className="welcome-name">{userData?.name || 'Student'}</h1>
-          <p className="welcome-subtitle">Welcome back to your application dashboard</p>
-        </div>
-      </div>
-    </header>
-
-    <div className="main-content">
-      <section className="content-section application-section">
-        <div className="section-header">
-          <div className="section-title-group">
-            <h2 className="section-title">My Common Application</h2>
-            <div className="progress-indicator">{completedSections}/{totalSections} sections complete</div>
-          </div>
-          <div className="progress-bar-container">
-            <div className="progress-bar">
-              <div className="progress-fill" style={{ width: `${overallProgress}%` }}></div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="application-sections-grid">
-          {applicationSections.map((section, index) => (
-            <div key={index} className="application-section-card">
-              <div className="section-header-mini">
-                <h4 className="section-name">{section.name}</h4>
-                {section.progress > 0 && (
-                  <div className="section-progress">{section.progress}%</div>
-                )}
-              </div>
-              <div className="section-progress-bar">
-                <div 
-                  className="section-progress-fill" 
-                  style={{ width: `${section.progress}%` }}
-                ></div>
-              </div>
-              <button 
-                className={`section-action-button ${section.progress === 100 ? 'completed' : ''}`}
-                onClick={() => handleSectionClick(section)}
-              >
-                {section.progress === 100 ? 'Review' : section.progress > 0 ? 'Continue' : 'Start'}
-              </button>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="content-section colleges-section">
-        <div className="section-header">
-          <div className="section-title-group">
-            <h2 className="section-title">My Colleges</h2>
+          <div className="section-header">
+            <h2 className="section-title">Your College List</h2>
             <div className="college-count">{userColleges.length} colleges</div>
           </div>
-        </div>
-        
-        <div className="colleges-content">
+          
           {userColleges.length === 0 ? (
             <div className="empty-state">
               <div className="empty-state-icon">
@@ -548,82 +418,241 @@ const Dashboard = () => {
                 </div>
               </div>
               <div className="empty-state-content">
-                <h3 className="empty-state-title">Nothing here yet!</h3>
+                <h3 className="empty-state-title">No colleges added yet</h3>
                 <p className="empty-state-description">
-                  Add some colleges to your list to get started with your applications.
+                  Start by searching for colleges to add to your list. You can manage your applications from the sidebar.
                 </p>
                 <button 
-                  className="primary-action-button" 
+                  className="primary-action-button"
                   onClick={() => navigate(`${basePath}/college-search`)}
                 >
-                  Add Colleges
+                  Search Colleges
                 </button>
               </div>
             </div>
           ) : (
-            <div className="college-preview-list">
-              {userColleges.slice(0, 3).map((college) => (
-                <div key={college.collegeId} className="college-preview-item">
-                  <h4 className="college-name">{college.name}</h4>
-                  <p className="college-location">{college.city}, {college.state}</p>
-                  <span className={`status-badge-small ${college.status}`}>
-                    {college.status}
-                  </span>
+            <div className="college-list">
+              {userColleges.map((college) => (
+                <div key={college.collegeId} className="college-list-item">
+                  <div className="college-info">
+                    <div className="college-text">
+                      <h4 
+                        className="college-name-link"
+                        onClick={() => navigate(`${basePath}/colleges/${college.collegeId}`)}
+                      >
+                        {college.name}
+                      </h4>
+                      <p className="college-location-small">
+                        {college.city}, {college.state} - USA
+                      </p>
+                      <div className="college-status">
+                        <span className={`status-badge ${college.status}`}>
+                          {college.status || 'Not Started'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <button 
+                    className="view-details-button"
+                    onClick={() => navigate(`${basePath}/colleges/${college.collegeId}`)}
+                  >
+                    View Details
+                  </button>
                 </div>
               ))}
-              {userColleges.length > 3 && (
-                <button 
-                  className="view-all-colleges-button"
-                  onClick={() => navigate(`${basePath}/colleges`)}
-                >
-                  View all {userColleges.length} colleges →
-                </button>
-              )}
             </div>
           )}
-        </div>
-      </section>
+        </section>
 
-      <section className="content-section help-section">
-        <div className="section-header">
-          <h2 className="section-title">Help & Support</h2>
-        </div>
-        
-        <div className="search-section">
-          <div className="search-container">
-            <input 
-              type="text" 
-              placeholder="Search FAQs"
-              className="search-input"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <div className="search-hint">
-              Search takes you to the student solution center
+        {userColleges.length > 0 && (
+          <section className="content-section">
+            <h2 className="section-title">Application Progress Summary</h2>
+            <div className="progress-summary">
+              <p>Click on any college in the sidebar to start working on your application sections.</p>
+              <p>Each college has its own set of application requirements and deadlines.</p>
             </div>
+          </section>
+        )}
+      </div>
+    </>
+  );
+
+  // DashboardHome Component
+  const DashboardHome = () => (
+    <>
+      <header className="main-header">
+        <div className="header-content">
+          <div className="welcome-section-centered">
+            <h1 className="welcome-name">{userData?.name || 'Student'}</h1>
+            <p className="welcome-subtitle">Welcome back to your application dashboard</p>
           </div>
         </div>
-        
-        <div className="faq-section">
-          <h3 className="faq-section-title">Frequently Asked Questions</h3>
-          <div className="faq-list">
-            {faqItems.map((faq, index) => (
-              <div key={index} className="faq-card">
-                <div className="faq-content">
-                  <h4 className="faq-question">{faq.question}</h4>
-                  <p className="faq-answer">{faq.shortAnswer}</p>
+      </header>
+
+      <div className="main-content">
+        <section className="content-section application-section">
+          <div className="section-header">
+            <div className="section-title-group">
+              <h2 className="section-title">My Common Application</h2>
+              <div className="progress-indicator">{completedSections}/{totalSections} sections complete</div>
+            </div>
+            <div className="progress-bar-container">
+              <div className="progress-bar">
+                <div className="progress-fill" style={{ width: `${overallProgress}%` }}></div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="application-sections-grid">
+            {applicationSections.map((section, index) => (
+              <div key={index} className="application-section-card">
+                <div className="section-header-mini">
+                  <h4 className="section-name">{section.name}</h4>
+                  {section.progress > 0 && (
+                    <div className="section-progress">{section.progress}%</div>
+                  )}
                 </div>
-                <button className="faq-action-button">
-                  Read full answer
+                <div className="section-progress-bar">
+                  <div 
+                    className="section-progress-fill" 
+                    style={{ width: `${section.progress}%` }}
+                  ></div>
+                </div>
+                <button 
+                  className={`section-action-button ${section.progress === 100 ? 'completed' : ''}`}
+                  onClick={() => handleSectionClick(section)}
+                >
+                  {section.progress === 100 ? 'Review' : section.progress > 0 ? 'Continue' : 'Start'}
                 </button>
               </div>
             ))}
           </div>
-        </div>
-      </section>
-    </div>
-  </>
-);
+        </section>
+
+        <section className="content-section colleges-section">
+          <div className="section-header">
+            <div className="section-title-group">
+              <h2 className="section-title">My Colleges</h2>
+              <div className="college-count">{userColleges.length} colleges</div>
+            </div>
+          </div>
+          
+          <div className="colleges-content">
+            {userColleges.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-state-icon">
+                  <div className="icon-background">
+                    🏫
+                  </div>
+                </div>
+                <div className="empty-state-content">
+                  <h3 className="empty-state-title">Nothing here yet!</h3>
+                  <p className="empty-state-description">
+                    Add some colleges to your list to get started with your applications.
+                  </p>
+                  <button 
+                    className="primary-action-button" 
+                    onClick={() => navigate(`${basePath}/college-search`)}
+                  >
+                    Add Colleges
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="college-preview-list">
+                {userColleges.slice(0, 3).map((college) => (
+                  <div key={college.collegeId} className="college-preview-item">
+                    <h4 className="college-name">{college.name}</h4>
+                    <p className="college-location">{college.city}, {college.state}</p>
+                    <span className={`status-badge-small ${college.status}`}>
+                      {college.status}
+                    </span>
+                  </div>
+                ))}
+                {userColleges.length > 3 && (
+                  <button 
+                    className="view-all-colleges-button"
+                    onClick={() => navigate(`${basePath}/colleges`)}
+                  >
+                    View all {userColleges.length} colleges →
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* ✅ ADDED: Quick Access to Courses Section */}
+        <section className="content-section quick-access-section">
+          <div className="section-header">
+            <h2 className="section-title">Quick Access</h2>
+          </div>
+          
+          <div className="quick-access-grid">
+            <div className="quick-access-card" onClick={() => navigate(`${basePath}/college-search`)}>
+              <div className="quick-access-icon">🔍</div>
+              <div className="quick-access-content">
+                <h4 className="quick-access-title">Explore Programs</h4>
+                <p className="quick-access-description">
+                  Browse detailed program information for GUS portal universities
+                </p>
+              </div>
+              <div className="quick-access-arrow">→</div>
+            </div>
+            
+            <div className="quick-access-card" onClick={() => navigate(`${basePath}/college-search`)}>
+              <div className="quick-access-icon">🎓</div>
+              <div className="quick-access-content">
+                <h4 className="quick-access-title">View Course Details</h4>
+                <p className="quick-access-description">
+                  Click on any GUS university to see available courses and programs
+                </p>
+              </div>
+              <div className="quick-access-arrow">→</div>
+            </div>
+          </div>
+        </section>
+
+        <section className="content-section help-section">
+          <div className="section-header">
+            <h2 className="section-title">Help & Support</h2>
+          </div>
+          
+          <div className="search-section">
+            <div className="search-container">
+              <input 
+                type="text" 
+                placeholder="Search FAQs"
+                className="search-input"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <div className="search-hint">
+                Search takes you to the student solution center
+              </div>
+            </div>
+          </div>
+          
+          <div className="faq-section">
+            <h3 className="faq-section-title">Frequently Asked Questions</h3>
+            <div className="faq-list">
+              {faqItems.map((faq, index) => (
+                <div key={index} className="faq-card">
+                  <div className="faq-content">
+                    <h4 className="faq-question">{faq.question}</h4>
+                    <p className="faq-answer">{faq.shortAnswer}</p>
+                  </div>
+                  <button className="faq-action-button">
+                    Read full answer
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </div>
+    </>
+  );
 
   if (loading) {
     return (
@@ -649,19 +678,19 @@ const Dashboard = () => {
           <Route path="/colleges/:collegeId" element={<CollegeDetails />} />
           <Route path="/colleges/:collegeId/:subsection" element={<CollegeSubsection />} />
           <Route path="/profile/*" element={<ProfileForm />} />
-          {/* PASS THE COMPLETION HANDLER TO FAMILYSECTION */}
           <Route 
             path="/family/*" 
             element={<FamilySection onComplete={handleFamilyComplete} />} 
           />
           <Route path="/education/*" element={<EducationForm />} />
           <Route path="/testing/*" element={<TestingForm />} />
-          
           <Route path="/activities" element={<ActivitiesSection />} />
           <Route path="/activities/responsibilities" element={<ResponsibilitiesSection />} />
-          
           <Route path="/writing/*" element={<WritingSection />} />
           <Route path="/college-search" element={<CollegeSearch onCollegeUpdate={fetchUserColleges} />} />
+          
+          {/* ✅ ADDED: Courses Route */}
+          <Route path="/courses/:universityId" element={<Courses />} />
           
           <Route path="/colleges/:collegeId/general" element={<General />} />
           <Route path="/colleges/:collegeId/academics" element={<Academics />} />

@@ -2,53 +2,64 @@ import fs from "fs";
 import path from "path";
 import { getGoogleFavicon, getFallbackLogo } from "../services/logoService.js";
 
-const dataPath = path.join(process.cwd(), "data", "colleges.json");
+// Paths
+const collegesPath = path.join(process.cwd(), "data", "colleges.json");
+const gusPath = path.join(process.cwd(), "data", "gus.json");
 
-// Load + clean data once
+// Combined colleges list
 let colleges = [];
 
-try {
-  let raw = fs.readFileSync(dataPath, "utf8");
+// Utility loader
+const loadData = (filePath) => {
+  let raw = fs.readFileSync(filePath, "utf8");
 
+  // Remove BOM if present
   if (raw.charCodeAt(0) === 0xfeff) raw = raw.slice(1);
 
   const parsed = JSON.parse(raw);
 
-  colleges = parsed.map((item) => {
+  return parsed.map((item) => {
     const cleaned = {};
 
-    // Clean invisible characters from keys
+    // Clean keys
     for (const key in item) {
       const cleanKey = key.replace(/[^\x20-\x7E]/g, "").trim();
       cleaned[cleanKey] = item[key];
     }
 
-    // Logo (Google Favicon)
-    cleaned.logo = getGoogleFavicon(cleaned.WEBADDR);
-
-    // Fallback
+    // Attach logos
+    cleaned.logo = getGoogleFavicon(cleaned.WEBADDR || cleaned.WEBSITE);
     cleaned.fallbackLogo = getFallbackLogo();
 
     return cleaned;
   });
+};
 
-  console.log(`✅ ${colleges.length} colleges loaded (with Google logo)`);
+// Load data once on server start
+try {
+  const collegeData = loadData(collegesPath);
+  const gusData = loadData(gusPath);
+
+  colleges = [...collegeData, ...gusData];
+
+  console.log(
+    `✅ Loaded ${collegeData.length} colleges + ${gusData.length} GUS universities`
+  );
 } catch (err) {
-  console.error("❌ Failed to load colleges:", err.message);
+  console.error("❌ Failed to load college data:", err.message);
 }
 
-// Controller Search Function
+// 🔍 SEARCH API
 export const searchColleges = (req, res) => {
   try {
     const { query } = req.query;
-
     let results = colleges;
 
     if (query && query.trim()) {
-      const q = query.trim().toLowerCase();
+      const q = query.toLowerCase();
 
       results = colleges.filter((c) =>
-        [c.INSTNM, c.CITY, c.STABBR, c.IALIAS]
+        [c.INSTNM, c.CITY, c.STABBR]
           .filter(Boolean)
           .some((v) => v.toLowerCase().includes(q))
       );
@@ -61,6 +72,9 @@ export const searchColleges = (req, res) => {
     });
   } catch (err) {
     console.error("❌ Search error:", err);
-    res.status(500).json({ success: false, message: "Server Error" });
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
   }
 };

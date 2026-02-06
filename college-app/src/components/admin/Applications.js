@@ -27,13 +27,12 @@ const Applications = () => {
   // ===============================
   // API SETUP
   // ===============================
-  const API_BASE_URL =
-    process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "";
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 10000,
+});
 
-  const api = axios.create({
-    baseURL: API_BASE_URL,
-    timeout: 10000,
-  });
 
   api.interceptors.request.use((config) => {
     const adminToken = localStorage.getItem("adminToken");
@@ -299,13 +298,13 @@ const Applications = () => {
   residencyRes,
   highSchoolRes
 ] = await Promise.all([
-  api.get("/international/admin/all"),
-  api.get("/academics/admin/all"),
-  api.get("/general/admin/all"),
-  api.get("/family/admin/all"),
-  api.get("/contacts/admin/all"),
-  api.get("/residency/admin/all"),
- api.get("/high-school-curriculum/admin/all") // ✅ correct route
+  api.get("/api/international/admin/all"),
+  api.get("/api/academics/admin/all"),
+  api.get("/api/general/admin/all"),
+  api.get("/api/family/admin/all"),
+  api.get("/api/contacts/admin/all"),
+  api.get("/api/residency/admin/all"),
+ api.get("/api/high-school-curriculum/admin/all") // ✅ correct route
 
 ]);
 

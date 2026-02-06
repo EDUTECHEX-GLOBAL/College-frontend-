@@ -1,6 +1,8 @@
 /* ===== GLOBAL ===== */
 .home-wrapper {
   min-height: 100vh;
+  height: 100vh; /* Prevent content from expanding beyond viewport */
+  max-height: 100vh; /* Ensure it doesn't exceed viewport height */
   background-image: url("../assets/homebgimg.png");
   background-size: cover;
   background-position: center center;
@@ -9,6 +11,7 @@
   display: flex;
   flex-direction: column;
   position: relative;
+  overflow: hidden; /* Prevent any scrolling within the wrapper */
 }
 
 .home-wrapper::before {
@@ -17,6 +20,14 @@
   inset: 0;
   background: rgba(0, 0, 0, 0.35); /* Slightly reduced dark overlay */
   z-index: 0;
+}
+
+/* Prevent body scrolling */
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Disable scrolling on the entire page */
+  height: 100vh;
 }
 
 
@@ -31,6 +42,7 @@
   position: relative;
   z-index: 10; /* Keep header/logo above overlay */
   box-sizing: border-box;
+  flex-shrink: 0; /* Prevent header from shrinking */
 }
 
 .logo {
@@ -47,10 +59,11 @@
   object-fit: contain;
   display: block;
 
-  /* 🔥 Make the logo bright, crisp, and visible */
-  filter: brightness(1.7) drop-shadow(0px 0px 8px rgba(255, 255, 255, 0.9));
-  opacity: 1 !important;
+  /* Keep logo true to brand color */
+  filter: none;
+  opacity: 1;
 }
+
 
 
 /* ===== HEADER BUTTONS ===== */
@@ -60,36 +73,26 @@
   gap: 20px;
 }
 
+/* FIXED: Both buttons should be white with blue text */
 .header-btn {
   padding: 12px 28px;
   font-size: 16px;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  background-color: transparent;
-  color: white;
+  background-color: rgb(29, 56, 131);
+  color: #fbfcff;
   transition: all 0.3s ease;
   font-weight: 600;
-  border: 2px solid rgba(255, 255, 255, 0.8);
+  border: 2px solid white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .header-btn:hover {
-  background-color: white;
-  color: #1E3D6F;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.header-btn:last-child {
-  background-color: white;
-  color: #1E3D6F;
-  border: 2px solid white;
-}
-
-.header-btn:last-child:hover {
   background-color: #f8f9fa;
   color: #1E3D6F;
   transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
 }
 
 
@@ -101,19 +104,21 @@
   justify-content: center;
   align-items: flex-start;
   text-align: left;
-  padding: 80px 8%;
+  padding: 0 8% 80px 8%; /* Reduced top padding since header takes space */
   position: relative;
   z-index: 1;
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
+  overflow-y: auto; /* Allow scrolling only within content if needed */
+  max-height: calc(100vh - 120px); /* Calculate available height minus header */
 }
 
 .headline {
-  font-size: 4rem;
+  font-size: 3.5rem; /* Slightly reduced from 4rem */
   color: white;
-  margin-bottom: 30px;
+  margin-bottom: 20px; /* Reduced from 30px */
   line-height: 1.1;
   font-weight: 700;
   max-width: 700px;
@@ -121,11 +126,11 @@
 }
 
 .description {
-  font-size: 1.4rem;
+  font-size: 1.3rem; /* Slightly reduced from 1.4rem */
   color: white;
-  line-height: 1.7;
+  line-height: 1.6; /* Reduced from 1.7 */
   max-width: 650px;
-  margin-bottom: 50px;
+  margin-bottom: 40px; /* Reduced from 50px */
   opacity: 0.95;
   font-weight: 400;
   text-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
@@ -143,8 +148,8 @@
 
 /* ===== CTA BUTTON - MODERN STYLING ===== */
 .cta-button {
-  padding: 18px 45px;
-  font-size: 1.2rem;
+  padding: 16px 40px; /* Slightly reduced padding */
+  font-size: 1.1rem;
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
   color: #1E3D6F;
   border: none;
@@ -154,6 +159,7 @@
   font-weight: 700;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
   text-transform: none;
+  margin-top: 10px;
 }
 
 .cta-button:hover {
@@ -166,11 +172,15 @@
 /* ===== RESPONSIVE ===== */
 @media (max-width: 1200px) {
   .home-content {
-    padding: 80px 6%;
+    padding: 0 6% 80px 6%;
   }
   
   .headline {
-    font-size: 3.5rem;
+    font-size: 3.2rem;
+  }
+  
+  .description {
+    font-size: 1.2rem;
   }
 }
 
@@ -179,14 +189,23 @@
     padding: 20px 5%;
   }
 
+  .home-content {
+    padding: 0 5% 60px 5%;
+  }
+
   .headline {
-    font-size: 3rem;
+    font-size: 2.8rem;
     max-width: 550px;
   }
 
   .description {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     max-width: 550px;
+    margin-bottom: 35px;
+  }
+  
+  .cta-button {
+    padding: 15px 35px;
   }
 }
 
@@ -202,30 +221,35 @@
   .header-btn {
     padding: 10px 20px;
     font-size: 14px;
+    background-color: white;
+    color: #1E3D6F;
+    border: 2px solid white;
   }
 
   .home-content {
-    padding: 60px 5%;
+    padding: 0 5% 50px 5%;
     align-items: center;
     text-align: center;
+    max-height: calc(100vh - 100px);
   }
 
   .headline {
-    font-size: 2.8rem;
+    font-size: 2.5rem;
     text-align: center;
     max-width: 100%;
+    margin-bottom: 15px;
   }
 
   .description {
-    font-size: 1.2rem;
-    margin-bottom: 40px;
+    font-size: 1.1rem;
+    margin-bottom: 30px;
     text-align: center;
     max-width: 100%;
   }
 
   .cta-button {
-    padding: 16px 35px;
-    font-size: 1.1rem;
+    padding: 14px 30px;
+    font-size: 1rem;
   }
 }
 
@@ -249,20 +273,50 @@
   .header-btn {
     padding: 10px 20px;
     min-width: 140px;
+    background-color: white;
+    color: #1E3D6F;
+    border: 2px solid white;
+  }
+
+  .home-content {
+    padding: 0 5% 40px 5%;
+    max-height: calc(100vh - 150px);
   }
 
   .headline {
-    font-size: 2.3rem;
+    font-size: 2rem;
+    margin-bottom: 12px;
   }
 
   .description {
-    font-size: 1.1rem;
+    font-size: 1rem;
+    margin-bottom: 25px;
+    line-height: 1.5;
   }
 
   .cta-button {
-    padding: 15px 30px;
+    padding: 12px 25px;
     width: 100%;
-    max-width: 300px;
-    font-size: 1.1rem;
+    max-width: 280px;
+    font-size: 1rem;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 360px) {
+  .home-content {
+    padding: 0 4% 30px 4%;
+  }
+  
+  .headline {
+    font-size: 1.8rem;
+  }
+  
+  .description {
+    font-size: 0.95rem;
+  }
+  
+  .cta-button {
+    max-width: 250px;
   }
 }

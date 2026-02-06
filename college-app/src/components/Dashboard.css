@@ -184,6 +184,7 @@
   border-radius: 12px;
   min-width: 36px;
   text-align: center;
+  display: inline-block !important; /* FIX: Added this line */
 }
 
 .nav-item.active .nav-progress {
@@ -223,19 +224,24 @@
   padding: 0;
   border-bottom: 1px solid #e2e8f0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  min-height: 140px;
 }
 
 .header-content {
   display: flex;
-  justify-content: space-between;
+  justify-content: center; /* FIX: Changed from space-between to center */
   align-items: center;
   padding: 32px 40px;
   max-width: 1200px;
   margin: 0 auto;
+  width: 100%;
 }
 
 .welcome-section {
   flex: 1;
+  text-align: center; /* FIX: Added text alignment */
 }
 
 .welcome-title {
@@ -254,24 +260,7 @@
 }
 
 .help-button {
-  background: white;
-  color: #2C5AA0;
-  border: 2px solid #e2e8f0;
-  padding: 12px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-}
-
-.help-button:hover {
-  border-color: #2C5AA0;
-  background: #f7fafc;
-  transform: translateY(-1px);
+  display: none !important; /* FIX: Ensure it's hidden */
 }
 
 .help-icon {
@@ -868,6 +857,7 @@
   border-radius: 10px;
   min-width: 32px;
   text-align: center;
+  display: inline-block !important; /* FIX: Added this line */
 }
 
 .nav-subitem.active .nav-progress {
@@ -975,6 +965,7 @@
   border-radius: 8px;
   min-width: 28px;
   text-align: center;
+  display: inline-block !important; /* FIX: Added this line */
 }
 
 /* =========================================
@@ -1042,14 +1033,14 @@
   backdrop-filter: blur(10px);
 }
 
-/* Remove progress indicators from sidebar */
-.nav-progress {
+/* FIX: Progress indicators should be visible - REMOVED the display: none rules */
+/* .nav-progress {
   display: none;
 }
 
 .nav-header-right .nav-progress {
   display: none;
-}
+} */
 
 /* Glassy effect for the entire sidebar */
 .dashboard-sidebar {
@@ -1089,15 +1080,13 @@
    CENTERED HEADER WITH NO HELP BUTTON
    ========================================= */
 
-/* Center the header content */
 .header-content {
   display: flex;
-  justify-content: center;
+  justify-content: center; /* FIX: Changed from space-between to center */
   align-items: center;
-  padding: 24px 40px;
+  padding: 32px 40px;
   max-width: 1200px;
   margin: 0 auto;
-  min-height: 120px;
   width: 100%;
 }
 
@@ -1110,6 +1099,7 @@
 .welcome-section-centered {
   text-align: center;
   width: 100%;
+  display: block; /* FIX: Ensure it's visible */
 }
 
 .welcome-name {
@@ -1186,4 +1176,43 @@
   .main-header {
     min-height: 100px;
   }
+}
+
+/* FIX: Added these rules to ensure progress indicators work correctly */
+.nav-header-right .nav-progress {
+  display: inline-block !important;
+  font-size: 11px;
+  font-weight: 600;
+  color: #718096;
+  background: #e2e8f0;
+  padding: 2px 6px;
+  border-radius: 8px;
+  min-width: 28px;
+  text-align: center;
+}
+
+/* Ensure progress indicators are visible in all states */
+.nav-progress,
+.nav-subitem .nav-progress,
+.nav-college-subitem .nav-progress,
+.nav-application-subitem .nav-progress,
+.nav-header-right .nav-progress {
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Ensure the welcome name is properly displayed */
+.welcome-name {
+  color: #1e3d6f !important;
+  font-size: 30px !important;
+  font-weight: 700 !important;
+}
+
+/* Fix the header content alignment */
+.header-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }

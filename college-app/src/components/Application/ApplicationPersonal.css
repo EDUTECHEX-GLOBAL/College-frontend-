@@ -1,0 +1,60 @@
+/* ApplicationPersonal.css */
+/* All styles are inherited from Application.css */
+/* Additional specific styles for Personal Information section */
+
+.form-section {
+    position: relative;
+}
+
+.section-header {
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 100;
+    padding-top: 10px;
+    margin-top: -10px;
+}
+
+.text-muted {
+    color: #888;
+    font-size: 12px;
+    margin: 0;
+}
+
+.file-input {
+    display: none;
+}
+
+/* Specific styles for passport and photo upload */
+.upload-area {
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.upload-prompt i {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+/* Validation styles */
+.form-input:invalid:not(:focus):not(:placeholder-shown) {
+    border-color: #e53935;
+}
+
+.form-input:valid:not(:focus):not(:placeholder-shown) {
+    border-color: #43a047;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .upload-area {
+        min-height: 180px;
+        padding: 20px;
+    }
+    
+    .upload-prompt i {
+        font-size: 36px;
+    }
+}

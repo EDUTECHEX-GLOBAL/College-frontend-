@@ -1,0 +1,39 @@
+/* ApplicationAddress.css */
+.address-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.copy-address-btn {
+    background: #e3f2fd;
+    color: #1565c0;
+    border: 1px solid #bbdefb;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+}
+
+.copy-address-btn:hover {
+    background: #bbdefb;
+    transform: translateY(-1px);
+}
+
+.helper-text {
+    margin-top: 8px;
+    color: #666;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.helper-text i {
+    color: #ff9800;
+}

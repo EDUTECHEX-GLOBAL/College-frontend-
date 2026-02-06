@@ -1,0 +1,115 @@
+/* ApplicationWork.css */
+.checkbox-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.checkbox-option input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+.end-date-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.additional-experiences {
+    margin: 25px 0;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.add-experience-btn {
+    background: #1a237e;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    margin-top: 15px;
+}
+
+.add-experience-btn:hover {
+    background: #283593;
+    transform: translateY(-2px);
+}
+
+.experience-list {
+    margin: 20px 0;
+}
+
+.experience-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 15px;
+    border: 1px solid #e0e0e0;
+    transition: all 0.3s ease;
+}
+
+.experience-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.experience-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
+
+.experience-header h4 {
+    margin: 0;
+    color: #1a237e;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.company-name {
+    color: #666;
+    font-size: 14px;
+    margin: 5px 0 0 0;
+}
+
+.remove-exp-btn {
+    background: none;
+    border: none;
+    color: #e53935;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 5px;
+    transition: color 0.3s ease;
+}
+
+.remove-exp-btn:hover {
+    color: #c62828;
+}
+
+.experience-duration {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.experience-desc {
+    color: #555;
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 10px 0 0 0;
+    padding-top: 10px;
+    border-top: 1px dashed #eee;
+}

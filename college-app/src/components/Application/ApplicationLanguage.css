@@ -1,0 +1,60 @@
+/* ApplicationLanguage.css */
+.score-input-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.score-max {
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.moi-section {
+    margin: 20px 0;
+    padding: 20px;
+    background: #f0f7ff;
+    border-radius: 8px;
+    border: 1px solid #c5d9ff;
+}
+
+.test-info {
+    margin-top: 25px;
+    padding: 15px;
+    background: #fff8e1;
+    border-radius: 8px;
+    border: 1px solid #ffe082;
+}
+
+.test-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.test-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.detail-value {
+    color: #1a237e;
+    font-weight: 500;
+    font-size: 15px;
+}
+
+/* Score input specific styles */
+.form-input[type="number"]::-webkit-inner-spin-button,
+.form-input[type="number"]::-webkit-outer-spin-button {
+    opacity: 1;
+}

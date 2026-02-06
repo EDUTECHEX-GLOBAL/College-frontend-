@@ -199,7 +199,7 @@
   border: 1px solid #edf2f7;
 }
 
-.section-header {
+.admin-section-header {
   margin-bottom: 25px;
   display: flex;
   justify-content: space-between;
@@ -438,8 +438,8 @@
   border-bottom: none;
 }
 
-/* User Info Cell */
-.user-info {
+/* User Info Cell - FIXED VERSION */
+.admin-user-info {
   display: flex;
   align-items: center;
   gap: 16px;
@@ -465,16 +465,16 @@
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Avatar colors matching stats */
-.user-info:nth-child(3n+1) .user-avatar {
+/* FIXED: Avatar colors matching stats - applied to table rows */
+.users-table tbody tr:nth-child(3n+1) .user-avatar {
   background: linear-gradient(135deg, #4d7cfe, #6b9bff);
 }
 
-.user-info:nth-child(3n+2) .user-avatar {
+.users-table tbody tr:nth-child(3n+2) .user-avatar {
   background: linear-gradient(135deg, #36d389, #5ae0a5);
 }
 
-.user-info:nth-child(3n+3) .user-avatar {
+.users-table tbody tr:nth-child(3n+3) .user-avatar {
   background: linear-gradient(135deg, #9f7aea, #b794f4);
 }
 
@@ -835,13 +835,13 @@
     width: 100%;
   }
   
-  .section-header {
+  .admin-section-header {
     flex-direction: column;
     gap: 15px;
     align-items: stretch;
   }
   
-  .section-header-buttons {
+  .admin-section-header {
     flex-direction: column;
     align-items: stretch;
     gap: 10px;

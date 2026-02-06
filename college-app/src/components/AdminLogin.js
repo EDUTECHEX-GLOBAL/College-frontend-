@@ -12,7 +12,7 @@ const AdminLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   // Base URL for API calls
-  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -39,7 +39,7 @@ const AdminLogin = () => {
 
     try {
       const response = await axios.post(
-        `${API_URL}/admin/login`,
+        `${API_URL}/api/admin/login`,
         formData,
         {
           headers: {
