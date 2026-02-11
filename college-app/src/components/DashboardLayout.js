@@ -10,16 +10,18 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     colleges: false,
     writing: false,
     activities: false,
-    courses: false, // ✅ ADDED: Courses section state
+    courses: false,
+    application: false,
     expandedColleges: {}
   });
   const [forceUpdate, setForceUpdate] = useState(0);
 
   // Calculate completed sections for "My Common Application" in sidebar
   const calculateCommonAppProgress = () => {
-    if (!userData) return '0/76';
+    if (!userData) return '0/7'; // Updated: Changed to 7 to include Application
     
     const sections = [
+      userData.applicationProgress?.application || 0,
       userData.profileProgress || 0,
       userData.applicationProgress?.family || 0,
       userData.applicationProgress?.education || 0,
@@ -40,6 +42,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     if (!userData) return 0;
     
     const sections = [
+      userData.applicationProgress?.application || 0,
       userData.profileProgress || 0,
       userData.applicationProgress?.family || 0,
       userData.applicationProgress?.education || 0,
@@ -84,11 +87,18 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
       }));
     }
     
-    // ✅ ADDED: Auto-expand courses section
     if (path.includes('/courses')) {
       setExpandedSections(prev => ({
         ...prev,
         courses: true
+      }));
+    }
+
+    // Auto-expand application section
+    if (path.includes('/application')) {
+      setExpandedSections(prev => ({
+        ...prev,
+        application: true
       }));
     }
   }, [location.pathname]);
@@ -153,6 +163,20 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     };
   }, []);
 
+  // Listen for application updates
+  useEffect(() => {
+    const handleApplicationUpdate = () => {
+      console.log('🔄 Application data updated, forcing re-render');
+      setForceUpdate(prev => prev + 1);
+    };
+
+    window.addEventListener('applicationUpdated', handleApplicationUpdate);
+    
+    return () => {
+      window.removeEventListener('applicationUpdated', handleApplicationUpdate);
+    };
+  }, []);
+
   const getStudentId = () => {
     if (!userData) return 'CAID Loading...';
     
@@ -179,6 +203,9 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
   const handleSignOut = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('userData');
+    localStorage.removeItem('gusApplicationData');
+    localStorage.removeItem('selectedCourseForApplication');
+    localStorage.removeItem('currentSelectedCourse');
     navigate('/');
   };
 
@@ -201,7 +228,6 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
 
   // Get selected tests from localStorage (real-time data)
   const getSelectedTests = () => {
-    // Always read directly from localStorage for the most current data
     const storedUserData = localStorage.getItem('userData');
     if (storedUserData) {
       try {
@@ -214,12 +240,108 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
       }
     }
     
-    // Fallback to userData prop
     if (userData?.testingData?.testsToReport) {
       return userData.testingData.testsToReport;
     }
     
     return [];
+  };
+
+  // Get application progress from localStorage or userData
+  const getApplicationProgress = () => {
+    const storedUserData = localStorage.getItem('userData');
+    if (storedUserData) {
+      try {
+        const parsedData = JSON.parse(storedUserData);
+        return parsedData.applicationProgress?.application || 0;
+      } catch (error) {
+        console.error('Error parsing stored user data:', error);
+      }
+    }
+    
+    return userData?.applicationProgress?.application || 0;
+  };
+
+  // Calculate step-by-step application progress
+  const calculateApplicationStepProgress = (step) => {
+    const gusAppData = JSON.parse(localStorage.getItem('gusApplicationData') || '{}');
+    const isFieldFilled = (fieldValue) => {
+      if (fieldValue === null || fieldValue === undefined || fieldValue === false) return false;
+      if (typeof fieldValue === 'string') return fieldValue.trim() !== '';
+      if (typeof fieldValue === 'number') return true;
+      if (Array.isArray(fieldValue)) return fieldValue.length > 0;
+      return !!fieldValue;
+    };
+    
+    switch(step) {
+      case 'personal':
+        const personalFields = ['firstName', 'lastName', 'gender', 'dob', 'nationality', 
+                                'countryOfResidence', 'email', 'mobile'];
+        const personalFilled = personalFields.filter(field => isFieldFilled(gusAppData[field])).length;
+        return (personalFilled / personalFields.length) * 100;
+        
+      case 'address':
+        const addressFields = ['currentAddress', 'city', 'country', 'state', 'postalCode'];
+        const addressFilled = addressFields.filter(field => isFieldFilled(gusAppData[field])).length;
+        return (addressFilled / addressFields.length) * 100;
+        
+      case 'education':
+        const educationFields = ['qualificationLevel', 'institutionName', 'boardUniversity', 
+                                'countryOfStudy', 'startYear', 'endYear'];
+        const educationFilled = educationFields.filter(field => isFieldFilled(gusAppData[field])).length;
+        return (educationFilled / educationFields.length) * 100;
+        
+      case 'language':
+        const languageFields = ['englishTestType', 'testScore', 'testDate'];
+        const languageFilled = languageFields.filter(field => isFieldFilled(gusAppData[field])).length;
+        return (languageFilled / languageFields.length) * 100;
+        
+      case 'work':
+        const workFields = ['isEmployed', 'organizationName', 'jobTitle', 'workDuration'];
+        const workFilled = workFields.filter(field => isFieldFilled(gusAppData[field])).length;
+        return (workFilled / workFields.length) * 100;
+        
+      case 'courses':
+        const coursesFilled = isFieldFilled(gusAppData['selectedPrograms']) ? 100 : 0;
+        return coursesFilled;
+        
+      case 'documents':
+        const documentFields = ['passport', 'transcripts', 'degreeCertificate', 'testScorecard', 
+                               'sop', 'lor1', 'lor2', 'resume'];
+        const documentFilled = documentFields.filter(field => {
+          const fieldName = field + 'FileName';
+          return isFieldFilled(gusAppData[field]) || isFieldFilled(gusAppData[fieldName]);
+        }).length;
+        return (documentFilled / documentFields.length) * 100;
+        
+      case 'preview':
+        return gusAppData.agreedToTerms ? 100 : 0;
+        
+      default:
+        return 0;
+    }
+  };
+
+  // Check if course is selected
+  const hasSelectedCourse = () => {
+    const selectedCourse = localStorage.getItem('selectedCourseForApplication');
+    const gusAppData = JSON.parse(localStorage.getItem('gusApplicationData') || '{}');
+    return !!(selectedCourse || (gusAppData.selectedPrograms && gusAppData.selectedPrograms.length > 0));
+  };
+
+  // Get current application step
+  const getCurrentApplicationStep = () => {
+    const path = location.pathname;
+    if (path.includes('/application/personal')) return 'personal';
+    if (path.includes('/application/address')) return 'address';
+    if (path.includes('/application/firsteducation') || path.includes('/application/education')) return 'education';
+    if (path.includes('/application/language')) return 'language';
+    if (path.includes('/application/work')) return 'work';
+    if (path.includes('/application/firstcourses') || path.includes('/application/courses')) return 'courses';
+    if (path.includes('/application/documents')) return 'documents';
+    if (path.includes('/application/preview')) return 'preview';
+    if (path.includes('/application/overview')) return 'overview';
+    return '';
   };
 
   // Determine student type and base path
@@ -246,13 +368,19 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     ? testTypes.filter(test => selectedTests.includes(test.id))
     : [];
 
+  // Application progress
+  const applicationProgress = getApplicationProgress();
+  const currentAppStep = getCurrentApplicationStep();
+
   // Debug: Log the selected tests
   useEffect(() => {
     console.log('🔄 DashboardLayout re-rendering, forceUpdate:', forceUpdate);
     console.log('📋 Selected tests:', selectedTests);
     console.log('📋 Selected test types:', selectedTestTypes);
     console.log('📊 Common App Progress:', calculateCommonAppProgress());
-  }, [forceUpdate, selectedTests, selectedTestTypes]);
+    console.log('📊 Application Progress:', applicationProgress);
+    console.log('📍 Current Application Step:', currentAppStep);
+  }, [forceUpdate, selectedTests, selectedTestTypes, applicationProgress, currentAppStep]);
 
   // CollegeSidebarItem Component
   const CollegeSidebarItem = ({ college, isExpanded, onToggle, onNavigate }) => {
@@ -354,7 +482,6 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     const collegeId = parts[1];
     const subsection = parts.slice(2).join('-');
     
-    // Navigate to the specific subsection
     navigate(`${basePath}/colleges/${collegeId}/${subsection}`);
   };
 
@@ -394,11 +521,6 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
               <div className="nav-content" onClick={() => onSectionChange('geography')}>
                 <span className="nav-text">Geography & Nationality</span>
               </div>
-            </li>
-            <li className={`nav-item ${location.pathname.includes('/feewaiver') ? 'active' : ''}`}>
-              {/* <div className="nav-content" onClick={() => onSectionChange('feewaiver')}>
-                <span className="nav-text">Common App Fee Waiver</span>
-              </div> */}
             </li>
           </ul>
         </div>
@@ -574,7 +696,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
       );
     }
 
-    // ✅ ADDED: Courses Section
+    // Courses Section
     if (activeMainSection === 'courses') {
       return (
         <div className="nav-section">
@@ -582,17 +704,13 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
           <ul className="nav-menu">
             <li className={`nav-item ${location.pathname.includes('/courses') ? 'active' : ''}`}>
               <div className="nav-content" onClick={() => navigate(`${basePath}/college-search`)}>
-                {/* <span className="nav-text">Browse University Courses</span> */}
                 <span className="nav-hint">← Go to College Search</span>
               </div>
             </li>
             <li className="nav-item">
               <div className="nav-content" onClick={() => {
-                // Navigate to college search and show GUS universities
                 navigate(`${basePath}/college-search`);
-                // Optionally, you could add a query parameter to filter GUS universities
                 setTimeout(() => {
-                  // Dispatch an event to filter GUS universities
                   window.dispatchEvent(new CustomEvent('filterGUSUniversities'));
                 }, 100);
               }}>
@@ -601,7 +719,6 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
             </li>
             <li className="nav-item">
               <div className="nav-content" onClick={() => {
-                // Check for saved programs
                 const savedPrograms = JSON.parse(localStorage.getItem('savedPrograms') || '[]');
                 if (savedPrograms.length > 0) {
                   alert(`You have ${savedPrograms.length} saved programs`);
@@ -621,10 +738,145 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
             </li>
             <li className="nav-item">
               <div className="nav-content" onClick={() => {
-                // Show application timeline
                 alert('Course Application Timeline:\n\n1. Browse universities in College Search\n2. Click on any GUS university\n3. View available programs and courses\n4. Select a program to apply\n5. Add to My Colleges');
               }}>
                 <span className="nav-text">Application Timeline</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      );
+    }
+
+    // Application Section - UPDATED for 8-step application flow
+    if (activeMainSection === 'application') {
+      const applicationSteps = [
+        { id: 'overview', name: 'Application Overview', route: `${basePath}/application/overview` },
+        { id: 'personal', name: 'Personal Information', route: `${basePath}/application/personal` },
+        { id: 'address', name: 'Address & ID', route: `${basePath}/application/address` },
+        { id: 'education', name: 'Education', route: `${basePath}/application/firsteducation` },
+        { id: 'language', name: 'Language Proficiency', route: `${basePath}/application/language` },
+        { id: 'work', name: 'Work Experience', route: `${basePath}/application/work` },
+        { id: 'courses', name: 'Course Selection', route: `${basePath}/application/firstcourses` },
+        { id: 'documents', name: 'Documents', route: `${basePath}/application/documents` },
+        { id: 'preview', name: 'Preview & Submit', route: `${basePath}/application/preview` }
+      ];
+
+      return (
+        <div className="nav-section">
+          <h4 className="nav-section-title">University Application</h4>
+          <ul className="nav-menu">
+            {/* Application Overview */}
+            <li className={`nav-item ${location.pathname.includes('/application/overview') ? 'active' : ''}`}>
+              <div 
+                className="nav-content" 
+                onClick={() => navigate(`${basePath}/application/overview`)}
+              >
+                <span className="nav-text">Application Overview</span>
+                {hasSelectedCourse() && (
+                  <div className="nav-badge">
+                    <span className="badge-text">Course Selected</span>
+                  </div>
+                )}
+              </div>
+            </li>
+
+            {/* Application Steps */}
+            {applicationSteps.slice(1).map((step) => {
+              const stepProgress = calculateApplicationStepProgress(step.id);
+              const isActive = location.pathname === step.route || 
+                             (step.id === 'courses' && location.pathname.includes('/application/firstcourses'));
+              return (
+                <li key={step.id} className={`nav-item ${isActive ? 'active' : ''}`}>
+                  <div 
+                    className="nav-content" 
+                    onClick={() => navigate(step.route)}
+                  >
+                    <span className="nav-text">{step.name}</span>
+                    <div className="nav-progress">{Math.round(stepProgress)}%</div>
+                  </div>
+                </li>
+              );
+            })}
+            
+            {/* Selected Course Info (if available) */}
+            {hasSelectedCourse() && (
+              <li className="nav-item">
+                <div className="nav-content" onClick={() => {
+                  const selectedCourse = localStorage.getItem('selectedCourseForApplication');
+                  const gusAppData = JSON.parse(localStorage.getItem('gusApplicationData') || '{}');
+                  const courseData = selectedCourse ? JSON.parse(selectedCourse) : 
+                                   (gusAppData.selectedPrograms && gusAppData.selectedPrograms[0]);
+                  
+                  if (courseData) {
+                    alert(`Selected Course:\n${courseData.programName || 'No course selected'}\n${courseData.universityName ? `at ${courseData.universityName}` : ''}`);
+                  }
+                }}>
+                  <span className="nav-text">Selected Course</span>
+                  <div className="nav-badge">
+                    <span className="badge-text">View</span>
+                  </div>
+                </div>
+              </li>
+            )}
+            
+            {/* Application Guide */}
+            <li className="nav-item">
+              <div className="nav-content" onClick={() => {
+                alert('GUS University Application Portal\n\nComplete your application in 8 steps:\n\n1. Personal Information\n2. Address & ID\n3. Education\n4. Language Proficiency\n5. Work Experience\n6. Course Selection\n7. Documents\n8. Preview & Submit');
+              }}>
+                <span className="nav-text">Application Guide</span>
+              </div>
+            </li>
+            
+            {/* Application Status */}
+            <li className="nav-item">
+              <div className="nav-content" onClick={() => {
+                const appData = localStorage.getItem('gusApplicationData');
+                if (appData) {
+                  try {
+                    const parsedData = JSON.parse(appData);
+                    const steps = applicationSteps.slice(1); // Exclude overview
+                    const completedSteps = steps.filter(step => {
+                      const stepProgress = calculateApplicationStepProgress(step.id);
+                      return stepProgress >= 100;
+                    }).length;
+                    alert(`Application Progress: ${completedSteps}/8 steps completed\nOverall Progress: ${applicationProgress}%`);
+                  } catch (e) {
+                    alert('No application data saved yet.');
+                  }
+                } else {
+                  alert('No application data saved yet.');
+                }
+              }}>
+                <span className="nav-text">Application Status</span>
+                <div className="nav-progress">{applicationProgress}%</div>
+              </div>
+            </li>
+            
+            {/* Document Checklist */}
+            <li className="nav-item">
+              <div className="nav-content" onClick={() => {
+                const gusAppData = JSON.parse(localStorage.getItem('gusApplicationData') || '{}');
+                const documents = [
+                  { name: 'Passport/ID', key: 'passport', uploaded: !!gusAppData.passportFileName || !!gusAppData.passport },
+                  { name: 'Photograph', key: 'photo', uploaded: !!gusAppData.photographFileName || !!gusAppData.photograph },
+                  { name: 'Academic Transcripts', key: 'transcripts', uploaded: !!gusAppData.transcriptsFileName || !!gusAppData.transcripts },
+                  { name: 'Degree Certificate', key: 'degreeCertificate', uploaded: !!gusAppData.degreeCertificateFileName || !!gusAppData.degreeCertificate },
+                  { name: 'English Test Scores', key: 'englishScores', uploaded: !!gusAppData.testScorecardFileName || !!gusAppData.testScorecard },
+                  { name: 'Resume/CV', key: 'cv', uploaded: !!gusAppData.resumeFileName || !!gusAppData.resume },
+                  { name: 'Statement of Purpose', key: 'sop', uploaded: !!gusAppData.sopFileName || !!gusAppData.sop },
+                  { name: 'Letters of Recommendation', key: 'lor', uploaded: !!(gusAppData.lor1FileName || gusAppData.lor2FileName || gusAppData.lor1 || gusAppData.lor2) }
+                ];
+                
+                const uploadedCount = documents.filter(doc => doc.uploaded).length;
+                const checklist = documents.map(doc => 
+                  `${doc.uploaded ? '✓' : '○'} ${doc.name}`
+                ).join('\n');
+                
+                alert(`Document Checklist (${uploadedCount}/8 uploaded):\n\n${checklist}`);
+              }}>
+                <span className="nav-text">Document Checklist</span>
               </div>
             </li>
           </ul>
@@ -637,20 +889,160 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
       <div className="nav-section">
         <h4 className="nav-section-title">Dashboard</h4>
         <ul className="nav-menu">
-          {/* FIXED: Now calculates progress dynamically */}
-          <li className={`nav-item ${activeMainSection === 'application' ? 'active' : ''}`}>
-            <div className="nav-content" onClick={() => onSectionChange('application')}>
-              <span className="nav-text">My Common Application</span>
-              <div className="nav-progress">{calculateCommonAppProgress()}</div>
+          {/* My Common Application - Now includes Application progress */}
+          <li className={`nav-item ${activeMainSection === 'dashboard' ? 'active' : ''}`}>
+            <div className="nav-content" onClick={() => onSectionChange('dashboard')}>
+              <span className="nav-text">My Dashboard</span>
+              <div className="nav-progress">{calculateOverallProgress()}%</div>
+            </div>
+          </li>
+
+          {/* Expandable Application Section */}
+          <li className="nav-section-expandable">
+            <div 
+              className={`nav-header ${expandedSections.application ? 'expanded' : ''}`}
+              onClick={() => toggleSection('application')}
+            >
+              <span className="nav-text">University Application</span>
+              <div className="nav-header-right">
+                <span className="nav-progress-small">{applicationProgress}%</span>
+                <span className="expand-icon">{expandedSections.application ? '▼' : '►'}</span>
+              </div>
+            </div>
+            {expandedSections.application && (
+              <ul className="nav-submenu">
+                {/* Application Overview */}
+                <li className={`nav-subitem ${location.pathname === `${basePath}/application/overview` ? 'active' : ''}`}>
+                  <div className="nav-content" onClick={() => navigate(`${basePath}/application/overview`)}>
+                    <span className="nav-text">Application Overview</span>
+                    {hasSelectedCourse() && (
+                      <div className="nav-badge-small">
+                        <span className="badge-text">Course</span>
+                      </div>
+                    )}
+                  </div>
+                </li>
+                
+                {/* Quick Access to Major Steps */}
+                <li className={`nav-subitem ${location.pathname.includes('/application/personal') ? 'active' : ''}`}>
+                  <div className="nav-content" onClick={() => navigate(`${basePath}/application/personal`)}>
+                    <span className="nav-text">• Personal Information</span>
+                    <div className="nav-progress-tiny">{Math.round(calculateApplicationStepProgress('personal'))}%</div>
+                  </div>
+                </li>
+                <li className={`nav-subitem ${location.pathname.includes('/application/address') ? 'active' : ''}`}>
+                  <div className="nav-content" onClick={() => navigate(`${basePath}/application/address`)}>
+                    <span className="nav-text">• Address & ID</span>
+                    <div className="nav-progress-tiny">{Math.round(calculateApplicationStepProgress('address'))}%</div>
+                  </div>
+                </li>
+                <li className={`nav-subitem ${location.pathname.includes('/application/firsteducation') ? 'active' : ''}`}>
+                  <div className="nav-content" onClick={() => navigate(`${basePath}/application/firsteducation`)}>
+                    <span className="nav-text">• Education</span>
+                    <div className="nav-progress-tiny">{Math.round(calculateApplicationStepProgress('education'))}%</div>
+                  </div>
+                </li>
+                <li className={`nav-subitem ${location.pathname.includes('/application/firstcourses') ? 'active' : ''}`}>
+                  <div className="nav-content" onClick={() => navigate(`${basePath}/application/firstcourses`)}>
+                    <span className="nav-text">• Course Selection</span>
+                    <div className="nav-progress-tiny">{Math.round(calculateApplicationStepProgress('courses'))}%</div>
+                  </div>
+                </li>
+                
+                {/* Selected Course Info */}
+                {hasSelectedCourse() && (
+                  <li className="nav-subitem">
+                    <div className="nav-content" onClick={() => {
+                      const selectedCourse = localStorage.getItem('selectedCourseForApplication');
+                      if (selectedCourse) {
+                        try {
+                          const courseData = JSON.parse(selectedCourse);
+                          alert(`Selected Course: ${courseData.programName || 'No course selected'}\nUniversity: ${courseData.universityName || 'N/A'}`);
+                        } catch (e) {
+                          console.error('Error parsing course data:', e);
+                        }
+                      } else {
+                        alert('No course selected yet.');
+                      }
+                    }}>
+                      <span className="nav-text">Selected Course</span>
+                      <div className="nav-badge-small">
+                        <span className="badge-text">View</span>
+                      </div>
+                    </div>
+                  </li>
+                )}
+                
+                {/* Application Support Items */}
+                <li className="nav-subitem">
+                  <div className="nav-content" onClick={() => {
+                    alert('GUS University Application Portal\n\nComplete your application in 8 steps:\n\n1. Personal Information\n2. Address & ID\n3. Education\n4. Language Proficiency\n5. Work Experience\n6. Course Selection\n7. Documents\n8. Preview & Submit');
+                  }}>
+                    <span className="nav-text">Application Guide</span>
+                  </div>
+                </li>
+                <li className="nav-subitem">
+                  <div className="nav-content" onClick={() => {
+                    const appData = localStorage.getItem('gusApplicationData');
+                    if (appData) {
+                      try {
+                        const parsedData = JSON.parse(appData);
+                        const steps = ['personal', 'address', 'education', 'language', 'work', 'courses', 'documents', 'preview'];
+                        const completedSteps = steps.filter(step => {
+                          const stepProgress = calculateApplicationStepProgress(step);
+                          return stepProgress >= 100;
+                        }).length;
+                        alert(`Application Progress: ${completedSteps}/8 steps completed\nOverall Progress: ${applicationProgress}%`);
+                      } catch (e) {
+                        alert('No application data saved yet.');
+                      }
+                    } else {
+                      alert('No application data saved yet.');
+                    }
+                  }}>
+                    <span className="nav-text">Application Status</span>
+                    <div className="nav-progress-small">{applicationProgress}%</div>
+                  </div>
+                </li>
+                <li className="nav-subitem">
+                  <div className="nav-content" onClick={() => {
+                    const gusAppData = JSON.parse(localStorage.getItem('gusApplicationData') || '{}');
+                    const requiredDocs = [
+                      { name: 'Passport/ID', key: 'passport' },
+                      { name: 'Academic Transcripts', key: 'transcripts' },
+                      { name: 'English Test Scores', key: 'testScorecard' },
+                      { name: 'Statement of Purpose', key: 'sop' },
+                      { name: 'Letters of Recommendation', key: 'lor' }
+                    ];
+                    
+                    const uploadedDocs = requiredDocs.filter(doc => 
+                      gusAppData[doc.key] || gusAppData[doc.key + 'FileName']
+                    ).length;
+                    alert(`Document Checklist: ${uploadedDocs}/5 required documents uploaded\n\nRequired:\n- Passport/ID\n- Academic Transcripts\n- English Test Scores\n- Statement of Purpose\n- Letters of Recommendation`);
+                  }}>
+                    <span className="nav-text">Document Checklist</span>
+                  </div>
+                </li>
+              </ul>
+            )}
+          </li>
+          
+          {/* Profile Section */}
+          <li className={`nav-item ${activeMainSection === 'profile' ? 'active' : ''}`}>
+            <div className="nav-content" onClick={() => onSectionChange('profile')}>
+              <span className="nav-text">Profile</span>
+              <div className="nav-progress">
+                {userData?.profileProgress >= 100 ? 'Review' : userData?.profileProgress > 0 ? `${userData.profileProgress}%` : 'Start'}
+              </div>
             </div>
           </li>
           
-          {/* Family Section - Fixed to show correct progress */}
+          {/* Family Section */}
           <li className={`nav-item ${activeMainSection === 'family' ? 'active' : ''}`}>
             <div className="nav-content" onClick={() => onSectionChange('family')}>
               <span className="nav-text">Family</span>
               <div className="nav-progress">
-                {userData?.applicationProgress?.family >= 100 ? 'Review' : 'Start'}
+                {userData?.applicationProgress?.family >= 100 ? 'Review' : userData?.applicationProgress?.family > 0 ? `${userData.applicationProgress.family}%` : 'Start'}
               </div>
             </div>
           </li>
@@ -701,7 +1093,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
             )}
           </li>
           
-          {/* ✅ ADDED: Expandable Courses Section */}
+          {/* Expandable Courses Section */}
           <li className="nav-section-expandable">
             <div 
               className={`nav-header ${expandedSections.courses ? 'expanded' : ''}`}
@@ -716,14 +1108,12 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
               <ul className="nav-submenu">
                 <li className={`nav-subitem ${location.pathname.includes('/college-search') ? 'active' : ''}`}>
                   <div className="nav-content" onClick={() => onSectionChange('courses')}>
-                    {/* <span className="nav-text">Browse University Courses</span> */}
-                    {/* <span className="nav-hint-small">Access via College Search</span> */}
+                    <span className="nav-hint-small">Access via College Search</span>
                   </div>
                 </li>
                 <li className="nav-subitem">
                   <div className="nav-content" onClick={() => {
                     onSectionChange('courses');
-                    // Optionally filter for GUS universities
                     setTimeout(() => {
                       window.dispatchEvent(new CustomEvent('filterGUSUniversities'));
                     }, 100);
@@ -754,11 +1144,21 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
                   <div className="nav-content" onClick={() => {
                     alert('How to use Courses:\n\n1. Go to College Search\n2. Click on any GUS university (non-Kansas)\n3. View all available programs\n4. Filter by major area or study mode\n5. Select programs to save or apply');
                   }}>
-                    {/* <span className="nav-text">How to Use</span> */}
+                    <span className="nav-text">How to Use</span>
                   </div>
                 </li>
               </ul>
             )}
+          </li>
+          
+          {/* Education Section */}
+          <li className={`nav-item ${activeMainSection === 'education' ? 'active' : ''}`}>
+            <div className="nav-content" onClick={() => onSectionChange('education')}>
+              <span className="nav-text">Education</span>
+              <div className="nav-progress">
+                {userData?.applicationProgress?.education >= 100 ? 'Review' : userData?.applicationProgress?.education > 0 ? `${userData.applicationProgress.education}%` : 'Start'}
+              </div>
+            </div>
           </li>
           
           {/* Expandable Testing Section */}
@@ -768,7 +1168,9 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
               onClick={() => toggleSection('testing')}
             >
               <span className="nav-text">Testing</span>
-              <span className="expand-icon">{expandedSections.testing ? '▼' : '►'}</span>
+              <div className="nav-header-right">
+                <span className="expand-icon">{expandedSections.testing ? '▼' : '►'}</span>
+              </div>
             </div>
             {expandedSections.testing && (
               <ul className="nav-submenu">
@@ -809,7 +1211,9 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
               onClick={() => toggleSection('activities')}
             >
               <span className="nav-text">Activities</span>
-              <span className="expand-icon">{expandedSections.activities ? '▼' : '►'}</span>
+              <div className="nav-header-right">
+                <span className="expand-icon">{expandedSections.activities ? '▼' : '►'}</span>
+              </div>
             </div>
             {expandedSections.activities && (
               <ul className="nav-submenu">
@@ -834,7 +1238,9 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
               onClick={() => toggleSection('writing')}
             >
               <span className="nav-text">Writing</span>
-              <span className="expand-icon">{expandedSections.writing ? '▼' : '►'}</span>
+              <div className="nav-header-right">
+                <span className="expand-icon">{expandedSections.writing ? '▼' : '►'}</span>
+              </div>
             </div>
             {expandedSections.writing && (
               <ul className="nav-submenu">

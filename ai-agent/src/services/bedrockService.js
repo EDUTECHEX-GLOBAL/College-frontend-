@@ -201,28 +201,22 @@ CONVERSATION CONTEXT:
 </response_guidelines>`;
     }
     
-    // Build messages array with history and current message
+    // ✅ FIXED: Build messages array with alternating user/assistant roles
     const messages = [];
     
-    // Add system message first
-    messages.push({
-      role: "user",
-      content: [{ type: "text", text: systemPrompt }]
-    });
-    
-    // Add conversation history (limited to last 10 exchanges)
+    // Add conversation history first (already in alternating format)
     const recentHistory = historyMessages.slice(-10);
     recentHistory.forEach(msg => {
       messages.push({
         role: msg.role === 'assistant' ? 'assistant' : 'user',
-        content: [{ type: "text", text: msg.content }]
+        content: msg.content
       });
     });
     
     // Add current user message
     messages.push({
       role: "user",
-      content: [{ type: "text", text: cleanMessage }]
+      content: `${systemPrompt}\n\nUser's current message: ${cleanMessage}`
     });
     
     // 🔥 RATE LIMIT FIX: Use Haiku for general (faster), Sonnet for university
@@ -241,7 +235,8 @@ CONVERSATION CONTEXT:
         max_tokens: context === 'university' ? 5000 : 2500,
         temperature: context === 'university' ? 0.0 : 0.1,
         top_p: 1.0,
-        messages: messages
+        system: systemPrompt, // ✅ CORRECT: System prompt goes in system field
+        messages: messages // ✅ CORRECT: Only user/assistant messages here
       })
     };
     
@@ -274,40 +269,39 @@ CONVERSATION CONTEXT:
     return content;
     
   } catch (error) {
-  const duration = Date.now() - startTime;
+    const duration = Date.now() - startTime;
 
-  console.error(`❌ Bedrock Error (${duration}ms):`, {
-    name: error.name,
-    message: error.message,
-    stack: error.stack
-  });
+    console.error(`❌ Bedrock Error (${duration}ms):`, {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    });
 
-  // 🔹 Known Bedrock / Claude issues
-  const isModelUnavailable =
-    error.name === 'ValidationException' ||
-    error.name === 'ThrottlingException' ||
-    error.name === 'TooManyRequestsException' ||
-    error.message?.includes('model') ||
-    error.message?.includes('unavailable');
+    // 🔹 Known Bedrock / Claude issues
+    const isModelUnavailable =
+      error.name === 'ValidationException' ||
+      error.name === 'ThrottlingException' ||
+      error.name === 'TooManyRequestsException' ||
+      error.message?.includes('model') ||
+      error.message?.includes('unavailable');
 
-  if (isModelUnavailable) {
-    console.warn('⚠️ AI unavailable → returning fallback response');
+    if (isModelUnavailable) {
+      console.warn('⚠️ AI unavailable → returning fallback response');
 
-    return {
-      type: 'fallback',
-      message: 'AI model unavailable - using backup data',
-      data: {
-        answer:
-          'Our AI is temporarily unavailable. Please try again shortly or continue browsing university information.',
-        source: 'backup'
-      }
-    };
+      return {
+        type: 'fallback',
+        message: 'AI model unavailable - using backup data',
+        data: {
+          answer:
+            'Our AI is temporarily unavailable. Please try again shortly or continue browsing university information.',
+          source: 'backup'
+        }
+      };
+    }
+
+    // 🔴 REAL unexpected errors → still throw
+    throw error;
   }
-
-  // 🔴 REAL unexpected errors → still throw
-  throw error;
-}
-
 };
 
 /**

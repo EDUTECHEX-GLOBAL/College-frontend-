@@ -1,0 +1,357 @@
+/* ApplicationPreview.css */
+.preview-actions {
+    display: flex;
+    gap: 15px;
+    margin: 20px 0 30px 0;
+}
+
+.action-btn {
+    padding: 12px 25px;
+    border-radius: 6px;
+    border: none;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.print-btn {
+    background: #f5f5f5;
+    color: #333;
+}
+
+.print-btn:hover {
+    background: #e0e0e0;
+}
+
+.pdf-btn {
+    background: #e53935;
+    color: white;
+}
+
+.pdf-btn:hover {
+    background: #c62828;
+}
+
+.application-summary {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 0;
+    margin-top: 20px;
+}
+
+.summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: #f8f9fe;
+    border-bottom: 1px solid #e0e0e0;
+    border-radius: 8px 8px 0 0;
+}
+
+.applicant-id, .submission-date {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.id-label, .date-label {
+    color: #666;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.id-value, .date-value {
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.preview-section {
+    padding: 25px;
+    border-bottom: 1px solid #eee;
+}
+
+.preview-section:last-child {
+    border-bottom: none;
+}
+
+.preview-section-title {
+    color: #1a237e;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    background: #e8eaf6;
+    border-radius: 50%;
+    color: #1a237e;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+}
+
+.preview-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.preview-label {
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.preview-value {
+    color: #333;
+    font-size: 15px;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.empty-value {
+    color: #999;
+    font-style: italic;
+}
+
+.declaration-section {
+    padding: 25px;
+    background: #f8f9fe;
+}
+
+.declaration-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 30px;
+}
+
+.declaration-text {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+.declaration-text p {
+    margin-bottom: 15px;
+}
+
+.declaration-text p:last-child {
+    margin-bottom: 0;
+}
+
+.declaration-agreement {
+    margin: 30px 0;
+    padding: 20px;
+    background: #f8f9fe;
+    border-radius: 6px;
+}
+
+.checkbox-option.large {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.checkbox-option.large input[type="checkbox"] {
+    margin-top: 3px;
+    width: 20px;
+    height: 20px;
+}
+
+.checkbox-option.large label {
+    color: #333;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.applicant-signature {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.signature-line {
+    height: 1px;
+    background: #333;
+    margin-bottom: 5px;
+}
+
+.signature-label {
+    color: #666;
+    font-size: 14px;
+    font-style: italic;
+}
+
+.final-submission {
+    margin-top: 30px;
+}
+
+.submission-checklist {
+    margin-bottom: 30px;
+}
+
+.checklist {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.checklist-item:last-child {
+    border-bottom: none;
+}
+
+.checklist-item i {
+    color: #43a047;
+    font-size: 18px;
+}
+
+.checklist-item span {
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.submission-note {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    background: #fff3e0;
+    border-radius: 8px;
+    border-left: 4px solid #ff9800;
+}
+
+.note-icon {
+    color: #ff9800;
+    font-size: 24px;
+}
+
+.note-content h4 {
+    color: #333;
+    margin: 0 0 10px 0;
+    font-size: 16px;
+}
+
+.note-content p {
+    color: #666;
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* Print styles */
+@media print {
+    .preview-actions,
+    .form-navigation,
+    .progress-bar,
+    .application-header p,
+    .info-box {
+        display: none !important;
+    }
+    
+    .application-container {
+        max-width: none;
+        padding: 0;
+    }
+    
+    .application-header {
+        margin-bottom: 0;
+        border-radius: 0;
+    }
+    
+    .form-content {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+    }
+    
+    .application-summary {
+        border: none;
+        padding: 0;
+    }
+    
+    .preview-section {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+    
+    .declaration-card {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .preview-actions {
+        flex-direction: column;
+    }
+    
+    .action-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .summary-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+    
+    .preview-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .submission-note {
+        flex-direction: column;
+        gap: 15px;
+    }
+}
+.preview-value {
+    color: #333;
+    font-size: 15px;
+    line-height: 1.5;
+    word-break: break-word;
+
+    /* ✅ ADD THESE */
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+.preview-section img {
+    max-width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+}

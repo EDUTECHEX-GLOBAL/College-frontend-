@@ -52,7 +52,7 @@
   text-align: center;
 }
 
-.progress-section {
+.testingform-progress-section {
   position: absolute;
   right: 40px;
   display: flex;
@@ -204,7 +204,7 @@
     align-self: flex-start;
   }
   
-  .progress-section {
+  .testingform-progress-section {
     position: static;
     justify-content: center;
   }

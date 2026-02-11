@@ -164,15 +164,18 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
     }
   };
 
-  // Navigate to Courses page for non-Kansas universities
+  // Navigate to Courses page for GUS universities
   const handleCollegeClick = (college) => {
     const isKansas = college.INSTNM.toLowerCase().includes('kansas');
     
+    // FIXED: Prevent automatic adding when clicking Kansas university names
     if (isKansas) {
-      // Kansas universities still use direct add button
+      // Kansas universities: DO NOTHING when clicking the name
+      // Only add when user clicks the "Add" button
       return;
     }
     
+    // For GUS universities: Navigate to courses page
     // Determine base path based on current URL
     const isFirstYear = window.location.pathname.includes('/firstyear/');
     const basePath = isFirstYear ? '/firstyear/dashboard' : '/transfer/dashboard';
@@ -204,10 +207,9 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
     await handleAddCollege(college);
   };
 
-  // Handle add for GUS universities (when clicking on name)
+  // Handle add for GUS universities (secondary add button)
   const handleAddGusUniversity = async (college) => {
-    // For GUS universities, we'll navigate to courses first
-    // But if user wants to add without selecting program, we can do that too
+    // For GUS universities, show confirmation before adding
     const shouldAdd = window.confirm(
       `Would you like to add ${college.INSTNM} to My Colleges?\n\n` +
       `If you want to select a specific program first, click "View Courses" instead.`
@@ -274,14 +276,22 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
                   </div>
 
                   <div className="college-text">
-                    {/* Clickable name for all universities */}
+                    {/* Clickable name - different behavior for Kansas vs GUS */}
                     <div className="college-name-wrapper">
-                      <h4 
-                        className={`college-name-link ${isKansas ? 'kansas-university' : 'gus-university'}`}
-                        onClick={() => handleCollegeClick(college)}
-                      >
-                        {college.INSTNM}
-                      </h4>
+                      {isKansas ? (
+                        // Kansas universities: Non-clickable name
+                        <h4 className="college-name-link kansas-university" style={{ cursor: 'default' }}>
+                          {college.INSTNM}
+                        </h4>
+                      ) : (
+                        // GUS universities: Clickable name (goes to courses)
+                        <h4 
+                          className="college-name-link gus-university"
+                          onClick={() => handleCollegeClick(college)}
+                        >
+                          {college.INSTNM}
+                        </h4>
+                      )}
                       {!isKansas && <span className="university-type-badge">GUS Portal</span>}
                     </div>
                     <p className="college-location-small">
@@ -306,7 +316,7 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
 
                 {/* Buttons - Different logic for Kansas vs other universities */}
                 {isKansas ? (
-                  // KANSAS: Direct Add/Remove buttons
+                  // KANSAS: Direct Add/Remove buttons only
                   !isAdded ? (
                     <button 
                       className="add-circle-button"
@@ -335,7 +345,7 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
                     </button>
                   )
                 ) : (
-                  // NON-KANSAS: View Courses or Remove button
+                  // GUS UNIVERSITIES: View Courses or Remove button
                   isAdded ? (
                     <div className="gus-university-buttons">
                       <button 
@@ -396,9 +406,9 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
             <div className="info-text">
               <strong>Note:</strong> 
               <ul className="info-list">
-                <li>Click on any <span className="gus-highlight">GUS Portal</span> university name or "View Courses" button to see available programs.</li>
-                <li>Kansas universities can be added directly using the Add button.</li>
-                <li>For GUS universities, you can either view courses first or add the university directly.</li>
+                <li>For <span className="gus-highlight">GUS Portal</span> universities: Click on the university name or "View Courses" button to see available programs.</li>
+                <li>For Kansas universities: Use the "Add" button to add them to My Colleges.</li>
+                <li>Clicking Kansas university names does not add them to your list.</li>
               </ul>
             </div>
           </div>

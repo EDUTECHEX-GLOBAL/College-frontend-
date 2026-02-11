@@ -5,7 +5,7 @@ import "./Courses.css";
 
 const API_URL = process.env.REACT_APP_API_BASE_URL;
 
-const Courses = () => {
+const Courses = ({ onCourseSelect }) => {
   const { universityId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -20,7 +20,9 @@ const Courses = () => {
   const [selectedStudyMode, setSelectedStudyMode] = useState("All");
   const [majorAreas, setMajorAreas] = useState([]);
   const [studyModes, setStudyModes] = useState([]);
-  const [activeTab, setActiveTab] = useState("programs"); // "programs" or "university"
+  const [activeTab, setActiveTab] = useState("programs");
+  const [savingToBackend, setSavingToBackend] = useState(false);
+  const [backendAvailable, setBackendAvailable] = useState(false);
 
   useEffect(() => {
     fetchUniversityAndPrograms();
@@ -38,24 +40,27 @@ const Courses = () => {
 
       let universityData = null;
 
-      // Check if university data was passed via navigation state
       if (location.state?.university) {
         console.log("✅ Found university in navigation state:", location.state.university.INSTNM);
         universityData = location.state.university;
       }
-      // Check localStorage for recently viewed universities
       else if (localStorage.getItem(`university_${universityId}`)) {
         console.log("✅ Found university in localStorage");
         universityData = JSON.parse(localStorage.getItem(`university_${universityId}`));
       }
-      // Try to get from API
       else {
         console.log("🔍 Fetching university data from API...");
-        universityData = await fetchFromAPI();
+        universityData = await fetchUniversityFromAPI();
       }
 
       if (universityData) {
         console.log(`🎓 Processing university: ${universityData.INSTNM}`);
+        setUniversity(universityData);
+        
+        // Check if backend is available
+        await checkBackendAvailability();
+        
+        // Process university data (from gus.json)
         processUniversityData(universityData);
       } else {
         setError("University not found. Please go back and select a valid university.");
@@ -68,7 +73,26 @@ const Courses = () => {
     }
   };
 
-  const fetchFromAPI = async () => {
+  const checkBackendAvailability = async () => {
+    try {
+      console.log("🔍 Checking backend availability...");
+      // Try to access a simple endpoint to check if backend is available
+      const response = await axios.get(`${API_URL}/api/courses/university/${universityId}`, {
+        timeout: 3000,
+        params: { page: 1, limit: 1 }
+      });
+      
+      if (response.status === 200) {
+        setBackendAvailable(true);
+        console.log("✅ Backend is available");
+      }
+    } catch (error) {
+      console.log("⚠️ Backend not available or endpoint doesn't exist:", error.message);
+      setBackendAvailable(false);
+    }
+  };
+
+  const fetchUniversityFromAPI = async () => {
     try {
       const response = await axios.get(`${API_URL}/api/college-search`, {
         params: { query: "" }
@@ -98,8 +122,6 @@ const Courses = () => {
       return;
     }
 
-    setUniversity(uniData);
-    
     const areas = uniData.GUS_DATA?.major_areas || [];
     setMajorAreas(areas);
     
@@ -147,7 +169,8 @@ const Courses = () => {
           description: `${program.program_name} program at ${uniData.INSTNM}. This program is part of the ${area.major_area} major area.`,
           duration: getDurationForProgram(program.program_name),
           fees: getFeesForProgram(program.program_name),
-          requirements: "High school diploma or equivalent. Additional requirements may apply."
+          requirements: "High school diploma or equivalent. Additional requirements may apply.",
+          majorArea: area.major_area
         });
       });
     });
@@ -220,6 +243,118 @@ const Courses = () => {
     return "€10,000 - €15,000 per year";
   };
 
+  // ✅ Save course to backend (with better error handling)
+  const saveCourseToBackend = async (courseData) => {
+    if (!backendAvailable) {
+      console.log("📝 Backend not available, saving locally only");
+      return { 
+        success: true, 
+        message: "Course saved locally (backend not available)" 
+      };
+    }
+    
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.log("🔒 User not logged in, saving locally only");
+        return { 
+          success: true, 
+          message: "Course saved locally (login required for database save)" 
+        };
+      }
+
+      console.log("💾 Preparing to save course to backend...", {
+        title: courseData.programName,
+        universityId: courseData.universityId
+      });
+      
+      // Prepare course data for backend
+      // Make sure we include all required fields from your Course model
+      const backendCourseData = {
+        title: courseData.programName,
+        programId: courseData.programId,
+        universityId: courseData.universityId,
+        universityName: courseData.universityName,
+        universityUnitId: courseData.universityId, // Required field in your model
+        description: courseData.programDetails?.description || `${courseData.programName} program at ${courseData.universityName}`,
+        level: courseData.programDetails?.level || "Undergraduate",
+        studyMode: courseData.programDetails?.studyMode || "On Campus",
+        duration: courseData.programDetails?.duration || "3-4 years",
+        locations: courseData.programDetails?.locations || [courseData.campus || "Main Campus"],
+        fees: {
+          amount: 0,
+          currency: "USD",
+          period: "per year",
+          displayText: courseData.programDetails?.fees || "Contact university for fee details"
+        },
+        majorArea: courseData.programDetails?.majorArea || "General",
+        requirements: {
+          description: courseData.programDetails?.requirements || "High school diploma or equivalent"
+        },
+        isActive: true,
+        isAvailableForInternational: true
+      };
+
+      console.log("📤 Sending to backend:", backendCourseData);
+
+      try {
+        const response = await axios.post(
+          `${API_URL}/api/courses`,
+          backendCourseData,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            timeout: 10000 // 10 second timeout
+          }
+        );
+        
+        console.log("✅ Backend response:", response.data);
+        
+        if (response.data.success) {
+          return { 
+            success: true, 
+            message: "Course saved to database successfully",
+            backendData: response.data.data
+          };
+        } else {
+          return { 
+            success: false, 
+            message: response.data.message || "Backend returned error",
+            backendResponse: response.data
+          };
+        }
+      } catch (backendError) {
+        console.error("❌ Backend API error:", backendError.response?.data || backendError.message);
+        
+        // Provide more specific error messages
+        let errorMessage = "Failed to save to database";
+        if (backendError.response?.status === 401) {
+          errorMessage = "Authentication failed. Please login again.";
+        } else if (backendError.response?.status === 409) {
+          errorMessage = "Course already exists in database";
+        } else if (backendError.response?.data?.message) {
+          errorMessage = backendError.response.data.message;
+        } else if (backendError.response?.data?.error) {
+          errorMessage = backendError.response.data.error;
+        }
+        
+        return { 
+          success: false, 
+          message: errorMessage,
+          error: backendError.response?.data
+        };
+      }
+    } catch (error) {
+      console.error("❌ Error in saveCourseToBackend:", error);
+      return { 
+        success: false, 
+        message: "Unexpected error saving course"
+      };
+    }
+  };
+
   useEffect(() => {
     let filtered = programs;
     
@@ -240,9 +375,7 @@ const Courses = () => {
     }
     
     if (selectedStudyMode !== "All") {
-      filtered = filtered.filter(prog => 
-        prog.studyMode === selectedStudyMode
-      );
+      filtered = filtered.filter(prog => prog.studyMode === selectedStudyMode);
     }
     
     setFilteredPrograms(filtered);
@@ -250,7 +383,160 @@ const Courses = () => {
 
   const handleProgramSelect = (program) => {
     setSelectedProgram(program);
-    setActiveTab("programs");
+  };
+
+  // Navigate to Application Overview when a course is selected
+  const navigateToApplicationOverview = async () => {
+    if (!university || !selectedProgram) {
+      alert("Please select a program first");
+      return;
+    }
+    
+    setSavingToBackend(true);
+    
+    try {
+      // Create course data object
+      const courseData = {
+        universityId: university.UNITID,
+        universityName: university.INSTNM,
+        universityLogo: university.logo,
+        programId: selectedProgram.id,
+        programName: selectedProgram.title,
+        programDetails: {
+          studyMode: selectedProgram.studyMode,
+          level: selectedProgram.level,
+          duration: selectedProgram.duration,
+          fees: selectedProgram.fees,
+          locations: selectedProgram.locations,
+          requirements: selectedProgram.requirements,
+          majorArea: selectedProgram.majorArea,
+          description: selectedProgram.description
+        },
+        intakeMonth: "September",
+        intakeYear: new Date().getFullYear() + 1,
+        country: university.GUS_DATA?.country || "USA",
+        campus: selectedProgram.locations?.[0] || "Main Campus",
+        selectedAt: new Date().toISOString()
+      };
+      
+      // 1. Always save to localStorage (main functionality)
+      localStorage.setItem('selectedCourseForApplication', JSON.stringify(courseData));
+      
+      // Update the GUS application data in localStorage
+      const gusAppData = JSON.parse(localStorage.getItem('gusApplicationData') || '{}');
+      gusAppData.selectedPrograms = gusAppData.selectedPrograms || [];
+      gusAppData.selectedPrograms.push(courseData);
+      localStorage.setItem('gusApplicationData', JSON.stringify(gusAppData));
+      
+      console.log('🎯 Course saved to localStorage:', courseData);
+      
+      // 2. Try to save to backend (optional - don't block navigation)
+      if (backendAvailable) {
+        saveCourseToBackend(courseData)
+          .then(backendResult => {
+            console.log('📊 Backend save completed:', backendResult.message);
+            if (!backendResult.success) {
+              console.log('⚠️ Backend save failed but course is saved locally');
+            }
+          })
+          .catch(error => {
+            console.error('⚠️ Backend save error:', error);
+          });
+      }
+      
+      // Determine student type from current path
+      const studentType = location.pathname.includes('/transfer/') ? 'transfer' : 'firstyear';
+      
+      // Navigate to Overview section (don't wait for backend)
+      navigate(`/${studentType}/dashboard/application/overview`, {
+        state: {
+          fromCoursesPage: true,
+          courseData: courseData,
+          backendAvailable: backendAvailable
+        }
+      });
+      
+      // Call the onCourseSelect callback if provided (for Dashboard)
+      if (onCourseSelect) {
+        onCourseSelect(courseData);
+      }
+    } catch (error) {
+      console.error("❌ Error in navigateToApplicationOverview:", error);
+      alert("An error occurred while saving your course selection. Please try again.");
+    } finally {
+      setSavingToBackend(false);
+    }
+  };
+
+  // Quick Apply function for program cards
+  const handleQuickApply = async (program, e) => {
+    e.stopPropagation();
+    setSelectedProgram(program);
+    setSavingToBackend(true);
+    
+    try {
+      const courseData = {
+        universityId: university.UNITID,
+        universityName: university.INSTNM,
+        programId: program.id,
+        programName: program.title,
+        programDetails: {
+          studyMode: program.studyMode,
+          level: program.level,
+          duration: program.duration,
+          fees: program.fees,
+          locations: program.locations,
+          majorArea: program.majorArea,
+          requirements: program.requirements,
+          description: program.description
+        },
+        selectedAt: new Date().toISOString()
+      };
+      
+      // 1. Save to localStorage (immediate)
+      localStorage.setItem('selectedCourseForApplication', JSON.stringify(courseData));
+      
+      // Update GUS application data
+      const gusAppData = JSON.parse(localStorage.getItem('gusApplicationData') || '{}');
+      gusAppData.selectedPrograms = gusAppData.selectedPrograms || [];
+      gusAppData.selectedPrograms.push(courseData);
+      localStorage.setItem('gusApplicationData', JSON.stringify(gusAppData));
+      
+      console.log('🎯 Quick Apply - Course saved to localStorage:', courseData);
+      
+      // 2. Try to save to backend in background (non-blocking)
+      if (backendAvailable) {
+        saveCourseToBackend(courseData)
+          .then(backendResult => {
+            console.log('📊 Quick Apply - Backend result:', backendResult.message);
+          })
+          .catch(error => {
+            console.error('⚠️ Quick Apply - Backend error:', error);
+          });
+      }
+      
+      // Determine student type from current path
+      const studentType = location.pathname.includes('/transfer/') ? 'transfer' : 'firstyear';
+      
+      // Navigate to Overview immediately
+      navigate(`/${studentType}/dashboard/application/overview`, {
+        state: {
+          fromCoursesPage: true,
+          courseData: courseData,
+          backendAvailable: backendAvailable
+        }
+      });
+      
+      // Call the onCourseSelect callback if provided
+      if (onCourseSelect) {
+        onCourseSelect(courseData);
+      }
+    } catch (error) {
+      console.error("❌ Error in handleQuickApply:", error);
+      alert("An error occurred while saving your course selection. Please try again.");
+    } finally {
+      setSavingToBackend(false);
+    }
   };
 
   const handleAddToMyColleges = async () => {
@@ -383,6 +669,12 @@ const Courses = () => {
             <span className="back-arrow">←</span> Back to Search
           </button>
           <div className="header-actions">
+            {backendAvailable && (
+              <div className="backend-status">
+                <span className="backend-icon">🔗</span>
+                <span className="backend-text">Database Connected</span>
+              </div>
+            )}
             <button 
               className="add-university-header-btn"
               onClick={handleAddUniversityOnly}
@@ -410,7 +702,7 @@ const Courses = () => {
                   {university.GUS_DATA?.country || 'USA'}
                 </span>
                 <span className="university-type">
-                  {university.GUS_DATA?.level || 'Undergraduate'} Programs
+                  {programs.length} Programs Available
                 </span>
               </div>
               <div className="university-stats">
@@ -557,6 +849,23 @@ const Courses = () => {
                   <span className="action-icon">🎓</span>
                   Add Selected Program
                 </button>
+                <button 
+                  className="quick-action-btn apply"
+                  onClick={navigateToApplicationOverview}
+                  disabled={!selectedProgram || savingToBackend}
+                >
+                  {savingToBackend ? (
+                    <>
+                      <span className="action-icon">⏳</span>
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <span className="action-icon">📝</span>
+                      Start Application
+                    </>
+                  )}
+                </button>
               </div>
             </div>
 
@@ -579,6 +888,9 @@ const Courses = () => {
                           <span className="study-mode-badge">{program.studyMode}</span>
                           {program.duration && (
                             <span className="duration-badge">{program.duration}</span>
+                          )}
+                          {program.majorArea && (
+                            <span className="major-area-badge">{program.majorArea}</span>
                           )}
                         </div>
                       </div>
@@ -613,8 +925,20 @@ const Courses = () => {
                             e.stopPropagation();
                             handleProgramSelect(program);
                           }}
+                          disabled={savingToBackend}
                         >
-                          {selectedProgram?.id === program.id ? 'Selected' : 'Select Program'}
+                          {selectedProgram?.id === program.id ? '✓ Selected' : 'Select Program'}
+                        </button>
+                        <button 
+                          className="quick-apply-btn"
+                          onClick={(e) => handleQuickApply(program, e)}
+                          disabled={savingToBackend}
+                        >
+                          {savingToBackend && selectedProgram?.id === program.id ? (
+                            <>
+                              <span className="saving-spinner"></span> Saving...
+                            </>
+                          ) : 'Apply Now'}
                         </button>
                       </div>
                     </div>
@@ -654,126 +978,56 @@ const Courses = () => {
             {/* Selected Program Details Panel */}
             {selectedProgram && (
               <div className="program-details-panel">
-                {/* The panel-header has been removed as requested */}
-                
                 <div className="panel-content">
                   <div className="selected-program-header">
                     <h2 className="selected-program-title">{selectedProgram.title}</h2>
-                    <div className="selected-program-meta">
-                      {/* <span className="meta-badge level">{selectedProgram.level}</span>
-                      <span className="meta-badge mode">{selectedProgram.studyMode}</span>
-                      <span className="meta-badge status">Open for Applications</span> */}
-                    </div>
                   </div>
                   
                   <div className="selected-program-details">
-                    {/* <div className="detail-section">
-                      <h4 className="section-title">Program Overview</h4>
-                      <p className="program-description-full">{selectedProgram.description}</p>
-                    </div>
-                     */}
-                    <div className="details-grid">
-                      {/* <div className="detail-item">
-                        <span className="detail-label">Program ID</span>
-                        <span className="detail-value">{selectedProgram.id}</span>
-                      </div> */}
-                      {/* <div className="detail-item">
-                        <span className="detail-label">Duration</span>
-                        <span className="detail-value">{selectedProgram.duration || "3-4 years"}</span>
-                      </div>
-                      <div className="detail-item">
-                        <span className="detail-label">Study Mode</span>
-                        <span className="detail-value">{selectedProgram.studyMode}</span>
-                      </div>
-                      <div className="detail-item">
-                        <span className="detail-label">Level</span>
-                        <span className="detail-value">{selectedProgram.level}</span>
-                      </div> */}
-                    </div>
-                    
-                    {/* <div className="detail-section">
-                      <h4 className="section-title">Available Locations</h4>
-                      <div className="locations-list">
-                        {selectedProgram.locations?.map((location, index) => (
-                          <div key={index} className="location-tag">
-                            <span className="location-icon">📍</span>
-                            {location}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                     */}
-                    {/* {selectedProgram.fees && (
-                      <div className="detail-section">
-                        <h4 className="section-title">Tuition Fees</h4>
-                        <div className="fees-display">
-                          <span className="fees-amount">{selectedProgram.fees}</span>
-                        </div>
-                      </div>
-                    )} */}
-                    
-                    {selectedProgram.requirements && (
-                      <div className="detail-section">
-                        <h4 className="section-title">Requirements</h4>
-                        <p className="requirements-text">{selectedProgram.requirements}</p>
-                      </div>
-                    )}
-                    
-                    {/* Major Area Information */}
-                    {majorAreas.length > 0 && (
-                      <div className="detail-section">
-                        <h4 className="section-title">Major Area Information</h4>
-                        {majorAreas.map((area, index) => {
-                          if (area.specific_programs?.some(sp => selectedProgram.title.includes(sp.program_name))) {
-                            return (
-                              <div key={index} className="major-area-card">
-                                <h5 className="major-area-title">{area.major_area}</h5>
-                                <p className="major-area-description">
-                                  This program is part of the {area.major_area} major area at {university.INSTNM}.
-                                </p>
-                                <div className="related-programs">
-                                  <h6>Related Programs:</h6>
-                                  <div className="related-tags">
-                                    {area.specific_programs?.map((prog, idx) => (
-                                      <span 
-                                        key={idx} 
-                                        className={`related-tag ${selectedProgram.title.includes(prog.program_name) ? 'current' : ''}`}
-                                      >
-                                        {prog.program_name}
-                                      </span>
-                                    ))}
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          }
-                          return null;
-                        })}
-                      </div>
-                    )}
-                    
                     <div className="action-buttons">
                       <button 
                         className="primary-action-btn"
-                        onClick={handleAddToMyColleges}
+                        onClick={navigateToApplicationOverview}
+                        disabled={savingToBackend}
                       >
-                        🎓 Add to My Colleges
+                        {savingToBackend ? (
+                          <>
+                            <span className="action-icon">⏳</span>
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <span className="action-icon">📝</span>
+                            Start University Application
+                          </>
+                        )}
                       </button>
                       <button 
                         className="secondary-action-btn"
-                        onClick={() => {
-                          const savedPrograms = JSON.parse(localStorage.getItem('savedPrograms') || '[]');
-                          savedPrograms.push({
-                            university: university.INSTNM,
-                            program: selectedProgram,
-                            date: new Date().toISOString()
-                          });
-                          localStorage.setItem('savedPrograms', JSON.stringify(savedPrograms));
-                          alert('Program saved for later!');
-                        }}
+                        onClick={handleAddToMyColleges}
+                        disabled={savingToBackend}
                       >
-                        💾 Save for Later
+                        <span className="action-icon">🎓</span>
+                        Add to My Colleges
                       </button>
+                    </div>
+                    
+                    <div className="application-instructions">
+                      <h4 className="section-title">How to Apply</h4>
+                      <ol className="instructions-list">
+                        <li>Click "Start University Application" above</li>
+                        <li>Your course selection will be saved {backendAvailable ? 'to our database' : 'locally'}</li>
+                        <li>You will be taken to the Application Overview page</li>
+                        <li>Review your selected course details</li>
+                        <li>Start or continue your application from the overview</li>
+                        <li>Complete all required application steps</li>
+                        <li>Submit your application</li>
+                      </ol>
+                      <p className="instruction-note">
+                        <strong>Note:</strong> {backendAvailable ? 
+                          'Your selection will also be saved to our secure database for future reference.' :
+                          'Your selection is saved locally for this session.'}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -796,7 +1050,6 @@ const Courses = () => {
                         <h5>Address</h5>
                         <p>{university.ADDR || 'Address not available'}</p>
                         <p>{university.CITY}, {university.STABBR} {university.ZIP || ''}</p>
-                        <p>{university.GUS_DATA?.country || 'Country'}</p>
                       </div>
                     </div>
                     
@@ -805,11 +1058,6 @@ const Courses = () => {
                       <div className="contact-content">
                         <h5>Phone</h5>
                         <p>{university.GENTELE || 'Phone not available'}</p>
-                        {university.GENTELE && (
-                          <a href={`tel:${university.GENTELE}`} className="contact-link">
-                            Call Admissions
-                          </a>
-                        )}
                       </div>
                     </div>
                     
@@ -818,47 +1066,16 @@ const Courses = () => {
                       <div className="contact-content">
                         <h5>Website</h5>
                         {university.WEBADDR ? (
-                          <>
-                            <a 
-                              href={university.WEBADDR} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="contact-link"
-                            >
-                              Visit Official Website
-                            </a>
-                            {university.APPLURL && (
-                              <a 
-                                href={university.APPLURL} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="contact-link secondary"
-                              >
-                                Application Portal
-                              </a>
-                            )}
-                          </>
-                        ) : (
-                          <p>Website not available</p>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="contact-item">
-                      <span className="contact-icon">🎓</span>
-                      <div className="contact-content">
-                        <h5>Admissions</h5>
-                        <p><strong>Chancellor:</strong> {university.CHFNM || 'Not available'}</p>
-                        <p><strong>Title:</strong> {university.CHFTITLE || 'Not available'}</p>
-                        {university.ADMINURL && (
                           <a 
-                            href={university.ADMINURL} 
+                            href={university.WEBADDR} 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="contact-link"
                           >
-                            Admissions Information
+                            Visit Official Website
                           </a>
+                        ) : (
+                          <p>Website not available</p>
                         )}
                       </div>
                     </div>

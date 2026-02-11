@@ -53,7 +53,7 @@
   text-align: center;
 }
 
-.progress-section {
+.education-progress-section {
   position: absolute;
   right: 40px;
   display: flex;
@@ -211,7 +211,7 @@
     font-size: 20px;
   }
   
-  .progress-section {
+  .education-progress-section {
     position: static;
     order: 3;
     justify-content: center;

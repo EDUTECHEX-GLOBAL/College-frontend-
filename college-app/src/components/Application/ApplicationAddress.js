@@ -1,178 +1,293 @@
-import React from 'react';
-import './ApplicationAddress.css';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import "./ApplicationAddress.css";
 
-const ApplicationAddress = ({ formData, onInputChange, onFileUpload }) => {
-    const handleFileChange = (e, field) => {
-        const file = e.target.files[0];
-        if (file) {
-            onFileUpload(field, file);
+const API_URL = "http://localhost:5000/api/application/address";
+
+const ApplicationAddress = () => {
+  const token = localStorage.getItem("token");
+
+  const [formData, setFormData] = useState({
+    currentAddress: "",
+    permanentAddress: "",
+    city: "",
+    state: "",
+    country: "",
+    postalCode: "",
+    nationalIdFile: null,
+  });
+
+  /* =====================================================
+     FETCH ADDRESS DATA ON LOAD
+  ===================================================== */
+  useEffect(() => {
+    fetchAddress();
+  }, []);
+
+  const fetchAddress = async () => {
+    try {
+      const res = await axios.get(API_URL, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.data.data) {
+        setFormData({
+          ...res.data.data,
+          nationalIdFile: res.data.data.nationalIdFile || null,
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching address:", error);
+    }
+  };
+
+  /* =====================================================
+     HANDLE INPUT CHANGE
+  ===================================================== */
+  const handleInputChange = (field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  /* =====================================================
+     SAVE ADDRESS
+  ===================================================== */
+  const saveAddress = async () => {
+    try {
+      await axios.post(API_URL, formData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      alert("Address saved successfully ✅");
+    } catch (error) {
+      console.error("Save error:", error);
+      alert("Failed to save address");
+    }
+  };
+
+  /* =====================================================
+     UPLOAD NATIONAL ID
+  ===================================================== */
+  const handleFileUpload = async (file) => {
+    if (!file) return;
+
+    const data = new FormData();
+    data.append("file", file);
+
+    try {
+      const res = await axios.post(
+        `${API_URL}/upload/nationalId`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
         }
-    };
+      );
 
-    const handleSameAsCurrent = () => {
-        onInputChange('permanentAddress', formData.currentAddress);
-    };
+      alert("National ID uploaded ✅");
 
-    return (
-        <div className="form-section">
-            <div className="section-header">
-                <div className="section-number">2</div>
-                <div>
-                    <h2 className="section-title">Address & Identification</h2>
-                    <p className="section-subtitle">Provide your current and permanent address details</p>
-                </div>
-            </div>
+      setFormData((prev) => ({
+        ...prev,
+        nationalIdFile: {
+          fileName: file.name,
+          fileUrl: res.data.fileUrl,
+          size: file.size,
+        },
+      }));
+    } catch (error) {
+      console.error("Upload error:", error);
+      alert("Upload failed");
+    }
+  };
 
-            <div className="info-box">
-                <i className="fas fa-info-circle"></i>
-                <p className="info-text">Permanent address should match your official documents. Use the button to copy current address to permanent.</p>
-            </div>
+  /* =====================================================
+     REMOVE NATIONAL ID
+  ===================================================== */
+  const removeNationalId = async () => {
+    try {
+      await axios.delete(`${API_URL}/nationalId`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-            <div className="form-grid">
-                <div className="form-group">
-                    <label className="form-label required" htmlFor="currentAddress">Current Address</label>
-                    <textarea
-                        id="currentAddress"
-                        className="form-textarea"
-                        value={formData.currentAddress}
-                        onChange={(e) => onInputChange('currentAddress', e.target.value)}
-                        placeholder="Enter your complete current address"
-                        rows="3"
-                        required
-                    />
-                </div>
+      setFormData((prev) => ({
+        ...prev,
+        nationalIdFile: null,
+      }));
 
-                <div className="form-group">
-                    <div className="address-header">
-                        <label className="form-label required" htmlFor="permanentAddress">Permanent Address</label>
-                        <button 
-                            type="button" 
-                            className="copy-address-btn"
-                            onClick={handleSameAsCurrent}
-                        >
-                            <i className="fas fa-copy"></i> Same as Current
-                        </button>
-                    </div>
-                    <textarea
-                        id="permanentAddress"
-                        className="form-textarea"
-                        value={formData.permanentAddress}
-                        onChange={(e) => onInputChange('permanentAddress', e.target.value)}
-                        placeholder="Enter your permanent address"
-                        rows="3"
-                        required
-                    />
-                </div>
+      alert("National ID removed ✅");
+    } catch (error) {
+      console.error("Remove error:", error);
+    }
+  };
 
-                <div className="form-group">
-                    <label className="form-label required" htmlFor="city">City</label>
-                    <input
-                        type="text"
-                        id="city"
-                        className="form-input"
-                        value={formData.city}
-                        onChange={(e) => onInputChange('city', e.target.value)}
-                        placeholder="City"
-                        required
-                    />
-                </div>
+  /* =====================================================
+     COPY ADDRESS
+  ===================================================== */
+  const handleSameAsCurrent = () => {
+    setFormData((prev) => ({
+      ...prev,
+      permanentAddress: prev.currentAddress,
+    }));
+  };
 
-                <div className="form-group">
-                    <label className="form-label required" htmlFor="state">State/Province</label>
-                    <input
-                        type="text"
-                        id="state"
-                        className="form-input"
-                        value={formData.state}
-                        onChange={(e) => onInputChange('state', e.target.value)}
-                        placeholder="State or Province"
-                        required
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label className="form-label required" htmlFor="country">Country</label>
-                    <select
-                        id="country"
-                        className="form-select"
-                        value={formData.country}
-                        onChange={(e) => onInputChange('country', e.target.value)}
-                        required
-                    >
-                        <option value="">Select Country</option>
-                        <option value="usa">United States</option>
-                        <option value="uk">United Kingdom</option>
-                        <option value="canada">Canada</option>
-                        <option value="australia">Australia</option>
-                        <option value="india">India</option>
-                        <option value="germany">Germany</option>
-                        <option value="france">France</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
-
-                <div className="form-group">
-                    <label className="form-label required" htmlFor="postalCode">Postal Code</label>
-                    <input
-                        type="text"
-                        id="postalCode"
-                        className="form-input"
-                        value={formData.postalCode}
-                        onChange={(e) => onInputChange('postalCode', e.target.value)}
-                        placeholder="Postal/ZIP Code"
-                        required
-                    />
-                </div>
-            </div>
-
-            <div className="form-group">
-                <label className="form-label">National ID (Alternative to Passport)</label>
-                <div className="upload-area">
-                    <div className="upload-prompt">
-                        <i className="fas fa-id-card"></i>
-                        <p>Upload National ID if passport is unavailable</p>
-                        <p className="text-muted">Aadhar, Driver's License, etc. (Max: 2MB)</p>
-                    </div>
-                    <input
-                        type="file"
-                        id="nationalIdUpload"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        onChange={(e) => handleFileChange(e, 'nationalId')}
-                        className="file-input"
-                        style={{ display: 'none' }}
-                    />
-                    <button 
-                        className="upload-btn"
-                        onClick={() => document.getElementById('nationalIdUpload').click()}
-                    >
-                        <i className="fas fa-cloud-upload-alt"></i> Upload National ID
-                    </button>
-                    {formData.nationalId && (
-                        <div className="file-list">
-                            <div className="file-item">
-                                <div className="file-info">
-                                    <i className="fas fa-file-pdf file-icon"></i>
-                                    <div className="file-details">
-                                        <span className="file-name">{formData.nationalId.name}</span>
-                                        <span className="file-size">{(formData.nationalId.size / 1024 / 1024).toFixed(2)} MB</span>
-                                    </div>
-                                </div>
-                                <button 
-                                    className="remove-file"
-                                    onClick={() => onFileUpload('nationalId', null)}
-                                >
-                                    <i className="fas fa-times"></i>
-                                </button>
-                            </div>
-                        </div>
-                    )}
-                </div>
-                <p className="helper-text">
-                    <i className="fas fa-exclamation-circle"></i> Only required if you don't have a passport
-                </p>
-            </div>
+  /* =====================================================
+     UI
+  ===================================================== */
+  return (
+    <form className="form-section" onSubmit={(e) => e.preventDefault()}>
+      <div className="section-header">
+        <div className="section-number">2</div>
+        <div>
+          <h2 className="section-title">Address & Identification</h2>
+          <p className="section-subtitle">
+            Provide your current and permanent address details
+          </p>
         </div>
-    );
+      </div>
+
+      <div className="form-grid">
+        {/* Current Address */}
+        <div className="form-group">
+          <label className="form-label required">Current Address</label>
+          <textarea
+            className="form-textarea"
+            value={formData.currentAddress}
+            onChange={(e) =>
+              handleInputChange("currentAddress", e.target.value)
+            }
+            rows="3"
+            required
+          />
+        </div>
+
+        {/* Permanent Address */}
+        <div className="form-group">
+          <div className="address-header">
+            <label className="form-label required">
+              Permanent Address
+            </label>
+            <button
+              type="button"
+              className="copy-address-btn"
+              onClick={handleSameAsCurrent}
+            >
+              Same as Current
+            </button>
+          </div>
+          <textarea
+            className="form-textarea"
+            value={formData.permanentAddress}
+            onChange={(e) =>
+              handleInputChange("permanentAddress", e.target.value)
+            }
+            rows="3"
+            required
+          />
+        </div>
+
+        {/* City */}
+        <div className="form-group">
+          <label className="form-label required">City</label>
+          <input
+            type="text"
+            className="form-input"
+            value={formData.city}
+            onChange={(e) =>
+              handleInputChange("city", e.target.value)
+            }
+            required
+          />
+        </div>
+
+        {/* State */}
+        <div className="form-group">
+          <label className="form-label required">State</label>
+          <input
+            type="text"
+            className="form-input"
+            value={formData.state}
+            onChange={(e) =>
+              handleInputChange("state", e.target.value)
+            }
+            required
+          />
+        </div>
+
+        {/* Country */}
+        <div className="form-group">
+          <label className="form-label required">Country</label>
+          <select
+            className="form-select"
+            value={formData.country}
+            onChange={(e) =>
+              handleInputChange("country", e.target.value)
+            }
+            required
+          >
+            <option value="">Select Country</option>
+            <option value="USA">USA</option>
+            <option value="India">India</option>
+            <option value="UK">UK</option>
+          </select>
+        </div>
+
+        {/* Postal Code */}
+        <div className="form-group">
+          <label className="form-label required">Postal Code</label>
+          <input
+            type="text"
+            className="form-input"
+            value={formData.postalCode}
+            onChange={(e) =>
+              handleInputChange("postalCode", e.target.value)
+            }
+            required
+          />
+        </div>
+      </div>
+
+      {/* National ID Upload */}
+      <div className="form-group">
+        <label className="form-label">
+          National ID (Alternative to Passport)
+        </label>
+
+        <input
+          type="file"
+          accept=".pdf,.jpg,.jpeg,.png"
+          onChange={(e) =>
+            handleFileUpload(e.target.files[0])
+          }
+        />
+
+        {formData.nationalIdFile && (
+          <div className="file-item">
+            <span>
+              {formData.nationalIdFile.fileName}
+            </span>
+            <button
+              type="button"
+              onClick={removeNationalId}
+            >
+              Remove
+            </button>
+          </div>
+        )}
+      </div>
+
+      <button
+        type="button"
+        className="save-btn"
+        onClick={saveAddress}
+      >
+        Save & Continue
+      </button>
+    </form>
+  );
 };
 
 export default ApplicationAddress;

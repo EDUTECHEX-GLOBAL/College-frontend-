@@ -1,20 +1,45 @@
-import React, { useState } from 'react';
-import './ApplicationCourse.css';
+import React, { useState, useEffect } from 'react';
+import './ApplicationFirstCourse.css';
 
-const ApplicationCourse = ({ formData, onInputChange }) => {
-    const [universities, setUniversities] = useState({
+const ApplicationFirstCourse = ({ formData, onInputChange, onNext, onPrev }) => {
+    const [selectedCourseData, setSelectedCourseData] = useState(null);
+
+    useEffect(() => {
+        // Check if course data was passed from Courses page
+        const savedCourseData = localStorage.getItem('selectedCourseForApplication');
+        if (savedCourseData) {
+            const courseData = JSON.parse(savedCourseData);
+            setSelectedCourseData(courseData);
+            
+            // Pre-fill form with the selected course data
+            if (!formData.selectedUniversity) {
+                onInputChange('selectedUniversity', courseData.universityName);
+            }
+            if (!formData.courseName) {
+                onInputChange('courseName', courseData.programName);
+            }
+            if (!formData.programLevel) {
+                onInputChange('programLevel', courseData.programDetails.level.toLowerCase());
+            }
+            if (!formData.studyMode) {
+                onInputChange('studyMode', courseData.programDetails.studyMode.toLowerCase());
+            }
+        }
+    }, []);
+
+    const universities = {
         'usa': ['Harvard University', 'MIT', 'Stanford University', 'University of California'],
         'uk': ['University of Oxford', 'University of Cambridge', 'Imperial College London'],
         'canada': ['University of Toronto', 'University of British Columbia', 'McGill University'],
         'australia': ['University of Melbourne', 'Australian National University', 'University of Sydney'],
         'germany': ['Technical University of Munich', 'Heidelberg University', 'Ludwig Maximilian University']
-    });
+    };
 
-    const [courses, setCourses] = useState({
+    const courses = {
         'Harvard University': ['Computer Science', 'Business Administration', 'Engineering'],
         'MIT': ['Computer Science', 'Mechanical Engineering', 'Physics'],
         'University of Oxford': ['Law', 'Medicine', 'Philosophy']
-    });
+    };
 
     const handleCountryChange = (e) => {
         const country = e.target.value;
@@ -40,6 +65,25 @@ const ApplicationCourse = ({ formData, onInputChange }) => {
         yearOptions.push(year);
     }
 
+    const handleNext = () => {
+        // Validate required fields
+        if (!formData.selectedCountry || !formData.selectedUniversity || !formData.courseName || 
+            !formData.programLevel || !formData.intakeMonth || !formData.intakeYear || !formData.studyMode) {
+            alert('Please fill all required fields marked with *');
+            return;
+        }
+        
+        // Save course selection to application data
+        const applicationData = {
+            ...formData,
+            selectedCourseData: selectedCourseData
+        };
+        
+        localStorage.setItem('applicationCourseData', JSON.stringify(applicationData));
+        
+        onNext();
+    };
+
     return (
         <div className="form-section">
             <div className="section-header">
@@ -49,6 +93,38 @@ const ApplicationCourse = ({ formData, onInputChange }) => {
                     <p className="section-subtitle">Choose your preferred program and university</p>
                 </div>
             </div>
+
+            {selectedCourseData && (
+                <div className="course-selection-banner">
+                    <div className="banner-header">
+                        <i className="fas fa-check-circle"></i>
+                        <span>Course pre-selected from search</span>
+                    </div>
+                    <div className="banner-content">
+                        <div className="banner-item">
+                            <strong>University:</strong> {selectedCourseData.universityName}
+                        </div>
+                        <div className="banner-item">
+                            <strong>Program:</strong> {selectedCourseData.programName}
+                        </div>
+                        <div className="banner-item">
+                            <strong>Study Mode:</strong> {selectedCourseData.programDetails.studyMode}
+                        </div>
+                        <div className="banner-item">
+                            <strong>Level:</strong> {selectedCourseData.programDetails.level}
+                        </div>
+                    </div>
+                    <button 
+                        className="change-course-btn"
+                        onClick={() => {
+                            setSelectedCourseData(null);
+                            localStorage.removeItem('selectedCourseForApplication');
+                        }}
+                    >
+                        Change Course
+                    </button>
+                </div>
+            )}
 
             <div className="info-box">
                 <i className="fas fa-info-circle"></i>
@@ -277,8 +353,17 @@ const ApplicationCourse = ({ formData, onInputChange }) => {
                     </div>
                 </div>
             </div>
+
+            <div className="form-navigation">
+                <button type="button" className="btn-secondary" onClick={onPrev}>
+                    <i className="fas fa-arrow-left"></i> Previous
+                </button>
+                <button type="button" className="btn-primary" onClick={handleNext}>
+                    Next <i className="fas fa-arrow-right"></i>
+                </button>
+            </div>
         </div>
     );
 };
 
-export default ApplicationCourse;
+export default ApplicationFirstCourse;

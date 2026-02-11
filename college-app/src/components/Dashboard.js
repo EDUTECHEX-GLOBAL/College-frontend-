@@ -23,7 +23,9 @@ import Review from './mycollege-sections/FirstReview';
 import WritingSection from './writing-sections/WritingSection';
 import FamilySection from './family-sections/FamilySection';
 import ChatWidget from './Chatbot/ChatWidget';
-import Courses from './Courses'; // ✅ ADDED: Import Courses component
+import Courses from './Courses';
+import Application from './Application/Application';
+import Overview from './Application/Overview'; // Add Overview import
 
 const API_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -33,11 +35,13 @@ const Dashboard = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeMainSection, setActiveMainSection] = useState('application');
+  const [activeMainSection, setActiveMainSection] = useState('dashboard');
   const [userColleges, setUserColleges] = useState([]);
   const [familyCompleted, setFamilyCompleted] = useState(false);
+  const [applicationProgress, setApplicationProgress] = useState(0);
+  const [selectedCourseData, setSelectedCourseData] = useState(null); // Add selected course state
 
-  // ✅ DYNAMIC BASE PATH DETECTION
+  // DYNAMIC BASE PATH DETECTION
   const isFirstYear = location.pathname.includes('/firstyear/');
   const basePath = isFirstYear ? '/firstyear/dashboard' : '/transfer/dashboard';
 
@@ -56,6 +60,30 @@ const Dashboard = () => {
 
       if (response.data.success && response.data.account) {
         const user = response.data.account;
+        
+        // Load application progress from localStorage
+        const gusApplicationData = localStorage.getItem('gusApplicationData');
+        let appProgress = 0;
+        if (gusApplicationData) {
+          try {
+            const appData = JSON.parse(gusApplicationData);
+            appProgress = calculateLocalApplicationProgress(appData);
+          } catch (e) {
+            console.error('Error parsing gusApplicationData:', e);
+          }
+        }
+        
+        // Load selected course data
+        const selectedCourse = localStorage.getItem('selectedCourseForApplication');
+        if (selectedCourse) {
+          try {
+            const courseData = JSON.parse(selectedCourse);
+            setSelectedCourseData(courseData);
+          } catch (error) {
+            console.error('Error parsing selected course:', error);
+          }
+        }
+        
         const formattedUserData = {
           name: `${user.firstName} ${user.lastName}`,
           email: user.email,
@@ -68,15 +96,92 @@ const Dashboard = () => {
           writingProgress: user.applicationProgress?.writing || 0,
           activitiesProgress: user.applicationProgress?.activities || 0,
           testingData: user.testingData || { testsToReport: [] },
+          applicationProgress: {
+            ...user.applicationProgress,
+            application: appProgress
+          },
           ...user
         };
         
         setUserData(formattedUserData);
+        setApplicationProgress(appProgress);
         localStorage.setItem('userData', JSON.stringify(formattedUserData));
+        console.log('✅ User data refreshed. Application progress:', appProgress, '%');
       }
     } catch (error) {
       console.error('Error refreshing user data:', error);
     }
+  };
+
+  // Calculate application progress from localStorage data
+  const calculateLocalApplicationProgress = (appData) => {
+    if (!appData) return 0;
+    
+    let completedFields = 0;
+    let totalFields = 0;
+    
+    const isFieldFilled = (fieldValue) => {
+      if (fieldValue === null || fieldValue === undefined) return false;
+      if (typeof fieldValue === 'string') return fieldValue.trim() !== '';
+      if (typeof fieldValue === 'boolean') return true;
+      if (typeof fieldValue === 'number') return true;
+      return !!fieldValue;
+    };
+    
+    const personalFields = ['firstName', 'lastName', 'dob', 'gender', 'nationality', 
+                           'countryOfResidence', 'email', 'mobile', 'passportFileName', 'photographFileName'];
+    personalFields.forEach(field => {
+      totalFields++;
+      if (isFieldFilled(appData[field])) completedFields++;
+    });
+    
+    const addressFields = ['currentAddress', 'city', 'state', 'country', 
+                          'postalCode', 'nationalIdFileName'];
+    addressFields.forEach(field => {
+      totalFields++;
+      if (isFieldFilled(appData[field])) completedFields++;
+    });
+    
+    const educationFields = ['qualificationLevel', 'institutionName', 'boardUniversity', 
+                            'countryOfStudy', 'startYear', 'endYear', 'resultStatus', 
+                            'gradingSystem', 'transcriptsFileName', 'degreeCertificateFileName'];
+    educationFields.forEach(field => {
+      totalFields++;
+      if (isFieldFilled(appData[field])) completedFields++;
+    });
+    
+    const languageFields = ['englishTestType', 'testScore', 'testDate', 
+                           'testScorecardFileName', 'moiLetterFileName'];
+    languageFields.forEach(field => {
+      totalFields++;
+      if (isFieldFilled(appData[field])) completedFields++;
+    });
+    
+    const workFields = ['isEmployed', 'organizationName', 'jobTitle', 'workDuration', 
+                       'responsibilities', 'resumeFileName', 'experienceLettersFileName'];
+    workFields.forEach(field => {
+      totalFields++;
+      if (isFieldFilled(appData[field])) completedFields++;
+    });
+    
+    const courseFields = ['selectedCountry', 'selectedUniversity', 'campus', 
+                         'programLevel', 'courseName', 'intakeMonth', 'intakeYear', 
+                         'studyMode', 'secondPreference', 'thirdPreference'];
+    courseFields.forEach(field => {
+      totalFields++;
+      if (isFieldFilled(appData[field])) completedFields++;
+    });
+    
+    const documentFields = ['sopFileName', 'lor1FileName', 'lor2FileName', 
+                           'portfolioFileName', 'researchProposalFileName'];
+    documentFields.forEach(field => {
+      totalFields++;
+      if (isFieldFilled(appData[field])) completedFields++;
+    });
+    
+    const progress = Math.round((completedFields / totalFields) * 100);
+    console.log(`📈 Local Application Progress: ${completedFields}/${totalFields} fields = ${progress}%`);
+    return progress;
   };
 
   // Function to fetch user's colleges
@@ -123,6 +228,61 @@ const Dashboard = () => {
     }
   };
 
+  // Handle course selection from Courses page
+  const handleCourseSelection = (courseData) => {
+    console.log('🎯 Course selected in Dashboard:', courseData);
+    setSelectedCourseData(courseData);
+    localStorage.setItem('selectedCourseForApplication', JSON.stringify(courseData));
+    
+    // Navigate to application overview
+    navigate(`${basePath}/application/overview`, { 
+      state: { fromCoursesPage: true, courseData: courseData } 
+    });
+  };
+
+  // Update application progress when localStorage changes
+  useEffect(() => {
+    const handleApplicationUpdate = () => {
+      console.log('🔄 Application update event received in Dashboard');
+      
+      const gusApplicationData = localStorage.getItem('gusApplicationData');
+      if (gusApplicationData) {
+        try {
+          const appData = JSON.parse(gusApplicationData);
+          const progress = calculateLocalApplicationProgress(appData);
+          setApplicationProgress(progress);
+          
+          if (userData) {
+            setUserData(prev => ({
+              ...prev,
+              applicationProgress: {
+                ...prev.applicationProgress,
+                application: progress
+              }
+            }));
+            
+            const updatedUserData = {
+              ...userData,
+              applicationProgress: {
+                ...userData.applicationProgress,
+                application: progress
+              }
+            };
+            localStorage.setItem('userData', JSON.stringify(updatedUserData));
+          }
+        } catch (error) {
+          console.error('Error updating application progress:', error);
+        }
+      }
+    };
+
+    window.addEventListener('applicationUpdated', handleApplicationUpdate);
+    
+    return () => {
+      window.removeEventListener('applicationUpdated', handleApplicationUpdate);
+    };
+  }, [userData]);
+
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -145,6 +305,30 @@ const Dashboard = () => {
           const storedFamilyComplete = localStorage.getItem('familySectionComplete') === 'true';
           setFamilyCompleted(storedFamilyComplete);
           
+          // Load application progress from localStorage
+          const gusApplicationData = localStorage.getItem('gusApplicationData');
+          let appProgress = 0;
+          if (gusApplicationData) {
+            try {
+              const appData = JSON.parse(gusApplicationData);
+              appProgress = calculateLocalApplicationProgress(appData);
+              setApplicationProgress(appProgress);
+            } catch (e) {
+              console.error('Error parsing gusApplicationData:', e);
+            }
+          }
+          
+          // Load selected course data
+          const selectedCourse = localStorage.getItem('selectedCourseForApplication');
+          if (selectedCourse) {
+            try {
+              const courseData = JSON.parse(selectedCourse);
+              setSelectedCourseData(courseData);
+            } catch (error) {
+              console.error('Error parsing selected course:', error);
+            }
+          }
+          
           const formattedUserData = {
             name: `${user.firstName} ${user.lastName}`,
             email: user.email,
@@ -158,13 +342,16 @@ const Dashboard = () => {
             activitiesProgress: user.applicationProgress?.activities || 0,
             applicationProgress: {
               ...user.applicationProgress,
+              application: appProgress,
               family: storedFamilyComplete ? 100 : (user.applicationProgress?.family || 0)
             },
+            testingData: user.testingData || { testsToReport: [] },
             ...user
           };
           
           setUserData(formattedUserData);
           localStorage.setItem('userData', JSON.stringify(formattedUserData));
+          console.log('✅ Initial user data loaded. Application progress:', appProgress, '%');
         }
       } catch (error) {
         console.error('Error fetching user profile:', error);
@@ -175,6 +362,27 @@ const Dashboard = () => {
             setUserData(parsedData);
             const storedFamilyComplete = localStorage.getItem('familySectionComplete') === 'true';
             setFamilyCompleted(storedFamilyComplete);
+            
+            const gusApplicationData = localStorage.getItem('gusApplicationData');
+            if (gusApplicationData) {
+              try {
+                const appData = JSON.parse(gusApplicationData);
+                const appProgress = calculateLocalApplicationProgress(appData);
+                setApplicationProgress(appProgress);
+              } catch (e) {
+                console.error('Error parsing gusApplicationData:', e);
+              }
+            }
+            
+            const selectedCourse = localStorage.getItem('selectedCourseForApplication');
+            if (selectedCourse) {
+              try {
+                const courseData = JSON.parse(selectedCourse);
+                setSelectedCourseData(courseData);
+              } catch (error) {
+                console.error('Error parsing selected course:', error);
+              }
+            }
           } catch (parseError) {
             console.error('Error parsing stored user data:', parseError);
           }
@@ -225,9 +433,11 @@ const Dashboard = () => {
     };
   }, []);
 
-  // ✅ UPDATED: Update active section based on route
+  // Update active section based on route
   useEffect(() => {
     const path = location.pathname;
+    console.log('📍 Current path:', path);
+    
     if (path.includes('/profile')) {
       setActiveMainSection('profile');
     } else if (path.includes('/colleges') && !path.includes('/education/colleges')) {
@@ -244,20 +454,26 @@ const Dashboard = () => {
       setActiveMainSection('college-search');
     } else if (path.includes('/family')) {
       setActiveMainSection('family');
-    } else if (path.includes('/courses')) { // ✅ ADDED: Courses section
+    } else if (path.includes('/courses')) {
       setActiveMainSection('courses');
-    } else {
+    } else if (path.includes('/application')) {
       setActiveMainSection('application');
+      console.log('✅ Application section activated');
+    } else {
+      setActiveMainSection('dashboard');
     }
   }, [location.pathname]);
 
-  // ✅ UPDATED: Sidebar navigation with Courses added
+  // Sidebar navigation
   const handleSectionChange = (section) => {
     console.log('🔄 Section change requested:', section);
     switch (section) {
       case 'dashboard':
-      case 'application':
         navigate(`${basePath}`);
+        break;
+      case 'application':
+        navigate(`${basePath}/application`);
+        console.log('🚀 Navigating to application');
         break;
       case 'colleges':
         navigate(`${basePath}/colleges`);
@@ -295,8 +511,7 @@ const Dashboard = () => {
       case 'family':
         navigate(`${basePath}/family`);
         break;
-      case 'courses': // ✅ ADDED: Courses navigation
-        // Navigate to college search first, then user can click on a university to see courses
+      case 'courses':
         navigate(`${basePath}/college-search`);
         break;
       default:
@@ -312,20 +527,28 @@ const Dashboard = () => {
     }
   };
 
-  // Calculate overall progress
+  // Calculate overall progress - Include application progress
   const overallProgress = userData?.applicationProgress 
-    ? Object.values(userData.applicationProgress).reduce((sum, progress) => sum + progress, 0) / 
-      Object.values(userData.applicationProgress).length 
+    ? (Object.values(userData.applicationProgress).reduce((sum, progress) => sum + progress, 0)) / 
+      Math.max(1, Object.values(userData.applicationProgress).length)
     : 0;
 
   const completedSections = userData?.applicationProgress 
     ? Object.values(userData.applicationProgress).filter(progress => progress >= 100).length 
     : 0;
 
-  const totalSections = 6;
+  const totalSections = userData?.applicationProgress 
+    ? Object.keys(userData.applicationProgress).length 
+    : 0;
 
-  // Application sections with progress
+  // Application sections with progress - Include actual application progress
   const applicationSections = [
+    { 
+      name: "University Application", 
+      completed: applicationProgress >= 100, 
+      progress: applicationProgress || 0, 
+      path: `${basePath}/application/overview`
+    },
     { 
       name: "Profile", 
       completed: userData?.profileProgress >= 100, 
@@ -383,13 +606,34 @@ const Dashboard = () => {
   ];
 
   const handleSectionClick = (section) => {
-    console.log('Section clicked:', section);
+    console.log('Section clicked:', section.name, 'Progress:', section.progress);
     if (section && section.path) {
       navigate(section.path);
     } else {
       alert(`${section?.name || 'This'} section coming soon!`);
     }
   };
+
+  // Wrapper component for Application with course selection handler
+  const ApplicationWrapper = () => (
+    <Application 
+      onCourseSelect={handleCourseSelection}
+      selectedCourseData={selectedCourseData}
+    />
+  );
+
+  // Wrapper component for Overview
+  const OverviewWrapper = () => (
+    <Overview 
+      selectedCourseData={selectedCourseData}
+      onStartApplication={() => navigate(`${basePath}/application/personal`)}
+      onChangeCourse={() => {
+        localStorage.removeItem('selectedCourseForApplication');
+        setSelectedCourseData(null);
+        navigate(`${basePath}/college-search`);
+      }}
+    />
+  );
 
   // CollegesSection Component
   const CollegesSection = () => (
@@ -582,13 +826,23 @@ const Dashboard = () => {
           </div>
         </section>
 
-        {/* ✅ ADDED: Quick Access to Courses Section */}
         <section className="content-section quick-access-section">
           <div className="section-header">
             <h2 className="section-title">Quick Access</h2>
           </div>
           
           <div className="quick-access-grid">
+            <div className="quick-access-card" onClick={() => navigate(`${basePath}/application/overview`)}>
+              <div className="quick-access-icon">📝</div>
+              <div className="quick-access-content">
+                <h4 className="quick-access-title">University Application</h4>
+                <p className="quick-access-description">
+                  Complete your GUS University application in 8 easy steps
+                </p>
+              </div>
+              <div className="quick-access-arrow">→</div>
+            </div>
+            
             <div className="quick-access-card" onClick={() => navigate(`${basePath}/college-search`)}>
               <div className="quick-access-icon">🔍</div>
               <div className="quick-access-content">
@@ -674,6 +928,8 @@ const Dashboard = () => {
       >
         <Routes>
           <Route path="/" element={<DashboardHome />} />
+          <Route path="/application/*" element={<ApplicationWrapper />} />
+          <Route path="/application/overview" element={<OverviewWrapper />} />
           <Route path="/colleges" element={<CollegesSection />} />
           <Route path="/colleges/:collegeId" element={<CollegeDetails />} />
           <Route path="/colleges/:collegeId/:subsection" element={<CollegeSubsection />} />
@@ -688,9 +944,7 @@ const Dashboard = () => {
           <Route path="/activities/responsibilities" element={<ResponsibilitiesSection />} />
           <Route path="/writing/*" element={<WritingSection />} />
           <Route path="/college-search" element={<CollegeSearch onCollegeUpdate={fetchUserColleges} />} />
-          
-          {/* ✅ ADDED: Courses Route */}
-          <Route path="/courses/:universityId" element={<Courses />} />
+          <Route path="/courses/:universityId" element={<Courses onCourseSelect={handleCourseSelection} />} />
           
           <Route path="/colleges/:collegeId/general" element={<General />} />
           <Route path="/colleges/:collegeId/academics" element={<Academics />} />
@@ -704,7 +958,6 @@ const Dashboard = () => {
         </Routes>
       </DashboardLayout>
       
-      {/* Add the Chat Widget component here */}
       <ChatWidget />
     </>
   );

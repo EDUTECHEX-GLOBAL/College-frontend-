@@ -182,34 +182,37 @@ const ChatWidget = () => {
           </div>
 
           {/* Messages */}
-          <div className="messages-container">
-            {messages.map((m) => (
-              <div
-                key={m.id}
-                className={`msg-row ${m.sender === 'user' ? 'right' : 'left'}`}
-              >
-                <div className={`msg-bubble ${m.sender}`}>
-                  {m.text.split('\n').map((line, idx) => (
-                    <p key={idx} className="msg-line">
-                      {line}
-                    </p>
-                  ))}
-                </div>
-              </div>
-            ))}
+<div className="messages-container">
+  {messages.map((m) => (
+    <div
+      key={m.id}
+      className={`msg-row ${m.sender === 'user' ? 'right' : 'left'}`}
+    >
+      <div className={`msg-bubble ${m.sender}`}>
+        {String(m.text ?? '')
+          .split('\n')
+          .map((line, idx) => (
+            <p key={idx} className="msg-line">
+              {line}
+            </p>
+          ))}
+      </div>
+    </div>
+  ))}
 
-            {isTyping && (
-              <div className="msg-row left">
-                <div className="msg-bubble bot typing">
-                  <span className="typing-dot"></span>
-                  <span className="typing-dot"></span>
-                  <span className="typing-dot"></span>
-                </div>
-              </div>
-            )}
+  {isTyping && (
+    <div className="msg-row left">
+      <div className="msg-bubble bot typing">
+        <span className="typing-dot"></span>
+        <span className="typing-dot"></span>
+        <span className="typing-dot"></span>
+      </div>
+    </div>
+  )}
 
-            <div ref={messagesEndRef} />
-          </div>
+  <div ref={messagesEndRef} />
+</div>
+
 
           {/* Input */}
           <form className="chat-input-bar" onSubmit={handleSubmit}>

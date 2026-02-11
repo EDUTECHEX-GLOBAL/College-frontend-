@@ -54,7 +54,7 @@
   text-align: center;
 }
 
-.progress-section {
+.writing-progress-section {
   position: absolute;
   right: 40px;
   display: flex;
@@ -212,7 +212,7 @@
     font-size: 20px;
   }
   
-  .progress-section {
+  .writing-progress-section {
     position: static;
     order: 3;
     justify-content: center;

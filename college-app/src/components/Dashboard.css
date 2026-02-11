@@ -676,7 +676,7 @@
   color: #1a202c;
 }
 
-.progress-section {
+.dashboard-progress-section {
   display: flex;
   align-items: center;
   gap: 16px;

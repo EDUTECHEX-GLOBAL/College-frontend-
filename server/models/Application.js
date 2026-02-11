@@ -159,11 +159,7 @@ const applicationSchema = new mongoose.Schema({
     }
   }],
   
-  // Financial Information
-  financialAidRequired: {
-    type: Boolean,
-    default: false
-  },
+  
   scholarshipApplied: Boolean,
   scholarshipType: String,
   

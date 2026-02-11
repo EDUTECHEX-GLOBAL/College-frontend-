@@ -1,7 +1,7 @@
 /* ===== GLOBAL ===== */
 .home-wrapper {
   min-height: 100vh;
-  height: 100vh; /* Prevent content from expanding beyond viewport */
+max-height: 100vh; /* Prevent content from expanding beyond viewport */
   max-height: 100vh; /* Ensure it doesn't exceed viewport height */
   background-image: url("../assets/homebgimg.png");
   background-size: cover;
@@ -11,7 +11,7 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow: hidden; /* Prevent any scrolling within the wrapper */
+  overflow: visible;  /* Prevent any scrolling within the wrapper */
 }
 
 .home-wrapper::before {
@@ -26,7 +26,8 @@
 body {
   margin: 0;
   padding: 0;
-  overflow: hidden; /* Disable scrolling on the entire page */
+ overflow-y: auto; /* ✅ allow vertical scroll */
+  overflow-x: hidden;/* Disable scrolling on the entire page */
   height: 100vh;
 }
 
@@ -111,8 +112,8 @@ body {
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
-  overflow-y: auto; /* Allow scrolling only within content if needed */
-  max-height: calc(100vh - 120px); /* Calculate available height minus header */
+    overflow: visible; /* Allow scrolling only within content if needed */
+    max-height: none; /* Calculate available height minus header */
 }
 
 .headline {

@@ -52,7 +52,7 @@
   text-align: center;
 }
 
-.progress-section {
+.profileform-progress-section {
   position: absolute;
   right: 40px;
   display: flex;
@@ -201,7 +201,7 @@
     left: 30px;
   }
   
-  .progress-section {
+  .profileform-progress-section {
     right: 30px;
   }
   
@@ -235,7 +235,7 @@
     font-size: 20px;
   }
   
-  .progress-section {
+  .profileform-progress-section {
     position: static;
     order: 3;
     justify-content: center;

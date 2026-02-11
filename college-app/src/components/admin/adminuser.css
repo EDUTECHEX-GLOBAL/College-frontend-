@@ -567,7 +567,7 @@
 }
 
 /* Action Buttons */
-.action-buttons {
+.adminuser-action-buttons {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
