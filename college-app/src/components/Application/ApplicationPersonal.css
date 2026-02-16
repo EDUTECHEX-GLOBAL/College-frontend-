@@ -1,76 +1,366 @@
 /* ApplicationPersonal.css */
-/* All styles are inherited from Application.css */
-/* Additional specific styles for Personal Information section */
+/* Complete styles for GUS portal personal information section */
 
-.form-section {
-    position: relative;
+/* Main Container */
+.application-personal {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+    background-color: #f8f9fa;
+    min-height: calc(100vh - 80px);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
 }
 
-.section-header {
-    position: sticky;
-    top: 0;
+/* Header Styles */
+.personal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 20px 24px;
     background: white;
-    z-index: 100;
-    padding-top: 10px;
-    margin-top: -10px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.text-muted {
-    color: #888;
+.header-left h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 4px;
+}
+
+.application-id {
+    font-size: 14px;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.progress-badge {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2563eb;
+    background: #e6f0ff;
+    padding: 8px 16px;
+    border-radius: 30px;
+}
+
+/* Navigation Steps */
+.application-steps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 24px;
+    padding: 16px 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    overflow-x: auto;
+}
+
+.step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 30px;
+    font-size: 13px;
+    color: #6b7280;
+    background: #f3f4f6;
+    white-space: nowrap;
+}
+
+.step.completed {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.step.active {
+    background: #2563eb;
+    color: white;
+}
+
+.step-number {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
     font-size: 12px;
-    margin: 0;
+    font-weight: 600;
 }
 
-.file-input {
-    display: none;
+.step.active .step-number {
+    background: white;
+    color: #2563eb;
 }
 
-/* Specific styles for passport and photo upload */
-.upload-area {
-    min-height: 200px;
+.step-name {
+    font-weight: 500;
+}
+
+/* Error Banner */
+.error-banner {
+    background-color: #fee2e2;
+    border-left: 4px solid #dc2626;
+    color: #991b1b;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 8px;
+}
+
+.error-banner i {
+    margin-right: 10px;
+}
+
+.error-close-btn {
+    background: none;
+    border: none;
+    color: #991b1b;
+    cursor: pointer;
+    font-size: 20px;
+    padding: 0 8px;
+}
+
+.error-close-btn:hover {
+    background-color: rgba(153, 27, 27, 0.1);
+    border-radius: 50%;
+}
+
+/* Form Container */
+.personal-form-container {
+    background: white;
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.form-header {
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.form-header h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+}
+
+.form-subtitle {
+    font-size: 14px;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+/* Form Sections */
+.applicationpersonal-form-section {
+    margin-bottom: 32px;
+    padding: 24px;
+    background: #f9fafb;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+
+.section-heading {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #2563eb;
+}
+
+/* Form Grid */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.form-group {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    gap: 6px;
 }
 
-.upload-prompt i {
-    font-size: 48px;
-    margin-bottom: 15px;
+.form-group.full-width {
+    grid-column: 1 / -1;
 }
 
-/* Validation styles */
+.form-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+}
+
+.form-label.required::after {
+    content: " *";
+    color: #dc2626;
+}
+
+.form-input,
+.form-select {
+    padding: 12px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    background-color: white;
+}
+
+.form-input:focus,
+.form-select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-input:disabled,
+.form-select:disabled {
+    background-color: #f3f4f6;
+    cursor: not-allowed;
+}
+
+/* Validation Styles */
 .form-input:invalid:not(:focus):not(:placeholder-shown) {
-    border-color: #e53935;
+    border-color: #dc2626;
 }
 
 .form-input:valid:not(:focus):not(:placeholder-shown) {
-    border-color: #43a047;
+    border-color: #10b981;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .upload-area {
-        min-height: 180px;
-        padding: 20px;
-    }
-    
-    .upload-prompt i {
-        font-size: 36px;
-    }
+/* Radio Group */
+.radio-group {
+    display: flex;
+    gap: 24px;
+    padding: 8px 0;
 }
-/* Add these styles to your ApplicationPersonal.css file */
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #374151;
+    cursor: pointer;
+}
+
+.radio-label input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #2563eb;
+}
+
+/* Phone Input */
+.phone-input {
+    display: flex;
+    align-items: center;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: white;
+}
+
+.country-code {
+    padding: 12px 16px;
+    background-color: #f3f4f6;
+    border-right: 1px solid #d1d5db;
+    font-size: 14px;
+    color: #374151;
+    font-weight: 500;
+}
+
+.phone-number {
+    border: none;
+    border-radius: 0;
+    flex: 1;
+    padding: 12px 16px;
+}
+
+.phone-number:focus {
+    box-shadow: none;
+    outline: none;
+}
+
+/* Upload Area Styles */
+.upload-area {
+    border: 2px dashed #d1d5db;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    background: white;
+    transition: all 0.3s ease;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.upload-area:hover {
+    border-color: #2563eb;
+    background-color: #f8fafc;
+}
+
+.upload-instruction {
+    font-size: 16px;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+.upload-hint {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-bottom: 20px;
+}
+
+.upload-button {
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 10px;
+}
+
+.upload-button:hover {
+    background-color: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.upload-button:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
 
 /* Compact Upload Area Styles */
 .upload-area-compact {
-    border: 2px dashed #ddd;
+    border: 2px dashed #d1d5db;
     border-radius: 8px;
     padding: 16px;
-    background-color: #f9f9f9;
+    background-color: #f9fafb;
     transition: border-color 0.3s ease;
 }
 
 .upload-area-compact:hover {
-    border-color: #007bff;
+    border-color: #2563eb;
 }
 
 .upload-header {
@@ -86,37 +376,37 @@
 
 .upload-title {
     font-weight: 500;
-    color: #333;
+    color: #374151;
     margin-bottom: 4px;
     font-size: 14px;
 }
 
 .upload-subtitle {
     font-size: 12px;
-    color: #666;
+    color: #6b7280;
     margin: 0;
 }
 
 .compact-upload-btn {
-    background-color: #007bff;
+    background-color: #2563eb;
     color: white;
     border: none;
     padding: 8px 16px;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
     font-size: 14px;
     display: flex;
     align-items: center;
     gap: 8px;
-    transition: background-color 0.3s ease;
+    transition: all 0.2s ease;
 }
 
 .compact-upload-btn:hover {
-    background-color: #0056b3;
+    background-color: #1d4ed8;
 }
 
 .compact-upload-btn:disabled {
-    background-color: #ccc;
+    background-color: #9ca3af;
     cursor: not-allowed;
 }
 
@@ -126,8 +416,8 @@
     align-items: center;
     background-color: white;
     padding: 12px;
-    border-radius: 6px;
-    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
     margin-top: 8px;
 }
 
@@ -139,7 +429,7 @@
 
 .file-icon {
     font-size: 20px;
-    color: #007bff;
+    color: #2563eb;
 }
 
 .file-details {
@@ -150,31 +440,411 @@
 .file-name {
     font-weight: 500;
     font-size: 14px;
-    color: #333;
+    color: #111827;
     margin-bottom: 2px;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .file-size {
     font-size: 12px;
-    color: #666;
+    color: #6b7280;
+}
+
+/* Image Preview */
+.image-preview {
+    position: relative;
+    margin: 16px 0;
+    max-width: 200px;
+}
+
+.image-preview img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    border: 2px solid #e5e7eb;
+}
+
+.remove-image-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #dc2626;
+    color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.remove-image-btn:hover {
+    background: #b91c1c;
+    transform: scale(1.1);
 }
 
 .remove-file-btn {
     background: none;
     border: none;
-    color: #ff4444;
+    color: #dc2626;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 20px;
     padding: 4px 8px;
     border-radius: 4px;
-    transition: background-color 0.3s ease;
+    transition: all 0.2s ease;
 }
 
 .remove-file-btn:hover {
-    background-color: #ffeaea;
+    background-color: #fee2e2;
 }
 
 .remove-file-btn:disabled {
-    color: #ccc;
+    color: #9ca3af;
     cursor: not-allowed;
+}
+
+/* File Info */
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #f3f4f6;
+    border-radius: 8px;
+    margin: 12px 0;
+    width: 100%;
+}
+
+/* Visa Question */
+.visa-question {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 2px solid #e5e7eb;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 2px solid #e5e7eb;
+}
+
+.btn-secondary,
+.btn-primary {
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.btn-secondary {
+    background: white;
+    border: 1px solid #d1d5db;
+    color: #374151;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+.btn-primary {
+    background: #2563eb;
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.btn-secondary:disabled,
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Language Selector */
+.language-selector {
+    text-align: right;
+    margin-top: 20px;
+    padding-top: 16px;
+    font-size: 14px;
+    color: #6b7280;
+    cursor: pointer;
+    border-top: 1px solid #e5e7eb;
+}
+
+.language-selector span {
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.language-selector span:hover {
+    background-color: #f3f4f6;
+}
+
+/* Loading State */
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    text-align: center;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.loading-spinner {
+    border: 4px solid #f3f3f6;
+    border-top: 4px solid #2563eb;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Text Utilities */
+.text-muted {
+    color: #6b7280;
+    font-size: 12px;
+    margin: 4px 0 0;
+}
+
+/* File Input Hidden */
+.file-input,
+.file-input-hidden {
+    display: none;
+}
+
+/* Upload Prompt Icon */
+.upload-prompt i {
+    font-size: 48px;
+    color: #9ca3af;
+    margin-bottom: 16px;
+}
+
+/* Sticky Header */
+.section-header {
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 100;
+    padding: 16px 0;
+    margin: -16px 0 16px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .application-personal {
+        padding: 20px;
+    }
+    
+    .application-steps {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding: 12px;
+    }
+    
+    .step {
+        flex-shrink: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .application-personal {
+        padding: 16px;
+    }
+
+    .personal-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 16px;
+    }
+
+    .header-left h1 {
+        font-size: 20px;
+    }
+
+    .progress-badge {
+        align-self: flex-start;
+    }
+
+    .personal-form-container {
+        padding: 20px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .applicationpersonal-form-section {
+        padding: 16px;
+    }
+
+    .section-heading {
+        font-size: 16px;
+    }
+
+    .upload-area {
+        min-height: 180px;
+        padding: 20px;
+    }
+    
+    .upload-prompt i {
+        font-size: 36px;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .btn-secondary,
+    .btn-primary {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .radio-group {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .phone-input {
+        flex-direction: column;
+        border: none;
+        gap: 8px;
+    }
+
+    .country-code {
+        width: 100%;
+        border-right: none;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+    }
+
+    .phone-number {
+        width: 100%;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+    }
+
+    .upload-header {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .compact-upload-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .file-name {
+        max-width: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+    .application-personal {
+        padding: 12px;
+    }
+
+    .personal-form-container {
+        padding: 16px;
+    }
+
+    .applicationpersonal-form-section {
+        padding: 12px;
+    }
+
+    .form-input,
+    .form-select {
+        padding: 10px 12px;
+    }
+
+    .upload-area {
+        min-height: 160px;
+        padding: 16px;
+    }
+
+    .upload-instruction {
+        font-size: 14px;
+    }
+
+    .upload-hint {
+        font-size: 11px;
+    }
+
+    .application-steps {
+        padding: 8px;
+    }
+
+    .step {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+
+    .step-number {
+        width: 18px;
+        height: 18px;
+        font-size: 10px;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .application-personal {
+        background: white;
+        padding: 0;
+    }
+
+    .personal-header,
+    .application-steps,
+    .form-actions,
+    .language-selector,
+    .upload-button,
+    .compact-upload-btn,
+    .remove-file-btn,
+    .remove-image-btn {
+        display: none;
+    }
+
+    .personal-form-container {
+        box-shadow: none;
+        padding: 0;
+    }
+
+    .applicationpersonal-form-section {
+        break-inside: avoid;
+        border: 1px solid #ddd;
+        background: white;
+    }
 }

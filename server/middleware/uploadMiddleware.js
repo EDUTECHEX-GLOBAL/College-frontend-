@@ -16,7 +16,8 @@ const __dirname = path.dirname(__filename);
 // =====================================================
 const createUploadDirs = () => {
   const baseDir = path.join(process.cwd(), "uploads");
-  const folders = ['passport', 'photograph', 'education'];
+  const folders = ['passport', 'photograph', 'education', 'nationalId'];
+
   
   // Create base uploads directory
   if (!fs.existsSync(baseDir)) {
@@ -167,6 +168,8 @@ export const createUploader = (folderName, maxSizeMB = 10) => {
 export const passportUpload = createUploader("passport", 10);
 export const photographUpload = createUploader("photograph", 2);
 export const educationUpload = createUploader("education", 10);
+export const nationalIdUpload = createUploader("nationalId", 10);
+
 
 // =====================================================
 // FILE URL HELPER
@@ -407,13 +410,17 @@ export const checkUploadPermissions = () => {
 checkUploadPermissions();
 
 // Default export (for backward compatibility)
+// =====================================================
+// DEFAULT EXPORT (for backward compatibility)
+// =====================================================
 export default { 
-  upload,  // ADDED THIS LINE - now export upload
+  upload: createUploader,  // ← FIXED: export the function, not the object
   passportUpload,
   photographUpload,
   educationUpload,
   getFileUrl,
   getDynamicFileUrl,
+  nationalIdUpload,
   deleteFile,
   deleteFileFromFolder,
   validateUploadedDocument,

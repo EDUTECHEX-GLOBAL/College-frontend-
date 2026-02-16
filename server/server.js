@@ -42,6 +42,11 @@ import overviewRoutes from "./routes/overviewRoutes.js"; // Add this line
 // Add this import with your other route imports
 import applicationPersonalRoutes from "./routes/applicationPersonalRoutes.js"; // Add this line
 import applicationAddressRoutes from "./routes/applicationAddressRoutes.js";
+import applicationEducationRoutes from "./routes/applicationEducationRoutes.js"; // <-- ADD THIS
+// =====================================================
+// ✅ ADD THIS IMPORT FOR APPLICATION DOCUMENTS
+// =====================================================
+import applicationDocumentRoutes from "./routes/applicationDocumentRoutes.js"; // <-- ADD THIS LINE
 
 // Load env
 dotenv.config();
@@ -90,6 +95,12 @@ app.use("/api/students", accountRoutes);
 app.use("/api/education", educationRoutes);
 app.use("/api/college-search", collegesearchRoutes);
 app.use("/api/notifications", notificationRoutes); // Add this line
+app.use("/api/application/education", applicationEducationRoutes); // <-- ADD THIS
+// =====================================================
+// ✅ ADD THIS LINE FOR APPLICATION DOCUMENTS API
+// =====================================================
+app.use("/api/application/documents", applicationDocumentRoutes); // <-- ADD THIS LINE
+
 app.use("/api/courses", courseRoutes); // Add this line
 app.use("/api/colleges", collegeRoutes);
 app.use("/api/general", generalRoutes); 
@@ -142,7 +153,11 @@ app.get("/", (req, res) => {
       collegeSearch: "GET /api/college-search",
       colleges: "GET /api/colleges (Protected)",
       courses: "GET /api/courses (Public/Protected)", // Add this line
-       applicationPersonal: "GET/POST /api/application/personal (Protected)", // ⬅️ ADD THIS LINE
+      applicationPersonal: "GET/POST /api/application/personal (Protected)", // ⬅️ ADD THIS LINE
+      // =====================================================
+      // ✅ ADD THIS LINE FOR APPLICATION DOCUMENTS
+      // =====================================================
+      applicationDocuments: "GET/POST /api/application/documents (Protected)", // <-- ADD THIS LINE
       general: "GET /api/general (Protected)",
       overview: "GET /api/overview (Protected)", // ⬅️ ADD THIS LINE
       academics: "GET /api/academics (Protected)",
@@ -162,6 +177,7 @@ app.get("/", (req, res) => {
     }
   });
 });
+
 app.get("/api/health", (req, res) => {
   res.status(200).json({
     success: true,
@@ -187,7 +203,11 @@ app.get("/api/status", (req, res) => {
       education: "/api/education",
       family: "/api/family-background",
       educationTransfer: "/api/education-transfer",
-       applicationPersonal: "/api/application/personal", // ⬅️ ADD THIS LINE
+      applicationPersonal: "/api/application/personal", // ⬅️ ADD THIS LINE
+      // =====================================================
+      // ✅ ADD THIS LINE FOR APPLICATION DOCUMENTS
+      // =====================================================
+      applicationDocuments: "/api/application/documents", // <-- ADD THIS LINE
       firstApplication: "/api/first-application",
       overview: "/api/overview", // ⬅️ ADD THIS LINE
       writing: "/api/writing",
@@ -202,6 +222,7 @@ app.get("/api/status", (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
 // 404 Handler
 app.use((req, res) => {
   res.status(404).json({
@@ -266,6 +287,7 @@ app.listen(PORT, () => {
       📝 First Application: /api/first-application  // ⬅️ ADDED
        Application Overview: /api/overview  // ⬅️ ADDED
        📋 Personal Information: /api/application/personal  // ⬅️ ADD THIS LINE
+       📄 Application Documents: /api/application/documents  // <-- ADD THIS LINE
    🔄 Transfer:         /api/transfer
    🧾 Extended Profile: /api/profile
    🎓 Education:        /api/education

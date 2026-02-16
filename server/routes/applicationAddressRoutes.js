@@ -1,4 +1,5 @@
 import express from "express";
+import authMiddleware from "../middleware/authMiddleware.js";
 import {
   getAddressInfo,
   saveAddressInfo,
@@ -6,44 +7,57 @@ import {
   removeNationalId,
   getAllAddressInfo,
 } from "../controllers/applicationAddressController.js";
-
-import authMiddleware from "../middleware/authMiddleware.js";
-import multer from "multer";
-import path from "path";
+import { createUploader, ensureDirectoryExists } from "../middleware/uploadMiddleware.js";
 
 const router = express.Router();
 
 /* =====================================================
-   MULTER CONFIG FOR NATIONAL ID
+   ENSURE NATIONAL ID UPLOAD FOLDER EXISTS
+   This ensures the folder exists before any upload
 ===================================================== */
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/nationalId");
-  },
-  filename: function (req, file, cb) {
-    const uniqueName =
-      Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueName + path.extname(file.originalname));
-  },
-});
+ensureDirectoryExists("nationalId");
 
-const upload = multer({
-  storage,
-  limits: { fileSize: 2 * 1024 * 1024 },
-});
+/* =====================================================
+   MULTER UPLOADER FOR NATIONAL ID
+   - Max size: 10MB
+   - Accepts: PNG, JPG, JPEG, PDF
+===================================================== */
+const nationalIdUpload = createUploader("nationalId", 10); // 10MB max
 
 /* =====================================================
    PROTECTED ROUTES
+   All routes below require authentication
 ===================================================== */
 router.use(authMiddleware);
 
-/* USER ROUTES */
+/* =====================================================
+   USER ROUTES
+===================================================== */
+
+// GET current user's address info
 router.get("/", getAddressInfo);
+
+// POST save or update address info
 router.post("/", saveAddressInfo);
-router.post("/upload/nationalId", upload.single("file"), uploadNationalId);
+
+// POST upload National ID
+router.post(
+  "/upload/nationalId",
+  nationalIdUpload.single("file"), // Multer handles file validation & upload
+  uploadNationalId
+);
+
+// DELETE remove National ID
 router.delete("/files/nationalId", removeNationalId);
 
-/* ADMIN */
+/* =====================================================
+   ADMIN ROUTES
+===================================================== */
+
+// GET all addresses (admin only)
 router.get("/admin/all", getAllAddressInfo);
 
+/* =====================================================
+   EXPORT ROUTER
+===================================================== */
 export default router;

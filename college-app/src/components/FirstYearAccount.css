@@ -92,7 +92,7 @@
 }
 
 /* ===== Section Headers ===== */
-.form-section {
+.firstyearaccount-form-section {
   margin-bottom: 30px;
   padding: 25px;
   background: rgba(255, 255, 255, 0.5);
@@ -646,7 +646,7 @@ select:focus {
     margin-top: 0;
   }
   
-  .form-section {
+  .firstyearaccount-form-section {
     padding: 20px;
     margin-bottom: 25px;
   }
@@ -696,7 +696,7 @@ select:focus {
     font-size: 1.8rem;
   }
   
-  .form-section {
+ .firstyearaccount-form-section {
     padding: 15px;
   }
   
@@ -759,7 +759,7 @@ select:focus {
     font-size: 1.6rem;
   }
   
-  .form-section {
+  .firstyearaccount-form-section {
     padding: 12px;
   }
   
