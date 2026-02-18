@@ -25,7 +25,7 @@ import FamilySection from './family-sections/FamilySection';
 import ChatWidget from './Chatbot/ChatWidget';
 import Courses from './Courses';
 import Application from './Application/Application';
-import Overview from './Application/Overview'; // Add Overview import
+import Overview from './Application/Overview';
 
 const API_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -39,7 +39,7 @@ const Dashboard = () => {
   const [userColleges, setUserColleges] = useState([]);
   const [familyCompleted, setFamilyCompleted] = useState(false);
   const [applicationProgress, setApplicationProgress] = useState(0);
-  const [selectedCourseData, setSelectedCourseData] = useState(null); // Add selected course state
+  const [selectedCourseData, setSelectedCourseData] = useState(null);
 
   // DYNAMIC BASE PATH DETECTION
   const isFirstYear = location.pathname.includes('/firstyear/');
@@ -73,7 +73,7 @@ const Dashboard = () => {
           }
         }
         
-        // Load selected course data
+        // Load selected course data (if any - keeping for compatibility)
         const selectedCourse = localStorage.getItem('selectedCourseForApplication');
         if (selectedCourse) {
           try {
@@ -113,7 +113,7 @@ const Dashboard = () => {
     }
   };
 
-  // Calculate application progress from localStorage data
+  // Calculate application progress from localStorage data - UPDATED for new flow
   const calculateLocalApplicationProgress = (appData) => {
     if (!appData) return 0;
     
@@ -128,6 +128,7 @@ const Dashboard = () => {
       return !!fieldValue;
     };
     
+    // Personal Information
     const personalFields = ['firstName', 'lastName', 'dob', 'gender', 'nationality', 
                            'countryOfResidence', 'email', 'mobile', 'passportFileName', 'photographFileName'];
     personalFields.forEach(field => {
@@ -135,6 +136,7 @@ const Dashboard = () => {
       if (isFieldFilled(appData[field])) completedFields++;
     });
     
+    // Address
     const addressFields = ['currentAddress', 'city', 'state', 'country', 
                           'postalCode', 'nationalIdFileName'];
     addressFields.forEach(field => {
@@ -142,6 +144,16 @@ const Dashboard = () => {
       if (isFieldFilled(appData[field])) completedFields++;
     });
     
+    // Entrance Qualification
+    const eqheFields = ['eqheDate', 'eqheCity', 'eqheCountry', 'eqheOriginalTitle', 'hasAnotherEQHE',
+                        'anotherEqheDate', 'anotherEqheCity', 'anotherEqheCountry', 'anotherEqheOriginalTitle',
+                        'eqheCertificateFileName'];
+    eqheFields.forEach(field => {
+      totalFields++;
+      if (isFieldFilled(appData[field])) completedFields++;
+    });
+    
+    // Education
     const educationFields = ['qualificationLevel', 'institutionName', 'boardUniversity', 
                             'countryOfStudy', 'startYear', 'endYear', 'resultStatus', 
                             'gradingSystem', 'transcriptsFileName', 'degreeCertificateFileName'];
@@ -150,28 +162,7 @@ const Dashboard = () => {
       if (isFieldFilled(appData[field])) completedFields++;
     });
     
-    const languageFields = ['englishTestType', 'testScore', 'testDate', 
-                           'testScorecardFileName', 'moiLetterFileName'];
-    languageFields.forEach(field => {
-      totalFields++;
-      if (isFieldFilled(appData[field])) completedFields++;
-    });
-    
-    const workFields = ['isEmployed', 'organizationName', 'jobTitle', 'workDuration', 
-                       'responsibilities', 'resumeFileName', 'experienceLettersFileName'];
-    workFields.forEach(field => {
-      totalFields++;
-      if (isFieldFilled(appData[field])) completedFields++;
-    });
-    
-    const courseFields = ['selectedCountry', 'selectedUniversity', 'campus', 
-                         'programLevel', 'courseName', 'intakeMonth', 'intakeYear', 
-                         'studyMode', 'secondPreference', 'thirdPreference'];
-    courseFields.forEach(field => {
-      totalFields++;
-      if (isFieldFilled(appData[field])) completedFields++;
-    });
-    
+    // Documents
     const documentFields = ['sopFileName', 'lor1FileName', 'lor2FileName', 
                            'portfolioFileName', 'researchProposalFileName'];
     documentFields.forEach(field => {
@@ -228,7 +219,7 @@ const Dashboard = () => {
     }
   };
 
-  // Handle course selection from Courses page
+  // Handle course selection from Courses page (keeping for compatibility)
   const handleCourseSelection = (courseData) => {
     console.log('🎯 Course selected in Dashboard:', courseData);
     setSelectedCourseData(courseData);
@@ -541,7 +532,7 @@ const Dashboard = () => {
     ? Object.keys(userData.applicationProgress).length 
     : 0;
 
-  // Application sections with progress - Include actual application progress
+  // Application sections with progress - UPDATED for new flow
   const applicationSections = [
     { 
       name: "University Application", 
@@ -622,7 +613,7 @@ const Dashboard = () => {
     />
   );
 
-  // Wrapper component for Overview
+  // Wrapper component for Overview - UPDATED
   const OverviewWrapper = () => (
     <Overview 
       selectedCourseData={selectedCourseData}
@@ -721,7 +712,7 @@ const Dashboard = () => {
     </>
   );
 
-  // DashboardHome Component
+  // DashboardHome Component - UPDATED quick access text
   const DashboardHome = () => (
     <>
       <header className="main-header">
@@ -837,7 +828,7 @@ const Dashboard = () => {
               <div className="quick-access-content">
                 <h4 className="quick-access-title">University Application</h4>
                 <p className="quick-access-description">
-                  Complete your GUS University application in 8 easy steps
+                  Complete your GUS University application in 6 easy steps
                 </p>
               </div>
               <div className="quick-access-arrow">→</div>

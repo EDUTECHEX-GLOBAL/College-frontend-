@@ -578,19 +578,6 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
         <div className="form-header">
           <h2>Application Documents</h2>
           <div className="info-message">
-            <p>
-              Please upload all available documents as this will speed up the application process, 
-              if possible in PDF or JPEG format.
-            </p>
-            <p className="important-note">
-              <strong>Please note:</strong> All documents which are not originally issued in either 
-              English or German language, must be professionally translated. The certified translation 
-              has to be submitted along with a copy of the original document.
-            </p>
-            <p>
-              If you have a portfolio on a website, you can also create a document which contains 
-              the link to your website, instead of uploading the portfolio.
-            </p>
           </div>
         </div>
 

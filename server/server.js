@@ -44,6 +44,10 @@ import applicationPersonalRoutes from "./routes/applicationPersonalRoutes.js"; /
 import applicationAddressRoutes from "./routes/applicationAddressRoutes.js";
 import applicationEducationRoutes from "./routes/applicationEducationRoutes.js"; // <-- ADD THIS
 // =====================================================
+// ✅ ADD THIS IMPORT FOR APPLICATION LANGUAGE (ENTRANCE QUALIFICATION)
+// =====================================================
+import applicationLanguageRoutes from "./routes/applicationLanguageRoutes.js"; // <-- ADD THIS LINE
+// =====================================================
 // ✅ ADD THIS IMPORT FOR APPLICATION DOCUMENTS
 // =====================================================
 import applicationDocumentRoutes from "./routes/applicationDocumentRoutes.js"; // <-- ADD THIS LINE
@@ -96,6 +100,10 @@ app.use("/api/education", educationRoutes);
 app.use("/api/college-search", collegesearchRoutes);
 app.use("/api/notifications", notificationRoutes); // Add this line
 app.use("/api/application/education", applicationEducationRoutes); // <-- ADD THIS
+// =====================================================
+// ✅ ADD THIS LINE FOR APPLICATION LANGUAGE (ENTRANCE QUALIFICATION)
+// =====================================================
+app.use("/api/application/language", applicationLanguageRoutes); // <-- ADD THIS LINE
 // =====================================================
 // ✅ ADD THIS LINE FOR APPLICATION DOCUMENTS API
 // =====================================================
@@ -155,6 +163,10 @@ app.get("/", (req, res) => {
       courses: "GET /api/courses (Public/Protected)", // Add this line
       applicationPersonal: "GET/POST /api/application/personal (Protected)", // ⬅️ ADD THIS LINE
       // =====================================================
+      // ✅ ADD THIS LINE FOR APPLICATION LANGUAGE
+      // =====================================================
+      applicationLanguage: "GET/POST /api/application/language (Protected)", // <-- ADD THIS LINE
+      // =====================================================
       // ✅ ADD THIS LINE FOR APPLICATION DOCUMENTS
       // =====================================================
       applicationDocuments: "GET/POST /api/application/documents (Protected)", // <-- ADD THIS LINE
@@ -204,6 +216,10 @@ app.get("/api/status", (req, res) => {
       family: "/api/family-background",
       educationTransfer: "/api/education-transfer",
       applicationPersonal: "/api/application/personal", // ⬅️ ADD THIS LINE
+      // =====================================================
+      // ✅ ADD THIS LINE FOR APPLICATION LANGUAGE
+      // =====================================================
+      applicationLanguage: "/api/application/language", // <-- ADD THIS LINE
       // =====================================================
       // ✅ ADD THIS LINE FOR APPLICATION DOCUMENTS
       // =====================================================
@@ -284,10 +300,11 @@ app.listen(PORT, () => {
 
 📚 Available Routes:
    👨‍🎓 Students:        /api/students
-      📝 First Application: /api/first-application  // ⬅️ ADDED
-       Application Overview: /api/overview  // ⬅️ ADDED
-       📋 Personal Information: /api/application/personal  // ⬅️ ADD THIS LINE
-       📄 Application Documents: /api/application/documents  // <-- ADD THIS LINE
+      📝 First Application: /api/first-application
+       Application Overview: /api/overview
+       📋 Personal Information: /api/application/personal
+       🎓 Entrance Qualification: /api/application/language
+       📄 Application Documents: /api/application/documents
    🔄 Transfer:         /api/transfer
    🧾 Extended Profile: /api/profile
    🎓 Education:        /api/education

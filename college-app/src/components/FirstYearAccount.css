@@ -475,7 +475,7 @@ select:focus {
 }
 
 /* ===== Form Actions ===== */
-.form-actions {
+.firstyearaccount-form-actions {
   display: flex;
   justify-content: space-between;
   gap: 20px;
@@ -651,7 +651,7 @@ select:focus {
     margin-bottom: 25px;
   }
   
-  .form-actions {
+ .firstyearaccount-form-actions{
     flex-direction: column;
   }
   

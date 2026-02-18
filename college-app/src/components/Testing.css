@@ -288,7 +288,7 @@ small {
 }
 
 /* Form Actions (Save buttons) */
-.form-actions {
+.testing-form-actions {
   background: white;
   padding: 20px 24px;
   border-top: 1px solid #e5e7eb;
@@ -442,13 +442,13 @@ small {
     padding: 20px;
   }
   
-  .form-actions {
+  .testing-form-actions {
     flex-direction: column;
     gap: 12px;
     align-items: stretch;
   }
   
-  .form-actions button {
+  .testing-form-actions button {
     width: 100%;
     justify-content: center;
   }
@@ -503,7 +503,7 @@ small {
     padding: 15px;
   }
   
-  .form-actions {
+  .testing-form-actions {
     padding: 16px;
   }
   

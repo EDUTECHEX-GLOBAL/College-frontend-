@@ -114,7 +114,7 @@
 }
 
 /* Form Actions (Save buttons) */
-.form-actions {
+.testingform-form-actions {
   background: white;
   padding: 20px 24px;
   border-top: 1px solid #e5e7eb;
@@ -213,13 +213,13 @@
     margin-top: 0;
   }
   
-  .form-actions {
+.testingform-form-actions {
     margin: 0 20px 20px;
     flex-direction: column;
     gap: 12px;
   }
   
-  .form-actions button {
+  .testingform-form-actions button {
     width: 100%;
   }
 }
