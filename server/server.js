@@ -51,7 +51,9 @@ import applicationLanguageRoutes from "./routes/applicationLanguageRoutes.js"; /
 // ✅ ADD THIS IMPORT FOR APPLICATION DOCUMENTS
 // =====================================================
 import applicationDocumentRoutes from "./routes/applicationDocumentRoutes.js"; // <-- ADD THIS LINE
-
+import adminUniversityRoutes from "./routes/adminUniversityRoutes.js";
+// Add this import with your other route imports
+import userProfileRoutes from "./routes/userprofileroutes.js"; // Add this line
 // Load env
 dotenv.config();
 
@@ -108,7 +110,9 @@ app.use("/api/application/language", applicationLanguageRoutes); // <-- ADD THIS
 // ✅ ADD THIS LINE FOR APPLICATION DOCUMENTS API
 // =====================================================
 app.use("/api/application/documents", applicationDocumentRoutes); // <-- ADD THIS LINE
-
+// Add this line with your other app.use routes
+app.use("/api/user", userProfileRoutes); // Add this line for user profile management
+app.use("/api/admin", adminUniversityRoutes);
 app.use("/api/courses", courseRoutes); // Add this line
 app.use("/api/colleges", collegeRoutes);
 app.use("/api/general", generalRoutes); 

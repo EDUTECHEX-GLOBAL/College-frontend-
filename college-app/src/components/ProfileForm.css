@@ -82,7 +82,7 @@
 }
 
 /* Main Content Area */
-.profile-content {
+.profileform-profile-content {
   flex: 1;
   margin-top: 70px;
   padding: 0;
@@ -242,7 +242,7 @@
     width: 100%;
   }
   
-  .profile-content {
+  .profileform-profile-content {
     margin-top: 0;
   }
   

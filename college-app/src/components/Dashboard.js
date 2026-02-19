@@ -113,7 +113,7 @@ const Dashboard = () => {
     }
   };
 
-  // Calculate application progress from localStorage data - UPDATED for new flow
+  // Calculate application progress from localStorage data - UPDATED with Special Needs
   const calculateLocalApplicationProgress = (appData) => {
     if (!appData) return 0;
     
@@ -152,6 +152,19 @@ const Dashboard = () => {
       totalFields++;
       if (isFieldFilled(appData[field])) completedFields++;
     });
+    
+    // Special Needs
+    const specialNeedsFields = ['hasSpecialNeeds'];
+    specialNeedsFields.forEach(field => {
+      totalFields++;
+      if (isFieldFilled(appData[field])) completedFields++;
+    });
+    
+    // If hasSpecialNeeds is 'yes', check if description is filled
+    if (appData.hasSpecialNeeds === 'yes') {
+      totalFields++;
+      if (isFieldFilled(appData.specialNeedsDescription)) completedFields++;
+    }
     
     // Education
     const educationFields = ['qualificationLevel', 'institutionName', 'boardUniversity', 
@@ -828,7 +841,7 @@ const Dashboard = () => {
               <div className="quick-access-content">
                 <h4 className="quick-access-title">University Application</h4>
                 <p className="quick-access-description">
-                  Complete your GUS University application in 6 easy steps
+                  Complete your GUS University application in 7 easy steps
                 </p>
               </div>
               <div className="quick-access-arrow">→</div>

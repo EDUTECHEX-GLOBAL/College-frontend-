@@ -1,0 +1,315 @@
+/* src/pages/University/University.css */
+
+.university-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+/* Header */
+.university-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.university-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.university-count {
+  background: #e2e8f0;
+  padding: 8px 16px;
+  border-radius: 40px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #334155;
+  letter-spacing: 0.3px;
+}
+
+/* Error Container */
+.error-container {
+  text-align: center;
+  padding: 48px 20px;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #fee2e2;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.error-message {
+  color: #dc2626;
+  font-size: 16px;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.retry-button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 28px;
+  border-radius: 40px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+}
+
+.retry-button:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 10px -1px rgba(37, 99, 235, 0.3);
+}
+
+/* Loading Container */
+.loading-container {
+  text-align: center;
+  padding: 80px 20px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+.loading-message {
+  color: #64748b;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* University Grid */
+.university-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 24px;
+}
+
+/* University Card */
+.university-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  gap: 20px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.university-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border-color: #cbd5e1;
+}
+
+/* University Card Logo */
+.university-card-logo {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid #cbd5e1;
+  overflow: hidden;
+  font-size: 24px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.university-card-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.university-initials {
+  font-size: 24px;
+  font-weight: 700;
+  color: #334155;
+}
+
+/* University Card Details */
+.university-card-details {
+  flex: 1;
+}
+
+.university-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.university-card-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.university-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  color: #1e40af;
+  border-radius: 30px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid #93c5fd;
+}
+
+.university-card-location {
+  font-size: 15px;
+  color: #475569;
+  margin: 0 0 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.location-icon, .programs-icon {
+  font-size: 16px;
+}
+
+.university-card-programs {
+  font-size: 14px;
+  color: #2563eb;
+  margin: 0 0 14px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #eff6ff;
+  padding: 6px 12px;
+  border-radius: 30px;
+  display: inline-flex;
+  font-weight: 500;
+}
+
+.university-card-website {
+  display: inline-block;
+  color: #2563eb;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 8px;
+  padding: 6px 0;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.university-card-website:hover {
+  color: #1d4ed8;
+  border-bottom-color: #1d4ed8;
+}
+
+/* Empty Container */
+.empty-container {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 80px 20px;
+  background: white;
+  border-radius: 16px;
+  border: 2px dashed #cbd5e1;
+}
+
+.empty-message {
+  color: #334155;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.empty-submessage {
+  color: #64748b;
+  font-size: 15px;
+  margin-bottom: 24px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .university-container {
+    padding: 20px 16px;
+  }
+
+  .university-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .university-title {
+    font-size: 28px;
+  }
+
+  .university-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .university-card {
+    padding: 20px;
+  }
+
+  .university-card-logo {
+    width: 60px;
+    height: 60px;
+    font-size: 20px;
+  }
+
+  .university-card-name {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .university-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .university-card-header {
+    justify-content: center;
+  }
+
+  .university-card-location {
+    justify-content: center;
+  }
+
+  .university-card-programs {
+    justify-content: center;
+    width: 100%;
+  }
+}

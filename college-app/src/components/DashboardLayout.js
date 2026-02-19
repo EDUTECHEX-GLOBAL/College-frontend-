@@ -290,6 +290,12 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
         const eqheFilled = eqheFields.filter(field => isFieldFilled(gusAppData[field])).length;
         return (eqheFilled / eqheFields.length) * 100;
         
+      case 'special-needs':
+        // Check if special needs section is completed
+        if (gusAppData.hasSpecialNeeds === 'no') return 100;
+        if (gusAppData.hasSpecialNeeds === 'yes' && isFieldFilled(gusAppData.specialNeedsDescription)) return 100;
+        return 0;
+        
       case 'education':
         const educationFields = ['qualificationLevel', 'institutionName', 'boardUniversity', 
                                 'countryOfStudy', 'startYear', 'endYear'];
@@ -318,6 +324,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     if (path.includes('/application/personal')) return 'personal';
     if (path.includes('/application/address')) return 'address';
     if (path.includes('/application/language')) return 'entrance-qualification';
+    if (path.includes('/application/specialneeds')) return 'special-needs';
     if (path.includes('/application/firsteducation') || path.includes('/application/education')) return 'education';
     if (path.includes('/application/documents')) return 'documents';
     if (path.includes('/application/preview')) return 'preview';
@@ -729,13 +736,14 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
       );
     }
 
-    // Application Section - Updated for 6-step application flow (removed work, language, courses)
+    // Application Section - Updated for 7-step application flow (added Special Needs)
     if (activeMainSection === 'application') {
       const applicationSteps = [
         { id: 'overview', name: 'Application Overview', route: `${basePath}/application/overview` },
         { id: 'personal', name: 'Personal Information', route: `${basePath}/application/personal` },
         { id: 'address', name: 'Address', route: `${basePath}/application/address` },
         { id: 'entrance-qualification', name: 'Entrance Qualification', route: `${basePath}/application/language` },
+        { id: 'special-needs', name: 'Special Needs', route: `${basePath}/application/specialneeds` },
         { id: 'education', name: 'Education', route: `${basePath}/application/firsteducation` },
         { id: 'documents', name: 'Documents', route: `${basePath}/application/documents` },
         { id: 'preview', name: 'Preview & Submit', route: `${basePath}/application/preview` }
@@ -759,7 +767,8 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
             {applicationSteps.slice(1).map((step) => {
               const stepProgress = calculateApplicationStepProgress(step.id);
               const isActive = location.pathname === step.route || 
-                             (step.id === 'entrance-qualification' && location.pathname.includes('/application/language'));
+                             (step.id === 'entrance-qualification' && location.pathname.includes('/application/language')) ||
+                             (step.id === 'special-needs' && location.pathname.includes('/application/specialneeds'));
               return (
                 <li key={step.id} className={`nav-item ${isActive ? 'active' : ''}`}>
                   <div 
@@ -776,7 +785,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
             {/* Application Guide */}
             <li className="nav-item">
               <div className="nav-content" onClick={() => {
-                alert('GUS University Application Portal\n\nComplete your application in 6 steps:\n\n1. Personal Information\n2. Address\n3. Entrance Qualification\n4. Education\n5. Documents\n6. Preview & Submit');
+                alert('GUS University Application Portal\n\nComplete your application in 7 steps:\n\n1. Personal Information\n2. Address\n3. Entrance Qualification\n4. Special Needs\n5. Education\n6. Documents\n7. Preview & Submit');
               }}>
                 <span className="nav-text">Application Guide</span>
               </div>
@@ -794,7 +803,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
                       const stepProgress = calculateApplicationStepProgress(step.id);
                       return stepProgress >= 100;
                     }).length;
-                    alert(`Application Progress: ${completedSteps}/6 steps completed\nOverall Progress: ${applicationProgress}%`);
+                    alert(`Application Progress: ${completedSteps}/7 steps completed\nOverall Progress: ${applicationProgress}%`);
                   } catch (e) {
                     alert('No application data saved yet.');
                   }
@@ -889,6 +898,12 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
                     <div className="nav-progress-tiny">{Math.round(calculateApplicationStepProgress('entrance-qualification'))}%</div>
                   </div>
                 </li>
+                <li className={`nav-subitem ${location.pathname.includes('/application/specialneeds') ? 'active' : ''}`}>
+                  <div className="nav-content" onClick={() => navigate(`${basePath}/application/specialneeds`)}>
+                    <span className="nav-text">• Special Needs</span>
+                    <div className="nav-progress-tiny">{Math.round(calculateApplicationStepProgress('special-needs'))}%</div>
+                  </div>
+                </li>
                 <li className={`nav-subitem ${location.pathname.includes('/application/firsteducation') ? 'active' : ''}`}>
                   <div className="nav-content" onClick={() => navigate(`${basePath}/application/firsteducation`)}>
                     <span className="nav-text">• Education</span>
@@ -905,7 +920,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
                 {/* Application Support Items */}
                 <li className="nav-subitem">
                   <div className="nav-content" onClick={() => {
-                    alert('GUS University Application Portal\n\nComplete your application in 6 steps:\n\n1. Personal Information\n2. Address\n3. Entrance Qualification\n4. Education\n5. Documents\n6. Preview & Submit');
+                    alert('GUS University Application Portal\n\nComplete your application in 7 steps:\n\n1. Personal Information\n2. Address\n3. Entrance Qualification\n4. Special Needs\n5. Education\n6. Documents\n7. Preview & Submit');
                   }}>
                     <span className="nav-text">Application Guide</span>
                   </div>
@@ -916,12 +931,12 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
                     if (appData) {
                       try {
                         const parsedData = JSON.parse(appData);
-                        const steps = ['personal', 'address', 'entrance-qualification', 'education', 'documents', 'preview'];
+                        const steps = ['personal', 'address', 'entrance-qualification', 'special-needs', 'education', 'documents', 'preview'];
                         const completedSteps = steps.filter(step => {
                           const stepProgress = calculateApplicationStepProgress(step);
                           return stepProgress >= 100;
                         }).length;
-                        alert(`Application Progress: ${completedSteps}/6 steps completed\nOverall Progress: ${applicationProgress}%`);
+                        alert(`Application Progress: ${completedSteps}/7 steps completed\nOverall Progress: ${applicationProgress}%`);
                       } catch (e) {
                         alert('No application data saved yet.');
                       }

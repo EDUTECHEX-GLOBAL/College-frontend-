@@ -4,6 +4,7 @@ import './Application.css';
 import ApplicationPersonal from './ApplicationPersonal';
 import ApplicationAddress from './ApplicationAddress';
 import ApplicationLanguage from './ApplicationLanguage'; // This now contains Entrance Qualification
+import ApplicationSpecialNeeds from './ApplicationSpecialNeeds'; // Import the new component
 import ApplicationEducation from './ApplicationFirstEducation';
 import ApplicationDocuments from './ApplicationDocuments';
 import ApplicationPreview from './ApplicationPreview';
@@ -28,9 +29,10 @@ const Application = () => {
         if (path.includes('/personal')) return 1;
         if (path.includes('/address')) return 2;
         if (path.includes('/language')) return 3; // Entrance Qualification
-        if (path.includes('/firsteducation')) return 4;
-        if (path.includes('/documents')) return 5;
-        if (path.includes('/preview')) return 6;
+        if (path.includes('/specialneeds')) return 4; // Special Needs
+        if (path.includes('/firsteducation')) return 5;
+        if (path.includes('/documents')) return 6;
+        if (path.includes('/preview')) return 7;
         return 0; // Default to Overview
     });
     
@@ -69,6 +71,10 @@ const Application = () => {
         anotherEqheOriginalTitle: '',
         eqheCertificate: null,
         
+        // Special Needs
+        hasSpecialNeeds: 'no',
+        specialNeedsDescription: '',
+        
         // Educational Background
         qualificationLevel: '',
         institutionName: '',
@@ -96,10 +102,11 @@ const Application = () => {
         { id: 0, title: 'Overview', path: '', component: Overview },
         { id: 1, title: 'Personal Information', path: 'personal', component: ApplicationPersonal },
         { id: 2, title: 'Address & ID', path: 'address', component: ApplicationAddress },
-        { id: 3, title: 'Entrance Qualification', path: 'language', component: ApplicationLanguage }, // Using language route
-        { id: 4, title: 'Education', path: 'firsteducation', component: ApplicationEducation },
-        { id: 5, title: 'Documents', path: 'documents', component: ApplicationDocuments },
-        { id: 6, title: 'Preview', path: 'preview', component: ApplicationPreview }
+        { id: 3, title: 'Entrance Qualification', path: 'language', component: ApplicationLanguage },
+        { id: 4, title: 'Special Needs', path: 'specialneeds', component: ApplicationSpecialNeeds }, // New step
+        { id: 5, title: 'Education', path: 'firsteducation', component: ApplicationEducation },
+        { id: 6, title: 'Documents', path: 'documents', component: ApplicationDocuments },
+        { id: 7, title: 'Preview', path: 'preview', component: ApplicationPreview }
     ];
 
     // Helper function to calculate progress percentage
@@ -130,15 +137,21 @@ const Application = () => {
                 return formData.currentAddress && formData.city && formData.country;
             case 3: // Entrance Qualification
                 return formData.eqheCountry && formData.eqheOriginalTitle;
-            case 4: // Education
+            case 4: // Special Needs
+                // If user selected No, it's completed
+                if (formData.hasSpecialNeeds === 'no') return true;
+                // If user selected Yes, need description
+                if (formData.hasSpecialNeeds === 'yes' && formData.specialNeedsDescription && formData.specialNeedsDescription.trim() !== '') return true;
+                return false;
+            case 5: // Education
                 return formData.qualificationLevel && formData.institutionName;
-            case 5: // Documents
+            case 6: // Documents
                 return (
                     formData.sop &&
                     formData.lor1 &&
                     formData.lor2
                 );
-            case 6: // Preview
+            case 7: // Preview
                 return formData.agreedToTerms;
             default:
                 return false;
@@ -212,12 +225,14 @@ const Application = () => {
             setCurrentStep(2);
         } else if (path.includes('/language')) {
             setCurrentStep(3); // Entrance Qualification
+        } else if (path.includes('/specialneeds')) {
+            setCurrentStep(4); // Special Needs
         } else if (path.includes('/firsteducation')) {
-            setCurrentStep(4);
-        } else if (path.includes('/documents')) {
             setCurrentStep(5);
-        } else if (path.includes('/preview')) {
+        } else if (path.includes('/documents')) {
             setCurrentStep(6);
+        } else if (path.includes('/preview')) {
+            setCurrentStep(7);
         }
     }, [location.pathname]);
 
@@ -350,6 +365,7 @@ const Application = () => {
         if (path.includes('/personal')) return ApplicationPersonal;
         if (path.includes('/address')) return ApplicationAddress;
         if (path.includes('/language')) return ApplicationLanguage; // Entrance Qualification
+        if (path.includes('/specialneeds')) return ApplicationSpecialNeeds; // Special Needs
         if (path.includes('/firsteducation')) return ApplicationEducation;
         if (path.includes('/documents')) return ApplicationDocuments;
         if (path.includes('/preview')) return ApplicationPreview;

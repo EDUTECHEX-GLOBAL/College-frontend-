@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import AdminUserManagement from "./adminuser";
 import "./admindashboard.css";
 import Notifications from "./Notifications";
+import University from "./University"; // Import the University component
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -252,6 +253,21 @@ const AdminDashboard = () => {
           </div>
         </div>
 
+        {/* Quick Access to University Import */}
+        <div className="quick-access-section">
+          <h3>Quick Actions</h3>
+          <div className="quick-action-cards">
+            <div className="quick-action-card" onClick={() => setActiveTab("university")}>
+              <div className="quick-action-icon">🏛️</div>
+              <div className="quick-action-content">
+                <h4>Import University Data</h4>
+                <p>Import and manage university & college data</p>
+              </div>
+              <div className="quick-action-arrow">→</div>
+            </div>
+          </div>
+        </div>
+
         {/* Action Buttons */}
         <div className="action-section">
           <button className="refresh-btn" onClick={refreshDashboard}>
@@ -289,6 +305,11 @@ const AdminDashboard = () => {
   // Render users content using the imported component
   const renderUsersContent = () => {
     return <AdminUserManagement />;
+  };
+
+  // Render university content
+  const renderUniversityContent = () => {
+    return <University />;
   };
 
   // Render settings content
@@ -346,6 +367,8 @@ const AdminDashboard = () => {
         return renderApplicationsContent();
       case "users":
         return renderUsersContent();
+      case "university":
+        return renderUniversityContent();
       case "settings":
         return renderSettingsContent();
       default:
@@ -362,6 +385,8 @@ const AdminDashboard = () => {
         return "Applications Management";
       case "users":
         return "User Management";
+      case "university":
+        return "University Data Import";
       case "notifications":
         return "Notification Management";
       case "settings":
@@ -412,6 +437,15 @@ const AdminDashboard = () => {
           >
             <span className="menu-icon">👥</span>
             {sidebarOpen && <span>Users</span>}
+          </li>
+          
+          {/* University Menu Item - New */}
+          <li 
+            className={activeTab === "university" ? "active" : ""}
+            onClick={() => setActiveTab("university")}
+          >
+            <span className="menu-icon">🏛️</span>
+            {sidebarOpen && <span>University Data</span>}
           </li>
           
           {/* Notification Menu Item */}

@@ -8,6 +8,9 @@ import RoleSelection from "./components/RoleSelection";
 // ✅ NEW: Admin Login Page
 import AdminLogin from "./components/AdminLogin";
 
+// ✅ NEW: User Profile Page
+import UserProfile from "./components/UserProfile";
+
 // ✅ NEW: Admin Dashboard Page
 import AdminDashboard from "./components/admin/admindashboard";
 
@@ -46,6 +49,9 @@ function App() {
         {/* 🔐 Sign In */}
         <Route path="/sign-in" element={<SignIn />} />
 
+        {/* ✅ NEW: User Profile Route */}
+        <Route path="/profile" element={<UserProfile />} />
+
         {/* ✅ NEW: Admin Login Page */}
         <Route path="/admin-login" element={<AdminLogin />} />
 
@@ -79,12 +85,6 @@ function App() {
         <Route
           path="/dashboard-test/*"
           element={<DashboardTest />}
-        />
-
-        {/* Redirect old profile route */}
-        <Route
-          path="/profile"
-          element={<Navigate to="/firstyear/dashboard/profile/personal" replace />}
         />
 
         {/* ✅ Temporary routes for RoleSelection */}

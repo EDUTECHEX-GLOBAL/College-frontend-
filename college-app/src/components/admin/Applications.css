@@ -819,7 +819,7 @@
   color: var(--text-primary);
 }
 
-.btn-primary {
+.application-btn-primary {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);

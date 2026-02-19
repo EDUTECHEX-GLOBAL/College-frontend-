@@ -1526,3 +1526,143 @@
     color: #e0e0e0;
   }
 }
+/* Add to admindashboard.css */
+
+/* Quick Access Section */
+.quick-access-section {
+  margin-top: 32px;
+  padding: 20px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.quick-access-section h3 {
+  font-size: 18px;
+  color: #2d3748;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.quick-action-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.quick-action-card {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.quick-action-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.quick-action-card:hover .quick-action-content h4,
+.quick-action-card:hover .quick-action-content p,
+.quick-action-card:hover .quick-action-arrow {
+  color: white;
+}
+
+.quick-action-icon {
+  font-size: 32px;
+  margin-right: 16px;
+  background: white;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.quick-action-content {
+  flex: 1;
+}
+
+.quick-action-content h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 4px;
+}
+
+.quick-action-content p {
+  font-size: 14px;
+  color: #718096;
+  margin: 0;
+}
+
+.quick-action-arrow {
+  font-size: 20px;
+  color: #a0aec0;
+  margin-left: 12px;
+  transition: transform 0.3s ease;
+}
+
+.quick-action-card:hover .quick-action-arrow {
+  transform: translateX(5px);
+  color: white;
+}
+
+/* Notification badge in sidebar */
+.notification-badge-sidebar {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #f56565;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+.sidebar-menu li {
+  position: relative;
+}
+
+.notification-count-sidebar {
+  margin-left: auto;
+  background: #f56565;
+  color: white;
+  font-size: 11px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+/* Notifications Page Styles */
+.notifications-page {
+  padding: 24px;
+}
+
+.notifications-header {
+  margin-bottom: 24px;
+}
+
+.notifications-header h2 {
+  font-size: 28px;
+  color: #2d3748;
+  margin-bottom: 8px;
+}
+
+.notifications-header p {
+  color: #718096;
+  font-size: 16px;
+}
