@@ -1,3 +1,4 @@
+// server.js
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -17,44 +18,31 @@ import firstResidencyRoutes from "./routes/FirstResidencyRoutes.js";
 import internationalStudentRoutes from "./routes/InternationalStudentRoutes.js";
 import firstReviewRoutes from "./routes/FirstReviewRoutes.js";
 import firstTestingRoutes from "./routes/firstTestingRoutes.js";
-import transferActivitiesRoutes from "./routes/activitiestestRoutes.js"; // ✅ RENAMED for transfer
-import firstYearActivitiesRoutes from "./routes/activitiesRoutes.js"; // ✅ RENAMED for first-year
+import transferActivitiesRoutes from "./routes/activitiestestRoutes.js";
+import firstYearActivitiesRoutes from "./routes/activitiesRoutes.js";
 import responsibilitiesRoutes from "./routes/responsibilitiesRoutes.js";
 import writingRoutes from "./routes/writingRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
-// Import transfer and extended profile routes from previous code
 import transferRoutes from "./routes/transferRoutes.js";
 import extendedProfileRoutes from "./routes/extendedProfileRoutes.js";
 import familyRoutes from "./routes/familytestRoutes.js";
 import educationtestRoutes from "./routes/educationtestRoutes.js";
-import testRoutes from "./routes/testRoutes.js"; // ✅ ADDED - Testing routes
-import writingtestRoutes from "./routes/writingtestRoutes.js"; // ✅ ADDED - Writing test routes
+import testRoutes from "./routes/testRoutes.js";
+import writingtestRoutes from "./routes/writingtestRoutes.js";
 import firstfamilydashbRoutes from "./routes/firstfamilydashbRoutes.js";
 import adminUserRoutes from "./routes/adminuserroutes.js";
-// Add this import with your other route imports
-import notificationRoutes from "./routes/notificationRoutes.js"; // Add this line
-// Add this import with your other route imports
-import courseRoutes from "./routes/courseroutes.js"; // Add this line
-// Add this import with your other route imports
+import notificationRoutes from "./routes/notificationRoutes.js";
+import courseRoutes from "./routes/courseroutes.js";
 import firstApplicationRoutes from "./routes/firstApplicationRoutes.js";
-// Add this import with your other route imports
-import overviewRoutes from "./routes/overviewRoutes.js"; // Add this line
-// Add this import with your other route imports
-import applicationPersonalRoutes from "./routes/applicationPersonalRoutes.js"; // Add this line
+import overviewRoutes from "./routes/overviewRoutes.js";
+import applicationPersonalRoutes from "./routes/applicationPersonalRoutes.js";
 import applicationAddressRoutes from "./routes/applicationAddressRoutes.js";
-import applicationEducationRoutes from "./routes/applicationEducationRoutes.js"; // <-- ADD THIS
-// =====================================================
-// ✅ ADD THIS IMPORT FOR APPLICATION LANGUAGE (ENTRANCE QUALIFICATION)
-// =====================================================
-import applicationLanguageRoutes from "./routes/applicationLanguageRoutes.js"; // <-- ADD THIS LINE
-// =====================================================
-// ✅ ADD THIS IMPORT FOR APPLICATION DOCUMENTS
-// =====================================================
-import applicationDocumentRoutes from "./routes/applicationDocumentRoutes.js"; // <-- ADD THIS LINE
+import applicationEducationRoutes from "./routes/applicationEducationRoutes.js";
+import applicationLanguageRoutes from "./routes/applicationLanguageRoutes.js";
+import applicationDocumentRoutes from "./routes/applicationDocumentRoutes.js";
 import adminUniversityRoutes from "./routes/adminUniversityRoutes.js";
-// Add this import with your other route imports
-import userProfileRoutes from "./routes/userprofileroutes.js"; // Add this line
-// Load env
+import userProfileRoutes from "./routes/userprofileroutes.js";
+
 dotenv.config();
 
 // Initialize
@@ -76,46 +64,97 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-// Request logging (development)
-if (process.env.NODE_ENV === 'development') {
-  app.use((req, res, next) => {
-    console.log(`${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
-    next();
+// Request logging middleware - MOVED UP FOR DEBUGGING
+app.use((req, res, next) => {
+  console.log(`\n📨 ${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
+  console.log('Headers:', {
+    authorization: req.headers.authorization ? 'Bearer [PRESENT]' : 'None',
+    'content-type': req.headers['content-type']
   });
-}
+  next();
+});
 
 /* ======================================================
-   ✔ SERVE LOCAL LOGO FILES (IMPORTANT FOR COLLEGE SEARCH)
+   SERVE STATIC FILES
    ====================================================== */
 const logosPath = path.join(process.cwd(), "public", "logos");
 app.use("/logos", express.static(logosPath));
 
-// Serve uploaded education files (local storage)
 const uploadStaticPath = path.join(process.cwd(), "uploads");
 app.use("/uploads", express.static(uploadStaticPath));
 
-/* ======================
-   API ROUTES
-   ====================== */
+/* ======================================================
+   DEBUG ENDPOINTS (Place these BEFORE other routes)
+   ====================================================== */
+app.get('/api/test', (req, res) => {
+  res.json({ 
+    success: true, 
+    message: '✅ API is working',
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/api/routes', (req, res) => {
+  const routes = [];
+  
+  const extractRoutes = (stack, basePath = '') => {
+    stack.forEach(layer => {
+      if (layer.route) {
+        const methods = Object.keys(layer.route.methods).join(', ').toUpperCase();
+        routes.push({
+          path: basePath + layer.route.path,
+          methods: methods
+        });
+      } else if (layer.name === 'router' && layer.handle.stack) {
+        const routerPath = basePath + (layer.regexp.source
+          .replace('\\/?(?=\\/|$)', '')
+          .replace(/\\\//g, '/')
+          .replace(/\^/g, '')
+          .replace(/\?/g, '')
+          .replace(/\(\?:\(\[\^\\\/\]\+\?\)\)/g, ':param'));
+        extractRoutes(layer.handle.stack, routerPath);
+      }
+    });
+  };
+  
+  extractRoutes(app._router.stack);
+  
+  // Filter to show only relevant routes
+  const filteredRoutes = routes.filter(r => 
+    r.path.includes('/api/user') || 
+    r.path === '/' || 
+    r.path === '/api/test' ||
+    r.path === '/api/routes'
+  );
+  
+  res.json({
+    success: true,
+    message: 'Registered routes',
+    routes: filteredRoutes.sort((a, b) => a.path.localeCompare(b.path))
+  });
+});
+
+/* ======================================================
+   MOUNT USER ROUTES FIRST (Critical for /api/user/*)
+   ====================================================== */
+console.log('📌 Mounting user routes at /api/user...');
+app.use("/api/user", userProfileRoutes);
+console.log('✅ User routes mounted successfully');
+
+/* ======================================================
+   MOUNT ALL OTHER API ROUTES
+   ====================================================== */
 app.use("/api/students", accountRoutes);
 app.use("/api/education", educationRoutes);
 app.use("/api/college-search", collegesearchRoutes);
-app.use("/api/notifications", notificationRoutes); // Add this line
-app.use("/api/application/education", applicationEducationRoutes); // <-- ADD THIS
-// =====================================================
-// ✅ ADD THIS LINE FOR APPLICATION LANGUAGE (ENTRANCE QUALIFICATION)
-// =====================================================
-app.use("/api/application/language", applicationLanguageRoutes); // <-- ADD THIS LINE
-// =====================================================
-// ✅ ADD THIS LINE FOR APPLICATION DOCUMENTS API
-// =====================================================
-app.use("/api/application/documents", applicationDocumentRoutes); // <-- ADD THIS LINE
-// Add this line with your other app.use routes
-app.use("/api/user", userProfileRoutes); // Add this line for user profile management
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/application/education", applicationEducationRoutes);
+app.use("/api/application/language", applicationLanguageRoutes);
+app.use("/api/application/documents", applicationDocumentRoutes);
 app.use("/api/admin", adminUniversityRoutes);
-app.use("/api/courses", courseRoutes); // Add this line
+app.use("/api/courses", courseRoutes);
 app.use("/api/colleges", collegeRoutes);
-app.use("/api/general", generalRoutes); 
+app.use("/api/general", generalRoutes);
 app.use("/api/academics", firstAcademicRoutes);
 app.use("/api/high-school-curriculum", highSchoolCurriculumRoutes);
 app.use("/api/first-activities", firstactivitiesRoutes);
@@ -126,70 +165,37 @@ app.use("/api/first-application", firstApplicationRoutes);
 app.use("/api/international", internationalStudentRoutes);
 app.use("/api/review", firstReviewRoutes);
 app.use("/api/students/testing", firstTestingRoutes);
-app.use("/api/students", firstYearActivitiesRoutes); // ✅ First-year activities
-app.use("/api/transfer", transferActivitiesRoutes); // ✅ Transfer activities
-app.use("/api/students", responsibilitiesRoutes); 
-app.use("/api/overview", overviewRoutes); // ⬅️ ADD THIS LINE
-app.use("/api/application/personal", applicationPersonalRoutes); 
+app.use("/api/students", firstYearActivitiesRoutes);
+app.use("/api/transfer", transferActivitiesRoutes);
+app.use("/api/students", responsibilitiesRoutes);
+app.use("/api/overview", overviewRoutes);
+app.use("/api/application/personal", applicationPersonalRoutes);
 app.use("/api/application/address", applicationAddressRoutes);
-
 app.use("/api/writing", writingRoutes);
 app.use("/api/students/family-dashb", firstfamilydashbRoutes);
-
-// ✅ ADDED: Transfer student and extended profile routes from previous code
 app.use("/api/transfer", transferRoutes);
 app.use("/api/profile", extendedProfileRoutes);
 app.use("/api/family-background", familyRoutes);
 app.use("/api/education-transfer", educationtestRoutes);
-app.use("/api/testing", testRoutes); // ✅ ADDED - Testing routes
-app.use("/api/writingtest", writingtestRoutes); // ✅ ADDED - Writing test routes
+app.use("/api/testing", testRoutes);
+app.use("/api/writingtest", writingtestRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/admin/users", adminUserRoutes);
-// app.use("/api/admin", adminApplicationRoutes); // ← ADD THIS
-// IMPORTANT: Since you have CommonJS files, we need to import them differently
-// Remove the user routes import and route for now to test
 
-// Root health check
+/* ======================================================
+   ROOT AND HEALTH ENDPOINTS
+   ====================================================== */
 app.get("/", (req, res) => {
   res.json({
     success: true,
     message: "EduTechEx API is running...",
     version: "1.0.0",
     timestamp: new Date().toISOString(),
-    routes: {
-      register: "POST /api/students/register",
-      login: "POST /api/students/login",
-      profile: "GET /api/students/profile (Protected)",
-      adminProfile: "GET /api/admin/profile (Admin Protected)", // ✅ ADDED
-      education: "GET /api/education (Protected)",
-      collegeSearch: "GET /api/college-search",
-      colleges: "GET /api/colleges (Protected)",
-      courses: "GET /api/courses (Public/Protected)", // Add this line
-      applicationPersonal: "GET/POST /api/application/personal (Protected)", // ⬅️ ADD THIS LINE
-      // =====================================================
-      // ✅ ADD THIS LINE FOR APPLICATION LANGUAGE
-      // =====================================================
-      applicationLanguage: "GET/POST /api/application/language (Protected)", // <-- ADD THIS LINE
-      // =====================================================
-      // ✅ ADD THIS LINE FOR APPLICATION DOCUMENTS
-      // =====================================================
-      applicationDocuments: "GET/POST /api/application/documents (Protected)", // <-- ADD THIS LINE
-      general: "GET /api/general (Protected)",
-      overview: "GET /api/overview (Protected)", // ⬅️ ADD THIS LINE
-      academics: "GET /api/academics (Protected)",
-      highSchoolCurriculum: "GET /api/high-school-curriculum (Protected)",
-      firstYearActivities: "GET /api/students/activities (Protected)", // ✅ UPDATED
-      transferActivities: "GET /api/transfer/activities (Protected)", // ✅ ADDED
-      writing: "GET /api/writing (Protected)", 
-      writingPersonalEssay: "PUT /api/writing/personal-essay (Protected)",
-      writingAdditionalInfo: "PUT /api/writing/additional-information (Protected)",
-      // ✅ ADDED: Transfer and extended profile routes
-      transfer: "POST /api/transfer/login",
-      extendedProfile: "GET/POST /api/profile",
-      familyBackground: "GET/POST /api/family-background",
-      educationTransfer: "GET/POST /api/education-transfer",
-      testing: "GET/POST /api/testing", // ✅ ADDED
-      writingTest: "GET/POST /api/writingtest" // ✅ ADDED
+    userRoutes: {
+      test: "/api/user/test",
+      profile: "/api/user/profile",
+      status: "/api/user/profile/status",
+      image: "/api/user/profile/image"
     }
   });
 });
@@ -212,47 +218,21 @@ app.get("/api/status", (req, res) => {
       api: "Running",
       cors: "Enabled",
     },
-    endpoints: {
-      students: "/api/students",
-      transfer: "/api/transfer",
-      extendedProfile: "/api/profile",
-      education: "/api/education",
-      family: "/api/family-background",
-      educationTransfer: "/api/education-transfer",
-      applicationPersonal: "/api/application/personal", // ⬅️ ADD THIS LINE
-      // =====================================================
-      // ✅ ADD THIS LINE FOR APPLICATION LANGUAGE
-      // =====================================================
-      applicationLanguage: "/api/application/language", // <-- ADD THIS LINE
-      // =====================================================
-      // ✅ ADD THIS LINE FOR APPLICATION DOCUMENTS
-      // =====================================================
-      applicationDocuments: "/api/application/documents", // <-- ADD THIS LINE
-      firstApplication: "/api/first-application",
-      overview: "/api/overview", // ⬅️ ADD THIS LINE
-      writing: "/api/writing",
-      courses: "/api/courses", // Add this line
-      firstYearActivities: "/api/students/activities", // ✅ UPDATED
-      transferActivities: "/api/transfer/activities", // ✅ ADDED
-      collegeSearch: "/api/college-search",
-      testing: "/api/testing", // ✅ ADDED
-      writingTest: "/api/writingtest", // ✅ ADDED
-      admin: "/api/admin"
-    },
     timestamp: new Date().toISOString(),
   });
 });
 
 // 404 Handler
 app.use((req, res) => {
+  console.log(`❌ 404 - Route not found: ${req.method} ${req.originalUrl}`);
   res.status(404).json({
     success: false,
     message: `Route ${req.method} ${req.originalUrl} not found`,
-    suggestion: "Check available routes via '/' or '/api/status'",
+    suggestion: "Check available routes via '/api/routes' or '/'",
   });
 });
 
-// Enhanced Error handler from previous code
+// Error handler
 app.use((err, req, res, next) => {
   console.error("❌ Error:", err.message);
   console.error("Stack:", err.stack);
@@ -302,45 +282,29 @@ app.listen(PORT, () => {
    ✅ Environment: ${process.env.NODE_ENV || "development"}
    ✅ URL: http://localhost:${PORT}
 
-📚 Available Routes:
-   👨‍🎓 Students:        /api/students
-      📝 First Application: /api/first-application
-       Application Overview: /api/overview
-       📋 Personal Information: /api/application/personal
-       🎓 Entrance Qualification: /api/application/language
-       📄 Application Documents: /api/application/documents
-   🔄 Transfer:         /api/transfer
-   🧾 Extended Profile: /api/profile
-   🎓 Education:        /api/education
-   👨‍👩‍👧‍👦 Family:           /api/family-background
-   🎓 Education Transfer: /api/education-transfer
-   ✍️  Writing:          /api/writing
-   🎯 First-Year Activities: /api/students/activities
-   🎯 Transfer Activities: /api/transfer/activities
-   🔍 College Search:   /api/college-search
-   📝 Testing:          /api/testing
-   ✍️  Writing Test:    /api/writingtest
-   🏫 Colleges:         /api/colleges
-   📋 General:          /api/general
-   📚 Academics:        /api/academics
-   🎒 High School:      /api/high-school-curriculum
-   👥 Contacts:         /api/contacts
-   🏠 Residency:        /api/residency
-   🌍 International:    /api/international
-   📊 Review:           /api/review
+🔍 User Routes (Mounted at /api/user):
+   ✅ GET  /api/user/test
+   ✅ GET  /api/user/profile
+   ✅ POST /api/user/profile
+   ✅ GET  /api/user/profile/status
+   ✅ PATCH /api/user/profile/image
+   ✅ DELETE /api/user/profile
+   ✅ GET  /api/user/profile/email/:email
+   ✅ GET  /api/user/admin/profiles
+   ✅ GET  /api/user/admin/profiles/program/:program
+   ✅ GET  /api/user/admin/stats
 
-   🔐 Admin Endpoints:
-   - POST   /api/admin/login
-   - POST   /api/admin/logout
-   - GET    /api/admin/profile
-   - PUT    /api/admin/profile
-   - PUT    /api/admin/change-password
-   - POST   /api/admin/setup (first-time only)
+🔧 Debug Endpoints:
+   ✅ GET  /api/test
+   ✅ GET  /api/routes
 
-🏥 Health:
-   - GET /api/health
-   - GET /api/status
-   - GET /
+📚 Other Routes:
+   👉 /api/students
+   👉 /api/college-search
+   👉 /api/admin
+   👉 /api/courses
+   👉 /api/colleges
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 `);
 });

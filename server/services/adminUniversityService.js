@@ -1,163 +1,307 @@
-// services/adminUniversityService.js
-import fs from "fs";
-import path from "path";
+import fs from 'fs';
+import path from 'path';  // Fix: Import path from 'path', not from 'fs'
 import { fileURLToPath } from 'url';
 
-// Get current directory
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Paths to data files
-const collegesPath = path.join(process.cwd(), "data", "colleges.json");
-const gusPath = path.join(process.cwd(), "data", "gus.json");
+// Path to data files - adjust this based on where your JSON files are located
+const DATA_DIR = path.join(__dirname, '../data'); // Try this first - files in server/data/
+// Alternative paths if the above doesn't work:
+// const DATA_DIR = path.join(__dirname, '../../data'); // files in project root/data/
+// const DATA_DIR = path.join(process.cwd(), 'data'); // files in current working directory/data
 
-// Combined data storage
-let universities = [];
-let colleges = [];
+const UNIVERSITIES_FILE = path.join(DATA_DIR, 'universities.json');
+const COLLEGES_FILE = path.join(DATA_DIR, 'colleges.json');
 
-// Utility to clean JSON keys (removing special characters)
-const cleanKeys = (obj) => {
-  const cleaned = {};
-  for (const key in obj) {
-    const cleanKey = key.replace(/[^\x20-\x7E]/g, "").trim();
-    cleaned[cleanKey] = obj[key];
-  }
-  return cleaned;
-};
+// Cache for loaded data
+let cachedData = null;
 
-// Load data from JSON files
+/* ================================
+   LOAD UNIVERSITY DATA FROM FILES
+================================ */
 export const loadUniversityData = () => {
   try {
-    // Check if files exist
-    if (!fs.existsSync(collegesPath)) {
-      console.error(`❌ Colleges file not found at: ${collegesPath}`);
-      return { colleges: [], gusUniversities: [] };
-    }
+    console.log('Looking for data files in:', DATA_DIR);
     
-    if (!fs.existsSync(gusPath)) {
-      console.error(`❌ GUS file not found at: ${gusPath}`);
+    // Check if files exist
+    if (!fs.existsSync(UNIVERSITIES_FILE)) {
+      console.error(`Universities file not found: ${UNIVERSITIES_FILE}`);
       return { colleges: [], gusUniversities: [] };
     }
 
-    // Read and parse colleges.json
-    let collegeRaw = fs.readFileSync(collegesPath, "utf8");
-    // Remove BOM if present
-    if (collegeRaw.charCodeAt(0) === 0xfeff) collegeRaw = collegeRaw.slice(1);
-    const collegeData = JSON.parse(collegeRaw).map(item => cleanKeys(item));
+    if (!fs.existsSync(COLLEGES_FILE)) {
+      console.error(`Colleges file not found: ${COLLEGES_FILE}`);
+      return { colleges: [], gusUniversities: [] };
+    }
 
-    // Read and parse gus.json
-    let gusRaw = fs.readFileSync(gusPath, "utf8");
-    if (gusRaw.charCodeAt(0) === 0xfeff) gusRaw = gusRaw.slice(1);
-    const gusData = JSON.parse(gusRaw).map(item => cleanKeys(item));
+    // Read and parse universities data
+    const universitiesRaw = fs.readFileSync(UNIVERSITIES_FILE, 'utf8');
+    const universitiesData = JSON.parse(universitiesRaw);
 
-    console.log(`✅ Loaded ${collegeData.length} colleges and ${gusData.length} GUS universities`);
+    // Read and parse colleges data
+    const collegesRaw = fs.readFileSync(COLLEGES_FILE, 'utf8');
+    const collegesData = JSON.parse(collegesRaw);
+
+    // Extract arrays based on your JSON structure
+    // Adjust these based on your actual JSON format
+    const gusUniversities = Array.isArray(universitiesData) 
+      ? universitiesData 
+      : universitiesData.data || universitiesData.universities || [];
+
+    const colleges = Array.isArray(collegesData) 
+      ? collegesData 
+      : collegesData.data || collegesData.colleges || [];
+
+    // Cache the data
+    cachedData = {
+      gusUniversities,
+      colleges,
+      stats: {
+        totalUniversities: gusUniversities.length,
+        totalColleges: colleges.length,
+        lastLoaded: new Date().toISOString()
+      }
+    };
+
+    console.log(`Loaded ${gusUniversities.length} universities and ${colleges.length} colleges from files`);
 
     return {
-      colleges: collegeData,
-      gusUniversities: gusData
+      colleges,
+      gusUniversities
     };
-  } catch (err) {
-    console.error("❌ Failed to load university data:", err.message);
+  } catch (error) {
+    console.error('Error loading university data:', error);
     return { colleges: [], gusUniversities: [] };
   }
 };
 
-// Get combined list of all institutions
-export const getAllInstitutions = () => {
-  const data = loadUniversityData();
-  return [...data.colleges, ...data.gusUniversities];
-};
-
-// Get statistics about the data
+/* ================================
+   GET DATA STATS
+================================ */
 export const getDataStats = () => {
-  const data = loadUniversityData();
-  
-  // Calculate total programs from GUS data
-  let totalPrograms = 0;
-  data.gusUniversities.forEach(uni => {
-    if (uni.GUS_DATA?.programs_data) {
-      totalPrograms += uni.GUS_DATA.programs_data.length;
+  try {
+    // If no cached data, load it
+    if (!cachedData) {
+      loadUniversityData();
     }
-  });
 
-  return {
-    colleges: data.colleges.length,
-    gusUniversities: data.gusUniversities.length,
-    total: data.colleges.length + data.gusUniversities.length,
-    totalPrograms,
-    collegesFile: "colleges.json",
-    gusFile: "gus.json"
-  };
+    // Check if files exist for file info
+    let universitiesFileExists = false;
+    let collegesFileExists = false;
+    let universitiesFileSize = 0;
+    let universitiesFileModified = null;
+    let collegesFileSize = 0;
+    let collegesFileModified = null;
+
+    try {
+      if (fs.existsSync(UNIVERSITIES_FILE)) {
+        universitiesFileExists = true;
+        const uniStat = fs.statSync(UNIVERSITIES_FILE);
+        universitiesFileSize = uniStat.size;
+        universitiesFileModified = uniStat.mtime;
+      }
+
+      if (fs.existsSync(COLLEGES_FILE)) {
+        collegesFileExists = true;
+        const colStat = fs.statSync(COLLEGES_FILE);
+        collegesFileSize = colStat.size;
+        collegesFileModified = colStat.mtime;
+      }
+    } catch (err) {
+      console.error('Error getting file stats:', err);
+    }
+
+    return {
+      universities: {
+        count: cachedData?.gusUniversities?.length || 0,
+        fileExists: universitiesFileExists,
+        fileSize: universitiesFileSize,
+        lastModified: universitiesFileModified
+      },
+      colleges: {
+        count: cachedData?.colleges?.length || 0,
+        fileExists: collegesFileExists,
+        fileSize: collegesFileSize,
+        lastModified: collegesFileModified
+      },
+      total: (cachedData?.gusUniversities?.length || 0) + (cachedData?.colleges?.length || 0),
+      lastLoaded: cachedData?.stats?.lastLoaded || null
+    };
+  } catch (error) {
+    console.error('Error getting data stats:', error);
+    return {
+      universities: { count: 0, fileExists: false },
+      colleges: { count: 0, fileExists: false },
+      total: 0,
+      error: error.message
+    };
+  }
 };
 
-// Search through institutions
-export const searchInstitutions = (query) => {
-  if (!query || !query.trim()) {
-    return getAllInstitutions().slice(0, 100);
+/* ================================
+   REFRESH DATA CACHE
+================================ */
+export const refreshDataCache = () => {
+  cachedData = null;
+  return loadUniversityData();
+};
+
+/* ================================
+   GET UNIVERSITIES BY FILTER
+================================ */
+export const getUniversitiesByFilter = (filter = {}) => {
+  const { gusUniversities } = loadUniversityData();
+  
+  if (!gusUniversities || gusUniversities.length === 0) {
+    return [];
   }
 
-  const q = query.toLowerCase();
-  const allInstitutions = getAllInstitutions();
-
-  return allInstitutions.filter(inst => {
-    // Search in various fields
-    return (
-      (inst.INSTNM && inst.INSTNM.toLowerCase().includes(q)) ||
-      (inst.IALIAS && inst.IALIAS.toLowerCase().includes(q)) ||
-      (inst.CITY && inst.CITY.toLowerCase().includes(q)) ||
-      (inst.STABBR && inst.STABBR.toLowerCase().includes(q)) ||
-      (inst.COUNTRY && inst.COUNTRY.toLowerCase().includes(q)) ||
-      (inst.GUS_DATA?.country && inst.GUS_DATA.country.toLowerCase().includes(q))
-    );
-  }).slice(0, 100); // Limit results
-};
-
-// Get institution by ID
-export const getInstitutionById = (id) => {
-  const allInstitutions = getAllInstitutions();
-  return allInstitutions.find(inst => inst.UNITID == id);
-};
-
-// Format institution data for display
-export const formatInstitutionData = (institution) => {
-  const isGUS = !!institution.GUS_DATA;
-  
-  return {
-    id: institution.UNITID,
-    name: institution.INSTNM || "Unknown",
-    alias: institution.IALIAS || "",
-    type: isGUS ? "GUS University" : "College",
-    address: institution.ADDR || "",
-    city: institution.CITY || "",
-    state: institution.STABBR || "",
-    zip: institution.ZIP || "",
-    country: isGUS ? institution.GUS_DATA?.country || "USA" : "USA",
-    phone: institution.GENTELE || "",
-    website: institution.WEBADDR || "",
-    adminUrl: institution.ADMINURL || "",
-    faidUrl: institution.FAIDURL || "",
-    applUrl: institution.APPLURL || "",
-    chancellor: institution.CHFNM || "",
-    chancellorTitle: institution.CHFTITLE || "",
-    latitude: institution.LATITUDE || null,
-    longitude: institution.LONGITUD || null,
-    programs: institution.GUS_DATA?.programs_data || [],
-    majorAreas: institution.GUS_DATA?.major_areas || [],
-    level: institution.GUS_DATA?.level || "Undergraduate",
-    metadata: {
-      unitId: institution.UNITID,
-      fips: institution.FIPS,
-      obereg: institution.OBEREG,
-      sector: institution.SECTOR,
-      iclevel: institution.ICLEVEL,
-      control: institution.CONTROL,
-      hloffer: institution.HLOFFER,
-      ugoffer: institution.UGOFFER,
-      groffer: institution.GROFFER,
-      deggrant: institution.DEGGRANT,
-      locale: institution.LOCALE,
-      instsize: institution.INSTSIZE,
-      carnegie: institution.CARNEGIE || institution.C15BASIC || institution.C18BASIC || institution.C21BASIC
+  return gusUniversities.filter(uni => {
+    for (const [key, value] of Object.entries(filter)) {
+      if (uni[key] !== value) {
+        return false;
+      }
     }
-  };
+    return true;
+  });
+};
+
+/* ================================
+   GET COLLEGES BY FILTER
+================================ */
+export const getCollegesByFilter = (filter = {}) => {
+  const { colleges } = loadUniversityData();
+  
+  if (!colleges || colleges.length === 0) {
+    return [];
+  }
+
+  return colleges.filter(col => {
+    for (const [key, value] of Object.entries(filter)) {
+      if (col[key] !== value) {
+        return false;
+      }
+    }
+    return true;
+  });
+};
+
+/* ================================
+   SEARCH UNIVERSITIES IN FILE
+================================ */
+export const searchUniversitiesInFile = (searchTerm) => {
+  const { gusUniversities } = loadUniversityData();
+  
+  if (!gusUniversities || gusUniversities.length === 0 || !searchTerm) {
+    return [];
+  }
+
+  const term = searchTerm.toLowerCase();
+  
+  return gusUniversities.filter(uni => {
+    return (
+      (uni.INSTNM && uni.INSTNM.toLowerCase().includes(term)) ||
+      (uni.IALIAS && uni.IALIAS.toLowerCase().includes(term)) ||
+      (uni.CITY && uni.CITY.toLowerCase().includes(term)) ||
+      (uni.STABBR && uni.STABBR.toLowerCase().includes(term))
+    );
+  });
+};
+
+/* ================================
+   SEARCH COLLEGES IN FILE
+================================ */
+export const searchCollegesInFile = (searchTerm) => {
+  const { colleges } = loadUniversityData();
+  
+  if (!colleges || colleges.length === 0 || !searchTerm) {
+    return [];
+  }
+
+  const term = searchTerm.toLowerCase();
+  
+  return colleges.filter(col => {
+    return (
+      (col.INSTNM && col.INSTNM.toLowerCase().includes(term)) ||
+      (col.IALIAS && col.IALIAS.toLowerCase().includes(term)) ||
+      (col.CITY && col.CITY.toLowerCase().includes(term)) ||
+      (col.STABBR && col.STABBR.toLowerCase().includes(term))
+    );
+  });
+};
+
+/* ================================
+   GET UNIVERSITY BY UNITID
+================================ */
+export const getUniversityByUnitId = (unitId) => {
+  const { gusUniversities } = loadUniversityData();
+  
+  if (!gusUniversities || gusUniversities.length === 0) {
+    return null;
+  }
+
+  return gusUniversities.find(uni => uni.UNITID == unitId) || null;
+};
+
+/* ================================
+   GET COLLEGE BY UNITID
+================================ */
+export const getCollegeByUnitId = (unitId) => {
+  const { colleges } = loadUniversityData();
+  
+  if (!colleges || colleges.length === 0) {
+    return null;
+  }
+
+  return colleges.find(col => col.UNITID == unitId) || null;
+};
+
+/* ================================
+   VALIDATE DATA FILES
+================================ */
+export const validateDataFiles = () => {
+  const issues = [];
+
+  try {
+    // Check if directories exist
+    if (!fs.existsSync(DATA_DIR)) {
+      issues.push(`Data directory does not exist: ${DATA_DIR}`);
+      return { valid: false, issues };
+    }
+
+    // Check universities file
+    if (!fs.existsSync(UNIVERSITIES_FILE)) {
+      issues.push(`Universities file not found: ${UNIVERSITIES_FILE}`);
+    } else {
+      try {
+        const content = fs.readFileSync(UNIVERSITIES_FILE, 'utf8');
+        JSON.parse(content);
+      } catch (err) {
+        issues.push(`Universities file contains invalid JSON: ${err.message}`);
+      }
+    }
+
+    // Check colleges file
+    if (!fs.existsSync(COLLEGES_FILE)) {
+      issues.push(`Colleges file not found: ${COLLEGES_FILE}`);
+    } else {
+      try {
+        const content = fs.readFileSync(COLLEGES_FILE, 'utf8');
+        JSON.parse(content);
+      } catch (err) {
+        issues.push(`Colleges file contains invalid JSON: ${err.message}`);
+      }
+    }
+
+    return {
+      valid: issues.length === 0,
+      issues
+    };
+  } catch (error) {
+    return {
+      valid: false,
+      issues: [`Validation error: ${error.message}`]
+    };
+  }
 };

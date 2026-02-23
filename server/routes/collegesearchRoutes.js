@@ -4,6 +4,7 @@ import {
   searchColleges, 
   getRecommendedUniversities, 
   getUniversityById,
+  getUniversityPrograms,
   searchCollegesLegacy 
 } from "../controllers/collegeSearchController.js";
 import { authenticateToken } from "../middleware/authMiddleware.js";
@@ -18,6 +19,9 @@ router.get("/recommendations", authenticateToken, getRecommendedUniversities);
 
 // Get university by ID
 router.get("/university/:id", authenticateToken, getUniversityById);
+
+// Get university programs (NEW)
+router.get("/university/:id/programs", authenticateToken, getUniversityPrograms);
 
 // Legacy endpoint for backward compatibility
 router.get("/legacy", searchCollegesLegacy);

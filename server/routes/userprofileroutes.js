@@ -1,6 +1,6 @@
 // src/routes/userprofileroutes.js
 import express from 'express';
-import { authenticateToken } from '../middleware/authMiddleware.js'; // Using your existing auth middleware
+import { authenticateToken } from '../middleware/authMiddleware.js';
 import {
   createOrUpdateProfile,
   getProfile,
@@ -15,11 +15,14 @@ import {
 
 const router = express.Router();
 
-// Public route (no auth required for testing - remove in production)
+// PUBLIC TEST ROUTE - NO AUTH REQUIRED
 router.get('/test', (req, res) => {
+  console.log('✅ Test endpoint hit');
   res.json({
     success: true,
-    message: 'User profile routes are working',
+    message: '✅ User profile routes are working',
+    timestamp: new Date().toISOString(),
+    headers: req.headers,
     endpoints: {
       createProfile: 'POST /api/user/profile',
       getProfile: 'GET /api/user/profile',
@@ -34,22 +37,28 @@ router.get('/test', (req, res) => {
   });
 });
 
-// All profile routes require authentication (except test route above)
-router.use(authenticateToken);
+// Debug route to check auth - requires token
+router.get('/debug-auth', authenticateToken, (req, res) => {
+  console.log('🔐 Debug Auth - User ID:', req.userId);
+  res.json({
+    success: true,
+    message: 'Auth working',
+    userId: req.userId,
+    user: req.user
+  });
+});
 
-// User profile routes
-router.post('/profile', createOrUpdateProfile);
-router.get('/profile', getProfile);
-router.get('/profile/status', checkProfileStatus);
-router.patch('/profile/image', updateProfileImage);
-router.delete('/profile', deleteProfile);
+// All profile routes require authentication
+router.post('/profile', authenticateToken, createOrUpdateProfile);
+router.get('/profile', authenticateToken, getProfile);
+router.get('/profile/status', authenticateToken, checkProfileStatus);
+router.patch('/profile/image', authenticateToken, updateProfileImage);
+router.delete('/profile', authenticateToken, deleteProfile);
+router.get('/profile/email/:email', authenticateToken, getProfileByEmail);
 
-// Public route (with auth) - get profile by email
-router.get('/profile/email/:email', getProfileByEmail);
-
-// Admin routes (you can add role check in controller if needed)
-router.get('/admin/profiles', getAllProfiles);
-router.get('/admin/profiles/program/:program', getProfilesByProgram);
-router.get('/admin/stats', getProfileStats);
+// Admin routes
+router.get('/admin/profiles', authenticateToken, getAllProfiles);
+router.get('/admin/profiles/program/:program', authenticateToken, getProfilesByProgram);
+router.get('/admin/stats', authenticateToken, getProfileStats);
 
 export default router;

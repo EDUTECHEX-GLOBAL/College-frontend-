@@ -7,7 +7,7 @@
 }
 
 /* Header Layout */
-.profile-header {
+.profileform-profile-header {
   background: white;
   padding: 16px 40px;
   border-bottom: 1px solid #d1d5db;
@@ -193,7 +193,7 @@
 
 /* Tablets (768px - 1023px) */
 @media (max-width: 1023px) and (min-width: 768px) {
-  .profile-header {
+ .profileform-profile-header {
     padding: 16px 30px;
   }
   
@@ -216,7 +216,7 @@
 
 /* Mobile Devices (767px and below) */
 @media (max-width: 767px) {
-  .profile-header {
+ .profileform-profile-header {
     position: relative;
     height: auto;
     padding: 16px 20px;
@@ -264,7 +264,7 @@
 
 /* Small Mobile Devices (480px and below) */
 @media (max-width: 480px) {
-  .profile-header {
+  .profileform-profile-header {
     padding: 12px 15px;
   }
   

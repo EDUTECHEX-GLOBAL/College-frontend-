@@ -24,7 +24,7 @@
 }
 
 /* ===== Card Container - Glass Morphism ===== */
-.form-card {
+.firstyearaccount-form-card {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   width: 100%;
@@ -40,7 +40,7 @@
 }
 
 /* ===== Header with Accent ===== */
-.form-card::before {
+.firstyearaccount-form-card::before::before {
   content: "";
   position: absolute;
   top: 0;
@@ -617,7 +617,7 @@ select:focus {
 
 /* ===== Responsive Design ===== */
 @media (max-width: 1200px) {
-  .form-card {
+  .firstyearaccount-form-card {
     max-width: 700px;
   }
 }
@@ -628,7 +628,7 @@ select:focus {
     align-items: flex-start;
   }
   
-  .form-card {
+  .firstyearaccount-form-card {
     padding: 30px 25px;
     max-width: 100%;
     margin: 10px 0;
@@ -687,7 +687,7 @@ select:focus {
     padding: 10px;
   }
   
-  .form-card {
+  .firstyearaccount-form-card {
     padding: 25px 20px;
     border-radius: 16px;
   }
@@ -751,7 +751,7 @@ select:focus {
 
 /* Extra small devices */
 @media (max-width: 360px) {
-  .form-card {
+  .firstyearaccount-form-card {
     padding: 20px 15px;
   }
   
