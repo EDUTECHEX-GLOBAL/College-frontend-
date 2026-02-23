@@ -42,7 +42,7 @@ import applicationLanguageRoutes from "./routes/applicationLanguageRoutes.js";
 import applicationDocumentRoutes from "./routes/applicationDocumentRoutes.js";
 import adminUniversityRoutes from "./routes/adminUniversityRoutes.js";
 import userProfileRoutes from "./routes/userprofileroutes.js";
-
+import applicationSpecialNeedRoutes from "./routes/applicationspecialneedroutes.js";
 dotenv.config();
 
 // Initialize
@@ -158,6 +158,7 @@ app.use("/api/general", generalRoutes);
 app.use("/api/academics", firstAcademicRoutes);
 app.use("/api/high-school-curriculum", highSchoolCurriculumRoutes);
 app.use("/api/first-activities", firstactivitiesRoutes);
+app.use("/api/application/special-needs", applicationSpecialNeedRoutes);
 app.use("/api/contacts", firstContactsRoutes);
 app.use("/api/family", firstFamilyRoutes);
 app.use("/api/residency", firstResidencyRoutes);

@@ -1,5 +1,5 @@
 /* PersonalInfoSection.css - Dedicated styles for Personal Information section */
-.personal-info-section {
+.personalinfosection-personal-info-section {
   background: white;
   margin: 20px 40px;
   border-radius: 8px;
@@ -112,7 +112,7 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .personal-info-section {
+  .personalinfosection-personal-info-section {
     margin: 15px 20px;
   }
   
@@ -127,7 +127,7 @@
 }
 
 @media (max-width: 480px) {
-  .personal-info-section {
+  .personalinfosection-personal-info-section {
     margin: 10px 15px;
   }
   

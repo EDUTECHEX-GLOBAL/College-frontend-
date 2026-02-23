@@ -267,9 +267,9 @@ const ApplicationAddress = () => {
       let targetPath;
       if (location.pathname.includes('/address')) {
         // Replace /address with /firsteducation
-        targetPath = location.pathname.replace('/address', '/firsteducation');
+        targetPath = location.pathname.replace('/address', '/language');
       } else {
-        targetPath = '/firstyear/dashboard/application/firsteducation';
+        targetPath = '/firstyear/dashboard/application/language';
       }
       
       console.log("Navigating to:", targetPath);

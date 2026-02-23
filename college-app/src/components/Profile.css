@@ -1,5 +1,5 @@
 /* ProfileForm.css - Layout Only (No conflicting styles) */
-.profile-container {
+.profile-profile-container {
   display: flex;
   min-height: 100vh;
   background: #f8f9fa;
@@ -44,7 +44,7 @@
   background: #1E3D6F;
 }
 
-.profile-header h1 {
+.profile-profile-header h1 {
   font-size: 24px;
   font-weight: 600;
   color: #1a202c;
@@ -230,7 +230,7 @@
     order: 1;
   }
   
-  .profile-header h1 {
+  .profile-profile-header h1 {
     order: 2;
     font-size: 20px;
   }
@@ -268,7 +268,7 @@
     padding: 12px 15px;
   }
   
-  .profile-header h1 {
+  .profile-profile-header h1 {
     font-size: 18px;
   }
   
@@ -306,7 +306,7 @@
 
 /* Very Small Mobile Devices (320px and below) */
 @media (max-width: 320px) {
-  .profile-header h1 {
+  .profile-profile-header h1 {
     font-size: 16px;
   }
   

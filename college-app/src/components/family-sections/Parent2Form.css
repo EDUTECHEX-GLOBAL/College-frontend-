@@ -26,17 +26,25 @@
   animation: fadeIn 0.3s ease-in;
 }
 
+/* parent2form.css */
+
 @keyframes fadeIn {
-  from {
+  0% {
     opacity: 0;
+    transform: translateY(4px);
   }
-  to {
+  100% {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
+.fade-in-once {
+  animation: fadeIn 0.3s ease-out both;
+}
+
 /* Personal information section */
-.personal-info-section {
+.parent2form-personal-info-section {
   background: #f8fafc;
   padding: 24px;
   border-radius: 8px;

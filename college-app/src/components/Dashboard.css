@@ -656,7 +656,7 @@
 }
 
 /* Profile Form Integration Styles */
-.profile-container {
+.dashboard-profile-container {
   padding: 0;
 }
 
@@ -669,7 +669,7 @@
   align-items: center;
 }
 
-.profile-header h1 {
+.dashboard-profile-header h1 {
   margin: 0;
   font-size: 24px;
   font-weight: 700;

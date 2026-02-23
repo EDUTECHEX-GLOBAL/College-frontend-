@@ -1,18 +1,67 @@
-import React, { useState } from 'react';
-import './ApplicationSpecialNeeds.css';
+import React, { useState, useEffect } from "react";
+import "./ApplicationSpecialNeeds.css";
+import axios from "axios";
+
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 const ApplicationSpecialNeeds = ({ formData, onInputChange, onNext, onPrev }) => {
-    const [hasSpecialNeeds, setHasSpecialNeeds] = useState(formData.hasSpecialNeeds || 'no');
-    const [description, setDescription] = useState(formData.specialNeedsDescription || '');
-    const [errors, setErrors] = useState({});
+    const studentId = localStorage.getItem("studentId");
+    const token = localStorage.getItem("token");
 
+    const [hasSpecialNeeds, setHasSpecialNeeds] = useState(
+        formData.hasSpecialNeeds || "no"
+    );
+    const [description, setDescription] = useState(
+        formData.specialNeedsDescription || ""
+    );
+    const [errors, setErrors] = useState({});
+    const [loading, setLoading] = useState(false);
+
+    /* =========================
+       LOAD EXISTING DATA
+    ========================== */
+    useEffect(() => {
+        if (!studentId || !token) return;
+
+        axios
+            .get(
+                `${API_URL}/api/application/special-needs/student/${studentId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            )
+            .then((res) => {
+                if (res.data?.data) {
+                    setHasSpecialNeeds(res.data.data.hasSpecialNeeds || "no");
+                    setDescription(res.data.data.specialNeedsDescription || "");
+
+                    onInputChange(
+                        "hasSpecialNeeds",
+                        res.data.data.hasSpecialNeeds || "no"
+                    );
+                    onInputChange(
+                        "specialNeedsDescription",
+                        res.data.data.specialNeedsDescription || ""
+                    );
+                }
+            })
+            .catch(() => {
+                // no existing data
+            });
+    }, [studentId, token]);
+
+    /* =========================
+       HANDLERS
+    ========================== */
     const handleHasSpecialNeedsChange = (value) => {
         setHasSpecialNeeds(value);
-        onInputChange('hasSpecialNeeds', value);
-        
-        if (value === 'no') {
-            setDescription('');
-            onInputChange('specialNeedsDescription', '');
+        onInputChange("hasSpecialNeeds", value);
+
+        if (value === "no") {
+            setDescription("");
+            onInputChange("specialNeedsDescription", "");
             setErrors({});
         }
     };
@@ -20,30 +69,76 @@ const ApplicationSpecialNeeds = ({ formData, onInputChange, onNext, onPrev }) =>
     const handleDescriptionChange = (e) => {
         const value = e.target.value;
         setDescription(value);
-        onInputChange('specialNeedsDescription', value);
-        
+        onInputChange("specialNeedsDescription", value);
+
         if (errors.description) {
-            setErrors(prev => ({ ...prev, description: '' }));
+            setErrors((prev) => ({ ...prev, description: "" }));
         }
     };
 
+    /* =========================
+       VALIDATION
+    ========================== */
     const validateForm = () => {
         const newErrors = {};
-        
-        if (hasSpecialNeeds === 'yes' && !description.trim()) {
-            newErrors.description = 'Please describe your condition(s)';
+
+        if (hasSpecialNeeds === "yes" && !description.trim()) {
+            newErrors.description = "Please describe your condition(s)";
         }
-        
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleNext = () => {
-        if (validateForm()) {
-            onNext();
+    /* =========================
+       SAVE TO API
+    ========================== */
+    const saveSpecialNeeds = async () => {
+        if (!studentId) {
+            alert("Student session expired. Please login again.");
+            return false;
+        }
+
+        setLoading(true);
+
+        try {
+            await axios.post(
+                `${API_URL}/api/application/special-needs/student/${studentId}`,
+                {
+                    hasSpecialNeeds,
+                    specialNeedsDescription:
+                        hasSpecialNeeds === "yes" ? description : "",
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            setLoading(false);
+            return true;
+        } catch (error) {
+            setLoading(false);
+            alert("Failed to save special needs details.");
+            return false;
         }
     };
 
+    /* =========================
+       NEXT STEP
+    ========================== */
+    const handleNext = async () => {
+        if (!validateForm()) return;
+
+        const saved = await saveSpecialNeeds();
+        if (saved) onNext();
+    };
+
+    /* =========================
+       UI
+    ========================== */
     return (
         <div className="form-section">
             <div className="section-header">
@@ -56,86 +151,50 @@ const ApplicationSpecialNeeds = ({ formData, onInputChange, onNext, onPrev }) =>
                 </div>
             </div>
 
-            <div className="info-box">
-                <i className="fas fa-info-circle"></i>
-                <p className="info-text">
-                    This information helps us make necessary accommodations for your studies and examinations. 
-                    All information provided is confidential and will only be shared with relevant departments 
-                    to ensure proper support.
-                </p>
-            </div>
-
             <div className="form-group">
                 <label className="form-label">
-                    Do you have any medical condition that may require special examination arrangements 
-                    or may affect your attendance of the programme?
+                    Do you have any medical condition that may require special examination arrangements?
                 </label>
+
                 <div className="yes-no-group">
                     <button
                         type="button"
-                        className={`yes-no-btn ${hasSpecialNeeds === 'yes' ? 'active' : ''}`}
-                        onClick={() => handleHasSpecialNeedsChange('yes')}
+                        className={`yes-no-btn ${hasSpecialNeeds === "yes" ? "active" : ""}`}
+                        onClick={() => handleHasSpecialNeedsChange("yes")}
                     >
                         Yes
                     </button>
+
                     <button
                         type="button"
-                        className={`yes-no-btn ${hasSpecialNeeds === 'no' ? 'active' : ''}`}
-                        onClick={() => handleHasSpecialNeedsChange('no')}
+                        className={`yes-no-btn ${hasSpecialNeeds === "no" ? "active" : ""}`}
+                        onClick={() => handleHasSpecialNeedsChange("no")}
                     >
                         No
                     </button>
                 </div>
             </div>
 
-            {hasSpecialNeeds === 'yes' && (
-                <div className="form-group description-section">
-                    <label className="form-label required" htmlFor="specialNeedsDescription">
-                        Please describe your condition(s) *
-                    </label>
+            {hasSpecialNeeds === "yes" && (
+                <div className="form-group">
                     <textarea
-                        id="specialNeedsDescription"
-                        className={`form-textarea ${errors.description ? 'error' : ''}`}
+                        className={`form-textarea ${errors.description ? "error" : ""}`}
                         value={description}
                         onChange={handleDescriptionChange}
-                        placeholder="Please provide details about your condition, including any specific accommodations you may require for examinations or daily attendance..."
                         rows="5"
                     />
                     {errors.description && (
-                        <div className="error-message">
-                            <i className="fas fa-exclamation-circle"></i>
-                            <span>{errors.description}</span>
-                        </div>
+                        <div className="error-message">{errors.description}</div>
                     )}
-                    <p className="field-helper">
-                        Include details about any specific accommodations you may need, such as:
-                        <br />• Extra time for examinations
-                        <br />• Accessible seating arrangements
-                        <br />• Assistive technology
-                        <br />• Note-taking assistance
-                        <br />• Flexible attendance requirements
-                    </p>
-                </div>
-            )}
-
-            {hasSpecialNeeds === 'yes' && description && (
-                <div className="confidentiality-note">
-                    <i className="fas fa-lock"></i>
-                    <p>
-                        This information will be kept confidential and shared only with the 
-                        Disability Support Services and relevant academic staff to ensure 
-                        appropriate accommodations are provided.
-                    </p>
                 </div>
             )}
 
             <div className="form-actions">
                 <button className="btn btn-secondary" onClick={onPrev}>
-                    <i className="fas fa-arrow-left"></i> Back
+                    Back
                 </button>
-                
-                <button className="btn btn-primary" onClick={handleNext}>
-                    Next <i className="fas fa-arrow-right"></i>
+                <button className="btn btn-primary" onClick={handleNext} disabled={loading}>
+                    {loading ? "Saving..." : "Next"}
                 </button>
             </div>
         </div>

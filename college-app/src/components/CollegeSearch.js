@@ -448,17 +448,7 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
                         }}
                       />
                     ) : (
-                      <div style={{
-                        width: '100%',
-                        height: '100%',
-                        background: '#2c5282',
-                        color: 'white',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '18px',
-                        fontWeight: 'bold'
-                      }}>
+                      <div className="college-logo-initials">
                         {initials}
                       </div>
                     )}

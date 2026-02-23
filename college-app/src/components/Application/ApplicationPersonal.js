@@ -1,9 +1,10 @@
+// src/components/ApplicationPersonal.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import './ApplicationPersonal.css';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
+const API_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
 const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }) => {
     const navigate = useNavigate();
@@ -15,6 +16,7 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
+    const [completionPercentage, setCompletionPercentage] = useState(0);
     
     // EU Citizenship and visa state
     const [isEUCitizen, setIsEUCitizen] = useState(null);
@@ -27,6 +29,57 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
     const getAuthToken = () => {
         return localStorage.getItem('token');
     };
+
+    // Calculate completion percentage based on all GUS fields
+    const calculateCompletion = (data) => {
+        // Define all required fields
+        const textFields = [
+            'firstName', 'lastName', 'email', 'dateOfBirth', 
+            'placeOfBirth', 'countryOfBirth', 'citizenship',
+            'passportNumber', 'passportIssueDate', 'passportExpiryDate',
+            'issuingCountry', 'mobile', 'correspondenceLanguage'
+        ];
+
+        // Check if EU citizenship is selected
+        const euCitizenValue = data.isEUCitizen !== undefined ? data.isEUCitizen : isEUCitizen;
+        
+        // Add visa field if not EU citizen
+        if (euCitizenValue === false) {
+            textFields.push('needVisa');
+        }
+
+        // Count completed text fields
+        const completedTextFields = textFields.filter(field => {
+            const value = field === 'needVisa' ? needVisa : data[field];
+            return value && value.toString().trim() !== '';
+        }).length;
+
+        // Check for file uploads
+        let fileFieldsCount = 0;
+        if (data.passportFileName || data.passportOriginalName) fileFieldsCount++;
+        if (data.photographFileName || data.photographOriginalName) fileFieldsCount++;
+        
+        const totalFields = textFields.length + 2; // Add 2 for file uploads
+        
+        // Calculate percentage
+        const percentage = Math.round(((completedTextFields + fileFieldsCount) / totalFields) * 100);
+        
+        console.log('📊 Completion calculation:', {
+            totalFields,
+            completedTextFields,
+            fileFieldsCount,
+            percentage,
+            textFields: textFields.map(f => ({ field: f, value: data[f] }))
+        });
+        
+        return percentage;
+    };
+
+    // Update completion whenever formData changes
+    useEffect(() => {
+        const percentage = calculateCompletion(formData);
+        setCompletionPercentage(percentage);
+    }, [formData, isEUCitizen, needVisa]);
 
     // Load personal data from backend on component mount
     useEffect(() => {
@@ -74,6 +127,10 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
                     }
                     
                     console.log('✅ Personal data loaded from backend:', backendData);
+                    
+                    // Calculate completion after loading data
+                    const percentage = calculateCompletion(backendData);
+                    setCompletionPercentage(percentage);
                 }
             } catch (error) {
                 console.error('❌ Error loading personal data:', error);
@@ -88,34 +145,6 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
 
         loadPersonalData();
     }, []);
-
-    // Calculate completion percentage based on all GUS fields
-    const calculateCompletion = () => {
-        const fields = [
-            'firstName', 'lastName', 'email', 'dateOfBirth', 
-            'placeOfBirth', 'countryOfBirth', 'citizenship',
-            'passportNumber', 'passportIssueDate', 'passportExpiryDate',
-            'issuingCountry', 'mobile', 'correspondenceLanguage'
-        ];
-
-        // Add visa field if not EU citizen
-        if (isEUCitizen === false) {
-            fields.push('needVisa');
-        }
-
-        // Check for file uploads using both fileName and originalName
-        let fileFieldsCount = 0;
-        if (formData.passportFileName || formData.passportOriginalName) fileFieldsCount++;
-        if (formData.photographFileName || formData.photographOriginalName) fileFieldsCount++;
-        
-        const totalFields = fields.length + 2; // Add 2 for file uploads
-        const completedTextFields = fields.filter(field => {
-            const value = formData[field];
-            return value && value.toString().trim() !== '';
-        }).length;
-
-        return Math.round(((completedTextFields + fileFieldsCount) / totalFields) * 100);
-    };
 
     // Handle file change with backend upload
     const handleFileChange = async (e, field) => {
@@ -366,7 +395,14 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
                 isEUCitizen: isEUCitizen,
                 documentType: selectedDocumentType,
                 needVisa: needVisa,
-                referFriend: referFriend
+                referFriend: referFriend,
+                // Include file information
+                passportFileName: formData.passportFileName || '',
+                passportFileUrl: formData.passportFileUrl || '',
+                passportOriginalName: formData.passportOriginalName || '',
+                photographFileName: formData.photographFileName || '',
+                photographFileUrl: formData.photographFileUrl || '',
+                photographOriginalName: formData.photographOriginalName || ''
             };
 
             console.log('Saving personal data:', saveData);
@@ -416,8 +452,6 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
         navigate(backPath);
     };
 
-    const completionPercentage = calculateCompletion();
-
     // Show loading state
     if (isLoading) {
         return (
@@ -432,13 +466,32 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
 
     return (
         <div className="application-personal">
-            {/* Header with Application ID */}
+            {/* Header with Application ID and Progress */}
             <div className="personal-header">
                 <div className="header-left">
                     <h1>BA Communication Design</h1>
                     <div className="application-id">APPLICATION ID - UEG0000104849</div>
                 </div>
-                <div className="progress-badge">{completionPercentage}% Completed</div>
+                <div className="progress-indicator">
+                    <div className="progress-circle">
+                        <svg viewBox="0 0 36 36" className="circular-chart">
+                            <path
+                                className="circle-bg"
+                                d="M18 2.0845
+                                    a 15.9155 15.9155 0 0 1 0 31.831
+                                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                            />
+                            <path
+                                className="circle"
+                                strokeDasharray={`${completionPercentage}, 100`}
+                                d="M18 2.0845
+                                    a 15.9155 15.9155 0 0 1 0 31.831
+                                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                            />
+                            <text x="18" y="20.35" className="percentage">{completionPercentage}%</text>
+                        </svg>
+                    </div>
+                </div>
             </div>
 
             {/* Navigation Steps */}
