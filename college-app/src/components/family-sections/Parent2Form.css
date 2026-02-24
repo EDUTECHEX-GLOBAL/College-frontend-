@@ -28,7 +28,7 @@
 
 /* parent2form.css */
 
-@keyframes fadeIn {
+@keyframes parent2formfadeIn {
   0% {
     opacity: 0;
     transform: translateY(4px);

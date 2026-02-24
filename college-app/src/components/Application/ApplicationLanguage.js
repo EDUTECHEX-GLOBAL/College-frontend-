@@ -1,17 +1,87 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './ApplicationLanguage.css';
 import axios from 'axios';
+
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId, onNext }) => {
     const [showAnotherEQHE, setShowAnotherEQHE] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const [saveError, setSaveError] = useState('');
     const [saveSuccess, setSaveSuccess] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [showUploadProgress, setShowUploadProgress] = useState(false);
+    const [validationErrors, setValidationErrors] = useState({});
+    const [fetchedData, setFetchedData] = useState(null);
+
+    // Load existing data on component mount
+    useEffect(() => {
+        const fetchExistingData = async () => {
+            if (!studentId) return;
+            
+            setIsLoading(true);
+            try {
+                const response = await axios.get(
+                    `${API_URL}/api/application/language/student/${studentId}/eqhe`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
+                    }
+                );
+
+                if (response.data.success && response.data.data) {
+                    const data = response.data.data;
+                    setFetchedData(data);
+                    
+                    // Update form with existing data
+                    if (data.eqheDate) onInputChange('eqheDate', data.eqheDate);
+                    if (data.eqheCity) onInputChange('eqheCity', data.eqheCity);
+                    if (data.eqheCountry) onInputChange('eqheCountry', data.eqheCountry);
+                    if (data.eqheOriginalTitle) onInputChange('eqheOriginalTitle', data.eqheOriginalTitle);
+                    
+                    const hasAnother = data.hasAnotherEQHE || false;
+                    setShowAnotherEQHE(hasAnother);
+                    
+                    if (hasAnother) {
+                        if (data.anotherEqheDate) onInputChange('anotherEqheDate', data.anotherEqheDate);
+                        if (data.anotherEqheCity) onInputChange('anotherEqheCity', data.anotherEqheCity);
+                        if (data.anotherEqheCountry) onInputChange('anotherEqheCountry', data.anotherEqheCountry);
+                        if (data.anotherEqheOriginalTitle) onInputChange('anotherEqheOriginalTitle', data.anotherEqheOriginalTitle);
+                    }
+                    
+                    if (data.eqheCertificateUrl) {
+                        // Handle existing certificate
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching EQHE data:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchExistingData();
+    }, [studentId]);
 
     const handleFileChange = (e, field) => {
         const file = e.target.files[0];
         if (file) {
+            // Validate file type
+            if (file.type !== 'application/pdf') {
+                setSaveError('Only PDF files are allowed');
+                return;
+            }
+            
+            // Validate file size (max 2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                setSaveError('File size must be less than 2MB');
+                return;
+            }
+            
             onFileUpload(field, file);
+            setSaveError('');
         }
     };
 
@@ -19,9 +89,60 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
         const value = e.target.checked;
         onInputChange('hasAnotherEQHE', value);
         setShowAnotherEQHE(value);
+        
+        if (!value) {
+            // Clear another EQHE fields
+            onInputChange('anotherEqheDate', '');
+            onInputChange('anotherEqheCity', '');
+            onInputChange('anotherEqheCountry', '');
+            onInputChange('anotherEqheOriginalTitle', '');
+        }
+    };
+
+    const validateForm = (forContinue = false) => {
+        const errors = {};
+        
+        // Validate required fields for continue
+        if (forContinue) {
+            if (!formData.eqheCountry) {
+                errors.eqheCountry = 'Country of EQHE is required';
+            }
+            if (!formData.eqheOriginalTitle) {
+                errors.eqheOriginalTitle = 'EQHE title is required';
+            }
+            
+            // Validate another EQHE if checked
+            if (showAnotherEQHE) {
+                if (!formData.anotherEqheCountry) {
+                    errors.anotherEqheCountry = 'Country is required for additional EQHE';
+                }
+                if (!formData.anotherEqheOriginalTitle) {
+                    errors.anotherEqheOriginalTitle = 'Title is required for additional EQHE';
+                }
+            }
+        }
+        
+        // Validate date format if provided
+        if (formData.eqheDate && !isValidDate(formData.eqheDate)) {
+            errors.eqheDate = 'Please enter a valid date';
+        }
+        
+        if (showAnotherEQHE && formData.anotherEqheDate && !isValidDate(formData.anotherEqheDate)) {
+            errors.anotherEqheDate = 'Please enter a valid date';
+        }
+        
+        setValidationErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
+    const isValidDate = (dateString) => {
+        const date = new Date(dateString);
+        return date instanceof Date && !isNaN(date);
     };
 
     const handleSave = async () => {
+        if (!validateForm(false)) return;
+        
         setIsSaving(true);
         setSaveError('');
         setSaveSuccess(false);
@@ -43,7 +164,7 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
 
             // Make API call to save data
             const response = await axios.post(
-                `http://localhost:5000/api/application/language/student/${studentId}/eqhe`,
+                `${API_URL}/api/application/language/student/${studentId}/eqhe`,
                 dataToSave,
                 {
                     headers: {
@@ -78,19 +199,13 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
     };
 
     const handleSaveAndContinue = async () => {
+        if (!validateForm(true)) return;
+        
         setIsSaving(true);
         setSaveError('');
         setSaveSuccess(false);
 
         try {
-            // Validate required fields
-            if (!formData.eqheCountry) {
-                throw new Error('Please select your country of EQHE');
-            }
-            if (!formData.eqheOriginalTitle) {
-                throw new Error('Please select your EQHE title');
-            }
-
             // Prepare data for API
             const dataToSave = {
                 studentId: studentId,
@@ -107,7 +222,7 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
 
             // Make API call to save data
             const response = await axios.post(
-                `http://localhost:5000/api/application/language/student/${studentId}/eqhe`,
+                `${API_URL}/api/application/language/student/${studentId}/eqhe`,
                 dataToSave,
                 {
                     headers: {
@@ -152,14 +267,21 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
         formData.append('studentId', studentId);
         formData.append('certificateType', 'eqheCertificate');
 
+        setShowUploadProgress(true);
+        setUploadProgress(0);
+
         try {
             const response = await axios.post(
-                `http://localhost:5000/api/application/language/student/${studentId}/eqhe/certificate`,
+                `${API_URL}/api/application/language/student/${studentId}/eqhe/certificate`,
                 formData,
                 {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    onUploadProgress: (progressEvent) => {
+                        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                        setUploadProgress(percentCompleted);
                     }
                 }
             );
@@ -172,6 +294,9 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
         } catch (error) {
             console.error('Upload error:', error);
             setSaveError('Failed to upload certificate. Please try again.');
+        } finally {
+            setShowUploadProgress(false);
+            setUploadProgress(0);
         }
     };
 
@@ -209,267 +334,436 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
         { value: 'high_school_skorea', label: 'High School Certificate and College Scholastic Aptitude Test (South Korea)' }
     ];
 
+    if (isLoading) {
+        return (
+            <div className="language-container">
+                <div className="loading-state">
+                    <div className="loading-spinner"></div>
+                    <p>Loading your EQHE information...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="form-section">
-            <div className="section-header">
-                <div className="section-number">3</div>
-                <div>
-                    <h2 className="section-title">Entrance qualification of higher education</h2>
-                    <p className="section-subtitle">Provide your educational qualification that allows you to study at a university</p>
+        <div className="language-container">
+            {/* Success Toast */}
+            {saveSuccess && (
+                <div className="success-toast">
+                    <span className="success-icon">✓</span>
+                    <span>EQHE information saved successfully!</span>
                 </div>
-            </div>
+            )}
 
-            <div className="info-box">
-                <i className="fas fa-info-circle"></i>
-                <p className="info-text">The entrance qualification of higher education (EQHE) is an educational qualification that allows you to study at a university. In some countries a university exam is required in addition to the secondary school certificate. E.g.: High School Diploma and SAT/ACT (USA), secondary de-registration certificate and Gaokao (China), Titulo di Bachiller and Examen de Estado (Colombia), Bachiller and Prueba di Acceso (Mexico), Attestat and Unified State Exam (Russia), High School Certificate and College Scholastic Aptitude Test (South Korea), etc.</p>
-            </div>
-
-            <div className="form-grid">
-                <div className="form-group">
-                    <label className="form-label" htmlFor="eqheDate">Date of EQHE</label>
-                    <input
-                        type="date"
-                        id="eqheDate"
-                        className="form-input"
-                        value={formData.eqheDate || ''}
-                        onChange={(e) => onInputChange('eqheDate', e.target.value)}
-                    />
-                    <p className="field-helper">If you have not yet finished school yet, please select the expected date to finish school.</p>
+            {/* Error Toast */}
+            {saveError && (
+                <div className="error-toast">
+                    <span className="error-icon">⚠️</span>
+                    <span>{saveError}</span>
+                    <button className="toast-close" onClick={() => setSaveError('')}>×</button>
                 </div>
+            )}
 
-                <div className="form-group">
-                    <label className="form-label" htmlFor="eqheCity">City of EQHE</label>
-                    <input
-                        type="text"
-                        id="eqheCity"
-                        className="form-input"
-                        value={formData.eqheCity || ''}
-                        onChange={(e) => onInputChange('eqheCity', e.target.value)}
-                        placeholder="Enter city"
-                    />
+            {/* Upload Progress */}
+            {showUploadProgress && (
+                <div className="upload-progress">
+                    <div className="progress-bar-container">
+                        <div className="progress-bar" style={{ width: `${uploadProgress}%` }}></div>
+                    </div>
+                    <p>Uploading: {uploadProgress}%</p>
                 </div>
+            )}
 
-                <div className="form-group">
-                    <label className="form-label required" htmlFor="eqheCountry">Country of EQHE *</label>
-                    <select
-                        id="eqheCountry"
-                        className="form-select"
-                        value={formData.eqheCountry || ''}
-                        onChange={(e) => onInputChange('eqheCountry', e.target.value)}
-                        required
-                    >
-                        <option value="">Select Country</option>
-                        {countries.map(country => (
-                            <option key={country.value} value={country.value}>{country.label}</option>
-                        ))}
-                    </select>
-                </div>
-            </div>
-
-            <div className="form-group full-width">
-                <label className="form-label required" htmlFor="eqheOriginalTitle">Original title of EQHE</label>
-                <select
-                    id="eqheOriginalTitle"
-                    className="form-select"
-                    value={formData.eqheOriginalTitle || ''}
-                    onChange={(e) => onInputChange('eqheOriginalTitle', e.target.value)}
-                    required
-                >
-                    <option value="">Select EQHE Title</option>
-                    {eqheTitles.map(title => (
-                        <option key={title.value} value={title.value}>{title.label}</option>
-                    ))}
-                </select>
-                <p className="field-helper">Please do not translate the title, but use Latin script. For example: Senior Secondary School Certificate (India), American High School Diploma (USA), Mathayom VI (Thailand), Attestat o srednem (polnom) obsecm obrazovanii (Russia), Bachillerato General (Mexico), West African Senior School Certificate (Nigeria), Diploma di superamento dell'esame di stato conclusive dei corsi di studio di... (Italy), etc.</p>
-            </div>
-
-            <div className="checkbox-group">
-                <label className="checkbox-label">
-                    <input
-                        type="checkbox"
-                        checked={showAnotherEQHE}
-                        onChange={handleAnotherEQHEChange}
-                    />
-                    <span className="checkbox-text">+ I have another EQHE that I obtained at an earlier date</span>
-                </label>
-            </div>
-
-            {showAnotherEQHE && (
-                <div className="another-eqhe-section">
-                    <h3 className="subsection-title">Additional EQHE Details</h3>
-                    <div className="form-grid">
-                        <div className="form-group">
-                            <label className="form-label" htmlFor="anotherEqheDate">Date of EQHE</label>
-                            <input
-                                type="date"
-                                id="anotherEqheDate"
-                                className="form-input"
-                                value={formData.anotherEqheDate || ''}
-                                onChange={(e) => onInputChange('anotherEqheDate', e.target.value)}
-                            />
+            <div className="language-content">
+                {/* Header */}
+                <div className="section-header">
+                    <div className="header-left">
+                        <div className="section-number">3</div>
+                        <div>
+                            <h2 className="section-title">Entrance Qualification of Higher Education</h2>
+                            <p className="section-subtitle">Provide your educational qualification that allows you to study at a university</p>
                         </div>
+                    </div>
+                    <div className="header-icon">🎓</div>
+                </div>
 
-                        <div className="form-group">
-                            <label className="form-label" htmlFor="anotherEqheCity">City of EQHE</label>
-                            <input
-                                type="text"
-                                id="anotherEqheCity"
-                                className="form-input"
-                                value={formData.anotherEqheCity || ''}
-                                onChange={(e) => onInputChange('anotherEqheCity', e.target.value)}
-                                placeholder="Enter city"
-                            />
-                        </div>
+                {/* Info Box */}
+                <div className="info-card">
+                    <div className="info-icon">ℹ️</div>
+                    <div className="info-content">
+                        <p>The entrance qualification of higher education (EQHE) is an educational qualification that allows you to study at a university. In some countries a university exam is required in addition to the secondary school certificate.</p>
+                        <p className="info-examples">Examples: High School Diploma and SAT/ACT (USA), secondary de-registration certificate and Gaokao (China), Titulo di Bachiller and Examen de Estado (Colombia), Bachiller and Prueba di Acceso (Mexico), Attestat and Unified State Exam (Russia), High School Certificate and College Scholastic Aptitude Test (South Korea), etc.</p>
+                    </div>
+                </div>
 
-                        <div className="form-group">
-                            <label className="form-label" htmlFor="anotherEqheCountry">Country of EQHE</label>
-                            <select
-                                id="anotherEqheCountry"
-                                className="form-select"
-                                value={formData.anotherEqheCountry || ''}
-                                onChange={(e) => onInputChange('anotherEqheCountry', e.target.value)}
-                            >
-                                <option value="">Select Country</option>
-                                {countries.map(country => (
-                                    <option key={country.value} value={country.value}>{country.label}</option>
-                                ))}
-                            </select>
+                {/* Main Form Card */}
+                <div className="form-card">
+                    {/* Primary EQHE Section */}
+                    <div className="form-section">
+                        <h3 className="section-heading">
+                            <span className="heading-icon">📋</span>
+                            Primary EQHE Information
+                        </h3>
+
+                        <div className="form-grid">
+                            <div className="form-group">
+                                <label className="form-label" htmlFor="eqheDate">
+                                    Date of EQHE
+                                    {validationErrors.eqheDate && <span className="error-star">*</span>}
+                                </label>
+                                <input
+                                    type="date"
+                                    id="eqheDate"
+                                    className={`form-input ${validationErrors.eqheDate ? 'error' : ''}`}
+                                    value={formData.eqheDate || ''}
+                                    onChange={(e) => {
+                                        onInputChange('eqheDate', e.target.value);
+                                        if (validationErrors.eqheDate) {
+                                            setValidationErrors({ ...validationErrors, eqheDate: null });
+                                        }
+                                    }}
+                                />
+                                {validationErrors.eqheDate && (
+                                    <div className="field-error">{validationErrors.eqheDate}</div>
+                                )}
+                                <p className="field-helper">
+                                    If you have not yet finished school, please select the expected completion date
+                                </p>
+                            </div>
+
+                            <div className="form-group">
+                                <label className="form-label" htmlFor="eqheCity">City of EQHE</label>
+                                <input
+                                    type="text"
+                                    id="eqheCity"
+                                    className="form-input"
+                                    value={formData.eqheCity || ''}
+                                    onChange={(e) => onInputChange('eqheCity', e.target.value)}
+                                    placeholder="Enter city"
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label className="form-label required" htmlFor="eqheCountry">
+                                    Country of EQHE *
+                                    {validationErrors.eqheCountry && <span className="error-star">*</span>}
+                                </label>
+                                <select
+                                    id="eqheCountry"
+                                    className={`form-select ${validationErrors.eqheCountry ? 'error' : ''}`}
+                                    value={formData.eqheCountry || ''}
+                                    onChange={(e) => {
+                                        onInputChange('eqheCountry', e.target.value);
+                                        if (validationErrors.eqheCountry) {
+                                            setValidationErrors({ ...validationErrors, eqheCountry: null });
+                                        }
+                                    }}
+                                    required
+                                >
+                                    <option value="">Select Country</option>
+                                    {countries.map(country => (
+                                        <option key={country.value} value={country.value}>{country.label}</option>
+                                    ))}
+                                </select>
+                                {validationErrors.eqheCountry && (
+                                    <div className="field-error">{validationErrors.eqheCountry}</div>
+                                )}
+                            </div>
                         </div>
 
                         <div className="form-group full-width">
-                            <label className="form-label" htmlFor="anotherEqheOriginalTitle">Original title of EQHE</label>
+                            <label className="form-label required" htmlFor="eqheOriginalTitle">
+                                Original title of EQHE *
+                                {validationErrors.eqheOriginalTitle && <span className="error-star">*</span>}
+                            </label>
                             <select
-                                id="anotherEqheOriginalTitle"
-                                className="form-select"
-                                value={formData.anotherEqheOriginalTitle || ''}
-                                onChange={(e) => onInputChange('anotherEqheOriginalTitle', e.target.value)}
+                                id="eqheOriginalTitle"
+                                className={`form-select ${validationErrors.eqheOriginalTitle ? 'error' : ''}`}
+                                value={formData.eqheOriginalTitle || ''}
+                                onChange={(e) => {
+                                    onInputChange('eqheOriginalTitle', e.target.value);
+                                    if (validationErrors.eqheOriginalTitle) {
+                                        setValidationErrors({ ...validationErrors, eqheOriginalTitle: null });
+                                    }
+                                }}
+                                required
                             >
                                 <option value="">Select EQHE Title</option>
                                 {eqheTitles.map(title => (
                                     <option key={title.value} value={title.value}>{title.label}</option>
                                 ))}
                             </select>
+                            {validationErrors.eqheOriginalTitle && (
+                                <div className="field-error">{validationErrors.eqheOriginalTitle}</div>
+                            )}
+                            <p className="field-helper">
+                                Please do not translate the title, but use Latin script. Select the option that matches your qualification.
+                            </p>
                         </div>
                     </div>
 
-                    <div className="form-group">
-                        <label className="form-label">EQHE Certificate</label>
-                        <div className="upload-area">
-                            <div className="upload-prompt">
-                                <i className="fas fa-file-certificate"></i>
-                                <p>Upload your EQHE certificate</p>
-                                <p className="text-muted">PDF format (Max: 2MB)</p>
-                            </div>
+                    {/* Another EQHE Checkbox */}
+                    <div className="checkbox-section">
+                        <label className="checkbox-wrapper">
                             <input
-                                type="file"
-                                id="eqheCertificateUpload"
-                                accept=".pdf"
-                                onChange={(e) => {
-                                    const file = e.target.files[0];
-                                    if (file) {
-                                        handleUploadCertificate(file);
-                                    }
-                                }}
-                                className="file-input"
-                                style={{ display: 'none' }}
+                                type="checkbox"
+                                className="checkbox-input"
+                                checked={showAnotherEQHE}
+                                onChange={handleAnotherEQHEChange}
                             />
-                            <button 
-                                className="upload-btn"
-                                onClick={() => document.getElementById('eqheCertificateUpload').click()}
-                                disabled={isSaving}
-                            >
-                                <i className="fas fa-cloud-upload-alt"></i> Upload Certificate
-                            </button>
-                            {formData.eqheCertificate && (
-                                <div className="file-list">
-                                    <div className="file-item">
-                                        <div className="file-info">
-                                            <i className="fas fa-file-pdf file-icon"></i>
-                                            <div className="file-details">
-                                                <span className="file-name">{formData.eqheCertificate.name}</span>
-                                                <span className="file-size">{(formData.eqheCertificate.size / 1024 / 1024).toFixed(2)} MB</span>
-                                            </div>
-                                        </div>
+                            <span className="checkbox-custom"></span>
+                            <span className="checkbox-label">
+                                I have another EQHE that I obtained at an earlier date
+                            </span>
+                        </label>
+                    </div>
+
+                    {/* Another EQHE Section */}
+                    {showAnotherEQHE && (
+                        <div className="form-section another-section">
+                            <h3 className="section-heading">
+                                <span className="heading-icon">📋</span>
+                                Additional EQHE Details
+                            </h3>
+
+                            <div className="form-grid">
+                                <div className="form-group">
+                                    <label className="form-label" htmlFor="anotherEqheDate">
+                                        Date of EQHE
+                                        {validationErrors.anotherEqheDate && <span className="error-star">*</span>}
+                                    </label>
+                                    <input
+                                        type="date"
+                                        id="anotherEqheDate"
+                                        className={`form-input ${validationErrors.anotherEqheDate ? 'error' : ''}`}
+                                        value={formData.anotherEqheDate || ''}
+                                        onChange={(e) => {
+                                            onInputChange('anotherEqheDate', e.target.value);
+                                            if (validationErrors.anotherEqheDate) {
+                                                setValidationErrors({ ...validationErrors, anotherEqheDate: null });
+                                            }
+                                        }}
+                                    />
+                                    {validationErrors.anotherEqheDate && (
+                                        <div className="field-error">{validationErrors.anotherEqheDate}</div>
+                                    )}
+                                </div>
+
+                                <div className="form-group">
+                                    <label className="form-label" htmlFor="anotherEqheCity">City of EQHE</label>
+                                    <input
+                                        type="text"
+                                        id="anotherEqheCity"
+                                        className="form-input"
+                                        value={formData.anotherEqheCity || ''}
+                                        onChange={(e) => onInputChange('anotherEqheCity', e.target.value)}
+                                        placeholder="Enter city"
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label className="form-label required" htmlFor="anotherEqheCountry">
+                                        Country of EQHE *
+                                        {validationErrors.anotherEqheCountry && <span className="error-star">*</span>}
+                                    </label>
+                                    <select
+                                        id="anotherEqheCountry"
+                                        className={`form-select ${validationErrors.anotherEqheCountry ? 'error' : ''}`}
+                                        value={formData.anotherEqheCountry || ''}
+                                        onChange={(e) => {
+                                            onInputChange('anotherEqheCountry', e.target.value);
+                                            if (validationErrors.anotherEqheCountry) {
+                                                setValidationErrors({ ...validationErrors, anotherEqheCountry: null });
+                                            }
+                                        }}
+                                    >
+                                        <option value="">Select Country</option>
+                                        {countries.map(country => (
+                                            <option key={country.value} value={country.value}>{country.label}</option>
+                                        ))}
+                                    </select>
+                                    {validationErrors.anotherEqheCountry && (
+                                        <div className="field-error">{validationErrors.anotherEqheCountry}</div>
+                                    )}
+                                </div>
+
+                                <div className="form-group full-width">
+                                    <label className="form-label required" htmlFor="anotherEqheOriginalTitle">
+                                        Original title of EQHE *
+                                        {validationErrors.anotherEqheOriginalTitle && <span className="error-star">*</span>}
+                                    </label>
+                                    <select
+                                        id="anotherEqheOriginalTitle"
+                                        className={`form-select ${validationErrors.anotherEqheOriginalTitle ? 'error' : ''}`}
+                                        value={formData.anotherEqheOriginalTitle || ''}
+                                        onChange={(e) => {
+                                            onInputChange('anotherEqheOriginalTitle', e.target.value);
+                                            if (validationErrors.anotherEqheOriginalTitle) {
+                                                setValidationErrors({ ...validationErrors, anotherEqheOriginalTitle: null });
+                                            }
+                                        }}
+                                    >
+                                        <option value="">Select EQHE Title</option>
+                                        {eqheTitles.map(title => (
+                                            <option key={title.value} value={title.value}>{title.label}</option>
+                                        ))}
+                                    </select>
+                                    {validationErrors.anotherEqheOriginalTitle && (
+                                        <div className="field-error">{validationErrors.anotherEqheOriginalTitle}</div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Certificate Upload Section */}
+                    {showAnotherEQHE && (
+                        <div className="form-section upload-section">
+                            <h3 className="section-heading">
+                                <span className="heading-icon">📎</span>
+                                EQHE Certificate
+                            </h3>
+
+                            <div className="upload-area">
+                                {!formData.eqheCertificate ? (
+                                    <div className="upload-prompt">
+                                        <div className="upload-icon">📄</div>
+                                        <h4>Upload EQHE Certificate</h4>
+                                        <p>PDF format (Max: 2MB)</p>
                                         <button 
-                                            className="remove-file"
-                                            onClick={() => onFileUpload('eqheCertificate', null)}
+                                            className="upload-btn"
+                                            onClick={() => document.getElementById('eqheCertificateUpload').click()}
                                             disabled={isSaving}
                                         >
-                                            <i className="fas fa-times"></i>
+                                            <span className="btn-icon">📎</span>
+                                            Choose File
                                         </button>
+                                        <input
+                                            type="file"
+                                            id="eqheCertificateUpload"
+                                            accept=".pdf"
+                                            onChange={(e) => handleFileChange(e, 'eqheCertificate')}
+                                            style={{ display: 'none' }}
+                                        />
                                     </div>
-                                </div>
-                            )}
+                                ) : (
+                                    <div className="file-preview">
+                                        <div className="file-info">
+                                            <div className="file-icon">📄</div>
+                                            <div className="file-details">
+                                                <span className="file-name">{formData.eqheCertificate.name}</span>
+                                                <span className="file-size">
+                                                    {(formData.eqheCertificate.size / 1024 / 1024).toFixed(2)} MB
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="file-actions">
+                                            <button 
+                                                className="file-action-btn view"
+                                                onClick={() => window.open(URL.createObjectURL(formData.eqheCertificate))}
+                                            >
+                                                <span className="btn-icon">👁️</span>
+                                                View
+                                            </button>
+                                            <button 
+                                                className="file-action-btn remove"
+                                                onClick={() => onFileUpload('eqheCertificate', null)}
+                                                disabled={isSaving}
+                                            >
+                                                <span className="btn-icon">🗑️</span>
+                                                Remove
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
+                    )}
+
+                    {/* Requirements Box */}
+                    {!showAnotherEQHE && (
+                        <div className="requirements-box">
+                            <h4>Document Requirements</h4>
+                            <ul className="requirements-list">
+                                <li>
+                                    <span className="requirement-icon">📄</span>
+                                    <span>Official EQHE certificate/transcript</span>
+                                </li>
+                                <li>
+                                    <span className="requirement-icon">🌐</span>
+                                    <span>If not in English/German, provide certified translation</span>
+                                </li>
+                                <li>
+                                    <span className="requirement-icon">📎</span>
+                                    <span>PDF format, max 2MB</span>
+                                </li>
+                            </ul>
+                        </div>
+                    )}
+                </div>
+
+                {/* Progress Steps */}
+                <div className="progress-steps">
+                    <div className="progress-step completed">
+                        <span className="step-number">1</span>
+                        <span className="step-label">Personal</span>
+                    </div>
+                    <div className="progress-step completed">
+                        <span className="step-number">2</span>
+                        <span className="step-label">Education</span>
+                    </div>
+                    <div className="progress-step active">
+                        <span className="step-number">3</span>
+                        <span className="step-label">EQHE</span>
+                    </div>
+                    <div className="progress-step">
+                        <span className="step-number">4</span>
+                        <span className="step-label">Special Needs</span>
+                    </div>
+                    <div className="progress-step">
+                        <span className="step-number">5</span>
+                        <span className="step-label">Review</span>
                     </div>
                 </div>
-            )}
 
-            {!showAnotherEQHE && (
-                <div className="test-info">
-                    <h3 className="subsection-title">EQHE Information</h3>
-                    <div className="test-details">
-                        <div className="test-detail">
-                            <span className="detail-label">Document Required:</span>
-                            <span className="detail-value">Official EQHE certificate/transcript</span>
-                        </div>
-                        <div className="test-detail">
-                            <span className="detail-label">Translation:</span>
-                            <span className="detail-value">If not in English/German, provide certified translation</span>
-                        </div>
-                    </div>
+                {/* Action Buttons */}
+                <div className="form-actions">
+                    <button 
+                        className="btn btn-secondary"
+                        onClick={handleSave}
+                        disabled={isSaving}
+                    >
+                        {isSaving ? (
+                            <>
+                                <span className="spinner-small"></span>
+                                Saving...
+                            </>
+                        ) : (
+                            <>
+                                <span className="btn-icon">💾</span>
+                                Save
+                            </>
+                        )}
+                    </button>
+                    
+                    <button 
+                        className="btn btn-primary"
+                        onClick={handleSaveAndContinue}
+                        disabled={isSaving}
+                    >
+                        {isSaving ? (
+                            <>
+                                <span className="spinner-small"></span>
+                                Saving...
+                            </>
+                        ) : (
+                            <>
+                                Save & Continue
+                                <span className="btn-icon">→</span>
+                            </>
+                        )}
+                    </button>
                 </div>
-            )}
-
-            {/* Success Message */}
-            {saveSuccess && (
-                <div className="success-message">
-                    <i className="fas fa-check-circle"></i>
-                    <span>Data saved successfully!</span>
-                </div>
-            )}
-
-            {/* Error Message */}
-            {saveError && (
-                <div className="error-message">
-                    <i className="fas fa-exclamation-circle"></i>
-                    <span>{saveError}</span>
-                </div>
-            )}
-
-            {/* Action Buttons */}
-            <div className="form-actions">
-                <button 
-                    className="btn btn-secondary"
-                    onClick={handleSave}
-                    disabled={isSaving}
-                >
-                    {isSaving ? (
-                        <>
-                            <i className="fas fa-spinner fa-spin"></i> Saving...
-                        </>
-                    ) : (
-                        <>
-                            <i className="fas fa-save"></i> Save
-                        </>
-                    )}
-                </button>
-                
-                <button 
-                    className="btn btn-primary"
-                    onClick={handleSaveAndContinue}
-                    disabled={isSaving}
-                >
-                    {isSaving ? (
-                        <>
-                            <i className="fas fa-spinner fa-spin"></i> Saving...
-                        </>
-                    ) : (
-                        <>
-                            Save & Continue <i className="fas fa-arrow-right"></i>
-                        </>
-                    )}
-                </button>
             </div>
         </div>
     );

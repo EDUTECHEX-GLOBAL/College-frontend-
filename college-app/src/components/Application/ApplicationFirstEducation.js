@@ -21,7 +21,7 @@ const ApplicationFirstEducation = () => {
   // State for multiple education entries with unique IDs
   const [educationEntries, setEducationEntries] = useState([
     {
-      id: crypto.randomUUID ? crypto.randomUUID() : Date.now() + 1, // Unique ID
+      id: crypto.randomUUID ? crypto.randomUUID() : Date.now() + 1,
       countryOfInitialRegistration: "",
       semesterOfInitialRegistration: "",
       entryType: "",
@@ -66,7 +66,6 @@ const ApplicationFirstEducation = () => {
         setIsCurrentlyEnrolled(data.isCurrentlyEnrolled);
         
         if (data.educationEntries && data.educationEntries.length > 0) {
-          // Ensure each entry has a unique ID
           const entriesWithIds = data.educationEntries.map((entry, index) => ({
             ...entry,
             id: entry.id || (crypto.randomUUID ? crypto.randomUUID() : Date.now() + index)
@@ -197,7 +196,6 @@ const ApplicationFirstEducation = () => {
     setError("");
 
     try {
-      // Remove IDs before sending to backend
       const entriesToSave = educationEntries.map(({ id, ...rest }) => rest);
 
       const payload = {
@@ -239,7 +237,6 @@ const ApplicationFirstEducation = () => {
   const handleNext = async () => {
     const saved = await saveEducation();
     if (saved) {
-      // Navigate to Application Documents
       let targetPath;
       if (location.pathname.includes('/firsteducation')) {
         targetPath = location.pathname.replace('/firsteducation', '/documents');
@@ -268,31 +265,34 @@ const ApplicationFirstEducation = () => {
   // =====================================================
   if (isLoading) {
     return (
-      <div className="application-education">
-        <div className="loading-state">
+      <div className="app-education">
+        <div className="loading-container">
           <div className="loading-spinner"></div>
-          <p>Loading your education information...</p>
+          <p className="loading-text">Loading your education information...</p>
         </div>
       </div>
     );
   }
 
   // =====================================================
-  // MAIN UI (GUS PORTAL STYLE)
+  // MAIN UI
   // =====================================================
   return (
-    <div className="application-education">
-      {/* Header with Application ID */}
-      <div className="education-header">
-        <div className="header-left">
-          <h1>BA Communication Design</h1>
+    <div className="app-education">
+      {/* Header */}
+      <div className="page-header">
+        <div className="header-content">
+          <h1 className="page-title">BA Communication Design</h1>
           <div className="application-id">APPLICATION ID - UEG0000104849</div>
         </div>
-        <div className="progress-badge">{completionPercentage}% Completed</div>
+        <div className="progress-indicator">
+          <span className="progress-value">{completionPercentage}%</span>
+          <span className="progress-label">Completed</span>
+        </div>
       </div>
 
       {/* Navigation Steps */}
-      <div className="application-steps">
+      <div className="steps-container">
         {[
           "Study programme",
           "Applicant Details",
@@ -305,16 +305,16 @@ const ApplicationFirstEducation = () => {
           "Review"
         ].map((step, index) => {
           const stepNumber = index + 1;
-          let stepClass = "step";
+          let stepClass = "step-item";
           if (index < 3) stepClass += " completed";
           if (index === 3) stepClass += " active";
           
           return (
             <div key={step} className={stepClass}>
-              <span className="step-number">
+              <span className="step-marker">
                 {index < 3 ? "✓" : stepNumber}
               </span>
-              <span className="step-name">{step}</span>
+              <span className="step-text">{step}</span>
             </div>
           );
         })}
@@ -322,18 +322,18 @@ const ApplicationFirstEducation = () => {
 
       {/* Error Message */}
       {error && (
-        <div className="error-banner">
-          <i className="fas fa-exclamation-triangle"></i>
-          <span>{error}</span>
-          <button onClick={() => setError('')} className="error-close-btn">×</button>
+        <div className="error-notice">
+          <span className="error-icon">⚠️</span>
+          <span className="error-message-text">{error}</span>
+          <button onClick={() => setError('')} className="error-dismiss">×</button>
         </div>
       )}
 
-      {/* Main Form Container */}
-      <div className="education-form-container">
-        <div className="form-header">
-          <h2>Higher Education</h2>
-          <p className="form-subtitle">
+      {/* Main Form */}
+      <div className="form-wrapper">
+        <div className="form-header-section">
+          <h2 className="form-main-title">Higher Education</h2>
+          <p className="form-description">
             Please fill in the details below, if you have studied at university level before - 
             with or without graduating. Do not withhold any information, even if you did not 
             attend any classes and/or did not pass any exams.
@@ -342,15 +342,15 @@ const ApplicationFirstEducation = () => {
 
         <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
           {/* Enrollment Question */}
-          <div className="form-section">
-            <h3 className="section-heading">University/College education 1</h3>
+          <div className="form-card">
+            <h3 className="card-title">University/College education 1</h3>
             
-            <div className="form-group full-width">
-              <label className="form-label required">
+            <div className="field-group">
+              <label className="field-label required">
                 I was enrolled at an institute of higher education at an earlier date
               </label>
-              <div className="radio-group">
-                <label className="radio-label">
+              <div className="radio-options">
+                <label className="radio-choice">
                   <input
                     type="radio"
                     name="wasEnrolled"
@@ -359,9 +359,9 @@ const ApplicationFirstEducation = () => {
                     onChange={() => setWasEnrolled(true)}
                     disabled={isSubmitting}
                   />
-                  <span>Yes</span>
+                  <span className="radio-text">Yes</span>
                 </label>
-                <label className="radio-label">
+                <label className="radio-choice">
                   <input
                     type="radio"
                     name="wasEnrolled"
@@ -387,23 +387,23 @@ const ApplicationFirstEducation = () => {
                     }}
                     disabled={isSubmitting}
                   />
-                  <span>No</span>
+                  <span className="radio-text">No</span>
                 </label>
               </div>
             </div>
           </div>
 
-          {/* Education Entries - Show only if wasEnrolled is true */}
+          {/* Education Entries */}
           {wasEnrolled === true && (
             <>
               {educationEntries.map((entry, index) => (
-                <div key={entry.id} className="form-section education-entry">
-                  <div className="entry-header">
-                    <h3 className="section-heading">University/College education {index + 1}</h3>
+                <div key={entry.id} className="form-card education-card">
+                  <div className="card-header">
+                    <h3 className="card-title">University/College education {index + 1}</h3>
                     {educationEntries.length > 1 && (
                       <button
                         type="button"
-                        className="remove-entry-btn"
+                        className="remove-button"
                         onClick={() => removeEntry(entry.id)}
                         disabled={isSubmitting}
                       >
@@ -413,10 +413,10 @@ const ApplicationFirstEducation = () => {
                   </div>
 
                   <div className="form-grid">
-                    <div className="form-group">
-                      <label className="form-label required">Country of initial registration</label>
+                    <div className="input-group">
+                      <label className="input-label required">Country of initial registration</label>
                       <select
-                        className="form-select"
+                        className="input-select"
                         value={entry.countryOfInitialRegistration}
                         onChange={(e) => handleEntryChange(entry.id, 'countryOfInitialRegistration', e.target.value)}
                         disabled={isSubmitting}
@@ -432,10 +432,10 @@ const ApplicationFirstEducation = () => {
                       </select>
                     </div>
 
-                    <div className="form-group">
-                      <label className="form-label required">Semester of initial registration</label>
+                    <div className="input-group">
+                      <label className="input-label required">Semester of initial registration</label>
                       <select
-                        className="form-select"
+                        className="input-select"
                         value={entry.semesterOfInitialRegistration}
                         onChange={(e) => handleEntryChange(entry.id, 'semesterOfInitialRegistration', e.target.value)}
                         disabled={isSubmitting}
@@ -451,10 +451,10 @@ const ApplicationFirstEducation = () => {
                       </select>
                     </div>
 
-                    <div className="form-group">
-                      <label className="form-label required">Entry type</label>
+                    <div className="input-group">
+                      <label className="input-label required">Entry type</label>
                       <select
-                        className="form-select"
+                        className="input-select"
                         value={entry.entryType}
                         onChange={(e) => handleEntryChange(entry.id, 'entryType', e.target.value)}
                         disabled={isSubmitting}
@@ -467,10 +467,10 @@ const ApplicationFirstEducation = () => {
                       </select>
                     </div>
 
-                    <div className="form-group">
-                      <label className="form-label required">Degree</label>
+                    <div className="input-group">
+                      <label className="input-label required">Degree</label>
                       <select
-                        className="form-select"
+                        className="input-select"
                         value={entry.degree}
                         onChange={(e) => handleEntryChange(entry.id, 'degree', e.target.value)}
                         disabled={isSubmitting}
@@ -483,10 +483,10 @@ const ApplicationFirstEducation = () => {
                       </select>
                     </div>
 
-                    <div className="form-group">
-                      <label className="form-label required">Specialisation</label>
+                    <div className="input-group">
+                      <label className="input-label required">Specialisation</label>
                       <select
-                        className="form-select"
+                        className="input-select"
                         value={entry.specialisation}
                         onChange={(e) => handleEntryChange(entry.id, 'specialisation', e.target.value)}
                         disabled={isSubmitting}
@@ -500,10 +500,10 @@ const ApplicationFirstEducation = () => {
                       </select>
                     </div>
 
-                    <div className="form-group">
-                      <label className="form-label required">Standard study period</label>
+                    <div className="input-group">
+                      <label className="input-label required">Standard study period</label>
                       <select
-                        className="form-select"
+                        className="input-select"
                         value={entry.standardStudyPeriod}
                         onChange={(e) => handleEntryChange(entry.id, 'standardStudyPeriod', e.target.value)}
                         disabled={isSubmitting}
@@ -516,12 +516,11 @@ const ApplicationFirstEducation = () => {
                       </select>
                     </div>
 
-                    <div className="form-group">
-                      <label className="form-label" htmlFor={`city-${entry.id}`}>City</label>
+                    <div className="input-group">
+                      <label className="input-label">City</label>
                       <input
                         type="text"
-                        id={`city-${entry.id}`}
-                        className="form-input"
+                        className="input-field"
                         value={entry.city}
                         onChange={(e) => handleEntryChange(entry.id, 'city', e.target.value)}
                         placeholder="Enter city"
@@ -529,11 +528,10 @@ const ApplicationFirstEducation = () => {
                       />
                     </div>
 
-                    <div className="form-group full-width">
-                      <label className="form-label" htmlFor={`remarks-${entry.id}`}>Remark</label>
+                    <div className="input-group full-width">
+                      <label className="input-label">Remark</label>
                       <textarea
-                        id={`remarks-${entry.id}`}
-                        className="form-textarea"
+                        className="input-textarea"
                         value={entry.remarks}
                         onChange={(e) => handleEntryChange(entry.id, 'remarks', e.target.value)}
                         placeholder="Enter the remarks if any"
@@ -545,30 +543,31 @@ const ApplicationFirstEducation = () => {
                 </div>
               ))}
 
-              {/* Add Another Entry Button */}
-              <div className="add-entry-section">
+              {/* Add Another Entry */}
+              <div className="add-entry-container">
                 <button
                   type="button"
-                  className="add-entry-btn"
+                  className="add-button"
                   onClick={addNewEntry}
                   disabled={isSubmitting}
                 >
-                  + Add Another Entry
+                  <span className="add-icon">+</span>
+                  Add Another Entry
                 </button>
               </div>
             </>
           )}
 
           {/* Further Information */}
-          <div className="form-section">
-            <h3 className="section-heading">Further information</h3>
+          <div className="form-card">
+            <h3 className="card-title">Further information</h3>
             
-            <div className="form-group full-width">
-              <label className="form-label required">
+            <div className="field-group">
+              <label className="field-label required">
                 Are you currently enrolled in another university?
               </label>
-              <div className="radio-group">
-                <label className="radio-label">
+              <div className="radio-options">
+                <label className="radio-choice">
                   <input
                     type="radio"
                     name="currentlyEnrolled"
@@ -577,9 +576,9 @@ const ApplicationFirstEducation = () => {
                     onChange={() => setIsCurrentlyEnrolled(true)}
                     disabled={isSubmitting}
                   />
-                  <span>Yes</span>
+                  <span className="radio-text">Yes</span>
                 </label>
-                <label className="radio-label">
+                <label className="radio-choice">
                   <input
                     type="radio"
                     name="currentlyEnrolled"
@@ -588,34 +587,48 @@ const ApplicationFirstEducation = () => {
                     onChange={() => setIsCurrentlyEnrolled(false)}
                     disabled={isSubmitting}
                   />
-                  <span>No</span>
+                  <span className="radio-text">No</span>
                 </label>
               </div>
             </div>
           </div>
 
           {/* Navigation Buttons */}
-          <div className="form-actions">
+          <div className="action-buttons">
             <button
               type="button"
-              className="btn-secondary"
+              className="button button-secondary"
               onClick={handleBack}
               disabled={isSubmitting}
             >
-              ← Back
+              <span className="button-icon">←</span>
+              Back
             </button>
 
             <button
               type="submit"
-              className="btn-primary"
+              className="button button-primary"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Saving...' : 'Next →'}
+              {isSubmitting ? (
+                <>
+                  <span className="spinner-small"></span>
+                  Saving...
+                </>
+              ) : (
+                <>
+                  Save & Continue
+                  <span className="button-icon">→</span>
+                </>
+              )}
             </button>
           </div>
 
           <div className="language-selector">
-            <span>English ▼</span>
+            <button className="language-button">
+              <span>English</span>
+              <span className="dropdown-arrow">▼</span>
+            </button>
           </div>
         </form>
       </div>

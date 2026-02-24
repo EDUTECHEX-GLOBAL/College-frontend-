@@ -206,7 +206,7 @@
   align-items: center;
 }
 
-.section-header h2 {
+.adminuser-section-header h2 {
   font-size: 20px;
   color: #1a202c;
   font-weight: 700;
@@ -721,7 +721,7 @@
 }
 
 /* Animation for stats cards */
-@keyframes fadeInUp {
+@keyframes adminuserfadeInUp {
   from {
     opacity: 0;
     transform: translateY(30px);

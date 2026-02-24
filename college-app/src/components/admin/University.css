@@ -688,7 +688,7 @@
   animation: fadeIn 0.2s ease;
 }
 
-@keyframes fadeIn {
+@keyframes universityfadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }

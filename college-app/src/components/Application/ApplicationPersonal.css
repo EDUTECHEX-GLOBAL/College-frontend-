@@ -177,13 +177,13 @@
 }
 
 /* Form Grid */
-.form-grid {
+.applicationpersonal-form-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
 }
 
-.form-group {
+.applicationpersonal-form-group {
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -531,7 +531,7 @@
 }
 
 /* Form Actions */
-.form-actions {
+.applicationpersonal-form-actions {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -648,7 +648,7 @@
 }
 
 /* Sticky Header */
-.section-header {
+.applicationpersonal-section-header {
     position: sticky;
     top: 0;
     background: white;
@@ -699,7 +699,7 @@
         padding: 20px;
     }
 
-    .form-grid {
+    .applicationpersonal-form-grid {
         grid-template-columns: 1fr;
         gap: 16px;
     }
@@ -721,7 +721,7 @@
         font-size: 36px;
     }
 
-    .form-actions {
+    .applicationpersonal-form-actions {
         flex-direction: column;
         gap: 12px;
     }
@@ -1112,7 +1112,7 @@
         height: 50px;
     }
     
-    .form-grid {
+    .applicationpersonal-form-grid {
         grid-template-columns: 1fr;
     }
 }

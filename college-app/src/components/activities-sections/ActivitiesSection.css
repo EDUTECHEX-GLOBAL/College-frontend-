@@ -235,12 +235,12 @@
   background: #c82333;
 }
 
-.form-group {
+.activitiessection-form-group {
   margin-bottom: 25px;
   position: relative;
 }
 
-.form-group label {
+.activitiessection-form-group label {
   display: block;
   font-weight: 600;
   color: #1a1a1a;
@@ -482,7 +482,7 @@ hr {
     padding: 15px;
   }
 
-  .form-group {
+  .activitiessection-form-group {
     margin-bottom: 20px;
   }
 
@@ -501,7 +501,7 @@ hr {
 }
 
 /* Additional fixes for dropdown positioning */
-.form-group {
+.activitiessection-form-group {
   z-index: auto;
 }
 

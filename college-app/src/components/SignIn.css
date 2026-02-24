@@ -15,7 +15,7 @@
   animation: fadeIn 0.3s ease-out;
 }
 
-@keyframes fadeIn {
+@keyframes signinfadeIn {
   from {
     opacity: 0;
     backdrop-filter: blur(0px);

@@ -613,7 +613,7 @@
   animation: fadeIn 0.2s ease;
 }
 
-@keyframes fadeIn {
+@keyframes applicationfadeIn {
   from {
     opacity: 0;
     transform: translateY(-4px);
@@ -720,7 +720,7 @@
   margin-bottom: var(--spacing-xl);
 }
 
-.section-header {
+.applications-section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;

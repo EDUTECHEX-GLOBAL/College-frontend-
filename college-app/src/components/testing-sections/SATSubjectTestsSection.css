@@ -380,7 +380,7 @@
 }
 
 /* Animation for year grid */
-@keyframes fadeIn {
+@keyframes sat-subject-tests-sectionfadeIn {
   from {
     opacity: 0;
     transform: translateY(-10px);

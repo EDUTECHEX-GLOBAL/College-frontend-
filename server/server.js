@@ -42,7 +42,7 @@ import applicationLanguageRoutes from "./routes/applicationLanguageRoutes.js";
 import applicationDocumentRoutes from "./routes/applicationDocumentRoutes.js";
 import adminUniversityRoutes from "./routes/adminUniversityRoutes.js";
 import userProfileRoutes from "./routes/userprofileroutes.js";
-import applicationSpecialNeedRoutes from "./routes/applicationspecialneedroutes.js";
+import applicationSpecialNeedRoutes from "./routes/applicationSpecialNeedRoutes.js";
 dotenv.config();
 
 // Initialize

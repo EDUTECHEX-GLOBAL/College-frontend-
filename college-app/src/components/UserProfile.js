@@ -71,14 +71,32 @@ const UserProfile = () => {
   // Validation errors
   const [validationErrors, setValidationErrors] = useState({});
 
+  // Success animation state
+  const [showSuccess, setShowSuccess] = useState(false);
+
   // Handle profile image upload
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setError("Image size should be less than 5MB");
+        return;
+      }
+      
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        setError("Please upload an image file");
+        return;
+      }
+      
       setProfileImage(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
+        // Show success animation
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 2000);
       };
       reader.readAsDataURL(file);
     }
@@ -347,6 +365,12 @@ const UserProfile = () => {
     setEducation({ ...education, qualification: value });
     const program = detectProgram(value);
     setEligibleProgram(program);
+    
+    // Show success animation
+    if (program) {
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 1500);
+    }
   };
 
   // Filter universities based on eligible program and search
@@ -397,7 +421,9 @@ const UserProfile = () => {
     const isKansas = university.INSTNM?.toLowerCase().includes('kansas');
     
     if (isKansas) {
-      alert("Kansas universities don't have course selection. They will be added directly.");
+      // Show animated alert
+      setError("Kansas universities don't have course selection. They will be added directly.");
+      setTimeout(() => setError(''), 3000);
       toggleUniversity(university);
       return;
     }
@@ -416,6 +442,9 @@ const UserProfile = () => {
     setTempSelectedCourses([...existingSelected]);
     
     setShowCourseModal(true);
+    
+    // Animation for modal opening
+    document.body.style.overflow = 'hidden';
   };
 
   // Toggle course selection in modal
@@ -430,7 +459,9 @@ const UserProfile = () => {
         // Add course (max 2)
         return [...prev, course];
       } else {
-        alert('You can select maximum 2 courses per university');
+        // Show animated alert
+        setError('You can select maximum 2 courses per university');
+        setTimeout(() => setError(''), 2000);
         return prev;
       }
     });
@@ -490,6 +521,13 @@ const UserProfile = () => {
     setShowCourseModal(false);
     setCurrentUniversity(null);
     setTempSelectedCourses([]);
+    
+    // Restore scrolling
+    document.body.style.overflow = 'auto';
+    
+    // Show success animation
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 1500);
   };
 
   // Close course modal
@@ -497,6 +535,9 @@ const UserProfile = () => {
     setShowCourseModal(false);
     setCurrentUniversity(null);
     setTempSelectedCourses([]);
+    
+    // Restore scrolling
+    document.body.style.overflow = 'auto';
   };
 
   // Toggle university selection
@@ -536,10 +577,18 @@ const UserProfile = () => {
         };
         setSelectedUniversities([...selectedUniversities, kansasUniversity]);
         console.log("✅ Added Kansas university:", kansasUniversity);
+        
+        // Show success animation
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 1500);
       } else {
         // Non-Kansas universities open course modal
         openCourseModal(university);
       }
+    } else {
+      // Show error if max selected
+      setError("You can select maximum 5 universities");
+      setTimeout(() => setError(''), 2000);
     }
   };
 
@@ -550,6 +599,10 @@ const UserProfile = () => {
       if (u._id && university._id && u._id.toString() === university._id.toString()) return false;
       return true;
     }));
+    
+    // Show removal animation
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 1000);
   };
 
   // Validate step 1 fields
@@ -561,6 +614,11 @@ const UserProfile = () => {
     if (!basicInfo.gender) errors.gender = "Gender is required";
     if (!basicInfo.nationality) errors.nationality = "Nationality is required";
     if (!basicInfo.residence) errors.residence = "Country of residence is required";
+    
+    // Mobile number validation
+    if (basicInfo.mobile && !/^[0-9+\-\s()]{10,15}$/.test(basicInfo.mobile)) {
+      errors.mobile = "Please enter a valid mobile number";
+    }
     
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -575,6 +633,11 @@ const UserProfile = () => {
     if (!education.year) errors.year = "Year of passing is required";
     if (!education.cgpa) errors.cgpa = "CGPA/Percentage is required";
     
+    // Year validation
+    if (education.year && !/^\d{4}$/.test(education.year)) {
+      errors.year = "Please enter a valid year (YYYY)";
+    }
+    
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -582,7 +645,8 @@ const UserProfile = () => {
   // Validate step 3 (universities and courses)
   const validateStep3 = () => {
     if (selectedUniversities.length < 3) {
-      alert('Please select at least 3 universities');
+      setError('Please select at least 3 universities');
+      setTimeout(() => setError(''), 3000);
       return false;
     }
     
@@ -593,7 +657,8 @@ const UserProfile = () => {
       if (!isKansas) {
         const courses = uni.selectedCourses || [];
         if (courses.length === 0) {
-          alert(`Please select at least one course for ${uni.INSTNM}`);
+          setError(`Please select at least one course for ${uni.INSTNM}`);
+          setTimeout(() => setError(''), 3000);
           return false;
         }
       }
@@ -749,8 +814,15 @@ const UserProfile = () => {
         localStorage.setItem('profileCompleted', 'true');
         
         console.log("✅ Profile saved to backend successfully with courses");
-        alert("Profile submitted successfully! Redirecting to dashboard...");
-        navigateToDashboard();
+        
+        // Show success animation
+        setShowSuccess(true);
+        
+        // Redirect after animation
+        setTimeout(() => {
+          alert("Profile submitted successfully! Redirecting to dashboard...");
+          navigateToDashboard();
+        }, 1500);
       } else {
         setError(response.data.message || "Failed to save profile");
       }
@@ -797,8 +869,13 @@ const UserProfile = () => {
         formattedUniversities.map(u => ({ name: u.name, courseCount: u.selectedCourses.length }))
       );
       
-      alert("Profile saved locally! Redirecting to dashboard...");
-      navigateToDashboard();
+      // Show success animation anyway
+      setShowSuccess(true);
+      
+      setTimeout(() => {
+        alert("Profile saved locally! Redirecting to dashboard...");
+        navigateToDashboard();
+      }, 1500);
     } finally {
       setSaving(false);
     }
@@ -815,7 +892,11 @@ const UserProfile = () => {
     if (step === 3 && nextStep === 4 && !validateStep3()) {
       return;
     }
+    
     setStep(nextStep);
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Handle cancel
@@ -894,6 +975,11 @@ const UserProfile = () => {
         <div className="loading-screen">
           <div className="loading-spinner-large"></div>
           <p>Loading your profile...</p>
+          <div className="confetti-piece" style={{ left: '10%', animationDelay: '0s' }}></div>
+          <div className="confetti-piece" style={{ left: '30%', animationDelay: '0.3s' }}></div>
+          <div className="confetti-piece" style={{ left: '50%', animationDelay: '0.6s' }}></div>
+          <div className="confetti-piece" style={{ left: '70%', animationDelay: '0.9s' }}></div>
+          <div className="confetti-piece" style={{ left: '90%', animationDelay: '1.2s' }}></div>
         </div>
       </div>
     );
@@ -901,8 +987,19 @@ const UserProfile = () => {
 
   return (
     <div className="profile-wrapper">
+      {/* Success Animation Overlay */}
+      {showSuccess && (
+        <div className="success-animation-overlay">
+          <div className="success-animation">
+            <div className="checkmark-circle">
+              <div className="checkmark"></div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
-      <div className="profile-header">
+      <div className="userprofile-profile-header">
         <div className="header-container">
           <div className="profile-image-wrapper">
             <div className="profile-image-container">
@@ -931,20 +1028,20 @@ const UserProfile = () => {
             <p className="header-email">{basicInfo.email}</p>
           </div>
 
-          <button className="header-cancel-btn" onClick={handleCancel}>
+          <button className="header-cancel-btn ripple-effect" onClick={handleCancel}>
             Cancel
           </button>
         </div>
       </div>
 
-      <div className="profile-content">
+      <div className="userprofile-profile-content">
         {/* Error Message */}
         {error && (
           <div className="error-message">
             <span className="error-icon">⚠️</span>
             <span>{error}</span>
             {error.includes("Cannot connect") && (
-              <button className="retry-btn" onClick={handleRetry}>
+              <button className="retry-btn ripple-effect" onClick={handleRetry}>
                 Retry
               </button>
             )}
@@ -952,7 +1049,7 @@ const UserProfile = () => {
         )}
 
         {/* Progress Steps */}
-        <div className="progress-container">
+        <div className="userprofile-progress-container">
           <div className="progress-steps-horizontal">
             <div className={`step-horizontal ${step === 1 ? 'active' : ''} ${step > 1 ? 'completed' : ''}`}>
               <span className="step-number-horizontal">1</span>
@@ -975,7 +1072,7 @@ const UserProfile = () => {
 
         {/* Step 1: Basic Information */}
         {step === 1 && (
-          <div className="form-card fade-in">
+          <div className="form-card userprofile-fade-in">
             <div className="card-header">
               <h2>Personal Information</h2>
               <p>Tell us about yourself</p>
@@ -997,6 +1094,9 @@ const UserProfile = () => {
                   }}
                   className={validationErrors.fullName ? 'error' : ''}
                 />
+                {validationErrors.fullName && (
+                  <span className="field-error">{validationErrors.fullName}</span>
+                )}
               </div>
 
               {/* Email ID */}
@@ -1028,6 +1128,9 @@ const UserProfile = () => {
                   }}
                   className={validationErrors.mobile ? 'error' : ''}
                 />
+                {validationErrors.mobile && (
+                  <span className="field-error">{validationErrors.mobile}</span>
+                )}
               </div>
 
               {/* Date of Birth */}
@@ -1044,6 +1147,9 @@ const UserProfile = () => {
                   }}
                   className={validationErrors.dob ? 'error' : ''}
                 />
+                {validationErrors.dob && (
+                  <span className="field-error">{validationErrors.dob}</span>
+                )}
               </div>
 
               {/* Gender */}
@@ -1065,6 +1171,9 @@ const UserProfile = () => {
                   <option value="Other">Other</option>
                   <option value="Prefer not to say">Prefer not to say</option>
                 </select>
+                {validationErrors.gender && (
+                  <span className="field-error">{validationErrors.gender}</span>
+                )}
               </div>
 
               {/* Nationality */}
@@ -1082,6 +1191,9 @@ const UserProfile = () => {
                   }}
                   className={validationErrors.nationality ? 'error' : ''}
                 />
+                {validationErrors.nationality && (
+                  <span className="field-error">{validationErrors.nationality}</span>
+                )}
               </div>
 
               {/* Country of Residence */}
@@ -1099,20 +1211,17 @@ const UserProfile = () => {
                   }}
                   className={validationErrors.residence ? 'error' : ''}
                 />
+                {validationErrors.residence && (
+                  <span className="field-error">{validationErrors.residence}</span>
+                )}
               </div>
-
-              {Object.keys(validationErrors).length > 0 && (
-                <div className="validation-error">
-                  <span className="error-icon">⚠️</span>
-                  <span>Please fill in all required fields</span>
-                </div>
-              )}
             </div>
 
             <div className="form-actions">
               <button 
-                className="continue-btn"
+                className="continue-btn ripple-effect"
                 onClick={() => handleSaveProgress(2)}
+                disabled={!isStep1Valid()}
               >
                 Continue to Education →
               </button>
@@ -1122,7 +1231,7 @@ const UserProfile = () => {
 
         {/* Step 2: Education Background */}
         {step === 2 && (
-          <div className="form-card fade-in">
+          <div className="form-card userprofile-fade-in">
             <div className="card-header">
               <h2>Education Background</h2>
               <p>Tell us about your academic journey</p>
@@ -1142,6 +1251,9 @@ const UserProfile = () => {
                   <option value="Bachelor">Bachelor's Degree</option>
                   <option value="Master">Master's Degree</option>
                 </select>
+                {validationErrors.qualification && (
+                  <span className="field-error">{validationErrors.qualification}</span>
+                )}
               </div>
 
               {/* Institution Name */}
@@ -1159,6 +1271,9 @@ const UserProfile = () => {
                   }}
                   className={validationErrors.institution ? 'error' : ''}
                 />
+                {validationErrors.institution && (
+                  <span className="field-error">{validationErrors.institution}</span>
+                )}
               </div>
 
               {/* Field of Study */}
@@ -1176,6 +1291,9 @@ const UserProfile = () => {
                   }}
                   className={validationErrors.field ? 'error' : ''}
                 />
+                {validationErrors.field && (
+                  <span className="field-error">{validationErrors.field}</span>
+                )}
               </div>
 
               {/* Year of Passing */}
@@ -1193,6 +1311,9 @@ const UserProfile = () => {
                   }}
                   className={validationErrors.year ? 'error' : ''}
                 />
+                {validationErrors.year && (
+                  <span className="field-error">{validationErrors.year}</span>
+                )}
               </div>
 
               {/* Percentage / CGPA */}
@@ -1210,14 +1331,10 @@ const UserProfile = () => {
                   }}
                   className={validationErrors.cgpa ? 'error' : ''}
                 />
+                {validationErrors.cgpa && (
+                  <span className="field-error">{validationErrors.cgpa}</span>
+                )}
               </div>
-
-              {Object.keys(validationErrors).length > 0 && (
-                <div className="validation-error">
-                  <span className="error-icon">⚠️</span>
-                  <span>Please fill in all required fields</span>
-                </div>
-              )}
             </div>
 
             {eligibleProgram && (
@@ -1228,12 +1345,13 @@ const UserProfile = () => {
             )}
 
             <div className="form-actions">
-              <button className="back-btn" onClick={() => setStep(1)}>
+              <button className="back-btn ripple-effect" onClick={() => setStep(1)}>
                 ← Back
               </button>
               <button 
-                className="continue-btn"
+                className="continue-btn ripple-effect"
                 onClick={() => handleSaveProgress(3)}
+                disabled={!isStep2Valid()}
               >
                 Continue to Universities & Courses →
               </button>
@@ -1243,7 +1361,7 @@ const UserProfile = () => {
 
         {/* Step 3: Select Universities and Courses */}
         {step === 3 && (
-          <div className="form-card fade-in">
+          <div className="form-card userprofile-fade-in">
             <div className="card-header">
               <h2>Select Universities & Courses</h2>
               <p>Choose at least 3 universities and select up to 2 courses for each</p>
@@ -1277,7 +1395,7 @@ const UserProfile = () => {
               <div className="loading-state">
                 <div className="loading-spinner"></div>
                 <p>Loading universities from database...</p>
-                <button className="retry-small-btn" onClick={handleRetry}>
+                <button className="retry-small-btn ripple-effect" onClick={handleRetry}>
                   Retry
                 </button>
               </div>
@@ -1335,7 +1453,7 @@ const UserProfile = () => {
                               ))}
                             </div>
                             <button 
-                              className="edit-courses-btn"
+                              className="edit-courses-btn ripple-effect"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 openCourseModal(uni);
@@ -1350,7 +1468,7 @@ const UserProfile = () => {
                           <div className="selected-courses-preview warning">
                             <span className="preview-label">⚠️ No courses selected</span>
                             <button 
-                              className="edit-courses-btn"
+                              className="edit-courses-btn ripple-effect"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 openCourseModal(uni);
@@ -1373,7 +1491,7 @@ const UserProfile = () => {
                   <div className="no-results">
                     <p>No universities found.</p>
                     {universities.length === 0 && (
-                      <button className="retry-btn" onClick={handleRetry}>
+                      <button className="retry-btn ripple-effect" onClick={handleRetry}>
                         Refresh Universities
                       </button>
                     )}
@@ -1383,11 +1501,11 @@ const UserProfile = () => {
             )}
 
             <div className="form-actions">
-              <button className="back-btn" onClick={() => setStep(2)}>
+              <button className="back-btn ripple-effect" onClick={() => setStep(2)}>
                 ← Back
               </button>
               <button 
-                className="continue-btn"
+                className="continue-btn ripple-effect"
                 onClick={() => handleSaveProgress(4)}
                 disabled={!isStep3Valid()}
               >
@@ -1399,7 +1517,7 @@ const UserProfile = () => {
 
         {/* Step 4: Review & Submit */}
         {step === 4 && (
-          <div className="form-card fade-in">
+          <div className="form-card userprofile-fade-in">
             <div className="card-header">
               <h2>Review Your Profile</h2>
               <p>Please verify your information before submitting</p>
@@ -1470,11 +1588,11 @@ const UserProfile = () => {
             </div>
 
             <div className="form-actions">
-              <button className="back-btn" onClick={() => setStep(3)}>
+              <button className="back-btn ripple-effect" onClick={() => setStep(3)}>
                 ← Back
               </button>
               <button 
-                className="submit-btn" 
+                className="submit-btn ripple-effect" 
                 onClick={handleSubmitProfile}
                 disabled={saving || !isStep3Valid()}
               >
@@ -1513,7 +1631,7 @@ const UserProfile = () => {
           <div className="modal-content course-modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h3>Select Courses for {currentUniversity.INSTNM}</h3>
-              <button className="modal-close-btn" onClick={closeCourseModal}>×</button>
+              <button className="modal-close-btn ripple-effect" onClick={closeCourseModal}>×</button>
             </div>
             
             <div className="modal-body">
@@ -1581,11 +1699,11 @@ const UserProfile = () => {
             </div>
             
             <div className="modal-footer">
-              <button className="cancel-btn" onClick={closeCourseModal}>
+              <button className="cancel-btn ripple-effect" onClick={closeCourseModal}>
                 Cancel
               </button>
               <button 
-                className="save-btn" 
+                className="save-btn ripple-effect" 
                 onClick={saveCourseSelection}
                 disabled={tempSelectedCourses.length === 0}
               >
@@ -1595,6 +1713,86 @@ const UserProfile = () => {
           </div>
         </div>
       )}
+
+      {/* Add CSS for success animation */}
+      <style jsx>{`
+        .success-animation-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(255, 255, 255, 0.9);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 2000;
+          animation: fadeIn 0.3s ease;
+        }
+
+        .success-animation {
+          width: 100px;
+          height: 100px;
+        }
+
+        .checkmark-circle {
+          width: 100px;
+          height: 100px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #667eea, #764ba2, #FF6B6B, #4ECDC4);
+          animation: rotate 0.5s ease-out;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .checkmark {
+          width: 50px;
+          height: 30px;
+          border-left: 5px solid white;
+          border-bottom: 5px solid white;
+          transform: rotate(-45deg) translate(5px, -5px);
+          animation: draw 0.3s ease-out 0.3s both;
+        }
+
+        @keyframes rotate {
+          from {
+            transform: scale(0) rotate(0deg);
+          }
+          to {
+            transform: scale(1) rotate(360deg);
+          }
+        }
+
+        @keyframes draw {
+          from {
+            width: 0;
+            height: 0;
+            opacity: 0;
+          }
+          to {
+            width: 50px;
+            height: 30px;
+            opacity: 1;
+          }
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        .field-error {
+          color: #dc3545;
+          font-size: 0.8rem;
+          margin-top: 0.2rem;
+          animation: slideIn 0.3s ease;
+        }
+      `}</style>
     </div>
   );
 };
