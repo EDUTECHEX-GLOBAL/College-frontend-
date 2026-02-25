@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Routes, Route, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import './Dashboard.css';
@@ -11,6 +11,7 @@ import ResponsibilitiesSection from './activities-sections/ResponsibilitiesSecti
 import CollegeSearch from "./CollegeSearch";
 import CollegeDetails from "./CollegeDetails";
 import CollegeSubsection from "./CollegeSubsection";
+import Documents from './mycollege-sections/Documents'; 
 import General from './mycollege-sections/General';
 import Academics from './mycollege-sections/Academics';
 import HighSchoolCurriculum from './mycollege-sections/HighSchoolCurriculum';
@@ -45,8 +46,8 @@ const Dashboard = () => {
   const isFirstYear = location.pathname.includes('/firstyear/');
   const basePath = isFirstYear ? '/firstyear/dashboard' : '/transfer/dashboard';
 
-  // Function to refresh user data
-  const refreshUserData = async () => {
+  // Function to refresh user data - wrapped in useCallback
+  const refreshUserData = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
@@ -111,7 +112,7 @@ const Dashboard = () => {
     } catch (error) {
       console.error('Error refreshing user data:', error);
     }
-  };
+  }, []);
 
   // Calculate application progress from localStorage data - UPDATED with Special Needs
   const calculateLocalApplicationProgress = (appData) => {
@@ -188,8 +189,8 @@ const Dashboard = () => {
     return progress;
   };
 
-  // Function to fetch user's colleges
-  const fetchUserColleges = async () => {
+  // Function to fetch user's colleges - wrapped in useCallback
+  const fetchUserColleges = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
@@ -208,16 +209,16 @@ const Dashboard = () => {
     } catch (error) {
       console.error('Error fetching user colleges:', error);
     }
-  };
+  }, []);
 
-  // Function to refresh both user data and colleges
-  const refreshAllData = async () => {
+  // Function to refresh both user data and colleges - wrapped in useCallback
+  const refreshAllData = useCallback(async () => {
     await refreshUserData();
     await fetchUserColleges();
-  };
+  }, [refreshUserData, fetchUserColleges]);
 
   // Handle family completion
-  const handleFamilyComplete = (isComplete) => {
+  const handleFamilyComplete = useCallback((isComplete) => {
     setFamilyCompleted(isComplete);
     localStorage.setItem('familySectionComplete', isComplete ? 'true' : 'false');
     
@@ -230,9 +231,9 @@ const Dashboard = () => {
         }
       }));
     }
-  };
+  }, [userData]);
 
-  // Handle course selection from Courses page (keeping for compatibility)
+  // Handle course selection from Courses page
   const handleCourseSelection = (courseData) => {
     console.log('🎯 Course selected in Dashboard:', courseData);
     setSelectedCourseData(courseData);
@@ -398,7 +399,7 @@ const Dashboard = () => {
 
     fetchUserProfile();
     fetchUserColleges();
-  }, [navigate]);
+  }, [navigate, fetchUserColleges]);
 
   // Refresh data when navigating to dashboard or college-related pages
   useEffect(() => {
@@ -406,7 +407,7 @@ const Dashboard = () => {
     if (path.includes('/dashboard') || path.includes('/colleges') || path.includes('/college-search')) {
       refreshAllData();
     }
-  }, [location.pathname]);
+  }, [location.pathname, refreshAllData]);
 
   // Listen for college updates from other components
   useEffect(() => {
@@ -420,7 +421,7 @@ const Dashboard = () => {
     return () => {
       window.removeEventListener('collegesUpdated', handleCollegesUpdate);
     };
-  }, []);
+  }, [fetchUserColleges]);
 
   // Listen for family completion events
   useEffect(() => {
@@ -435,7 +436,7 @@ const Dashboard = () => {
     return () => {
       window.removeEventListener('familySectionComplete', handleFamilyCompletion);
     };
-  }, []);
+  }, [handleFamilyComplete]);
 
   // Update active section based on route
   useEffect(() => {
@@ -951,6 +952,7 @@ const Dashboard = () => {
           <Route path="/courses/:universityId" element={<Courses onCourseSelect={handleCourseSelection} />} />
           
           <Route path="/colleges/:collegeId/general" element={<General />} />
+          <Route path="/colleges/:collegeId/documents" element={<Documents />} />
           <Route path="/colleges/:collegeId/academics" element={<Academics />} />
           <Route path="/colleges/:collegeId/high-school" element={<HighSchoolCurriculum />} />
           <Route path="/colleges/:collegeId/activities" element={<Activities />} />

@@ -1,4 +1,4 @@
-// src/components/DashboardLayout.js
+// src/components/DashboardLayout.js - FULLY MERGED VERSION
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -291,7 +291,6 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
         return (eqheFilled / eqheFields.length) * 100;
         
       case 'special-needs':
-        // Check if special needs section is completed
         if (gusAppData.hasSpecialNeeds === 'no') return 100;
         if (gusAppData.hasSpecialNeeds === 'yes' && isFieldFilled(gusAppData.specialNeedsDescription)) return 100;
         return 0;
@@ -395,6 +394,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     }, [college.collegeId]);
 
     const applicationSubsections = [
+      { id: 'documents', name: 'Documents' },
       { id: 'general', name: 'General' },
       { id: 'academics', name: 'Academics' },
       { id: 'high-school', name: 'High School Curriculum' },
@@ -641,7 +641,6 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     }
 
     if (activeMainSection === 'testing') {
-      // Map section names to display names - UPDATED to match TestingForm.js
       const sectionDisplayNames = {
         'tests-taken': 'Tests Taken',
         'act-tests': 'ACT Tests',
@@ -656,7 +655,6 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
         'duolingo-english-test': 'Duolingo English Test'
       };
       
-      // Show all test sections that are either "tests-taken" or in selectedTests
       const sectionsToShow = [
         'tests-taken',
         ...selectedTests.filter(test => test !== 'tests-taken')
@@ -753,7 +751,6 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
         <div className="nav-section">
           <h4 className="nav-section-title">University Application</h4>
           <ul className="nav-menu">
-            {/* Application Overview */}
             <li className={`nav-item ${location.pathname.includes('/application/overview') ? 'active' : ''}`}>
               <div 
                 className="nav-content" 
@@ -763,7 +760,6 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
               </div>
             </li>
 
-            {/* Application Steps */}
             {applicationSteps.slice(1).map((step) => {
               const stepProgress = calculateApplicationStepProgress(step.id);
               const isActive = location.pathname === step.route || 
@@ -782,7 +778,6 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
               );
             })}
             
-            {/* Application Guide */}
             <li className="nav-item">
               <div className="nav-content" onClick={() => {
                 alert('GUS University Application Portal\n\nComplete your application in 7 steps:\n\n1. Personal Information\n2. Address\n3. Entrance Qualification\n4. Special Needs\n5. Education\n6. Documents\n7. Preview & Submit');
@@ -791,14 +786,13 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
               </div>
             </li>
             
-            {/* Application Status */}
             <li className="nav-item">
               <div className="nav-content" onClick={() => {
                 const appData = localStorage.getItem('gusApplicationData');
                 if (appData) {
                   try {
                     const parsedData = JSON.parse(appData);
-                    const steps = applicationSteps.slice(1); // Exclude overview
+                    const steps = applicationSteps.slice(1);
                     const completedSteps = steps.filter(step => {
                       const stepProgress = calculateApplicationStepProgress(step.id);
                       return stepProgress >= 100;
@@ -816,7 +810,6 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
               </div>
             </li>
             
-            {/* Document Checklist */}
             <li className="nav-item">
               <div className="nav-content" onClick={() => {
                 const gusAppData = JSON.parse(localStorage.getItem('gusApplicationData') || '{}');
@@ -850,7 +843,6 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
       <div className="nav-section">
         <h4 className="nav-section-title">Dashboard</h4>
         <ul className="nav-menu">
-          {/* My Common Application - Now includes Application progress */}
           <li className={`nav-item ${activeMainSection === 'dashboard' ? 'active' : ''}`}>
             <div className="nav-content" onClick={() => onSectionChange('dashboard')}>
               <span className="nav-text">My Dashboard</span>
@@ -872,14 +864,12 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
             </div>
             {expandedSections.application && (
               <ul className="nav-submenu">
-                {/* Application Overview */}
                 <li className={`nav-subitem ${location.pathname === `${basePath}/application/overview` ? 'active' : ''}`}>
                   <div className="nav-content" onClick={() => navigate(`${basePath}/application/overview`)}>
                     <span className="nav-text">Application Overview</span>
                   </div>
                 </li>
                 
-                {/* Quick Access to Major Steps */}
                 <li className={`nav-subitem ${location.pathname.includes('/application/personal') ? 'active' : ''}`}>
                   <div className="nav-content" onClick={() => navigate(`${basePath}/application/personal`)}>
                     <span className="nav-text">• Personal Information</span>
@@ -917,7 +907,6 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
                   </div>
                 </li>
                 
-                {/* Application Support Items */}
                 <li className="nav-subitem">
                   <div className="nav-content" onClick={() => {
                     alert('GUS University Application Portal\n\nComplete your application in 7 steps:\n\n1. Personal Information\n2. Address\n3. Entrance Qualification\n4. Special Needs\n5. Education\n6. Documents\n7. Preview & Submit');
@@ -971,7 +960,6 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
             )}
           </li>
           
-          {/* Profile Section */}
           <li className={`nav-item ${activeMainSection === 'profile' ? 'active' : ''}`}>
             <div className="nav-content" onClick={() => onSectionChange('profile')}>
               <span className="nav-text">Profile</span>
@@ -981,7 +969,6 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
             </div>
           </li>
           
-          {/* Family Section */}
           <li className={`nav-item ${activeMainSection === 'family' ? 'active' : ''}`}>
             <div className="nav-content" onClick={() => onSectionChange('family')}>
               <span className="nav-text">Family</span>
@@ -1004,14 +991,12 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
             </div>
             {expandedSections.colleges && (
               <ul className="nav-submenu">
-                {/* Overview Item */}
                 <li className={`nav-subitem ${location.pathname === `${basePath}/colleges` ? 'active' : ''}`}>
                   <div className="nav-content" onClick={() => onSectionChange('colleges')}>
                     <span className="nav-text">Overview</span>
                   </div>
                 </li>
                 
-                {/* Individual Colleges */}
                 {userColleges.length > 0 ? (
                   userColleges.map((college) => {
                     return (
@@ -1095,7 +1080,6 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
             )}
           </li>
           
-          {/* Education Section */}
           <li className={`nav-item ${activeMainSection === 'education' ? 'active' : ''}`}>
             <div className="nav-content" onClick={() => onSectionChange('education')}>
               <span className="nav-text">Education</span>
@@ -1118,14 +1102,12 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
             </div>
             {expandedSections.testing && (
               <ul className="nav-submenu">
-                {/* Always show Tests Taken */}
                 <li className={`nav-subitem ${location.pathname.includes('/tests-taken') ? 'active' : ''}`}>
                   <div className="nav-content" onClick={() => navigate(`${basePath}/testing/tests-taken`)}>
                     <span className="nav-text">Tests Taken</span>
                   </div>
                 </li>
                 
-                {/* Show selected test types only */}
                 {selectedTestTypes.length > 0 ? (
                   selectedTestTypes.map((test) => (
                     <li key={test.id} className={`nav-subitem ${location.pathname.includes(test.id) ? 'active' : ''}`}>
@@ -1135,7 +1117,6 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
                     </li>
                   ))
                 ) : (
-                  /* Show message when no tests selected */
                   <li className="nav-subitem">
                     <div className="nav-content">
                       <span className="nav-text" style={{ color: '#6b7280', fontStyle: 'italic' }}>

@@ -512,12 +512,12 @@
     font-size: 16px;
 }
 
-.btn-primary {
+.applicationspecial-btn-primary {
     background-color: var(--primary-color);
     color: white;
 }
 
-.btn-primary:hover:not(:disabled) {
+.applicationspecial-btn-primary:hover:not(:disabled) {
     background-color: var(--primary-dark);
 }
 

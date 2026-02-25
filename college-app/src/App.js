@@ -1,18 +1,26 @@
-// src/App.js - FULL UPDATED CODE
+// src/App.js - MERGED VERSION WITH ALL ROUTES
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
-// ✅ NEW: Role Selection Page
+// ✅ Role Selection Page
 import RoleSelection from "./components/RoleSelection";
 
-// ✅ NEW: Admin Login Page
+// ✅ Admin Login Page
 import AdminLogin from "./components/AdminLogin";
 
-// ✅ NEW: User Profile Page
+
+// ✅ Process Admin Login Page
+import ProcessAdminLogin from "./components/processadmin/ProcessAdminLogin";
+
+// ✅ User Profile Page
 import UserProfile from "./components/UserProfile";
 
-// ✅ NEW: Admin Dashboard Page
+// ✅ Admin Dashboard Page
 import AdminDashboard from "./components/admin/admindashboard";
+
+
+// ✅ Process Admin Dashboard Page
+import ProcessAdminDashboard from "./components/processadmin/processAdminDashboard";
 
 // Core pages
 import Home from "./components/Home";
@@ -31,67 +39,50 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* ✅ NEW: Role Selection - FIRST PAGE */}
+        {/* Role Selection - FIRST PAGE */}
         <Route path="/" element={<RoleSelection />} />
 
-        {/* 🏠 Old Homepage (for "Continue as Student") */}
+        {/* Old Homepage (for "Continue as Student") */}
         <Route path="/home" element={<Home />} />
 
-        {/* 🧾 Create Account (main) */}
+        {/* Create Account pages */}
         <Route path="/create-account" element={<CreateAccount />} />
-
-        {/* 🎓 First-Year Student */}
         <Route path="/create-account/first-year" element={<FirstYearAccount />} />
-
-        {/* 🔁 Transfer Student */}
         <Route path="/create-account/transfer" element={<TransferStudent />} />
 
-        {/* 🔐 Sign In */}
+        {/* Sign In */}
         <Route path="/sign-in" element={<SignIn />} />
 
-        {/* ✅ NEW: User Profile Route */}
+        {/* User Profile Route */}
         <Route path="/profile" element={<UserProfile />} />
 
-        {/* ✅ NEW: Admin Login Page */}
+        {/* Admin Routes */}
         <Route path="/admin-login" element={<AdminLogin />} />
-
-        {/* ✅ NEW: Admin Dashboard Page */}
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
 
-        {/* ✅ FORGOT PASSWORD ROUTES */}
+        
+
+        {/* Process Admin Routes */}
+        <Route path="/process-admin-login" element={<ProcessAdminLogin />} />
+        <Route path="/process-admin-dashboard" element={<ProcessAdminDashboard />} />
+
+        {/* Forgot Password Routes */}
         <Route path="/firstyear/forgot-password" element={<ForgotPassword />} />
         <Route path="/transfer/forgot-password" element={<ForgotPassword />} />
 
-        {/* 📋 Transfer Extended Profile */}
+        {/* Transfer Extended Profile */}
         <Route path="/extended-profile" element={<ExtendedProfile />} />
 
-        {/* ================================
-           DASHBOARD ROUTING SECTION
-        ================================= */}
+        {/* Dashboard Routes */}
+        <Route path="/firstyear/dashboard/*" element={<Dashboard studentType="firstyear" />} />
+        <Route path="/transfer/dashboard/*" element={<DashboardTest studentType="transfer" />} />
+        <Route path="/dashboard-test/*" element={<DashboardTest />} />
 
-        {/* ⭐ First-Year Dashboard */}
-        <Route
-          path="/firstyear/dashboard/*"
-          element={<Dashboard studentType="firstyear" />}
-        />
-
-        {/* ⭐ Transfer Dashboard */}
-        <Route
-          path="/transfer/dashboard/*"
-          element={<DashboardTest studentType="transfer" />}
-        />
-
-        {/* ⭐ Test Dashboard */}
-        <Route
-          path="/dashboard-test/*"
-          element={<DashboardTest />}
-        />
-
-        {/* ✅ Temporary routes for RoleSelection */}
+        {/* Redirects - Keep for backward compatibility */}
         <Route path="/admin-dashboard-old" element={<Navigate to="/sign-in" replace />} />
         <Route path="/student-dashboard" element={<Navigate to="/home" replace />} />
 
-        {/* 🚀 Catch All → Role Selection */}
+        {/* Catch All - Redirect to Role Selection */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

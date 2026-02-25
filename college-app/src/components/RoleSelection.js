@@ -22,6 +22,14 @@ const RoleSelection = () => {
     navigate("/admin-login");
   };
 
+  const handleContinueAsPartner = () => {
+    navigate("/partner-login");
+  };
+
+  const handleContinueAsProcessAdmin = () => {
+    navigate("/process-admin-login"); // You can update this route as needed
+  };
+
   const handleBrowseAsGuest = () => {
     navigate("/home");
   };
@@ -103,6 +111,46 @@ const RoleSelection = () => {
                       </svg>
                     </div>
                     <span className="path-text">Continue as Admin</span>
+                    <span className="path-arrow">→</span>
+                  </div>
+
+                  {/* Partner Option */}
+                  <div
+                    className="path-option"
+                    onClick={handleContinueAsPartner}
+                  >
+                    <div className="path-icon">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path d="M19.5 6.75a3 3 0 00-3-3h-9a3 3 0 00-3 3v9a3 3 0 003 3h9a3 3 0 003-3v-9z" />
+                        <path d="M19.5 10.5v3a3 3 0 01-3 3h-9a3 3 0 01-3-3v-3h15z" />
+                        <path d="M6.75 7.5a.75.75 0 100-1.5.75.75 0 000 1.5z" />
+                        <path d="M9.75 7.5a.75.75 0 100-1.5.75.75 0 000 1.5z" />
+                      </svg>
+                    </div>
+                    <span className="path-text">Continue as Partner</span>
+                    <span className="path-arrow">→</span>
+                  </div>
+
+                  {/* Process-Admin Option */}
+                  <div
+                    className="path-option"
+                    onClick={handleContinueAsProcessAdmin}
+                  >
+                    <div className="path-icon">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path d="M5.25 6.375a4.125 4.125 0 1 1 8.25 0 4.125 4.125 0 0 1-8.25 0ZM2.25 19.125a7.125 7.125 0 0 1 14.25 0v.003l-.001.119a.75.75 0 0 1-.363.63 13.067 13.067 0 0 1-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 0 1-.364-.63l-.001-.122ZM18.75 7.5a3.375 3.375 0 1 1 6.75 0 3.375 3.375 0 0 1-6.75 0Z" />
+                        <path d="M21.75 12.75a3 3 0 0 0-3 3v2.25a3 3 0 0 0 3 3h.75a3 3 0 0 0 3-3v-2.25a3 3 0 0 0-3-3h-.75Z" />
+                      </svg>
+                    </div>
+                    <span className="path-text">Continue as Process-Admin</span>
                     <span className="path-arrow">→</span>
                   </div>
                 </div>

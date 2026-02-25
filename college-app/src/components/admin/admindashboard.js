@@ -112,23 +112,7 @@ const AdminDashboard = () => {
     loadDashboardData();
   };
 
-  // Lazy load components for better performance
-  const [ApplicationsComponent, setApplicationsComponent] = useState(null);
-  const [applicationsLoading, setApplicationsLoading] = useState(false);
-
-  // Load Applications component when activeTab changes to 'applications'
-  useEffect(() => {
-    if (activeTab === "applications" && !ApplicationsComponent) {
-      setApplicationsLoading(true);
-      import("./Applications").then(module => {
-        setApplicationsComponent(() => module.default);
-        setApplicationsLoading(false);
-      }).catch(error => {
-        console.error("Error loading Applications component:", error);
-        setApplicationsLoading(false);
-      });
-    }
-  }, [activeTab, ApplicationsComponent]);
+  // REMOVED: Applications component lazy loading
 
   // Format number with Indian Rupee symbol
   const formatIndianRupee = (amount) => {
@@ -278,29 +262,7 @@ const AdminDashboard = () => {
     );
   };
 
-  // Render applications content
-  const renderApplicationsContent = () => {
-    if (applicationsLoading) {
-      return (
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Loading applications...</p>
-        </div>
-      );
-    }
-    
-    if (ApplicationsComponent) {
-      return <ApplicationsComponent />;
-    }
-    
-    return (
-      <div className="empty-state">
-        <div className="empty-state-icon">📋</div>
-        <h3>Applications</h3>
-        <p>Loading applications management system...</p>
-      </div>
-    );
-  };
+  // REMOVED: renderApplicationsContent function
 
   // Render users content using the imported component
   const renderUsersContent = () => {
@@ -358,13 +320,11 @@ const AdminDashboard = () => {
     );
   };
 
-  // Render content based on active tab
+  // Render content based on active tab - REMOVED applications case
   const renderContent = () => {
     switch (activeTab) {
       case "dashboard":
         return renderDashboardContent();
-      case "applications":
-        return renderApplicationsContent();
       case "users":
         return renderUsersContent();
       case "university":
@@ -376,13 +336,11 @@ const AdminDashboard = () => {
     }
   };
 
-  // Update navbar title based on active tab
+  // Update navbar title based on active tab - REMOVED applications case
   const getNavbarTitle = () => {
     switch (activeTab) {
       case "dashboard":
         return "Admin Dashboard";
-      case "applications":
-        return "Applications Management";
       case "users":
         return "User Management";
       case "university":
@@ -424,13 +382,9 @@ const AdminDashboard = () => {
             <span className="menu-icon">📊</span>
             {sidebarOpen && <span>Dashboard</span>}
           </li>
-          <li 
-            className={activeTab === "applications" ? "active" : ""}
-            onClick={() => setActiveTab("applications")}
-          >
-            <span className="menu-icon">📋</span>
-            {sidebarOpen && <span>Applications</span>}
-          </li>
+          
+          {/* REMOVED: Applications menu item */}
+          
           <li 
             className={activeTab === "users" ? "active" : ""}
             onClick={() => setActiveTab("users")}
@@ -439,7 +393,7 @@ const AdminDashboard = () => {
             {sidebarOpen && <span>Users</span>}
           </li>
           
-          {/* University Menu Item - New */}
+          {/* University Menu Item */}
           <li 
             className={activeTab === "university" ? "active" : ""}
             onClick={() => setActiveTab("university")}

@@ -43,6 +43,9 @@ import applicationDocumentRoutes from "./routes/applicationDocumentRoutes.js";
 import adminUniversityRoutes from "./routes/adminUniversityRoutes.js";
 import userProfileRoutes from "./routes/userprofileroutes.js";
 import applicationSpecialNeedRoutes from "./routes/applicationSpecialNeedRoutes.js";
+import processAdminRoutes from "./routes/processAdminRoutes.js";
+import processAdminDocumentRoutes from "./routes/processAdminDocumentRoutes.js";
+import documentRoutes from "./routes/documentRoutes.js";
 dotenv.config();
 
 // Initialize
@@ -152,7 +155,10 @@ app.use("/api/application/education", applicationEducationRoutes);
 app.use("/api/application/language", applicationLanguageRoutes);
 app.use("/api/application/documents", applicationDocumentRoutes);
 app.use("/api/admin", adminUniversityRoutes);
+app.use("/api/process-admin", processAdminRoutes);
+app.use("/api/process-admin/documents", processAdminDocumentRoutes);
 app.use("/api/courses", courseRoutes);
+app.use("/api/documents", documentRoutes);
 app.use("/api/colleges", collegeRoutes);
 app.use("/api/general", generalRoutes);
 app.use("/api/academics", firstAcademicRoutes);

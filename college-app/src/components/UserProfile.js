@@ -66,7 +66,14 @@ const UserProfile = () => {
   const [showCourseModal, setShowCourseModal] = useState(false);
   const [currentUniversity, setCurrentUniversity] = useState(null);
   const [currentUniversityCourses, setCurrentUniversityCourses] = useState([]);
+  const [filteredCourses, setFilteredCourses] = useState([]);
   const [tempSelectedCourses, setTempSelectedCourses] = useState([]);
+  const [courseSearchTerm, setCourseSearchTerm] = useState("");
+  const [courseFilter, setCourseFilter] = useState({
+    level: "",
+    studyMode: "",
+    majorArea: ""
+  });
 
   // Validation errors
   const [validationErrors, setValidationErrors] = useState({});
@@ -204,6 +211,13 @@ const UserProfile = () => {
       filterUniversities();
     }
   }, [eligibleProgram, searchTerm, universities]);
+
+  // Filter courses when search term or filters change
+  useEffect(() => {
+    if (currentUniversityCourses.length > 0) {
+      filterCourses();
+    }
+  }, [courseSearchTerm, courseFilter, currentUniversityCourses]);
 
   // Fetch universities from MongoDB
   const fetchUniversitiesFromMongoDB = async () => {
@@ -351,6 +365,45 @@ const UserProfile = () => {
     }
   };
 
+  // Filter courses based on search and filters
+  const filterCourses = () => {
+    let filtered = [...currentUniversityCourses];
+    
+    // Apply search filter
+    if (courseSearchTerm.trim()) {
+      const term = courseSearchTerm.toLowerCase();
+      filtered = filtered.filter(course => 
+        (course.title || course.program_name || '').toLowerCase().includes(term) ||
+        (course.majorArea || '').toLowerCase().includes(term) ||
+        (course.level || '').toLowerCase().includes(term) ||
+        (course.description || '').toLowerCase().includes(term)
+      );
+    }
+    
+    // Apply level filter
+    if (courseFilter.level) {
+      filtered = filtered.filter(course => 
+        (course.level || '').toLowerCase() === courseFilter.level.toLowerCase()
+      );
+    }
+    
+    // Apply study mode filter
+    if (courseFilter.studyMode) {
+      filtered = filtered.filter(course => 
+        (course.studyMode || '').toLowerCase().includes(courseFilter.studyMode.toLowerCase())
+      );
+    }
+    
+    // Apply major area filter
+    if (courseFilter.majorArea) {
+      filtered = filtered.filter(course => 
+        (course.majorArea || '').toLowerCase().includes(courseFilter.majorArea.toLowerCase())
+      );
+    }
+    
+    setFilteredCourses(filtered);
+  };
+
   // Detect eligible program based on qualification
   const detectProgram = (qualification) => {
     if (qualification === "12th" || qualification === "High School") return "Bachelor";
@@ -433,6 +486,11 @@ const UserProfile = () => {
     // Get courses for this university
     const courses = universityCourses[uniId] || [];
     setCurrentUniversityCourses(courses);
+    setFilteredCourses(courses); // Initialize filtered courses
+    
+    // Reset filters and search
+    setCourseSearchTerm("");
+    setCourseFilter({ level: "", studyMode: "", majorArea: "" });
     
     // Get already selected courses for this university from selectedUniversities
     const existingUni = selectedUniversities.find(u => 
@@ -535,6 +593,8 @@ const UserProfile = () => {
     setShowCourseModal(false);
     setCurrentUniversity(null);
     setTempSelectedCourses([]);
+    setCourseSearchTerm("");
+    setCourseFilter({ level: "", studyMode: "", majorArea: "" });
     
     // Restore scrolling
     document.body.style.overflow = 'auto';
@@ -966,6 +1026,31 @@ const UserProfile = () => {
     if (modeStr.includes('hybrid') || modeStr.includes('blended')) return '#9C27B0';
     if (modeStr.includes('distance')) return '#00BCD4';
     return '#757575';
+  };
+
+  // Get unique filter options from courses
+  const getUniqueLevels = () => {
+    const levels = new Set();
+    currentUniversityCourses.forEach(course => {
+      if (course.level) levels.add(course.level);
+    });
+    return Array.from(levels);
+  };
+
+  const getUniqueStudyModes = () => {
+    const modes = new Set();
+    currentUniversityCourses.forEach(course => {
+      if (course.studyMode) modes.add(course.studyMode);
+    });
+    return Array.from(modes);
+  };
+
+  const getUniqueMajorAreas = () => {
+    const areas = new Set();
+    currentUniversityCourses.forEach(course => {
+      if (course.majorArea) areas.add(course.majorArea);
+    });
+    return Array.from(areas);
   };
 
   // Show loading state
@@ -1625,7 +1710,7 @@ const UserProfile = () => {
         </div>
       </div>
 
-      {/* Course Selection Modal */}
+      {/* Course Selection Modal with Search */}
       {showCourseModal && currentUniversity && (
         <div className="modal-overlay" onClick={closeCourseModal}>
           <div className="modal-content course-modal" onClick={e => e.stopPropagation()}>
@@ -1643,14 +1728,116 @@ const UserProfile = () => {
                 Selected: {tempSelectedCourses.length}/2
               </div>
               
+              {/* Course Search and Filters */}
+              <div className="course-search-section">
+                <div className="course-search-wrapper">
+                  <span className="search-icon">🔍</span>
+                  <input
+                    type="text"
+                    className="course-search-input"
+                    placeholder="Search courses by name, major, level..."
+                    value={courseSearchTerm}
+                    onChange={(e) => setCourseSearchTerm(e.target.value)}
+                  />
+                  {courseSearchTerm && (
+                    <button 
+                      className="clear-search-btn"
+                      onClick={() => setCourseSearchTerm("")}
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+                
+                <div className="filter-badges">
+                  {/* {getUniqueLevels().length > 0 && (
+                    <select 
+                      className="filter-select"
+                      value={courseFilter.level}
+                      onChange={(e) => setCourseFilter({...courseFilter, level: e.target.value})}
+                    >
+                      <option value="">All Levels</option>
+                      {getUniqueLevels().map(level => (
+                        <option key={level} value={level}>{level}</option>
+                      ))}
+                    </select>
+                  )} */}
+                  
+                  {/* {getUniqueStudyModes().length > 0 && (
+                    <select 
+                      className="filter-select"
+                      value={courseFilter.studyMode}
+                      onChange={(e) => setCourseFilter({...courseFilter, studyMode: e.target.value})}
+                    >
+                      <option value="">All Study Modes</option>
+                      {getUniqueStudyModes().map(mode => (
+                        <option key={mode} value={mode}>{mode}</option>
+                      ))}
+                    </select>
+                  )} */}
+                  
+                  {/* {getUniqueMajorAreas().length > 0 && (
+                    <select 
+                      className="filter-select"
+                      value={courseFilter.majorArea}
+                      onChange={(e) => setCourseFilter({...courseFilter, majorArea: e.target.value})}
+                    >
+                      <option value="">All Majors</option>
+                      {getUniqueMajorAreas().map(area => (
+                        <option key={area} value={area}>{area}</option>
+                      ))}
+                    </select>
+                  )} */}
+                </div>
+                
+                {(courseSearchTerm || courseFilter.level || courseFilter.studyMode || courseFilter.majorArea) && (
+                  <div className="active-filters">
+                    <span className="filter-label">Active filters:</span>
+                    {courseSearchTerm && (
+                      <span className="filter-tag">
+                        Search: "{courseSearchTerm}"
+                        <button onClick={() => setCourseSearchTerm("")}>×</button>
+                      </span>
+                    )}
+                    {courseFilter.level && (
+                      <span className="filter-tag">
+                        Level: {courseFilter.level}
+                        <button onClick={() => setCourseFilter({...courseFilter, level: ""})}>×</button>
+                      </span>
+                    )}
+                    {courseFilter.studyMode && (
+                      <span className="filter-tag">
+                        Mode: {courseFilter.studyMode}
+                        <button onClick={() => setCourseFilter({...courseFilter, studyMode: ""})}>×</button>
+                      </span>
+                    )}
+                    {courseFilter.majorArea && (
+                      <span className="filter-tag">
+                        Major: {courseFilter.majorArea}
+                        <button onClick={() => setCourseFilter({...courseFilter, majorArea: ""})}>×</button>
+                      </span>
+                    )}
+                    <button 
+                      className="clear-all-filters"
+                      onClick={() => {
+                        setCourseSearchTerm("");
+                        setCourseFilter({ level: "", studyMode: "", majorArea: "" });
+                      }}
+                    >
+                      Clear All
+                    </button>
+                  </div>
+                )}
+              </div>
+              
               {loadingCourses ? (
                 <div className="courses-loading">
                   <div className="spinner-small"></div>
                   <p>Loading courses...</p>
                 </div>
-              ) : currentUniversityCourses.length > 0 ? (
+              ) : filteredCourses.length > 0 ? (
                 <div className="courses-grid">
-                  {currentUniversityCourses.map((course, idx) => {
+                  {filteredCourses.map((course, idx) => {
                     const isSelected = tempSelectedCourses.some(c => c.id === course.id);
                     
                     return (
@@ -1693,7 +1880,16 @@ const UserProfile = () => {
                 </div>
               ) : (
                 <div className="no-courses">
-                  <p>No courses available for this university.</p>
+                  <p>No courses match your search criteria.</p>
+                  <button 
+                    className="clear-filters-btn"
+                    onClick={() => {
+                      setCourseSearchTerm("");
+                      setCourseFilter({ level: "", studyMode: "", majorArea: "" });
+                    }}
+                  >
+                    Clear Filters
+                  </button>
                 </div>
               )}
             </div>
@@ -1714,7 +1910,7 @@ const UserProfile = () => {
         </div>
       )}
 
-      {/* Add CSS for success animation */}
+      {/* Add CSS for course search */}
       <style jsx>{`
         .success-animation-overlay {
           position: fixed;
@@ -1791,6 +1987,242 @@ const UserProfile = () => {
           font-size: 0.8rem;
           margin-top: 0.2rem;
           animation: slideIn 0.3s ease;
+        }
+
+        /* Course Search Styles */
+        .course-search-section {
+          margin-bottom: 1.5rem;
+        }
+
+        .course-search-wrapper {
+          position: relative;
+          margin-bottom: 1rem;
+        }
+
+        .course-search-input {
+          width: 100%;
+          padding: 0.75rem 2.5rem 0.75rem 2.5rem;
+          border: 2px solid #e0e0e0;
+          border-radius: 8px;
+          font-size: 1rem;
+          transition: all 0.3s ease;
+        }
+
+        .course-search-input:focus {
+          outline: none;
+          border-color: #667eea;
+          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-icon {
+          position: absolute;
+          left: 0.75rem;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #999;
+          font-size: 1rem;
+        }
+
+        .clear-search-btn {
+          position: absolute;
+          right: 0.75rem;
+          top: 50%;
+          transform: translateY(-50%);
+          background: none;
+          border: none;
+          color: #999;
+          font-size: 1.2rem;
+          cursor: pointer;
+          padding: 0.2rem 0.5rem;
+          border-radius: 50%;
+          transition: all 0.2s ease;
+        }
+
+        .clear-search-btn:hover {
+          background: #f0f0f0;
+          color: #666;
+        }
+
+        .filter-badges {
+          display: flex;
+          gap: 0.5rem;
+          margin-bottom: 1rem;
+          flex-wrap: wrap;
+        }
+
+        .filter-select {
+          padding: 0.5rem 1rem;
+          border: 1px solid #e0e0e0;
+          border-radius: 20px;
+          background: white;
+          font-size: 0.9rem;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          min-width: 120px;
+        }
+
+        .filter-select:hover {
+          border-color: #667eea;
+        }
+
+        .filter-select:focus {
+          outline: none;
+          border-color: #667eea;
+          box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+        }
+
+        .active-filters {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+          padding: 0.75rem;
+          background: #f8f9fa;
+          border-radius: 8px;
+          margin-top: 0.5rem;
+        }
+
+        .filter-label {
+          color: #666;
+          font-size: 0.9rem;
+        }
+
+        .filter-tag {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.25rem;
+          padding: 0.25rem 0.75rem;
+          background: #e3f2fd;
+          border-radius: 16px;
+          font-size: 0.85rem;
+          color: #1976d2;
+        }
+
+        .filter-tag button {
+          background: none;
+          border: none;
+          color: #1976d2;
+          cursor: pointer;
+          font-size: 1rem;
+          padding: 0 0.25rem;
+          border-radius: 50%;
+        }
+
+        .filter-tag button:hover {
+          background: rgba(25, 118, 210, 0.1);
+        }
+
+        .clear-all-filters {
+          background: none;
+          border: none;
+          color: #667eea;
+          font-size: 0.85rem;
+          cursor: pointer;
+          padding: 0.25rem 0.5rem;
+          border-radius: 4px;
+          text-decoration: underline;
+        }
+
+        .clear-all-filters:hover {
+          background: rgba(102, 126, 234, 0.1);
+        }
+
+        .clear-filters-btn {
+          padding: 0.5rem 1rem;
+          background: #667eea;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-size: 0.9rem;
+          cursor: pointer;
+          margin-top: 1rem;
+          transition: all 0.2s ease;
+        }
+
+        .clear-filters-btn:hover {
+          background: #5a67d8;
+          transform: translateY(-2px);
+        }
+
+        .courses-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+          gap: 1rem;
+          max-height: 400px;
+          overflow-y: auto;
+          padding: 0.5rem;
+        }
+
+        .course-card {
+          padding: 1rem;
+          border: 2px solid #e0e0e0;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          position: relative;
+        }
+
+        .course-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          border-color: #667eea;
+        }
+
+        .course-card.selected {
+          border-color: #4CAF50;
+          background: rgba(76, 175, 80, 0.05);
+        }
+
+        .course-title {
+          margin: 0 0 0.5rem 0;
+          font-size: 1rem;
+          color: #333;
+          line-height: 1.4;
+        }
+
+        .course-badges {
+          display: flex;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+          margin-bottom: 0.5rem;
+        }
+
+        .course-level-badge,
+        .course-mode-badge {
+          padding: 0.25rem 0.5rem;
+          border-radius: 4px;
+          font-size: 0.75rem;
+          color: white;
+          font-weight: 500;
+        }
+
+        .course-duration,
+        .course-major {
+          display: block;
+          font-size: 0.8rem;
+          color: #666;
+          margin-top: 0.25rem;
+        }
+
+        .course-selected-check {
+          position: absolute;
+          top: 0.5rem;
+          right: 0.5rem;
+          background: #4CAF50;
+          color: white;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.9rem;
+        }
+
+        .no-courses {
+          text-align: center;
+          padding: 2rem;
+          color: #666;
         }
       `}</style>
     </div>

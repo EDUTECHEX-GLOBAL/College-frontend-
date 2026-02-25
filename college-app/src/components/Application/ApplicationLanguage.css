@@ -893,13 +893,13 @@
     height: 300px;
 }
 
-.btn-primary {
+.applicationlanguage-btn-primary {
     background: var(--primary-gradient);
     color: white;
     box-shadow: var(--shadow-lg);
 }
 
-.btn-primary:hover:not(:disabled) {
+.applicationlanguage-btn-primary:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: var(--shadow-xl);
 }
