@@ -27,47 +27,60 @@ const Applications = () => {
   // ===============================
   // API SETUP
   // ===============================
- const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "";
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 10000,
-});
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
+  const api = axios.create({
+    baseURL: API_BASE_URL,
+    timeout: 10000,
+  });
 
+  // ===============================
+  // Auth Token Resolver (ONE place)
+  // ===============================
+  const getAuthToken = () => {
+    // Priority order - processAdminToken first, then others
+    return (
+      localStorage.getItem("processAdminToken") ||
+      localStorage.getItem("token") ||
+      localStorage.getItem("adminToken")
+    );
+  };
 
- // ===============================
-// Auth Token Resolver (ONE place)
-// ===============================
-const getAuthToken = () => {
-  // Priority order matters
-  return (
-    localStorage.getItem("adminToken") ||
-    localStorage.getItem("processAdminToken")
-  );
-};
+  // ===============================
+  // Axios Request Interceptor
+  // ===============================
+  api.interceptors.request.use(
+    (config) => {
+      const token = getAuthToken();
 
-// ===============================
-// Axios Request Interceptor
-// ===============================
-api.interceptors.request.use(
-  (config) => {
-    const token = getAuthToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+        console.log("🔐 Auth token attached to request");
+      } else {
+        console.warn("⚠️ No admin/process-admin token found");
+      }
 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-      console.log("🔐 Auth token attached to request");
-    } else {
-      console.warn("⚠️ No admin/process-admin token found");
+      // Always set content type
+      config.headers["Content-Type"] = "application/json";
+
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
     }
+  );
 
-    // Always set content type
-    config.headers["Content-Type"] = "application/json";
-
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+  // Response interceptor to handle auth errors gracefully
+  api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      if (error.response?.status === 401) {
+        console.log("🔴 Authentication failed - token may be invalid");
+      } else if (error.response?.status === 403) {
+        console.log("🔴 Authorization failed - insufficient permissions");
+      }
+      return Promise.reject(error);
+    }
+  );
 
   // ===============================
   // HELPERS
@@ -75,10 +88,10 @@ api.interceptors.request.use(
   const formatDate = (date) =>
     date
       ? new Date(date).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      })
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        })
       : "N/A";
 
   const formatStatus = (status) => {
@@ -131,8 +144,8 @@ api.interceptors.request.use(
     if (nameMap[key]) return nameMap[key];
 
     return key
-      .replace(/([A-Z])/g, ' $1')
-      .replace(/^./, str => str.toUpperCase())
+      .replace(/([A-Z])/g, " $1")
+      .replace(/^./, (str) => str.toUpperCase())
       .trim();
   };
 
@@ -145,11 +158,19 @@ api.interceptors.request.use(
       return formatDate(value);
     }
 
-    if (key.includes("Agreement") || key === "thirdPartyPreparation" ||
-      key === "highSchoolGraduated" || key === "currentlyInUS" ||
-      key === "addAnotherSchool" || key === "attendedClassesSinceGraduation") {
-      return value === "yes" || value === true || value === "agree" ? "Yes" :
-        value === "no" || value === false ? "No" : String(value);
+    if (
+      key.includes("Agreement") ||
+      key === "thirdPartyPreparation" ||
+      key === "highSchoolGraduated" ||
+      key === "currentlyInUS" ||
+      key === "addAnotherSchool" ||
+      key === "attendedClassesSinceGraduation"
+    ) {
+      return value === "yes" || value === true || value === "agree"
+        ? "Yes"
+        : value === "no" || value === false
+        ? "No"
+        : String(value);
     }
 
     if (typeof value === "boolean") {
@@ -173,7 +194,7 @@ api.interceptors.request.use(
           value.city,
           value.state,
           value.country,
-          value.zip
+          value.zip,
         ]
           .filter(Boolean)
           .join(", ") || "N/A";
@@ -224,8 +245,18 @@ api.interceptors.request.use(
       y += 5;
 
       const rows = Object.entries(section.details || {})
-        .filter(([key]) =>
-          !["_id", "collegeId", "status", "progress", "createdAt", "updatedAt", "__v", "studentId"].includes(key)
+        .filter(
+          ([key]) =>
+            ![
+              "_id",
+              "collegeId",
+              "status",
+              "progress",
+              "createdAt",
+              "updatedAt",
+              "__v",
+              "studentId",
+            ].includes(key)
         )
         .map(([key, value]) => [
           formatFieldName(key),
@@ -292,48 +323,82 @@ api.interceptors.request.use(
   // ===============================
   // FILTER APPLICATIONS
   // ===============================
-  const filteredApplications = applications.filter(app => {
-    const matchesSearch = 
+  const filteredApplications = applications.filter((app) => {
+    const matchesSearch =
       app.student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       app.student.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       app.collegeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
       app.latestStatus.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesStatus = 
-      filterStatus === "all" || 
+
+    const matchesStatus =
+      filterStatus === "all" ||
       app.latestStatus === filterStatus ||
-      (filterStatus === "incomplete" && (app.latestStatus === "not-started" || app.latestStatus === "in-progress"));
-    
+      (filterStatus === "incomplete" &&
+        (app.latestStatus === "not-started" ||
+          app.latestStatus === "in-progress"));
+
     return matchesSearch && matchesStatus;
   });
 
   // ===============================
-  // LOAD APPLICATIONS
+  // LOAD APPLICATIONS - USING PROCESS-ADMIN ENDPOINTS
   // ===============================
   const loadApplications = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const [
-  internationalRes,
-  academicRes,
-  generalRes,
-  familyRes,
-  contactsRes,
-  residencyRes,
-  highSchoolRes
-] = await Promise.all([
-  api.get("/api/international/admin/all"),
-  api.get("/api/academics/admin/all"),
-  api.get("/api/general/admin/all"),
-  api.get("/api/family/admin/all"),
-  api.get("/api/contacts/admin/all"),
-  api.get("/api/residency/admin/all"),
- api.get("/api/high-school-curriculum/admin/all") // ✅ correct route
+      // Check if token exists first
+      const token = getAuthToken();
+      if (!token) {
+        setError("No authentication token found. Please login again.");
+        setLoading(false);
+        return;
+      }
 
-]);
+      console.log("Loading applications using process-admin endpoints...");
 
+      // Use Promise.allSettled to handle individual API failures
+      const results = await Promise.allSettled([
+        // ✅ Using process-admin endpoints
+        api.get("/api/international/process-admin/all").catch(err => {
+          console.log("International API unavailable:", err.message);
+          return { data: { internationalRecords: [] } };
+        }),
+        api.get("/api/academics/process-admin/all").catch(err => {
+          console.log("Academics API unavailable:", err.message);
+          return { data: { academicApplications: [] } };
+        }),
+        api.get("/api/general/process-admin/all").catch(err => {
+          console.log("General API unavailable:", err.message);
+          return { data: { generalApplications: [] } };
+        }),
+        api.get("/api/family/process-admin/all").catch(err => {
+          console.log("Family API unavailable:", err.message);
+          return { data: { familyRecords: [] } };
+        }),
+        api.get("/api/contacts/process-admin/all").catch(err => {
+          console.log("Contacts API unavailable:", err.message);
+          return { data: { contactsRecords: [] } };
+        }),
+        api.get("/api/residency/process-admin/all").catch(err => {
+          console.log("Residency API unavailable:", err.message);
+          return { data: { residencyRecords: [] } };
+        }),
+        api.get("/api/high-school-curriculum/process-admin/all").catch(err => {
+          console.log("High School API unavailable:", err.message);
+          return { data: { highSchoolCurricula: [] } };
+        })
+      ]);
+
+      // Extract data from successful responses, use empty arrays for failures
+      const internationalRes = results[0].status === 'fulfilled' ? results[0].value : { data: { internationalRecords: [] } };
+      const academicRes = results[1].status === 'fulfilled' ? results[1].value : { data: { academicApplications: [] } };
+      const generalRes = results[2].status === 'fulfilled' ? results[2].value : { data: { generalApplications: [] } };
+      const familyRes = results[3].status === 'fulfilled' ? results[3].value : { data: { familyRecords: [] } };
+      const contactsRes = results[4].status === 'fulfilled' ? results[4].value : { data: { contactsRecords: [] } };
+      const residencyRes = results[5].status === 'fulfilled' ? results[5].value : { data: { residencyRecords: [] } };
+      const highSchoolRes = results[6].status === 'fulfilled' ? results[6].value : { data: { highSchoolCurricula: [] } };
 
       const internationalRecords = internationalRes.data?.internationalRecords || [];
       const academicRecords = academicRes.data?.academicApplications || [];
@@ -341,7 +406,17 @@ api.interceptors.request.use(
       const familyRecords = familyRes.data?.familyRecords || [];
       const contactsRecords = contactsRes.data?.contactsRecords || [];
       const residencyRecords = residencyRes.data?.residencyRecords || [];
-      const highSchoolRecords = highSchoolRes.data.highSchoolCurricula || [];
+      const highSchoolRecords = highSchoolRes.data?.highSchoolCurricula || [];
+
+      console.log(`📊 Records loaded:`, {
+        international: internationalRecords.length,
+        academic: academicRecords.length,
+        general: generalRecords.length,
+        family: familyRecords.length,
+        contacts: contactsRecords.length,
+        residency: residencyRecords.length,
+        highSchool: highSchoolRecords.length
+      });
 
       const mappedInternational = internationalRecords.map((app) => ({
         _id: app._id,
@@ -393,7 +468,7 @@ api.interceptors.request.use(
       }));
 
       const mappedFamily = familyRecords
-        .filter(app => app.studentId && typeof app.studentId === "object")
+        .filter((app) => app.studentId && typeof app.studentId === "object")
         .map((app) => ({
           _id: app._id,
           collegeId: app.collegeId,
@@ -401,8 +476,8 @@ api.interceptors.request.use(
             app.progress === 100
               ? "completed"
               : app.progress > 0
-                ? "in-progress"
-                : "not-started",
+              ? "in-progress"
+              : "not-started",
           progress: app.progress || 0,
           submittedAt: app.lastUpdated || app.updatedAt || app.createdAt,
           student: {
@@ -431,30 +506,32 @@ api.interceptors.request.use(
           type: "family",
         }));
 
-      const mappedContacts = contactsRecords
-        .map((contact) => ({
-          _id: contact._id,
-          collegeId: contact.collegeId || "N/A",
-          status: contact.isComplete ? "completed" : "incomplete",
-          progress: contact.progress || 0,
-          submittedAt: contact.updatedAt || contact.createdAt,
-          student: {
-            name: contact.studentId
-              ? `${contact.studentId.firstName || ""} ${contact.studentId.lastName || ""}`.trim()
-              : "N/A",
-            email: contact.studentId?.email || "N/A",
-            phone: contact.studentId?.phone || "N/A",
-          },
-          details: contact,
-          type: "contacts",
-        }));
+      const mappedContacts = contactsRecords.map((contact) => ({
+        _id: contact._id,
+        collegeId: contact.collegeId || "N/A",
+        status: contact.isComplete ? "completed" : "incomplete",
+        progress: contact.progress || 0,
+        submittedAt: contact.updatedAt || contact.createdAt,
+        student: {
+          name: contact.studentId
+            ? `${contact.studentId.firstName || ""} ${contact.studentId.lastName || ""}`.trim()
+            : "N/A",
+          email: contact.studentId?.email || "N/A",
+          phone: contact.studentId?.phone || "N/A",
+        },
+        details: contact,
+        type: "contacts",
+      }));
 
       const mappedResidency = residencyRecords.map((residency) => ({
         _id: residency._id,
         collegeId: residency.collegeId,
         status: residency.status || "not-started",
         progress: residency.progress || 0,
-        submittedAt: residency.submittedAt || residency.details?.updatedAt || residency.details?.createdAt,
+        submittedAt:
+          residency.submittedAt ||
+          residency.details?.updatedAt ||
+          residency.details?.createdAt,
         student: {
           name: residency.student?.name || "N/A",
           email: residency.student?.email || "N/A",
@@ -463,34 +540,35 @@ api.interceptors.request.use(
         details: residency.details,
         type: "residency",
       }));
-      const mappedHighSchool = highSchoolRecords.map((app) => ({
-  _id: app._id,
-  collegeId: app.collegeId,
-  status: app.progress === 100 ? "completed" : "incomplete",
-  progress: app.progress || 0,
-  submittedAt: app.updatedAt || app.createdAt,
-  student: {
-    name: app.studentId
-      ? `${app.studentId.firstName || ""} ${app.studentId.lastName || ""}`.trim()
-      : "Unknown Student",
-    email: app.studentId?.email || "N/A",
-    phone: app.studentId?.phone || "N/A",
-  },
-  details: app,
-  type: "highschool",
-}));
 
+      const mappedHighSchool = highSchoolRecords.map((app) => ({
+        _id: app._id,
+        collegeId: app.collegeId,
+        status: app.progress === 100 ? "completed" : "incomplete",
+        progress: app.progress || 0,
+        submittedAt: app.updatedAt || app.createdAt,
+        student: {
+          name: app.studentId
+            ? `${app.studentId.firstName || ""} ${app.studentId.lastName || ""}`.trim()
+            : "Unknown Student",
+          email: app.studentId?.email || "N/A",
+          phone: app.studentId?.phone || "N/A",
+        },
+        details: app,
+        type: "highschool",
+      }));
 
       const combined = [
-  ...mappedInternational,
-  ...mappedAcademic,
-  ...mappedGeneral,
-  ...mappedFamily,
-  ...mappedContacts,
-  ...mappedResidency,
-  ...mappedHighSchool, // ✅ added
-];
+        ...mappedInternational,
+        ...mappedAcademic,
+        ...mappedGeneral,
+        ...mappedFamily,
+        ...mappedContacts,
+        ...mappedResidency,
+        ...mappedHighSchool,
+      ];
 
+      console.log(`Loaded ${combined.length} total records`);
 
       combined.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
 
@@ -499,17 +577,24 @@ api.interceptors.request.use(
 
       setStats({
         total: groupedApplications.length,
-        pending: groupedApplications.filter(a => a.latestStatus === "pending").length,
-        accepted: groupedApplications.filter(a => a.latestStatus === "accepted").length,
-        rejected: groupedApplications.filter(a => a.latestStatus === "rejected").length,
+        pending: groupedApplications.filter((a) => a.latestStatus === "pending").length,
+        accepted: groupedApplications.filter((a) => a.latestStatus === "accepted").length,
+        rejected: groupedApplications.filter((a) => a.latestStatus === "rejected").length,
         incomplete: groupedApplications.filter(
-          a => a.latestStatus === "not-started" || a.latestStatus === "in-progress"
+          (a) => a.latestStatus === "not-started" || a.latestStatus === "in-progress"
         ).length,
       });
 
+      // If we got zero records but no error, show a helpful message
+      if (combined.length === 0) {
+        console.log("No applications found. This could be because:");
+        console.log("1. No applications exist in the database");
+        console.log("2. The API endpoints are returning empty arrays");
+        console.log("3. Authentication issues prevented data loading");
+      }
     } catch (err) {
       console.error("Error loading applications:", err);
-      setError("Failed to load applications");
+      setError("Failed to load applications. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -542,7 +627,12 @@ api.interceptors.request.use(
         <div className="empty-state">
           <h3>Error</h3>
           <p>{error}</p>
-          <button onClick={loadApplications}>Retry</button>
+          <div className="error-actions">
+            <button onClick={loadApplications} className="retry-btn">Retry</button>
+            <button onClick={() => window.location.href = "/process-admin-login"} className="login-btn">
+              Go to Login
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -557,6 +647,9 @@ api.interceptors.request.use(
         <h1>International Applications</h1>
         <div className="header-subtitle">
           <p>Manage and review all student applications</p>
+          <button onClick={loadApplications} className="refresh-btn">
+            🔄 Refresh
+          </button>
         </div>
       </div>
 
@@ -571,10 +664,10 @@ api.interceptors.request.use(
             className="search-input"
           />
         </div>
-        
+
         <div className="filter-controls">
-          <select 
-            value={filterStatus} 
+          <select
+            value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
             className="status-filter"
           >
@@ -599,7 +692,7 @@ api.interceptors.request.use(
             <span className="stat-number">{stats.total}</span>
           </div>
         </div>
-        
+
         <div className="stat-card incomplete">
           <div className="stat-icon">⏳</div>
           <div className="stat-content">
@@ -607,12 +700,6 @@ api.interceptors.request.use(
             <span className="stat-number">{stats.incomplete}</span>
           </div>
         </div>
-
-        
-
-        
-
-        
       </div>
 
       {/* Applications Table */}
@@ -664,9 +751,7 @@ api.interceptors.request.use(
                     </span>
                   </td>
 
-                  <td className="submission-date">
-                    {formatDate(app.submittedAt)}
-                  </td>
+                  <td className="submission-date">{formatDate(app.submittedAt)}</td>
 
                   <td>
                     <div className="progress-container">
@@ -675,7 +760,9 @@ api.interceptors.request.use(
                       </div>
                       <div className="progress-track">
                         <div
-                          className={`progress-fill progress-${getProgressClass(app.latestProgress)}`}
+                          className={`progress-fill progress-${getProgressClass(
+                            app.latestProgress
+                          )}`}
                           style={{ width: `${app.latestProgress}%` }}
                         />
                       </div>
@@ -720,10 +807,7 @@ api.interceptors.request.use(
                   <span className="college-id">{selectedApp.collegeId}</span>
                 </div>
               </div>
-              <button
-                className="modal-close-btn"
-                onClick={() => setSelectedApp(null)}
-              >
+              <button className="modal-close-btn" onClick={() => setSelectedApp(null)}>
                 ×
               </button>
             </div>
@@ -776,26 +860,23 @@ api.interceptors.request.use(
                   <h3 className="section-title">{app.type.toUpperCase()} DETAILS</h3>
                   <div className="info-grid">
                     {Object.entries(app.details || {})
-                      .filter(([key]) =>
-                        ![
-                          '_id',
-                          'collegeId',
-                          'status',
-                          'progress',
-                          'createdAt',
-                          'updatedAt',
-                          '__v',
-                          'studentId'
-                        ].includes(key)
+                      .filter(
+                        ([key]) =>
+                          ![
+                            "_id",
+                            "collegeId",
+                            "status",
+                            "progress",
+                            "createdAt",
+                            "updatedAt",
+                            "__v",
+                            "studentId",
+                          ].includes(key)
                       )
                       .map(([key, value]) => (
                         <div className="info-row" key={key}>
-                          <span className="info-label">
-                            {formatFieldName(key)}:
-                          </span>
-                          <span className="info-value">
-                            {formatFieldValue(key, value)}
-                          </span>
+                          <span className="info-label">{formatFieldName(key)}:</span>
+                          <span className="info-value">{formatFieldValue(key, value)}</span>
                         </div>
                       ))}
                   </div>
@@ -815,7 +896,10 @@ api.interceptors.request.use(
                   <div className="info-row">
                     <span className="info-label">Last Updated:</span>
                     <span className="info-value">
-                      {formatDate(selectedApp.applications[0]?.details?.updatedAt || selectedApp.applications[0]?.details?.lastSaved)}
+                      {formatDate(
+                        selectedApp.applications[0]?.details?.updatedAt ||
+                          selectedApp.applications[0]?.details?.lastSaved
+                      )}
                     </span>
                   </div>
                   <div className="info-row">
@@ -829,17 +913,11 @@ api.interceptors.request.use(
 
               {/* Action Buttons */}
               <div className="modal-actions">
-                <button
-                  className="btn-secondary"
-                  onClick={() => setSelectedApp(null)}
-                >
+                <button className="btn-secondary" onClick={() => setSelectedApp(null)}>
                   Close
                 </button>
 
-                <button
-                  className="btn-primary"
-                  onClick={() => downloadPDF(selectedApp)}
-                >
+                <button className="btn-primary" onClick={() => downloadPDF(selectedApp)}>
                   <span className="btn-icon">📥</span>
                   Download PDF
                 </button>

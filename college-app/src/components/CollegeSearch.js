@@ -197,7 +197,7 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
     }
   };
 
-  // Add college to user's list
+  // ✅ UPDATED: Add college to user's list - Now matches backend expectations
   const handleAddCollege = async (college, programData = null) => {
     try {
       setAddingCollege(college.UNITID);
@@ -208,18 +208,37 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
         return;
       }
 
+      // Optimistically update UI
       setUserColleges(prev => new Set([...prev, college.UNITID]));
 
+      // Format the college data to match what backend expects (FirstCollege model)
       const collegePayload = {
         collegeId: college.UNITID,
         collegeData: {
-          name: college.INSTNM,
-          city: college.CITY,
-          state: college.STABBR,
-          country: college.COUNTRY,
-          programCount: college.programCount,
-          matchPercentage: college.matchPercentage,
-          selectedCourses: college.selectedCourses || []
+          // Required fields that the backend expects
+          UNITID: college.UNITID,
+          INSTNM: college.INSTNM,
+          IALIAS: college.IALIAS || '',
+          CITY: college.CITY || '',
+          STABBR: college.STABBR || '',
+          ZIP: college.ZIP || '',
+          ADDR: college.ADDRESS || college.ADDR || '',
+          GENTELE: college.contact?.phone || college.GENTELE || '',
+          WEBADDR: college.WEBADDR || college.contact?.website || '',
+          ADMINURL: college.ADMINURL || college.contact?.admissionsUrl || '',
+          FAIDURL: college.FAIDURL || college.contact?.financialAidUrl || '',
+          APPLURL: college.APPLURL || college.contact?.applicationUrl || '',
+          CHFNM: college.CHFNM || '',
+          CHFTITLE: college.CHFTITLE || '',
+          LONGITUD: college.LONGITUD || college.location?.longitude || '',
+          LATITUDE: college.LATITUDE || college.location?.latitude || '',
+          
+          // Additional fields you were sending before
+          country: college.COUNTRY || 'USA',
+          programCount: college.programCount || 0,
+          matchPercentage: college.matchPercentage || 0,
+          selectedCourses: college.selectedCourses || [],
+          isKansas: college.INSTNM?.toLowerCase().includes('kansas') || false
         }
       };
 
@@ -227,6 +246,8 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
       if (programData) {
         collegePayload.selectedProgram = programData;
       }
+
+      console.log("📤 Sending college payload:", collegePayload);
 
       const response = await axios.post(
         `${API_URL}/api/colleges`,
@@ -242,7 +263,11 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
         if (college.selectedCourses && college.selectedCourses.length > 0) {
           console.log(`Courses: ${college.selectedCourses.length} courses included`);
         }
+        
+        // Show success message (optional)
+        // You could add a toast notification here
       }
+      
       triggerCollegeUpdate();
 
     } catch (error) {
@@ -250,8 +275,10 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
       
       if (error.response?.status === 409) {
         console.log("ℹ️ College was already in list");
+        // Optionally show a message that college was already added
       } else {
-        alert("Failed to add college to your list");
+        alert(`Failed to add college: ${error.response?.data?.message || 'Please try again'}`);
+        // Revert optimistic update
         setUserColleges(prev => {
           const newSet = new Set(prev);
           newSet.delete(college.UNITID);
@@ -274,6 +301,7 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
         return;
       }
 
+      // Optimistically update UI
       setUserColleges(prev => {
         const newSet = new Set(prev);
         newSet.delete(college.UNITID);
@@ -290,6 +318,7 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
     } catch (error) {
       console.error("❌ Error removing college:", error);
       alert("Failed to remove college from your list");
+      // Revert optimistic update
       setUserColleges(prev => new Set([...prev, college.UNITID]));
     } finally {
       setRemovingCollege(null);

@@ -4,18 +4,27 @@ import {
   saveHighSchoolCurriculum,
   clearHighSchoolCurriculumField,
   getAllHighSchoolCurricula,
-  getAllHighSchoolCurriculaForAdmin, // ✅ NEW
+  getAllHighSchoolCurriculaForAdmin,
 } from "../controllers/highSchoolCurriculumController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
+import { protectProcessAdmin } from "../middleware/processAdminAuth.js";
 
 const router = express.Router();
 
-// All routes are protected
-router.use(authMiddleware);
+// ==============================
+// ADMIN ROUTES (place FIRST, before authMiddleware)
+// ==============================
+
+// ✅ Regular Admin route
+router.get("/admin/all", authMiddleware, getAllHighSchoolCurriculaForAdmin);
+
+// ✅ Process Admin route
+router.get("/process-admin/all", protectProcessAdmin, getAllHighSchoolCurriculaForAdmin);
 
 // ==============================
-// 🎓 STUDENT ROUTES
+// STUDENT ROUTES (protected by authMiddleware)
 // ==============================
+router.use(authMiddleware);
 
 // Get or create curriculum
 router.get("/:collegeId", getHighSchoolCurriculum);
@@ -28,10 +37,5 @@ router.delete("/:collegeId/clear/:field", clearHighSchoolCurriculumField);
 
 // Get all curricula for logged-in student
 router.get("/", getAllHighSchoolCurricula);
-
-// ==============================
-// 👨‍💼 ADMIN ROUTE (🔥 REQUIRED)
-// ==============================
-router.get("/admin/all", authMiddleware, getAllHighSchoolCurriculaForAdmin);
 
 export default router;

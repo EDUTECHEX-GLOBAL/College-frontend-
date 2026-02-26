@@ -46,6 +46,7 @@ import applicationSpecialNeedRoutes from "./routes/applicationSpecialNeedRoutes.
 import processAdminRoutes from "./routes/processAdminRoutes.js";
 import processAdminDocumentRoutes from "./routes/processAdminDocumentRoutes.js";
 import documentRoutes from "./routes/documentRoutes.js";
+
 dotenv.config();
 
 // Initialize
@@ -145,8 +146,23 @@ app.use("/api/user", userProfileRoutes);
 console.log('✅ User routes mounted successfully');
 
 /* ======================================================
+   MOUNT PROCESS ADMIN ROUTES (CRITICAL - Order matters!)
+   ====================================================== */
+console.log('📌 Mounting process admin routes...');
+
+// Mount process admin document routes FIRST (more specific)
+app.use("/api/process-admin/documents", processAdminDocumentRoutes);
+console.log('✅ Process admin document routes mounted at /api/process-admin/documents');
+
+// Mount main process admin routes SECOND (less specific)
+app.use("/api/process-admin", processAdminRoutes);
+console.log('✅ Process admin routes mounted at /api/process-admin');
+
+/* ======================================================
    MOUNT ALL OTHER API ROUTES
    ====================================================== */
+console.log('📌 Mounting other API routes...');
+
 app.use("/api/students", accountRoutes);
 app.use("/api/education", educationRoutes);
 app.use("/api/college-search", collegesearchRoutes);
@@ -155,8 +171,6 @@ app.use("/api/application/education", applicationEducationRoutes);
 app.use("/api/application/language", applicationLanguageRoutes);
 app.use("/api/application/documents", applicationDocumentRoutes);
 app.use("/api/admin", adminUniversityRoutes);
-app.use("/api/process-admin/documents", processAdminDocumentRoutes);
-app.use("/api/process-admin", processAdminRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/documents", documentRoutes);
 app.use("/api/colleges", collegeRoutes);
@@ -189,6 +203,8 @@ app.use("/api/writingtest", writingtestRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/admin/users", adminUserRoutes);
 
+console.log('✅ All API routes mounted successfully');
+
 /* ======================================================
    ROOT AND HEALTH ENDPOINTS
    ====================================================== */
@@ -198,6 +214,11 @@ app.get("/", (req, res) => {
     message: "EduTechEx API is running...",
     version: "1.0.0",
     timestamp: new Date().toISOString(),
+    processAdminRoutes: {
+      documents: "/api/process-admin/documents/all",
+      stats: "/api/process-admin/stats",
+      generatePDF: "/api/process-admin/generate-pdf/:studentId"
+    },
     userRoutes: {
       test: "/api/user/test",
       profile: "/api/user/profile",
@@ -289,6 +310,15 @@ app.listen(PORT, () => {
    ✅ Environment: ${process.env.NODE_ENV || "development"}
    ✅ URL: http://localhost:${PORT}
 
+🔐 Process Admin Routes:
+   ✅ GET  /api/process-admin/documents/all
+   ✅ GET  /api/process-admin/documents/stats
+   ✅ GET  /api/process-admin/documents/:id
+   ✅ PUT  /api/process-admin/documents/:id/review
+   ✅ POST /api/process-admin/documents/send-email
+   ✅ POST /api/process-admin/documents/:id/send-correction
+   ✅ GET  /api/process-admin/documents/generate-pdf/:studentId
+
 🔍 User Routes (Mounted at /api/user):
    ✅ GET  /api/user/test
    ✅ GET  /api/user/profile
@@ -304,13 +334,6 @@ app.listen(PORT, () => {
 🔧 Debug Endpoints:
    ✅ GET  /api/test
    ✅ GET  /api/routes
-
-📚 Other Routes:
-   👉 /api/students
-   👉 /api/college-search
-   👉 /api/admin
-   👉 /api/courses
-   👉 /api/colleges
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 `);

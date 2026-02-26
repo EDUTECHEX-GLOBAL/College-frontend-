@@ -7,22 +7,26 @@ import {
   getAllContactsForAdmin,
 } from "../controllers/firstContactsController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
+import { protectProcessAdmin } from "../middleware/processAdminAuth.js";
 
 const router = express.Router();
 
-// 🔐 Apply auth middleware
-router.use(authMiddleware);
+// ==============================
+// ADMIN ROUTES (place FIRST, before authMiddleware)
+// ==============================
+
+// ✅ Regular Admin route
+router.get("/admin/all", authMiddleware, getAllContactsForAdmin);
+
+// ✅ Process Admin route
+router.get("/process-admin/all", protectProcessAdmin, getAllContactsForAdmin);
 
 // ==============================
-// ADMIN ROUTES (place FIRST)
+// STUDENT ROUTES (protected by authMiddleware)
 // ==============================
-router.get("/admin/all", getAllContactsForAdmin);
+router.use(authMiddleware); // 🔐 Apply authMiddleware only to student routes
 
-// ==============================
-// STUDENT ROUTES
-// ==============================
 router.get("/", getAllStudentContacts);
-
 router.get("/:collegeId", getContacts);
 router.post("/:collegeId", saveContacts);
 router.delete("/:collegeId/clear/:field", clearContactField);

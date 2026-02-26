@@ -20,15 +20,16 @@ const ApplicationAddress = () => {
   const [error, setError] = useState("");
   const [uploading, setUploading] = useState(false);
   const [addressSaved, setAddressSaved] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({});
   const [completionPercentage, setCompletionPercentage] = useState(33);
 
-  // Form data state matching GUS portal structure
+  // Form data state
   const [formData, setFormData] = useState({
     // Permanent home address
     careOf: "",
     streetAndHouseNumber: "",
     city: "",
-    country: "India", // Default as shown in screenshot
+    country: "India",
     stateProvince: "",
     postcode: "",
     
@@ -94,9 +95,8 @@ const ApplicationAddress = () => {
         });
         setAddressSaved(true);
         
-        // Update completion percentage from response if available
         if (res.data.isCompleted) {
-          setCompletionPercentage(66); // 33% + 33% for address completion
+          setCompletionPercentage(66);
         }
       }
     } catch (error) {
@@ -122,7 +122,7 @@ const ApplicationAddress = () => {
       return value && value.toString().trim() !== '';
     }).length;
 
-    let totalFields = 5; // Permanent address fields
+    let totalFields = 5;
     let completedFields = completedPermanent;
 
     if (formData.hasDifferentCorrespondenceAddress) {
@@ -139,7 +139,6 @@ const ApplicationAddress = () => {
       completedFields += completedCorrespondence;
     }
 
-    // Add national ID file
     if (formData.nationalIdFile) {
       completedFields += 1;
     }
@@ -156,6 +155,15 @@ const ApplicationAddress = () => {
       ...prev,
       [field]: value,
     }));
+    
+    // Clear validation error for this field
+    if (validationErrors[field]) {
+      setValidationErrors((prev) => ({
+        ...prev,
+        [field]: null,
+      }));
+    }
+    
     setAddressSaved(false);
   };
 
@@ -167,7 +175,6 @@ const ApplicationAddress = () => {
     setFormData((prev) => ({
       ...prev,
       hasDifferentCorrespondenceAddress: hasDifferent,
-      // Clear correspondence fields if toggled to No
       ...(hasDifferent ? {} : {
         correspondenceCareOf: "",
         correspondenceStreetAndHouseNumber: "",
@@ -178,32 +185,95 @@ const ApplicationAddress = () => {
       })
     }));
     setAddressSaved(false);
+    
+    // Clear related validation errors
+    setValidationErrors((prev) => {
+      const newErrors = { ...prev };
+      if (!hasDifferent) {
+        delete newErrors.correspondenceStreetAndHouseNumber;
+        delete newErrors.correspondenceCity;
+        delete newErrors.correspondenceCountry;
+        delete newErrors.correspondenceStateProvince;
+        delete newErrors.correspondencePostcode;
+      }
+      return newErrors;
+    });
   };
 
   // =====================================================
   // VALIDATE FORM
   // =====================================================
   const validateForm = () => {
+    const errors = {};
     const missingFields = [];
 
     // Validate permanent address
-    if (!formData.streetAndHouseNumber) missingFields.push('Street and house number');
-    if (!formData.city) missingFields.push('City');
-    if (!formData.country) missingFields.push('Country');
-    if (!formData.stateProvince) missingFields.push('State/Province');
-    if (!formData.postcode) missingFields.push('Postcode');
+    if (!formData.streetAndHouseNumber?.trim()) {
+      errors.streetAndHouseNumber = 'Street and house number is required';
+      missingFields.push('Street and house number');
+    }
+    
+    if (!formData.city?.trim()) {
+      errors.city = 'City is required';
+      missingFields.push('City');
+    }
+    
+    if (!formData.country?.trim()) {
+      errors.country = 'Country is required';
+      missingFields.push('Country');
+    }
+    
+    if (!formData.stateProvince?.trim()) {
+      errors.stateProvince = 'State/Province is required';
+      missingFields.push('State/Province');
+    }
+    
+    if (!formData.postcode?.trim()) {
+      errors.postcode = 'Postcode is required';
+      missingFields.push('Postcode');
+    }
+
+    // Validate postcode format (basic validation)
+    if (formData.postcode?.trim() && formData.postcode.length < 3) {
+      errors.postcode = 'Please enter a valid postcode';
+    }
 
     // Validate correspondence address if different
     if (formData.hasDifferentCorrespondenceAddress) {
-      if (!formData.correspondenceStreetAndHouseNumber) missingFields.push('Correspondence street and house number');
-      if (!formData.correspondenceCity) missingFields.push('Correspondence city');
-      if (!formData.correspondenceCountry) missingFields.push('Correspondence country');
-      if (!formData.correspondenceStateProvince) missingFields.push('Correspondence state/province');
-      if (!formData.correspondencePostcode) missingFields.push('Correspondence postcode');
+      if (!formData.correspondenceStreetAndHouseNumber?.trim()) {
+        errors.correspondenceStreetAndHouseNumber = 'Correspondence street and house number is required';
+        missingFields.push('Correspondence street and house number');
+      }
+      
+      if (!formData.correspondenceCity?.trim()) {
+        errors.correspondenceCity = 'Correspondence city is required';
+        missingFields.push('Correspondence city');
+      }
+      
+      if (!formData.correspondenceCountry?.trim()) {
+        errors.correspondenceCountry = 'Correspondence country is required';
+        missingFields.push('Correspondence country');
+      }
+      
+      if (!formData.correspondenceStateProvince?.trim()) {
+        errors.correspondenceStateProvince = 'Correspondence state/province is required';
+        missingFields.push('Correspondence state/province');
+      }
+      
+      if (!formData.correspondencePostcode?.trim()) {
+        errors.correspondencePostcode = 'Correspondence postcode is required';
+        missingFields.push('Correspondence postcode');
+      }
+
+      // Validate correspondence postcode format
+      if (formData.correspondencePostcode?.trim() && formData.correspondencePostcode.length < 3) {
+        errors.correspondencePostcode = 'Please enter a valid postcode';
+      }
     }
 
+    setValidationErrors(errors);
     return {
-      isValid: missingFields.length === 0,
+      isValid: Object.keys(errors).length === 0,
       missingFields
     };
   };
@@ -216,9 +286,18 @@ const ApplicationAddress = () => {
 
     const validation = validateForm();
     if (!validation.isValid) {
-      let errorMessage = 'Please complete all required fields:\n\n';
-      validation.missingFields.forEach(field => {
-        errorMessage += `• ${field}\n`;
+      // Scroll to first error
+      const firstErrorField = Object.keys(validationErrors)[0];
+      const element = document.getElementById(firstErrorField);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element.focus();
+      }
+      
+      // Show error toast/alert
+      let errorMessage = 'Please fix the following errors:\n\n';
+      Object.values(validationErrors).forEach(error => {
+        errorMessage += `• ${error}\n`;
       });
       alert(errorMessage);
       return;
@@ -244,8 +323,6 @@ const ApplicationAddress = () => {
         correspondencePostcode: formData.correspondencePostcode,
       };
 
-      console.log("Saving address data:", requestData);
-
       const res = await axios.post(
         API_URL,
         requestData,
@@ -257,35 +334,46 @@ const ApplicationAddress = () => {
         }
       );
 
-      alert("Address saved successfully!");
+      // Show success message
+      const toast = document.createElement('div');
+      toast.className = 'success-toast';
+      toast.textContent = 'Address saved successfully!';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+
       setAddressSaved(true);
       
       const newPercentage = calculateCompletion();
       setCompletionPercentage(33 + Math.round(newPercentage * 0.33));
       
-      // Navigate to firsteducation page (Step 4)
-      let targetPath;
-      if (location.pathname.includes('/address')) {
-        // Replace /address with /firsteducation
-        targetPath = location.pathname.replace('/address', '/language');
-      } else {
-        targetPath = '/firstyear/dashboard/application/language';
-      }
-      
-      console.log("Navigating to:", targetPath);
-      navigate(targetPath);
+      // Navigate to next page
+      setTimeout(() => {
+        let targetPath;
+        if (location.pathname.includes('/address')) {
+          targetPath = location.pathname.replace('/address', '/language');
+        } else {
+          targetPath = '/firstyear/dashboard/application/language';
+        }
+        navigate(targetPath);
+      }, 1000);
       
     } catch (error) {
       console.error("Save error:", error.response?.data || error.message);
       setError(error.response?.data?.message || "Failed to save address");
-      alert("Failed to save address. Please try again.");
+      
+      // Show error toast
+      const toast = document.createElement('div');
+      toast.className = 'error-toast';
+      toast.textContent = error.response?.data?.message || "Failed to save address. Please try again.";
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   // =====================================================
-  // UPLOAD NATIONAL ID (matches backend endpoint)
+  // UPLOAD NATIONAL ID
   // =====================================================
   const handleFileUpload = async (file) => {
     if (!file) return;
@@ -309,7 +397,6 @@ const ApplicationAddress = () => {
     setUploading(true);
 
     try {
-      // Use the correct endpoint for national ID upload
       const res = await axios.post(`${API_URL}/upload/nationalId`, data, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -317,7 +404,12 @@ const ApplicationAddress = () => {
         },
       });
 
-      alert("National ID uploaded successfully!");
+      // Show success toast
+      const toast = document.createElement('div');
+      toast.className = 'success-toast';
+      toast.textContent = 'National ID uploaded successfully!';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
 
       setFormData((prev) => ({
         ...prev,
@@ -331,14 +423,20 @@ const ApplicationAddress = () => {
       }));
     } catch (error) {
       console.error("Upload error:", error.response?.data || error.message);
-      alert(error.response?.data?.message || "Upload failed. Please try again.");
+      
+      // Show error toast
+      const toast = document.createElement('div');
+      toast.className = 'error-toast';
+      toast.textContent = error.response?.data?.message || "Upload failed. Please try again.";
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
     } finally {
       setUploading(false);
     }
   };
 
   // =====================================================
-  // REMOVE NATIONAL ID (matches backend endpoint)
+  // REMOVE NATIONAL ID
   // =====================================================
   const removeNationalId = async () => {
     try {
@@ -348,7 +446,12 @@ const ApplicationAddress = () => {
         },
       });
 
-      alert("National ID removed successfully!");
+      // Show success toast
+      const toast = document.createElement('div');
+      toast.className = 'success-toast';
+      toast.textContent = 'National ID removed successfully!';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
 
       setFormData((prev) => ({
         ...prev,
@@ -356,7 +459,13 @@ const ApplicationAddress = () => {
       }));
     } catch (error) {
       console.error("Remove error:", error.response?.data || error.message);
-      alert("Failed to remove national ID");
+      
+      // Show error toast
+      const toast = document.createElement('div');
+      toast.className = 'error-toast';
+      toast.textContent = "Failed to remove national ID";
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
     }
   };
 
@@ -373,7 +482,25 @@ const ApplicationAddress = () => {
     navigate(backPath);
   };
 
+  // =====================================================
+  // HANDLE SAVE AND CONTINUE LATER
+  // =====================================================
+  const handleSaveLater = async () => {
+    try {
+      await saveAddress();
+      // Show success message
+      const toast = document.createElement('div');
+      toast.className = 'success-toast';
+      toast.textContent = 'Progress saved! You can continue later.';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    } catch (error) {
+      // Error handling is done in saveAddress
+    }
+  };
+
   const completionPercentageValue = calculateCompletion();
+  const overallPercentage = 33 + Math.round(completionPercentageValue * 0.33);
 
   // =====================================================
   // LOADING STATE
@@ -390,27 +517,50 @@ const ApplicationAddress = () => {
   }
 
   // =====================================================
-  // MAIN UI (GUS PORTAL STYLE)
+  // MAIN UI
   // =====================================================
   return (
     <div className="application-address">
-      {/* Header with Application ID */}
+      {/* Header with Progress */}
       <div className="address-header">
         <div className="header-left">
           <h1>BA Communication Design</h1>
-          <div className="application-id">APPLICATION ID - UEG0000104849</div>
+          <div className="application-id">
+            <span className="id-label">APPLICATION ID</span>
+            <span className="id-value">UEG0000104849</span>
+          </div>
         </div>
-        <div className="progress-badge">{33 + Math.round(completionPercentageValue * 0.33)}% Completed</div>
+        <div className="progress-indicator">
+          <div className="progress-circle">
+            <svg viewBox="0 0 36 36" className="circular-chart">
+              <path
+                className="circle-bg"
+                d="M18 2.0845
+                  a 15.9155 15.9155 0 0 1 0 31.831
+                  a 15.9155 15.9155 0 0 1 0 -31.831"
+              />
+              <path
+                className="circle"
+                strokeDasharray={`${overallPercentage}, 100`}
+                d="M18 2.0845
+                  a 15.9155 15.9155 0 0 1 0 31.831
+                  a 15.9155 15.9155 0 0 1 0 -31.831"
+              />
+              <text x="18" y="20.35" className="percentage">{overallPercentage}%</text>
+            </svg>
+          </div>
+          <span className="progress-text">Completed</span>
+        </div>
       </div>
 
       {/* Navigation Steps */}
       <div className="application-steps">
         <div className="step completed">
-          <span className="step-number">✓</span>
-          <span className="step-name">Study programme</span>
+          <span className="step-number">1</span>
+          <span className="step-name">Study Programme</span>
         </div>
         <div className="step completed">
-          <span className="step-number">✓</span>
+          <span className="step-number">2</span>
           <span className="step-name">Applicant Details</span>
         </div>
         <div className="step active">
@@ -419,11 +569,11 @@ const ApplicationAddress = () => {
         </div>
         <div className="step">
           <span className="step-number">4</span>
-          <span className="step-name">Entrance qualification</span>
+          <span className="step-name">Language</span>
         </div>
         <div className="step">
           <span className="step-number">5</span>
-          <span className="step-name">Higher Education</span>
+          <span className="step-name">Education</span>
         </div>
         <div className="step">
           <span className="step-number">6</span>
@@ -431,31 +581,25 @@ const ApplicationAddress = () => {
         </div>
         <div className="step">
           <span className="step-number">7</span>
-          <span className="step-name">Special Needs</span>
-        </div>
-        <div className="step">
-          <span className="step-number">8</span>
-          <span className="step-name">Declaration</span>
-        </div>
-        <div className="step">
-          <span className="step-number">9</span>
           <span className="step-name">Review</span>
         </div>
       </div>
 
-      {/* Error Message */}
+      {/* Error Banner */}
       {error && (
         <div className="error-banner">
-          <i className="fas fa-exclamation-triangle"></i>
+          <svg className="error-icon" viewBox="0 0 24 24" width="20" height="20">
+            <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+          </svg>
           <span>{error}</span>
           <button onClick={() => setError('')} className="error-close-btn">×</button>
         </div>
       )}
 
-      {/* Main Form Container */}
+      {/* Main Form */}
       <div className="address-form-container">
         <div className="form-header">
-          <h2>Permanent Home Address</h2>
+          <h2>Address Information</h2>
           <p className="form-subtitle">
             Please provide your permanent address as it appears on official documents
           </p>
@@ -464,15 +608,23 @@ const ApplicationAddress = () => {
         <form onSubmit={(e) => { e.preventDefault(); saveAddress(); }}>
           {/* Permanent Address Section */}
           <div className="form-section">
+            <div className="section-title">
+              <h3>Permanent Home Address</h3>
+              <span className="required-badge">Required</span>
+            </div>
+
             <div className="form-group">
-              <label className="form-label" htmlFor="careOf">C/o</label>
+              <label className="form-label" htmlFor="careOf">
+                Care of (C/o)
+                <span className="label-hint">Optional</span>
+              </label>
               <input
                 type="text"
                 id="careOf"
-                className="form-input"
+                className={`form-input ${validationErrors.careOf ? 'error' : ''}`}
                 value={formData.careOf}
                 onChange={(e) => handleInputChange("careOf", e.target.value)}
-                placeholder="Care of (if applicable)"
+                placeholder="e.g., John Doe, c/o Jane Smith"
                 disabled={isSubmitting}
               />
               <small className="field-hint">Leave blank if not applicable</small>
@@ -485,13 +637,15 @@ const ApplicationAddress = () => {
               <input
                 type="text"
                 id="streetAndHouseNumber"
-                className="form-input"
+                className={`form-input ${validationErrors.streetAndHouseNumber ? 'error' : ''}`}
                 value={formData.streetAndHouseNumber}
                 onChange={(e) => handleInputChange("streetAndHouseNumber", e.target.value)}
                 placeholder="Enter street name and house number"
-                required
                 disabled={isSubmitting}
               />
+              {validationErrors.streetAndHouseNumber && (
+                <span className="error-message">{validationErrors.streetAndHouseNumber}</span>
+              )}
             </div>
 
             <div className="form-row">
@@ -500,23 +654,24 @@ const ApplicationAddress = () => {
                 <input
                   type="text"
                   id="city"
-                  className="form-input"
+                  className={`form-input ${validationErrors.city ? 'error' : ''}`}
                   value={formData.city}
                   onChange={(e) => handleInputChange("city", e.target.value)}
                   placeholder="Enter city"
-                  required
                   disabled={isSubmitting}
                 />
+                {validationErrors.city && (
+                  <span className="error-message">{validationErrors.city}</span>
+                )}
               </div>
 
               <div className="form-group">
                 <label className="form-label required" htmlFor="country">Country</label>
                 <select
                   id="country"
-                  className="form-select"
+                  className={`form-select ${validationErrors.country ? 'error' : ''}`}
                   value={formData.country}
                   onChange={(e) => handleInputChange("country", e.target.value)}
-                  required
                   disabled={isSubmitting}
                 >
                   <option value="">Select Country</option>
@@ -528,57 +683,50 @@ const ApplicationAddress = () => {
                   <option value="Canada">Canada</option>
                   <option value="Australia">Australia</option>
                 </select>
+                {validationErrors.country && (
+                  <span className="error-message">{validationErrors.country}</span>
+                )}
               </div>
             </div>
 
             <div className="form-row">
               <div className="form-group">
                 <label className="form-label required" htmlFor="stateProvince">
-                  State / province
+                  State / Province
                 </label>
-                <select
-                  id="stateProvince"
-                  className="form-select"
-                  value={formData.stateProvince}
-                  onChange={(e) => handleInputChange("stateProvince", e.target.value)}
-                  required
-                  disabled={isSubmitting}
-                >
-                  <option value="">Select State</option>
-                  {formData.country === 'India' && (
-                    <>
-                      <option value="Andhra Pradesh">Andhra Pradesh</option>
-                      <option value="Delhi">Delhi</option>
-                      <option value="Gujarat">Gujarat</option>
-                      <option value="Karnataka">Karnataka</option>
-                      <option value="Maharashtra">Maharashtra</option>
-                      <option value="Tamil Nadu">Tamil Nadu</option>
-                      <option value="Telangana">Telangana</option>
-                      <option value="Uttar Pradesh">Uttar Pradesh</option>
-                      <option value="West Bengal">West Bengal</option>
-                    </>
-                  )}
-                  {formData.country === 'USA' && (
-                    <>
-                      <option value="California">California</option>
-                      <option value="New York">New York</option>
-                      <option value="Texas">Texas</option>
-                      <option value="Florida">Florida</option>
-                      <option value="Illinois">Illinois</option>
-                    </>
-                  )}
-                  {formData.country === 'UK' && (
-                    <>
-                      <option value="England">England</option>
-                      <option value="Scotland">Scotland</option>
-                      <option value="Wales">Wales</option>
-                      <option value="Northern Ireland">Northern Ireland</option>
-                    </>
-                  )}
-                  {!['India', 'USA', 'UK'].includes(formData.country) && (
-                    <option value="Other">Other</option>
-                  )}
-                </select>
+                {formData.country === 'India' ? (
+                  <select
+                    id="stateProvince"
+                    className={`form-select ${validationErrors.stateProvince ? 'error' : ''}`}
+                    value={formData.stateProvince}
+                    onChange={(e) => handleInputChange("stateProvince", e.target.value)}
+                    disabled={isSubmitting}
+                  >
+                    <option value="">Select State</option>
+                    <option value="Andhra Pradesh">Andhra Pradesh</option>
+                    <option value="Delhi">Delhi</option>
+                    <option value="Gujarat">Gujarat</option>
+                    <option value="Karnataka">Karnataka</option>
+                    <option value="Maharashtra">Maharashtra</option>
+                    <option value="Tamil Nadu">Tamil Nadu</option>
+                    <option value="Telangana">Telangana</option>
+                    <option value="Uttar Pradesh">Uttar Pradesh</option>
+                    <option value="West Bengal">West Bengal</option>
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    id="stateProvince"
+                    className={`form-input ${validationErrors.stateProvince ? 'error' : ''}`}
+                    value={formData.stateProvince}
+                    onChange={(e) => handleInputChange("stateProvince", e.target.value)}
+                    placeholder="Enter state/province"
+                    disabled={isSubmitting}
+                  />
+                )}
+                {validationErrors.stateProvince && (
+                  <span className="error-message">{validationErrors.stateProvince}</span>
+                )}
               </div>
 
               <div className="form-group">
@@ -586,25 +734,31 @@ const ApplicationAddress = () => {
                 <input
                   type="text"
                   id="postcode"
-                  className="form-input"
+                  className={`form-input ${validationErrors.postcode ? 'error' : ''}`}
                   value={formData.postcode}
                   onChange={(e) => handleInputChange("postcode", e.target.value)}
                   placeholder="Enter postal code"
-                  required
                   disabled={isSubmitting}
                 />
+                {validationErrors.postcode && (
+                  <span className="error-message">{validationErrors.postcode}</span>
+                )}
               </div>
             </div>
           </div>
 
           {/* Correspondence Address Section */}
           <div className="form-section">
+            <div className="section-title">
+              <h3>Correspondence Address</h3>
+            </div>
+
             <div className="form-group full-width">
-              <label className="form-label required">
-                Address for correspondence (if different from home address)?
+              <label className="form-label">
+                Do you have a different address for correspondence?
               </label>
               <div className="radio-group">
-                <label className="radio-label">
+                <label className={`radio-option ${formData.hasDifferentCorrespondenceAddress === true ? 'selected' : ''}`}>
                   <input
                     type="radio"
                     name="correspondenceAddress"
@@ -613,9 +767,10 @@ const ApplicationAddress = () => {
                     onChange={() => handleCorrespondenceToggle('yes')}
                     disabled={isSubmitting}
                   />
-                  <span>Yes</span>
+                  <span className="radio-custom"></span>
+                  <span className="radio-label-text">Yes</span>
                 </label>
-                <label className="radio-label">
+                <label className={`radio-option ${formData.hasDifferentCorrespondenceAddress === false ? 'selected' : ''}`}>
                   <input
                     type="radio"
                     name="correspondenceAddress"
@@ -624,22 +779,26 @@ const ApplicationAddress = () => {
                     onChange={() => handleCorrespondenceToggle('no')}
                     disabled={isSubmitting}
                   />
-                  <span>No</span>
+                  <span className="radio-custom"></span>
+                  <span className="radio-label-text">No, same as permanent address</span>
                 </label>
               </div>
             </div>
 
             {formData.hasDifferentCorrespondenceAddress && (
-              <div className="correspondence-address-fields">
+              <div className="correspondence-address-fields slide-in">
                 <div className="form-group">
-                  <label className="form-label" htmlFor="correspondenceCareOf">C/o</label>
+                  <label className="form-label" htmlFor="correspondenceCareOf">
+                    Care of (C/o)
+                    <span className="label-hint">Optional</span>
+                  </label>
                   <input
                     type="text"
                     id="correspondenceCareOf"
-                    className="form-input"
+                    className={`form-input ${validationErrors.correspondenceCareOf ? 'error' : ''}`}
                     value={formData.correspondenceCareOf}
                     onChange={(e) => handleInputChange("correspondenceCareOf", e.target.value)}
-                    placeholder="Care of (if applicable)"
+                    placeholder="e.g., John Doe, c/o Jane Smith"
                     disabled={isSubmitting}
                   />
                 </div>
@@ -651,13 +810,15 @@ const ApplicationAddress = () => {
                   <input
                     type="text"
                     id="correspondenceStreetAndHouseNumber"
-                    className="form-input"
+                    className={`form-input ${validationErrors.correspondenceStreetAndHouseNumber ? 'error' : ''}`}
                     value={formData.correspondenceStreetAndHouseNumber}
                     onChange={(e) => handleInputChange("correspondenceStreetAndHouseNumber", e.target.value)}
                     placeholder="Enter street name and house number"
-                    required
                     disabled={isSubmitting}
                   />
+                  {validationErrors.correspondenceStreetAndHouseNumber && (
+                    <span className="error-message">{validationErrors.correspondenceStreetAndHouseNumber}</span>
+                  )}
                 </div>
 
                 <div className="form-row">
@@ -666,23 +827,24 @@ const ApplicationAddress = () => {
                     <input
                       type="text"
                       id="correspondenceCity"
-                      className="form-input"
+                      className={`form-input ${validationErrors.correspondenceCity ? 'error' : ''}`}
                       value={formData.correspondenceCity}
                       onChange={(e) => handleInputChange("correspondenceCity", e.target.value)}
                       placeholder="Enter city"
-                      required
                       disabled={isSubmitting}
                     />
+                    {validationErrors.correspondenceCity && (
+                      <span className="error-message">{validationErrors.correspondenceCity}</span>
+                    )}
                   </div>
 
                   <div className="form-group">
                     <label className="form-label required" htmlFor="correspondenceCountry">Country</label>
                     <select
                       id="correspondenceCountry"
-                      className="form-select"
+                      className={`form-select ${validationErrors.correspondenceCountry ? 'error' : ''}`}
                       value={formData.correspondenceCountry}
                       onChange={(e) => handleInputChange("correspondenceCountry", e.target.value)}
-                      required
                       disabled={isSubmitting}
                     >
                       <option value="">Select Country</option>
@@ -690,25 +852,33 @@ const ApplicationAddress = () => {
                       <option value="USA">United States</option>
                       <option value="UK">United Kingdom</option>
                       <option value="Germany">Germany</option>
+                      <option value="France">France</option>
+                      <option value="Canada">Canada</option>
+                      <option value="Australia">Australia</option>
                     </select>
+                    {validationErrors.correspondenceCountry && (
+                      <span className="error-message">{validationErrors.correspondenceCountry}</span>
+                    )}
                   </div>
                 </div>
 
                 <div className="form-row">
                   <div className="form-group">
                     <label className="form-label required" htmlFor="correspondenceStateProvince">
-                      State / province
+                      State / Province
                     </label>
                     <input
                       type="text"
                       id="correspondenceStateProvince"
-                      className="form-input"
+                      className={`form-input ${validationErrors.correspondenceStateProvince ? 'error' : ''}`}
                       value={formData.correspondenceStateProvince}
                       onChange={(e) => handleInputChange("correspondenceStateProvince", e.target.value)}
                       placeholder="Enter state/province"
-                      required
                       disabled={isSubmitting}
                     />
+                    {validationErrors.correspondenceStateProvince && (
+                      <span className="error-message">{validationErrors.correspondenceStateProvince}</span>
+                    )}
                   </div>
 
                   <div className="form-group">
@@ -716,13 +886,15 @@ const ApplicationAddress = () => {
                     <input
                       type="text"
                       id="correspondencePostcode"
-                      className="form-input"
+                      className={`form-input ${validationErrors.correspondencePostcode ? 'error' : ''}`}
                       value={formData.correspondencePostcode}
                       onChange={(e) => handleInputChange("correspondencePostcode", e.target.value)}
                       placeholder="Enter postal code"
-                      required
                       disabled={isSubmitting}
                     />
+                    {validationErrors.correspondencePostcode && (
+                      <span className="error-message">{validationErrors.correspondencePostcode}</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -731,17 +903,36 @@ const ApplicationAddress = () => {
 
           {/* National ID Upload Section */}
           <div className="form-section">
-            <h3 className="section-heading">National ID (Optional)</h3>
+            <div className="section-title">
+              <h3>National ID Document</h3>
+              <span className="optional-badge">Optional</span>
+            </div>
             
             <div className="form-group">
-              <label className="form-label">Upload National ID</label>
-              <div className="upload-area">
-                <p className="upload-instruction">Drop file to attach, or browse</p>
-                <p className="upload-hint">jpg, jpeg, pdf and png. Please upload a file that is less than 5 MB.</p>
+              <label className="form-label">Upload National ID (Aadhaar, Passport, etc.)</label>
+              <div className={`upload-area ${uploading ? 'uploading' : ''}`}>
+                {uploading && (
+                  <div className="upload-progress">
+                    <div className="progress-bar">
+                      <div className="progress-fill"></div>
+                    </div>
+                    <span>Uploading...</span>
+                  </div>
+                )}
                 
                 {formData.nationalIdFile ? (
                   <div className="file-info">
-                    <i className="fas fa-file-pdf file-icon"></i>
+                    <div className="file-icon-container">
+                      {formData.nationalIdFile.fileType?.includes('pdf') ? (
+                        <svg className="file-icon pdf" viewBox="0 0 24 24" width="32" height="32">
+                          <path fill="currentColor" d="M20 2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM8 14H6v-4h2v4zm3-4h2v4h-2v-4zm8 4h-2v-4h2v4z"/>
+                        </svg>
+                      ) : (
+                        <svg className="file-icon image" viewBox="0 0 24 24" width="32" height="32">
+                          <path fill="currentColor" d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                        </svg>
+                      )}
+                    </div>
                     <div className="file-details">
                       <span className="file-name">{formData.nationalIdFile.originalName || formData.nationalIdFile.fileName}</span>
                       {formData.nationalIdFile.fileSize && (
@@ -755,12 +946,20 @@ const ApplicationAddress = () => {
                       className="remove-file-btn"
                       onClick={removeNationalId}
                       disabled={uploading || isSubmitting}
+                      title="Remove file"
                     >
-                      ×
+                      <svg viewBox="0 0 24 24" width="20" height="20">
+                        <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                      </svg>
                     </button>
                   </div>
                 ) : (
-                  <>
+                  <div className="upload-prompt">
+                    <svg className="upload-icon" viewBox="0 0 24 24" width="48" height="48">
+                      <path fill="currentColor" d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+                    </svg>
+                    <p className="upload-instruction">Drag and drop your file here, or click to browse</p>
+                    <p className="upload-hint">Supported formats: JPG, PNG, PDF (Max size: 5MB)</p>
                     <input
                       type="file"
                       id="nationalIdUpload"
@@ -775,14 +974,17 @@ const ApplicationAddress = () => {
                       onClick={() => document.getElementById('nationalIdUpload').click()}
                       disabled={uploading || isSubmitting}
                     >
-                      {uploading ? 'Uploading...' : 'Browse'}
+                      {uploading ? 'Uploading...' : 'Browse Files'}
                     </button>
-                  </>
+                  </div>
                 )}
               </div>
               {!addressSaved && (
                 <p className="upload-warning">
-                  Please save your address before uploading documents.
+                  <svg viewBox="0 0 24 24" width="16" height="16">
+                    <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                  </svg>
+                  Please save your address before uploading documents
                 </p>
               )}
             </div>
@@ -796,20 +998,42 @@ const ApplicationAddress = () => {
               onClick={handleBack}
               disabled={isSubmitting}
             >
-              ← Back
+              <svg viewBox="0 0 24 24" width="20" height="20">
+                <path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+              </svg>
+              Back
             </button>
 
-            <button
-              type="submit"
-              className="btn-primary"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Saving...' : 'Next →'}
-            </button>
-          </div>
+            <div className="action-group">
+              <button
+                type="button"
+                className="btn-outline"
+                onClick={handleSaveLater}
+                disabled={isSubmitting}
+              >
+                Save & Continue Later
+              </button>
 
-          <div className="language-selector">
-            <span>English ▼</span>
+              <button
+                type="submit"
+                className="btn-primary"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <span className="spinner"></span>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    Next Step
+                    <svg viewBox="0 0 24 24" width="20" height="20">
+                      <path fill="currentColor" d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
+                    </svg>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </form>
       </div>

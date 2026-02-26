@@ -5,20 +5,27 @@ import {
   saveResidencyDataAtomic,
   clearResidencyField,
   getAllStudentResidencies,
-  getAllResidencyRecordsForAdmin, // ✅ new admin route
+  getAllResidencyRecordsForAdmin,
 } from "../controllers/FirstResidencyController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
+import { protectProcessAdmin } from "../middleware/processAdminAuth.js";
 
 const router = express.Router();
 
 // ==============================
-// 🔐 All routes are protected
+// ADMIN ROUTES (place FIRST, before authMiddleware)
 // ==============================
-router.use(authMiddleware);
+
+// Get all residency records for admin view (regular admin)
+router.get("/admin/all", authMiddleware, getAllResidencyRecordsForAdmin);
+
+// Get all residency records for process admin view
+router.get("/process-admin/all", protectProcessAdmin, getAllResidencyRecordsForAdmin);
 
 // ==============================
-// 🔹 Student Routes
+// STUDENT ROUTES (protected by authMiddleware)
 // ==============================
+router.use(authMiddleware);
 
 // Get residency data for specific college
 router.get("/:collegeId", getResidencyData);
@@ -31,12 +38,5 @@ router.delete("/:collegeId/clear/:field", clearResidencyField);
 
 // Get all residency records for the logged-in student
 router.get("/", getAllStudentResidencies);
-
-// ==============================
-// 🔹 Admin Routes
-// ==============================
-
-// Get all residency records for admin view
-router.get("/admin/all", getAllResidencyRecordsForAdmin); // ✅ similar to InternationalStudent admin
 
 export default router;

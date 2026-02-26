@@ -6,26 +6,33 @@ import {
   clearField,
   getAllGeneralApplications,
   deleteGeneralApplication,
-  getAllGeneralApplicationsForAdmin, // ✅ New function for admin
+  getAllGeneralApplicationsForAdmin,
 } from "../controllers/generalController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
+import { protectProcessAdmin } from "../middleware/processAdminAuth.js";
 
 const router = express.Router();
 
-// ✅ Apply authMiddleware to all routes
+// ==============================
+// ADMIN ROUTES (place FIRST, before authMiddleware)
+// ==============================
+
+// ✅ Regular Admin route
+router.get("/admin/all", authMiddleware, getAllGeneralApplicationsForAdmin);
+
+// ✅ Process Admin route
+router.get("/process-admin/all", protectProcessAdmin, getAllGeneralApplicationsForAdmin);
+
+// ==============================
+// STUDENT ROUTES (protected by authMiddleware)
+// ==============================
 router.use(authMiddleware);
 
-// Student routes
-router.get("/:collegeId", getGeneralApplication);              // Get general application for a specific college
-router.post("/:collegeId", saveGeneralApplication);            // Create or update general application
-router.put("/:collegeId", updateGeneralApplication);           // Update general application
-router.delete("/:collegeId", deleteGeneralApplication);        // Delete general application
-router.delete("/:collegeId/clear/:field", clearField);         // Clear a specific field
-
-// Fetch all general applications for student
+router.get("/:collegeId", getGeneralApplication);
+router.post("/:collegeId", saveGeneralApplication);
+router.put("/:collegeId", updateGeneralApplication);
+router.delete("/:collegeId", deleteGeneralApplication);
+router.delete("/:collegeId/clear/:field", clearField);
 router.get("/", getAllGeneralApplications);
-
-// Admin route: fetch all general applications
-router.get("/admin/all", getAllGeneralApplicationsForAdmin);
 
 export default router;

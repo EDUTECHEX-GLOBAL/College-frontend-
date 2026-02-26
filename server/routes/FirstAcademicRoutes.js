@@ -6,20 +6,52 @@ import {
   clearField,
   getAllAcademicApplications,
   deleteAcademicApplication,
-  getAllAcademicApplicationsForAdmin, // ✅ new admin controller
+  getAllAcademicApplicationsForAdmin,
 } from '../controllers/FirstAcademicController.js';
 import authMiddleware from '../middleware/authMiddleware.js';
+import { protectProcessAdmin } from '../middleware/processAdminAuth.js';
 
 const router = express.Router();
 
 console.log('✅ FirstAcademicRoutes.js loaded successfully');
 
-// Protect all routes
-router.use(authMiddleware); // ✅ All routes now require valid token
+// ===============================
+// DEBUG ROUTE - Test without auth
+// ===============================
+router.get('/test-public', (req, res) => {
+  res.json({ 
+    success: true, 
+    message: 'Public test route works',
+    timestamp: new Date().toISOString()
+  });
+});
 
 // ===============================
-// STUDENT ROUTES
+// DEBUG ROUTE - Test with process admin auth
 // ===============================
+router.get('/test-auth', protectProcessAdmin, (req, res) => {
+  res.json({ 
+    success: true, 
+    message: 'Auth working!',
+    admin: req.processAdmin,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// ===============================
+// ADMIN ROUTES (placed BEFORE authMiddleware)
+// ===============================
+
+// GET /api/academics/admin/all - Get all academic applications for regular admin
+router.get('/admin/all', authMiddleware, getAllAcademicApplicationsForAdmin);
+
+// ✅ GET /api/academics/process-admin/all - Get all academic applications for process admin
+router.get('/process-admin/all', protectProcessAdmin, getAllAcademicApplicationsForAdmin);
+
+// ===============================
+// STUDENT ROUTES (protected by authMiddleware)
+// ===============================
+router.use(authMiddleware);
 
 // GET /api/academics/:collegeId - Get academic application for specific college
 router.get('/:collegeId', getAcademicApplication);
@@ -38,12 +70,5 @@ router.delete('/:collegeId/clear/:field', clearField);
 
 // GET /api/academics - Get all academic applications for student
 router.get('/', getAllAcademicApplications);
-
-// ===============================
-// ADMIN ROUTES
-// ===============================
-
-// GET /api/academics/admin/all - Get all academic applications for admin
-router.get('/admin/all', authMiddleware, getAllAcademicApplicationsForAdmin);
 
 export default router;

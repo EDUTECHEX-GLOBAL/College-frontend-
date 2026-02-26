@@ -7,16 +7,28 @@ import {
   getAllInternationalRecordsForAdmin,
 } from "../controllers/InternationalStudentController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
+import { protectProcessAdmin } from "../middleware/processAdminAuth.js";
 
 const router = express.Router();
 
-// Protected routes
-router.use(authMiddleware); // ✅ All routes now require valid token
+// ==============================
+// ADMIN ROUTES (place FIRST, before authMiddleware)
+// ==============================
+
+// ✅ Regular Admin route
+router.get("/admin/all", authMiddleware, getAllInternationalRecordsForAdmin);
+
+// ✅ Process Admin route
+router.get("/process-admin/all", protectProcessAdmin, getAllInternationalRecordsForAdmin);
+
+// ==============================
+// STUDENT ROUTES (protected by authMiddleware)
+// ==============================
+router.use(authMiddleware);
 
 router.get("/:collegeId", getInternationalData);
 router.post("/:collegeId", saveInternationalData);
 router.delete("/:collegeId/clear/:field", clearInternationalField);
 router.get("/", getAllStudentInternationalRecords);
-router.get("/admin/all", authMiddleware, getAllInternationalRecordsForAdmin);
 
 export default router;

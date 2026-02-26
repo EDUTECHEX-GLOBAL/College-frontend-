@@ -14,7 +14,6 @@ import {
   getAdminDocumentStats,
   getAdminDocument,
   testAdminEndpoint,
-  // IMPORT NEW FUNCTIONS
   sendDocumentCorrectionRequest,
   getIncompleteApplications,
   sendDocumentEmail,
@@ -22,7 +21,7 @@ import {
 } from '../controllers/documentController.js';
 import { generateStudentPDF } from '../controllers/pdfGeneratorController.js';
 import { documentUpload } from '../middleware/documentUploadMiddleware.js';
-import { authenticateToken } from '../middleware/authMiddleware.js'; // ✅ Changed from protect
+import { authenticateToken } from '../middleware/authMiddleware.js';
 import { authenticateAdmin } from '../middleware/adminAuthMiddleware.js';
 
 const router = express.Router();
@@ -40,46 +39,51 @@ router.get('/test-public', (req, res) => {
 });
 
 // ============ ADMIN ROUTES ============
-// IMPORTANT: Admin routes come BEFORE router.use(authenticateToken)
+// These will be accessible at /api/documents/admin/*
+
+// Test admin endpoint
 router.get('/admin/test', authenticateAdmin, testAdminEndpoint);
 console.log('✅ Registered: GET /admin/test');
 
+// Get all documents for admin
 router.get('/admin/all', authenticateAdmin, getAllDocuments);
 console.log('✅ Registered: GET /admin/all');
 
-router.get('/admin/:id', authenticateAdmin, getAdminDocument);
-console.log('✅ Registered: GET /admin/:id');
-
-// Document review with email notifications
-router.put('/admin/:id/review', authenticateAdmin, updateDocumentReview);
-console.log('✅ Registered: PUT /admin/:id/review');
-
-// Send correction email manually
-router.post('/admin/:id/send-correction', authenticateAdmin, sendDocumentCorrectionRequest);
-console.log('✅ Registered: POST /admin/:id/send-correction');
-
-// Send single document via email
-router.post('/admin/send-email', authenticateAdmin, sendDocumentEmail);
-console.log('✅ Registered: POST /admin/send-email');
-
-// Send all documents via email
-router.post('/admin/send-bulk-email', authenticateAdmin, sendAllDocumentsEmail);
-console.log('✅ Registered: POST /admin/send-bulk-email');
-
-// Get incomplete applications
-router.get('/admin/applications/incomplete', authenticateAdmin, getIncompleteApplications);
-console.log('✅ Registered: GET /admin/applications/incomplete');
-
+// Get document stats for admin
 router.get('/admin/stats', authenticateAdmin, getAdminDocumentStats);
 console.log('✅ Registered: GET /admin/stats');
 
-// PDF generation route
+// Get specific document for admin
+router.get('/admin/:id', authenticateAdmin, getAdminDocument);
+console.log('✅ Registered: GET /admin/:id');
+
+// Document review with email notifications for admin
+router.put('/admin/:id/review', authenticateAdmin, updateDocumentReview);
+console.log('✅ Registered: PUT /admin/:id/review');
+
+// Send correction email manually for admin
+router.post('/admin/:id/send-correction', authenticateAdmin, sendDocumentCorrectionRequest);
+console.log('✅ Registered: POST /admin/:id/send-correction');
+
+// Send single document via email for admin
+router.post('/admin/send-email', authenticateAdmin, sendDocumentEmail);
+console.log('✅ Registered: POST /admin/send-email');
+
+// Send all documents via email for admin
+router.post('/admin/send-bulk-email', authenticateAdmin, sendAllDocumentsEmail);
+console.log('✅ Registered: POST /admin/send-bulk-email');
+
+// Get incomplete applications for admin
+router.get('/admin/applications/incomplete', authenticateAdmin, getIncompleteApplications);
+console.log('✅ Registered: GET /admin/applications/incomplete');
+
+// PDF generation route for admin
 router.get('/admin/generate-pdf/:studentId', authenticateAdmin, generateStudentPDF);
 console.log('✅ Registered: GET /admin/generate-pdf/:studentId');
 
 // ============ REGULAR USER ROUTES ============
 // Apply authenticateToken middleware to ALL user routes
-router.use(authenticateToken); // ✅ Changed from protect
+router.use(authenticateToken);
 
 // Student routes
 router.post('/upload', documentUpload.single('document'), uploadDocument);
@@ -103,7 +107,6 @@ console.log('✅ Registered: GET /:id');
 router.delete('/:id', deleteDocument);
 console.log('✅ Registered: DELETE /:id');
 
-// Update routes
 router.put('/:id/status', updateDocumentStatus);
 console.log('✅ Registered: PUT /:id/status');
 
