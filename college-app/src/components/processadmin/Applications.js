@@ -34,14 +34,40 @@ const api = axios.create({
 });
 
 
-  api.interceptors.request.use((config) => {
-    const adminToken = localStorage.getItem("adminToken");
-    if (adminToken) {
-      config.headers.Authorization = `Bearer ${adminToken}`;
+ // ===============================
+// Auth Token Resolver (ONE place)
+// ===============================
+const getAuthToken = () => {
+  // Priority order matters
+  return (
+    localStorage.getItem("adminToken") ||
+    localStorage.getItem("processAdminToken")
+  );
+};
+
+// ===============================
+// Axios Request Interceptor
+// ===============================
+api.interceptors.request.use(
+  (config) => {
+    const token = getAuthToken();
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+      console.log("🔐 Auth token attached to request");
+    } else {
+      console.warn("⚠️ No admin/process-admin token found");
     }
+
+    // Always set content type
     config.headers["Content-Type"] = "application/json";
+
     return config;
-  });
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
   // ===============================
   // HELPERS

@@ -1,74 +1,84 @@
 // backend/middleware/processAdminAuthMiddleware.js
-import jwt from 'jsonwebtoken';
-import ProcessAdmin from '../models/processAdminModel.js';
 
-export const protectProcessAdmin = async (req, res, next) => {
-  let token;
+import jwt from "jsonwebtoken";
 
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    try {
-      token = req.headers.authorization.split(' ')[1];
-      
-      // Verify token with the same secret used in login
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key-2026');
-      
-      // For hardcoded process admin (no database)
-      if (decoded.email === 'process-admin@edutechex.com' && decoded.role === 'process-admin') {
-        req.processAdmin = {
-          id: 'process-admin-001',
-          email: decoded.email,
-          role: decoded.role,
-          firstName: 'Process',
-          lastName: 'Admin'
-        };
-        return next();
-      }
-      
-      // If you want to use database lookup instead (optional)
-      // const processAdmin = await ProcessAdmin.findById(decoded.id).select('-password');
-      
-      // if (!processAdmin) {
-      //   return res.status(401).json({ 
-      //     success: false,
-      //     message: 'Not authorized' 
-      //   });
-      // }
-      
-      // req.processAdmin = processAdmin;
-      // next();
-      
-      return res.status(401).json({ 
-        success: false,
-        message: 'Not authorized as process admin' 
-      });
-    } catch (error) {
-      console.error('Process admin auth error:', error);
-      return res.status(401).json({ 
-        success: false,
-        message: 'Invalid token' 
-      });
-    }
-  }
-
-  if (!token) {
-    return res.status(401).json({ 
-      success: false,
-      message: 'Not authorized, no token' 
-    });
-  }
-};
-
-export const ensureSingleProcessAdmin = async (req, res, next) => {
+/**
+ * Protect Process Admin Routes
+ * Verifies JWT and ensures user has process-admin role
+ */
+export const protectProcessAdmin = (req, res, next) => {
   try {
-    const count = await ProcessAdmin.countDocuments();
-    if (count >= 1) {
-      return res.status(403).json({ 
+    console.log("\n🔐 ===== PROCESS ADMIN AUTH CHECK =====");
+
+    // 1️⃣ Check Authorization header
+    const authHeader = req.headers.authorization;
+
+    console.log("Authorization Header:", authHeader ? "Bearer [PRESENT]" : "None");
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
         success: false,
-        message: 'A Process Admin account already exists. Only one admin is allowed.' 
+        message: "Not authorized. No token provided.",
       });
     }
+
+    // 2️⃣ Extract token
+    const token = authHeader.split(" ")[1];
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "Token missing after Bearer.",
+      });
+    }
+
+    // 3️⃣ Verify token
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "your-secret-key-2026"
+    );
+
+    console.log("✅ Decoded Token:", decoded);
+
+    // 4️⃣ Validate role strictly
+    if (decoded.role !== "process-admin") {
+      console.log("❌ Role mismatch:", decoded.role);
+
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. Not a process admin.",
+      });
+    }
+
+    // 5️⃣ Attach admin data to request
+    req.processAdmin = {
+      id: decoded.id,
+      email: decoded.email,
+      role: decoded.role,
+    };
+
+    console.log("🎉 Process admin authenticated successfully!");
     next();
   } catch (error) {
-    next(error);
+    console.error("❌ Process Admin Auth Error:", error.message);
+
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({
+        success: false,
+        message: "Token expired. Please login again.",
+      });
+    }
+
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid token.",
+      });
+    }
+
+    return res.status(401).json({
+      success: false,
+      message: "Authentication failed.",
+    });
   }
 };

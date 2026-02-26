@@ -8,15 +8,22 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api
 
 // Get process admin token - ONLY look for processAdminToken
 const getProcessAdminToken = () => {
-  // Try to get token from localStorage
-  const token = localStorage.getItem('processAdminToken');
-  
-  if (token) {
-    console.log('✅ Using processAdminToken');
-    return token;
+  // 1️⃣ Prefer admin token (required for /documents/admin/* APIs)
+  const adminToken = localStorage.getItem('adminToken');
+  if (adminToken) {
+    console.log('✅ Using adminToken');
+    return adminToken;
   }
-  
-  console.log('❌ No processAdminToken found');
+
+  // 2️⃣ Fallback to process-admin token (older / legacy support)
+  const processAdminToken = localStorage.getItem('processAdminToken');
+  if (processAdminToken) {
+    console.log('✅ Using processAdminToken');
+    return processAdminToken;
+  }
+
+  // 3️⃣ No token found
+  console.error('❌ No admin or process-admin token found');
   return null;
 };
 
@@ -199,7 +206,7 @@ const ProcessAdminDashboard = () => {
         return;
       }
 
-      const response = await axios.get(`${API_BASE_URL}/process-admin/applications/all`, {
+      const response = await axios.get(`${API_BASE_URL}/process-admin/documents/all`, {
         headers: { 
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

@@ -22,10 +22,6 @@ const RoleSelection = () => {
     navigate("/admin-login");
   };
 
-  const handleContinueAsPartner = () => {
-    navigate("/partner-login");
-  };
-
   const handleContinueAsProcessAdmin = () => {
     navigate("/process-admin-login"); // You can update this route as needed
   };
@@ -111,27 +107,6 @@ const RoleSelection = () => {
                       </svg>
                     </div>
                     <span className="path-text">Continue as Admin</span>
-                    <span className="path-arrow">→</span>
-                  </div>
-
-                  {/* Partner Option */}
-                  <div
-                    className="path-option"
-                    onClick={handleContinueAsPartner}
-                  >
-                    <div className="path-icon">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                      >
-                        <path d="M19.5 6.75a3 3 0 00-3-3h-9a3 3 0 00-3 3v9a3 3 0 003 3h9a3 3 0 003-3v-9z" />
-                        <path d="M19.5 10.5v3a3 3 0 01-3 3h-9a3 3 0 01-3-3v-3h15z" />
-                        <path d="M6.75 7.5a.75.75 0 100-1.5.75.75 0 000 1.5z" />
-                        <path d="M9.75 7.5a.75.75 0 100-1.5.75.75 0 000 1.5z" />
-                      </svg>
-                    </div>
-                    <span className="path-text">Continue as Partner</span>
                     <span className="path-arrow">→</span>
                   </div>
 
