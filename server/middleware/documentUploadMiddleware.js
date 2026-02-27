@@ -10,15 +10,17 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // =====================================================
-// UPLOAD DIRECTORY
+// UPLOAD DIRECTORY - PATH AGNOSTIC (WORKS EVERYWHERE)
 // =====================================================
-export const DOCUMENT_UPLOAD_DIR =
-  process.env.DOCUMENT_UPLOAD_DIR ||
-  path.join(process.cwd(), "uploads", "documents");
+// Use path relative to server directory - this works on any machine!
+const DOCUMENT_UPLOAD_DIR = path.join(__dirname, "..", "uploads", "documents");
 
+// Create directory if it doesn't exist
 if (!fs.existsSync(DOCUMENT_UPLOAD_DIR)) {
   fs.mkdirSync(DOCUMENT_UPLOAD_DIR, { recursive: true });
   console.log("📂 Created document upload directory:", DOCUMENT_UPLOAD_DIR);
+} else {
+  console.log("📂 Using existing document upload directory:", DOCUMENT_UPLOAD_DIR);
 }
 
 // =====================================================
@@ -79,22 +81,20 @@ export const documentUpload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB (same as your education uploads)
+    fileSize: 10 * 1024 * 1024, // 10MB
   },
 });
 
 // =====================================================
-// FILE URL HELPER
+// FILE URL HELPER - PATH AGNOSTIC
 // =====================================================
 export const getDocumentFileUrl = (filename) => {
-  const base = process.env.UPLOAD_BASE_URL || "";
-  return base
-    ? `${base}/documents/${filename}`
-    : `/uploads/documents/${filename}`;
+  // Always return relative URL - works everywhere!
+  return `/uploads/documents/${filename}`;
 };
 
 // =====================================================
-// DELETE FILE
+// DELETE FILE - PATH AGNOSTIC
 // =====================================================
 export const deleteDocumentFile = (filename) => {
   if (!filename) return false;

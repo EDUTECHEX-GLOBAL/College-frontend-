@@ -347,13 +347,15 @@ const updateApplicationStatus = async (documentId, status) => {
   }
 };
 
-// ============ NEW EMAIL FUNCTIONS ============
+// ============ NEW EMAIL FUNCTIONS - UPDATED TO ACCEPT BOTH USER TYPES ============
 
 // @desc    Send single document via email
 const sendDocumentEmail = async (req, res) => {
   try {
-    // Check if user is authenticated (admin or process admin)
-    if (!req.user) {
+    // ✅ FIX: Check for BOTH req.user (admin) AND req.processAdmin (process-admin)
+    const authenticatedUser = req.user || req.processAdmin;
+    
+    if (!authenticatedUser) {
       return res.status(403).json({
         success: false,
         message: 'Access denied. Authentication required.'
@@ -428,8 +430,10 @@ const sendDocumentEmail = async (req, res) => {
 // @desc    Send all documents via email (bulk)
 const sendAllDocumentsEmail = async (req, res) => {
   try {
-    // Check if user is authenticated (admin or process admin)
-    if (!req.user) {
+    // ✅ FIX: Check for BOTH req.user (admin) AND req.processAdmin (process-admin)
+    const authenticatedUser = req.user || req.processAdmin;
+    
+    if (!authenticatedUser) {
       return res.status(403).json({
         success: false,
         message: 'Access denied. Authentication required.'
@@ -514,15 +518,17 @@ const sendAllDocumentsEmail = async (req, res) => {
 // @desc    Send document correction email manually
 const sendDocumentCorrectionRequest = async (req, res) => {
   try {
-    // Check if user is authenticated
-    if (!req.user) {
+    // ✅ FIX: Check for BOTH req.user (admin) AND req.processAdmin (process-admin)
+    const authenticatedUser = req.user || req.processAdmin;
+    
+    if (!authenticatedUser) {
       return res.status(403).json({
         success: false,
         message: 'Access denied. Authentication required.'
       });
     }
 
-    const adminInfo = req.user;
+    const adminInfo = authenticatedUser;
     const { reason, adminNotes, uploadedType, expectedType } = req.body;
     
     if (!reason) {
@@ -726,15 +732,17 @@ const sendDocumentCorrectionRequest = async (req, res) => {
 // @desc    Update document review status (Approve/Reject) - WITH EMAIL NOTIFICATIONS
 const updateDocumentReview = async (req, res) => {
   try {
-    // Check if user is authenticated
-    if (!req.user) {
+    // ✅ FIX: Check for BOTH req.user (admin) AND req.processAdmin (process-admin)
+    const authenticatedUser = req.user || req.processAdmin;
+    
+    if (!authenticatedUser) {
       return res.status(403).json({
         success: false,
         message: 'Access denied. Authentication required.'
       });
     }
 
-    const adminInfo = req.user;
+    const adminInfo = authenticatedUser;
     const { status, reviewNotes, reason, adminNotes } = req.body;
     
     if (!status || !['approved', 'rejected'].includes(status)) {
@@ -845,8 +853,10 @@ const updateDocumentReview = async (req, res) => {
 // @desc    Get applications with incomplete documents
 const getIncompleteApplications = async (req, res) => {
   try {
-    // Check if user is authenticated
-    if (!req.user) {
+    // ✅ FIX: Check for BOTH req.user (admin) AND req.processAdmin (process-admin)
+    const authenticatedUser = req.user || req.processAdmin;
+    
+    if (!authenticatedUser) {
       return res.status(403).json({
         success: false,
         message: 'Access denied. Authentication required.'
@@ -1589,18 +1599,23 @@ const getDocumentStats = async (req, res) => {
   }
 };
 
-// @desc    Get all student documents (Admin only) - UPDATED to use req.user
+// @desc    Get all student documents (Admin/Process Admin) - FIXED to accept both
 const getAllDocuments = async (req, res) => {
   try {
-    // Check if user is authenticated
-    if (!req.user) {
+    // ✅ FIX: Check for BOTH req.user (admin) AND req.processAdmin (process-admin)
+    const authenticatedUser = req.user || req.processAdmin;
+    
+    if (!authenticatedUser) {
       return res.status(403).json({
         success: false,
         message: 'Access denied. Authentication required.'
       });
     }
 
-    console.log('Admin fetching all documents...');
+    console.log('Admin/Process-Admin fetching all documents:', {
+      email: authenticatedUser.email,
+      role: authenticatedUser.role
+    });
 
     const {
       page = 1,
@@ -1660,7 +1675,7 @@ const getAllDocuments = async (req, res) => {
       .populate({
         path: 'applicationId',
         select: 'collegeName programName intakeYear status',
-        model: 'Application'
+        model: 'PersonalInfo'
       })
       .populate({
         path: 'reviewedBy',
@@ -1706,9 +1721,16 @@ const getAllDocuments = async (req, res) => {
       const documentTypeDisplay = formatDocumentType(doc.documentType);
       const statusDisplay = doc.reviewStatus || 'pending';
 
-      let downloadUrl = doc.fileUrl || '#';
-      if (downloadUrl.startsWith('/')) {
+      // ✅ FIX: Use storedFileName to construct the correct URL
+      let downloadUrl = '#';
+      if (doc.storedFileName) {
+        downloadUrl = `/uploads/documents/${doc.storedFileName}`;
         downloadUrl = `${process.env.BASE_URL || 'http://localhost:5000'}${downloadUrl}`;
+      } else if (doc.fileUrl) {
+        downloadUrl = doc.fileUrl;
+        if (downloadUrl.startsWith('/')) {
+          downloadUrl = `${process.env.BASE_URL || 'http://localhost:5000'}${downloadUrl}`;
+        }
       }
 
       return {
@@ -1728,6 +1750,7 @@ const getAllDocuments = async (req, res) => {
         fileSizeBytes: doc.fileSize,
         downloadUrl: downloadUrl,
         originalFileUrl: doc.fileUrl,
+        storedFileName: doc.storedFileName,
         uploadDate: formatDate(doc.createdAt),
         createdAt: doc.createdAt,
         reviewDate: doc.reviewDate ? formatDate(doc.reviewDate) : null,
@@ -1771,8 +1794,10 @@ const getAllDocuments = async (req, res) => {
 // @desc    Get document statistics for admin
 const getAdminDocumentStats = async (req, res) => {
   try {
-    // Check if user is authenticated
-    if (!req.user) {
+    // ✅ FIX: Check for BOTH req.user (admin) AND req.processAdmin (process-admin)
+    const authenticatedUser = req.user || req.processAdmin;
+    
+    if (!authenticatedUser) {
       return res.status(403).json({
         success: false,
         message: 'Access denied. Authentication required.'
@@ -1847,8 +1872,10 @@ const getAdminDocumentStats = async (req, res) => {
 // @desc    Get document by ID (Admin view)
 const getAdminDocument = async (req, res) => {
   try {
-    // Check if user is authenticated
-    if (!req.user) {
+    // ✅ FIX: Check for BOTH req.user (admin) AND req.processAdmin (process-admin)
+    const authenticatedUser = req.user || req.processAdmin;
+    
+    if (!authenticatedUser) {
       return res.status(403).json({
         success: false,
         message: 'Access denied. Authentication required.'
@@ -1884,8 +1911,10 @@ const getAdminDocument = async (req, res) => {
 // @desc    Test endpoint to check database connection
 const testAdminEndpoint = async (req, res) => {
   try {
-    // Check if user is authenticated
-    if (!req.user) {
+    // ✅ FIX: Check for BOTH req.user (admin) AND req.processAdmin (process-admin)
+    const authenticatedUser = req.user || req.processAdmin;
+    
+    if (!authenticatedUser) {
       return res.status(403).json({
         success: false,
         message: 'Access denied. Authentication required.'
@@ -1898,7 +1927,7 @@ const testAdminEndpoint = async (req, res) => {
     res.json({
       success: true,
       message: 'Admin endpoint is working',
-      adminEmail: req.user?.email,
+      adminEmail: authenticatedUser?.email,
       totalDocumentsInDatabase: totalDocs,
       sampleDocuments: sampleDocs,
       databaseConnected: true

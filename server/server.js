@@ -3,6 +3,8 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import path from "path";
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 import connectDB from "./config/db.js";
 import accountRoutes from "./routes/accountRoutes.js";
 import educationRoutes from "./routes/educationRoutes.js";
@@ -52,6 +54,10 @@ dotenv.config();
 // Initialize
 const app = express();
 
+// Get __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 // Connect to DB
 connectDB();
 
@@ -68,7 +74,7 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-// Request logging middleware - MOVED UP FOR DEBUGGING
+// Request logging middleware
 app.use((req, res, next) => {
   console.log(`\n📨 ${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
   console.log('Headers:', {
@@ -79,16 +85,51 @@ app.use((req, res, next) => {
 });
 
 /* ======================================================
-   SERVE STATIC FILES
+   SERVE STATIC FILES - PATH AGNOSTIC (WORKS EVERYWHERE)
    ====================================================== */
-const logosPath = path.join(process.cwd(), "public", "logos");
-app.use("/logos", express.static(logosPath));
+// Serve logos
+const logosPath = path.join(__dirname, "public", "logos");
+if (!fs.existsSync(logosPath)) {
+  const altLogosPath = path.join(process.cwd(), "public", "logos");
+  if (fs.existsSync(altLogosPath)) {
+    app.use("/logos", express.static(altLogosPath));
+    console.log('📁 Logos found at:', altLogosPath);
+  }
+} else {
+  app.use("/logos", express.static(logosPath));
+  console.log('📁 Logos found at:', logosPath);
+}
 
-const uploadStaticPath = path.join(process.cwd(), "uploads");
+// Serve uploads - always relative to server directory
+const uploadStaticPath = path.join(__dirname, "uploads");
 app.use("/uploads", express.static(uploadStaticPath));
+console.log(`📁 Serving uploads from: ${uploadStaticPath}`);
+
+// Create uploads/documents folder if it doesn't exist
+const documentsPath = path.join(uploadStaticPath, 'documents');
+if (!fs.existsSync(documentsPath)) {
+  fs.mkdirSync(documentsPath, { recursive: true });
+  console.log('📁 Created documents folder at:', documentsPath);
+}
+
+// Optional debug endpoint (can be removed in production)
+app.get('/api/debug/file/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(uploadStaticPath, 'documents', filename);
+  
+  const exists = fs.existsSync(filePath);
+  
+  res.json({
+    filename,
+    filePath,
+    exists,
+    __dirname,
+    cwd: process.cwd()
+  });
+});
 
 /* ======================================================
-   DEBUG ENDPOINTS (Place these BEFORE other routes)
+   DEBUG ENDPOINTS
    ====================================================== */
 app.get('/api/test', (req, res) => {
   res.json({ 
@@ -123,7 +164,6 @@ app.get('/api/routes', (req, res) => {
   
   extractRoutes(app._router.stack);
   
-  // Filter to show only relevant routes
   const filteredRoutes = routes.filter(r => 
     r.path.includes('/api/user') || 
     r.path === '/' || 
@@ -139,22 +179,20 @@ app.get('/api/routes', (req, res) => {
 });
 
 /* ======================================================
-   MOUNT USER ROUTES FIRST (Critical for /api/user/*)
+   MOUNT USER ROUTES FIRST
    ====================================================== */
 console.log('📌 Mounting user routes at /api/user...');
 app.use("/api/user", userProfileRoutes);
 console.log('✅ User routes mounted successfully');
 
 /* ======================================================
-   MOUNT PROCESS ADMIN ROUTES (CRITICAL - Order matters!)
+   MOUNT PROCESS ADMIN ROUTES
    ====================================================== */
 console.log('📌 Mounting process admin routes...');
 
-// Mount process admin document routes FIRST (more specific)
 app.use("/api/process-admin/documents", processAdminDocumentRoutes);
 console.log('✅ Process admin document routes mounted at /api/process-admin/documents');
 
-// Mount main process admin routes SECOND (less specific)
 app.use("/api/process-admin", processAdminRoutes);
 console.log('✅ Process admin routes mounted at /api/process-admin');
 
@@ -310,6 +348,9 @@ app.listen(PORT, () => {
    ✅ Environment: ${process.env.NODE_ENV || "development"}
    ✅ URL: http://localhost:${PORT}
 
+📁 Static Files:
+   ✅ Uploads path: ${uploadStaticPath}
+
 🔐 Process Admin Routes:
    ✅ GET  /api/process-admin/documents/all
    ✅ GET  /api/process-admin/documents/stats
@@ -334,6 +375,7 @@ app.listen(PORT, () => {
 🔧 Debug Endpoints:
    ✅ GET  /api/test
    ✅ GET  /api/routes
+   ✅ GET  /api/debug/file/:filename
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 `);
