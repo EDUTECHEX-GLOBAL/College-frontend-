@@ -1,30 +1,23 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./ApplicationFirstEducation.css";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
 
-// ─────────────────────────────────────────────────────────────────
-//  NOTE: onInputChange prop ADDED so this component can write
-//  education data into the central formData used by Resume.js
-// ─────────────────────────────────────────────────────────────────
 const ApplicationFirstEducation = ({ onInputChange }) => {
-  const navigate    = useNavigate();
-  const location    = useLocation();
-  const token       = localStorage.getItem("token");
+  const navigate   = useNavigate();
+  const location   = useLocation();
+  const token      = localStorage.getItem("token");
 
   const [isLoading,            setIsLoading]            = useState(true);
   const [isSubmitting,         setIsSubmitting]         = useState(false);
   const [error,                setError]                = useState("");
   const [completionPercentage, setCompletionPercentage] = useState(66);
 
-  // Was the student enrolled before?
-  const [wasEnrolled,          setWasEnrolled]          = useState(null);
-  // Is the student currently enrolled elsewhere?
-  const [isCurrentlyEnrolled,  setIsCurrentlyEnrolled]  = useState(null);
+  const [wasEnrolled,         setWasEnrolled]         = useState(null);
+  const [isCurrentlyEnrolled, setIsCurrentlyEnrolled] = useState(null);
 
-  // Education entries (supports multiple)
   const [educationEntries, setEducationEntries] = useState([
     {
       id:                            crypto.randomUUID ? crypto.randomUUID() : Date.now() + 1,
@@ -40,30 +33,18 @@ const ApplicationFirstEducation = ({ onInputChange }) => {
       startDate:                     "",
       endDate:                       "",
       isCurrentEnrollment:           false,
-    }
+    },
   ]);
 
   // ─────────────────────────────────────────────────────────────
-  // HELPER — Map education fields → Resume.js field names
-  // Always uses the FIRST entry as the "primary" qualification.
-  //
-  //  degree                        → qualificationLevel
-  //  institutionName               → institutionName
-  //  specialisation                → boardUniversity
-  //  countryOfInitialRegistration  → countryOfStudy
-  //  startDate (year part)         → startYear
-  //  endDate   (year part)         → endYear
-  //  remarks                       → score
-  //  standardStudyPeriod           → standardStudyPeriod
-  //  wasEnrolled                   → wasEnrolled
-  //  isCurrentlyEnrolled           → isCurrentlyEnrolled
+  // FIX 3: useEffect-based resume mapping instead of calling
+  // onInputChange inside setState callbacks (avoids the
+  // "Cannot update a component while rendering" warning)
   // ─────────────────────────────────────────────────────────────
-  const mapToResumeFields = (entries, enrolled) => {
-    // Only map if onInputChange exists (prop provided by parent)
+  useEffect(() => {
     if (!onInputChange) return;
 
-    // Use the first entry as the primary education for Resume
-    const primary = entries && entries.length > 0 ? entries[0] : {};
+    const primary = educationEntries.length > 0 ? educationEntries[0] : {};
 
     onInputChange("qualificationLevel",  primary.degree                       || "");
     onInputChange("institutionName",     primary.institutionName              || "");
@@ -75,17 +56,13 @@ const ApplicationFirstEducation = ({ onInputChange }) => {
     onInputChange("endYear",             primary.endDate
                                            ? primary.endDate.split("-")[0]
                                            : "");
-    onInputChange("score",               primary.remarks                      || "");
-    onInputChange("standardStudyPeriod", primary.standardStudyPeriod          || "");
-    onInputChange("educationCity",       primary.city                         || "");
-
-    // Additional context fields
-    onInputChange("wasEnrolled",         enrolled);
+    onInputChange("score",               primary.remarks           || "");
+    onInputChange("standardStudyPeriod", primary.standardStudyPeriod || "");
+    onInputChange("educationCity",       primary.city              || "");
+    onInputChange("wasEnrolled",         wasEnrolled);
     onInputChange("isCurrentlyEnrolled", isCurrentlyEnrolled);
-
-    // Store all entries for reference
-    onInputChange("educationEntries",    entries);
-  };
+    onInputChange("educationEntries",    educationEntries);
+  }, [educationEntries, wasEnrolled, isCurrentlyEnrolled]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ─────────────────────────────────────────────────────────────
   // FETCH education data on mount
@@ -97,7 +74,7 @@ const ApplicationFirstEducation = ({ onInputChange }) => {
       setError("No authentication token found");
       setIsLoading(false);
     }
-  }, [token]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchEducationData = async () => {
     try {
@@ -115,22 +92,25 @@ const ApplicationFirstEducation = ({ onInputChange }) => {
         if (data.educationEntries && data.educationEntries.length > 0) {
           const entriesWithIds = data.educationEntries.map((entry, index) => ({
             ...entry,
-            id: entry.id || (crypto.randomUUID ? crypto.randomUUID() : Date.now() + index)
+            // FIX 2: ensure startDate/endDate are never null (causes controlled input warning)
+            startDate: entry.startDate
+              ? new Date(entry.startDate).toISOString().split("T")[0]
+              : "",
+            endDate: entry.endDate
+              ? new Date(entry.endDate).toISOString().split("T")[0]
+              : "",
+            id: entry.id || (crypto.randomUUID ? crypto.randomUUID() : Date.now() + index),
           }));
           setEducationEntries(entriesWithIds);
-
-          // ── RESUME DATA MAPPING on load ──────────────────────
-          mapToResumeFields(entriesWithIds, data.wasEnrolled);
-          // ────────────────────────────────────────────────────
         }
 
         if (data.completionPercentage) {
           setCompletionPercentage(data.completionPercentage);
         }
       }
-    } catch (error) {
-      console.error("Fetch education error:", error);
-      if (error.response?.status !== 404) {
+    } catch (err) {
+      console.error("Fetch education error:", err);
+      if (err.response?.status !== 404) {
         setError("Failed to load education data");
       }
     } finally {
@@ -140,21 +120,14 @@ const ApplicationFirstEducation = ({ onInputChange }) => {
 
   // ─────────────────────────────────────────────────────────────
   // HANDLE ENTRY FIELD CHANGE
-  // Also does live Resume mapping on every keystroke/selection
+  // FIX 3: No longer calls onInputChange inside setState —
+  // the useEffect above handles that automatically.
   // ─────────────────────────────────────────────────────────────
-  const handleEntryChange = (id, field, value) => {
-    setEducationEntries(prev => {
-      const updated = prev.map(entry =>
-        entry.id === id ? { ...entry, [field]: value } : entry
-      );
-
-      // ── RESUME DATA MAPPING — live update as student types ──
-      mapToResumeFields(updated, wasEnrolled);
-      // ────────────────────────────────────────────────────────
-
-      return updated;
-    });
-  };
+  const handleEntryChange = useCallback((id, field, value) => {
+    setEducationEntries(prev =>
+      prev.map(entry => entry.id === id ? { ...entry, [field]: value } : entry)
+    );
+  }, []);
 
   // ─────────────────────────────────────────────────────────────
   // ADD / REMOVE ENTRY
@@ -177,18 +150,13 @@ const ApplicationFirstEducation = ({ onInputChange }) => {
         startDate:                     "",
         endDate:                       "",
         isCurrentEnrollment:           false,
-      }
+      },
     ]);
   };
 
   const removeEntry = (id) => {
     if (educationEntries.length > 1) {
-      setEducationEntries(prev => {
-        const updated = prev.filter(entry => entry.id !== id);
-        // Re-map after removal so Resume reflects current first entry
-        mapToResumeFields(updated, wasEnrolled);
-        return updated;
-      });
+      setEducationEntries(prev => prev.filter(entry => entry.id !== id));
     }
   };
 
@@ -244,6 +212,7 @@ const ApplicationFirstEducation = ({ onInputChange }) => {
     setError("");
 
     try {
+      // Strip the local-only "id" field before sending to backend
       const entriesToSave = educationEntries.map(({ id, ...rest }) => rest);
 
       const payload = {
@@ -265,16 +234,11 @@ const ApplicationFirstEducation = ({ onInputChange }) => {
 
       if (res.data.success) {
         setCompletionPercentage(75);
-
-        // ── RESUME DATA MAPPING after successful save ────────
-        mapToResumeFields(educationEntries, wasEnrolled);
-        // ────────────────────────────────────────────────────
-
         return true;
       }
-    } catch (error) {
-      console.error("❌ Save education error:", error.response?.data || error.message);
-      setError(error.response?.data?.message || "Failed to save education data");
+    } catch (err) {
+      console.error("❌ Save education error:", err.response?.data || err.message);
+      setError(err.response?.data?.message || "Failed to save education data");
       alert("Failed to save education information. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -351,7 +315,7 @@ const ApplicationFirstEducation = ({ onInputChange }) => {
           "Documents",
           "Special Needs",
           "Declaration",
-          "Review"
+          "Review",
         ].map((step, index) => {
           let stepClass = "step-item";
           if (index < 3) stepClass += " completed";
@@ -402,10 +366,7 @@ const ApplicationFirstEducation = ({ onInputChange }) => {
                     name="wasEnrolled"
                     value="yes"
                     checked={wasEnrolled === true}
-                    onChange={() => {
-                      setWasEnrolled(true);
-                      if (onInputChange) onInputChange("wasEnrolled", true);
-                    }}
+                    onChange={() => setWasEnrolled(true)}
                     disabled={isSubmitting}
                   />
                   <span className="radio-text">Yes</span>
@@ -418,9 +379,8 @@ const ApplicationFirstEducation = ({ onInputChange }) => {
                     checked={wasEnrolled === false}
                     onChange={() => {
                       setWasEnrolled(false);
-                      if (onInputChange) onInputChange("wasEnrolled", false);
-
-                      const emptyEntry = {
+                      // Reset entries to a single blank entry
+                      setEducationEntries([{
                         id:                            crypto.randomUUID ? crypto.randomUUID() : Date.now() + 1,
                         countryOfInitialRegistration:  "",
                         semesterOfInitialRegistration: "",
@@ -434,20 +394,7 @@ const ApplicationFirstEducation = ({ onInputChange }) => {
                         startDate:                     "",
                         endDate:                       "",
                         isCurrentEnrollment:           false,
-                      };
-                      setEducationEntries([emptyEntry]);
-
-                      // Clear Resume education fields when "No" selected
-                      if (onInputChange) {
-                        onInputChange("qualificationLevel",  "");
-                        onInputChange("institutionName",     "");
-                        onInputChange("boardUniversity",     "");
-                        onInputChange("countryOfStudy",      "");
-                        onInputChange("startYear",           "");
-                        onInputChange("endYear",             "");
-                        onInputChange("score",               "");
-                        onInputChange("educationEntries",    []);
-                      }
+                      }]);
                     }}
                     disabled={isSubmitting}
                   />
@@ -535,7 +482,7 @@ const ApplicationFirstEducation = ({ onInputChange }) => {
                       </select>
                     </div>
 
-                    {/* Degree */}
+                    {/* FIX 1: Degree values now match schema enum (lowercase) */}
                     <div className="input-group">
                       <label className="input-label required">Degree</label>
                       <select
@@ -545,10 +492,10 @@ const ApplicationFirstEducation = ({ onInputChange }) => {
                         disabled={isSubmitting}
                       >
                         <option value="">Select</option>
-                        <option value="Bachelor's Degree">Bachelor</option>
-                        <option value="Master's Degree">Master</option>
-                        <option value="Diploma">Diploma</option>
-                        <option value="PhD">PhD</option>
+                        <option value="bachelor">Bachelor</option>
+                        <option value="master">Master</option>
+                        <option value="diploma">Diploma</option>
+                        <option value="phd">PhD</option>
                       </select>
                     </div>
 
@@ -593,7 +540,7 @@ const ApplicationFirstEducation = ({ onInputChange }) => {
                       <input
                         type="text"
                         className="input-field"
-                        value={entry.institutionName}
+                        value={entry.institutionName || ""}
                         onChange={(e) => handleEntryChange(entry.id, "institutionName", e.target.value)}
                         placeholder="Enter institution name"
                         disabled={isSubmitting}
@@ -606,32 +553,31 @@ const ApplicationFirstEducation = ({ onInputChange }) => {
                       <input
                         type="text"
                         className="input-field"
-                        value={entry.city}
+                        value={entry.city || ""}
                         onChange={(e) => handleEntryChange(entry.id, "city", e.target.value)}
                         placeholder="Enter city"
                         disabled={isSubmitting}
                       />
                     </div>
 
-                    {/* Start Date */}
+                    {/* FIX 2: startDate/endDate never null — always string */}
                     <div className="input-group">
                       <label className="input-label">Start Date</label>
                       <input
                         type="date"
                         className="input-field"
-                        value={entry.startDate}
+                        value={entry.startDate || ""}
                         onChange={(e) => handleEntryChange(entry.id, "startDate", e.target.value)}
                         disabled={isSubmitting}
                       />
                     </div>
 
-                    {/* End Date */}
                     <div className="input-group">
                       <label className="input-label">End Date</label>
                       <input
                         type="date"
                         className="input-field"
-                        value={entry.endDate}
+                        value={entry.endDate || ""}
                         onChange={(e) => handleEntryChange(entry.id, "endDate", e.target.value)}
                         disabled={isSubmitting}
                       />
@@ -642,7 +588,7 @@ const ApplicationFirstEducation = ({ onInputChange }) => {
                       <label className="input-label">Remarks / Score</label>
                       <textarea
                         className="input-textarea"
-                        value={entry.remarks}
+                        value={entry.remarks || ""}
                         onChange={(e) => handleEntryChange(entry.id, "remarks", e.target.value)}
                         placeholder="Enter remarks, score or grade (e.g. 78%, First Class)"
                         rows="3"
@@ -684,10 +630,7 @@ const ApplicationFirstEducation = ({ onInputChange }) => {
                     name="currentlyEnrolled"
                     value="yes"
                     checked={isCurrentlyEnrolled === true}
-                    onChange={() => {
-                      setIsCurrentlyEnrolled(true);
-                      if (onInputChange) onInputChange("isCurrentlyEnrolled", true);
-                    }}
+                    onChange={() => setIsCurrentlyEnrolled(true)}
                     disabled={isSubmitting}
                   />
                   <span className="radio-text">Yes</span>
@@ -698,10 +641,7 @@ const ApplicationFirstEducation = ({ onInputChange }) => {
                     name="currentlyEnrolled"
                     value="no"
                     checked={isCurrentlyEnrolled === false}
-                    onChange={() => {
-                      setIsCurrentlyEnrolled(false);
-                      if (onInputChange) onInputChange("isCurrentlyEnrolled", false);
-                    }}
+                    onChange={() => setIsCurrentlyEnrolled(false)}
                     disabled={isSubmitting}
                   />
                   <span className="radio-text">No</span>

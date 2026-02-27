@@ -48,6 +48,7 @@ import applicationSpecialNeedRoutes from "./routes/applicationSpecialNeedRoutes.
 import processAdminRoutes from "./routes/processAdminRoutes.js";
 import processAdminDocumentRoutes from "./routes/processAdminDocumentRoutes.js";
 import documentRoutes from "./routes/documentRoutes.js";
+import resumeRoutes from "./routes/resumeRoutes.js";
 
 dotenv.config();
 
@@ -217,6 +218,7 @@ app.use("/api/academics", firstAcademicRoutes);
 app.use("/api/high-school-curriculum", highSchoolCurriculumRoutes);
 app.use("/api/first-activities", firstactivitiesRoutes);
 app.use("/api/application/special-needs", applicationSpecialNeedRoutes);
+app.use("/api/application/resume", resumeRoutes);
 app.use("/api/contacts", firstContactsRoutes);
 app.use("/api/family", firstFamilyRoutes);
 app.use("/api/residency", firstResidencyRoutes);

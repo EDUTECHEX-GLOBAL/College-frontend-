@@ -1,5 +1,6 @@
 // src/components/Resume.js
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import './Resume.css';
 
 // ─────────────────────────────────────────────────────────────────
@@ -88,90 +89,150 @@ const SkillBar = ({ label, pct }) => (
 );
 
 // ─────────────────────────────────────────────────────────────────
-//  Main Resume Component
-//
-//  Props
-//    formData   : object  — all fields from the application forms
-//    onDownload : fn(cv)  — called when student clicks Download PDF
-//                          so Documents section can auto-attach it
+//  Main Resume Component — fetches data via JWT token
 // ─────────────────────────────────────────────────────────────────
-const Resume = ({ formData = {}, onDownload }) => {
-
-  // ── Local editable copy — pre-filled from formData ───────────────
-  const [cv, setCv] = useState({
-    // Personal
-    title:                  formData.title                  || '',
-    firstName:              formData.firstName              || '',
-    lastName:               formData.lastName               || '',
-    email:                  formData.email                  || '',
-    mobile:                 formData.mobile                 || '',
-    dateOfBirth:            formData.dateOfBirth            || '',
-    placeOfBirth:           formData.placeOfBirth           || '',
-    countryOfBirth:         formData.countryOfBirth         || '',
-    citizenship:            formData.citizenship            || '',
-    gender:                 formData.gender                 || '',
-    correspondenceLanguage: formData.correspondenceLanguage || '',
-    isEUCitizen:            formData.isEUCitizen,
-    needVisa:               formData.needVisa               || '',
-
-    // Passport
-    passportNumber:     formData.passportNumber     || '',
-    passportExpiryDate: formData.passportExpiryDate || '',
-    issuingCountry:     formData.issuingCountry     || '',
-
-    // Address (handles both naming conventions)
-    currentAddress: formData.currentAddress || formData.streetAndHouseNumber || '',
-    city:           formData.city           || '',
-    state:          formData.state          || formData.stateProvince         || '',
-    postalCode:     formData.postalCode     || formData.postcode              || '',
-    country:        formData.country        || '',
-
-    // Education
-    qualificationLevel: formData.qualificationLevel || formData.degree         || '',
-    institutionName:    formData.institutionName    || '',
-    boardUniversity:    formData.boardUniversity    || formData.specialisation  || '',
-    countryOfStudy:     formData.countryOfStudy     || '',
-    startYear:          formData.startYear          || '',
-    endYear:            formData.endYear            || '',
-    score:              formData.score              || formData.remarks         || '',
-    resultStatus:       formData.resultStatus       || '',
-    gradingSystem:      formData.gradingSystem       || '',
-
-    // Language / EQHE
-    englishTestType: formData.englishTestType || formData.eqheOriginalTitle || '',
-    testScore:       formData.testScore       || '',
-    testDate:        formData.testDate        || formData.eqheDate           || '',
-    listeningScore:  formData.listeningScore  || '',
-    readingScore:    formData.readingScore    || '',
-    writingScore:    formData.writingScore    || '',
-    speakingScore:   formData.speakingScore   || '',
-
-    // Course
-    selectedCountry:    formData.selectedCountry    || '',
-    selectedUniversity: formData.selectedUniversity || '',
-    campus:             formData.campus             || '',
-    courseName:         formData.courseName         || '',
-    programLevel:       formData.programLevel       || '',
-    studyMode:          formData.studyMode          || '',
-    intakeMonth:        formData.intakeMonth        || '',
-    intakeYear:         String(formData.intakeYear  || ''),
-    secondPreference:   formData.secondPreference   || '',
-    thirdPreference:    formData.thirdPreference    || '',
-
-    // Custom summary (student can personalise)
-    customSummary: '',
-  });
-
+const Resume = ({ onDownload }) => {
+  const [cv, setCv]           = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaved,   setIsSaved]   = useState(false);
+  const [loading,   setLoading]   = useState(true);
+  const [error,     setError]     = useState(null);
 
-  // Single field updater
+  // ── Fetch resume from API using JWT ──────────────────────────────
+  useEffect(() => {
+    const fetchResume = async () => {
+      try {
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+          setError('No authentication token found. Please sign in.');
+          setLoading(false);
+          return;
+        }
+
+        const res = await axios.get('http://localhost:5000/api/application/resume', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (res.data?.success) {
+          const r = res.data.resume;
+
+          // Map API response → local cv state
+          // API returns: firstName, lastName, email, mobile,
+          //              permanentAddress, education{degree,institutionName},
+          //              language{eqheOriginalTitle,eqheCountry},
+          //              specialNeeds{hasSpecialNeeds}
+          setCv({
+            // Personal
+            firstName:    r.firstName    || '',
+            lastName:     r.lastName     || '',
+            email:        r.email        || '',
+            mobile:       r.mobile       || '',
+
+            // Address — API returns permanentAddress as a single string
+            currentAddress: r.permanentAddress || '',
+            city:           '',
+            state:          '',
+            postalCode:     '',
+            country:        '',
+
+            // Education (nested object from API)
+            qualificationLevel: r.education?.degree           || '',
+            institutionName:    r.education?.institutionName  || '',
+            boardUniversity:    '',
+            countryOfStudy:     '',
+            startYear:          '',
+            endYear:            '',
+            score:              '',
+            resultStatus:       '',
+            gradingSystem:      '',
+
+            // Language / EQHE (nested object from API)
+            englishTestType: r.language?.eqheOriginalTitle || '',
+            testScore:       '',
+            testDate:        '',
+            listeningScore:  '',
+            readingScore:    '',
+            writingScore:    '',
+            speakingScore:   '',
+            eqheCountry:     r.language?.eqheCountry || '',
+
+            // Special Needs
+            hasSpecialNeeds: r.specialNeeds?.hasSpecialNeeds || 'no',
+
+            // Passport (not in API yet, editable manually)
+            passportNumber:     '',
+            passportExpiryDate: '',
+            issuingCountry:     '',
+            needVisa:           '',
+
+            // Course (not in API yet, editable manually)
+            selectedCountry:    '',
+            selectedUniversity: '',
+            campus:             '',
+            courseName:         '',
+            programLevel:       '',
+            studyMode:          '',
+            intakeMonth:        '',
+            intakeYear:         '',
+            secondPreference:   '',
+            thirdPreference:    '',
+
+            // Other
+            dateOfBirth:            '',
+            placeOfBirth:           '',
+            countryOfBirth:         '',
+            citizenship:            '',
+            gender:                 '',
+            correspondenceLanguage: '',
+            isEUCitizen:            false,
+
+            // Custom summary (student can personalise)
+            customSummary: '',
+          });
+        } else {
+          setError('Resume data could not be loaded.');
+        }
+      } catch (err) {
+        console.error('❌ Resume fetch failed', err);
+        setError('Failed to load resume. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchResume();
+  }, []);
+
+  // ── Loading / Error states ────────────────────────────────────────
+  if (loading) {
+    return (
+      <div className="resume-wrapper">
+        <div className="resume-loading">
+          <div className="loading-spinner" />
+          <p>Loading your CV…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !cv) {
+    return (
+      <div className="resume-wrapper">
+        <div className="resume-error">
+          <p>⚠️ {error || 'No resume data found.'}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── State helpers ─────────────────────────────────────────────────
   const update = (field) => (value) => setCv(prev => ({ ...prev, [field]: value }));
 
   // Avatar initials
   const initials = `${(cv.firstName || 'A')[0]}${(cv.lastName || 'S')[0]}`.toUpperCase();
 
-  // Skill bars (only shown when scores exist)
+  // Skill bars
   const ieltsBands = [
     { label: `Listening  ${cv.listeningScore}`, pct: (parseFloat(cv.listeningScore) / 9) * 100 },
     { label: `Reading    ${cv.readingScore}`,   pct: (parseFloat(cv.readingScore)   / 9) * 100 },
@@ -183,11 +244,10 @@ const Resume = ({ formData = {}, onDownload }) => {
   // Auto-generated summary fallback
   const autoSummary =
     `Motivated and academically accomplished applicant from ${cv.institutionName || 'my institution'}, ` +
-    `${cv.countryOfStudy || ''}, holding a ${cv.qualificationLevel || 'degree'}` +
+    `${cv.countryOfStudy || cv.eqheCountry || ''}, holding a ${cv.qualificationLevel || 'degree'}` +
     `${cv.score ? ` with a score of ${cv.score}` : ''}. ` +
     `Currently applying for ${cv.courseName || 'the selected course'} at ` +
-    `${cv.selectedUniversity || 'my chosen university'}, ${cv.selectedCountry || ''} ` +
-    `for the ${cv.intakeMonth || ''} ${cv.intakeYear || ''} intake. ` +
+    `${cv.selectedUniversity || 'my chosen university'}${cv.selectedCountry ? ', ' + cv.selectedCountry : ''}. ` +
     `Strong academic background with ${cv.englishTestType || 'English qualification'} ` +
     `${cv.testScore ? `overall score of ${cv.testScore}` : 'proficiency'}. ` +
     `Passionate, disciplined, and eager to contribute to a diverse academic environment.`;
@@ -201,13 +261,13 @@ const Resume = ({ formData = {}, onDownload }) => {
   };
 
   const handleDownload = () => {
-    if (onDownload) onDownload(cv);   // notify parent to attach CV to documents
+    if (onDownload) onDownload(cv);
     window.print();
   };
 
-  // ─────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────
   // RENDER
-  // ─────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────
   return (
     <div className="resume-wrapper">
 
@@ -268,7 +328,7 @@ const Resume = ({ formData = {}, onDownload }) => {
               <EditableContactRow icon="📱" value={cv.mobile}         onChange={update('mobile')}         isEditing={isEditing} placeholder="Mobile number" />
               <EditableContactRow icon="📍" value={cv.currentAddress} onChange={update('currentAddress')} isEditing={isEditing} placeholder="Street address" />
 
-              {/* City/State/Postcode — combined display, split edit */}
+              {/* City/State/Postcode */}
               {isEditing ? (
                 <div className="address-edit-row">
                   <input className="editable-input mini" value={cv.city}       onChange={(e) => update('city')(e.target.value)}       placeholder="City"     />
@@ -307,7 +367,10 @@ const Resume = ({ formData = {}, onDownload }) => {
               </div>
               <div className="contact-row">
                 <span className="contact-icon">✈️</span>
-                <span className="contact-text">Visa Required: {cv.needVisa || 'N/A'}</span>
+                {isEditing
+                  ? <input className="editable-input" value={cv.needVisa} onChange={(e) => update('needVisa')(e.target.value)} placeholder="Visa Required?" />
+                  : <span className="contact-text">Visa Required: {cv.needVisa || 'N/A'}</span>
+                }
               </div>
 
               {/* Education summary */}
@@ -324,6 +387,9 @@ const Resume = ({ formData = {}, onDownload }) => {
               {/* EQHE / English */}
               <SideLabel title="Entrance Qualification" />
               <EditableField value={cv.englishTestType} onChange={update('englishTestType')} isEditing={isEditing} className="sidebar-eqhe-title" placeholder="EQHE Title" />
+              {cv.eqheCountry && (
+                <div className="sidebar-eqhe-date">Country: {cv.eqheCountry}</div>
+              )}
               <div className="sidebar-eqhe-date">Date: {formatDate(cv.testDate)}</div>
               {hasScores && (
                 <>
@@ -366,7 +432,7 @@ const Resume = ({ formData = {}, onDownload }) => {
             </div>
             <div className="main-role">
               <EditableField value={cv.courseName}         onChange={update('courseName')}         isEditing={isEditing} placeholder="Course Name" />
-              &nbsp;·&nbsp;
+              {cv.courseName && cv.selectedUniversity && <>&nbsp;·&nbsp;</>}
               <EditableField value={cv.selectedUniversity} onChange={update('selectedUniversity')} isEditing={isEditing} placeholder="University" />
             </div>
 
@@ -400,10 +466,8 @@ const Resume = ({ formData = {}, onDownload }) => {
               </div>
               <div className="exp-period">
                 <EditableField value={cv.programLevel}    onChange={update('programLevel')}    isEditing={isEditing} placeholder="Level" />
-                &nbsp;·&nbsp;
-                <EditableField value={cv.studyMode}       onChange={update('studyMode')}       isEditing={isEditing} placeholder="Study Mode" />
-                &nbsp;·&nbsp;
-                <EditableField value={cv.selectedCountry} onChange={update('selectedCountry')} isEditing={isEditing} placeholder="Country" />
+                {cv.studyMode && <>&nbsp;·&nbsp;<EditableField value={cv.studyMode} onChange={update('studyMode')} isEditing={isEditing} placeholder="Study Mode" /></>}
+                {cv.selectedCountry && <>&nbsp;·&nbsp;<EditableField value={cv.selectedCountry} onChange={update('selectedCountry')} isEditing={isEditing} placeholder="Country" /></>}
               </div>
               <div className="exp-bullet">
                 Intake:&nbsp;
@@ -442,19 +506,24 @@ const Resume = ({ formData = {}, onDownload }) => {
               </div>
               <div className="exp-period">
                 <EditableField value={cv.startYear}      onChange={update('startYear')}      isEditing={isEditing} placeholder="Start Year" />
-                &nbsp;–&nbsp;
+                {' – '}
                 <EditableField value={cv.endYear}        onChange={update('endYear')}        isEditing={isEditing} placeholder="End Year" />
-                &nbsp;·&nbsp;
-                <EditableField value={cv.countryOfStudy} onChange={update('countryOfStudy')} isEditing={isEditing} placeholder="Country" />
+                {cv.countryOfStudy && (
+                  <>&nbsp;·&nbsp;<EditableField value={cv.countryOfStudy} onChange={update('countryOfStudy')} isEditing={isEditing} placeholder="Country" /></>
+                )}
               </div>
-              <div className="exp-bullet">
-                Awarding Body:&nbsp;
-                <EditableField value={cv.boardUniversity} onChange={update('boardUniversity')} isEditing={isEditing} placeholder="Board / University" />
-              </div>
-              <div className="exp-bullet">
-                Score / Grade:&nbsp;
-                <EditableField value={cv.score} onChange={update('score')} isEditing={isEditing} placeholder="e.g. 78%, First Class" />
-              </div>
+              {(cv.boardUniversity || isEditing) && (
+                <div className="exp-bullet">
+                  Awarding Body:&nbsp;
+                  <EditableField value={cv.boardUniversity} onChange={update('boardUniversity')} isEditing={isEditing} placeholder="Board / University" />
+                </div>
+              )}
+              {(cv.score || isEditing) && (
+                <div className="exp-bullet">
+                  Score / Grade:&nbsp;
+                  <EditableField value={cv.score} onChange={update('score')} isEditing={isEditing} placeholder="e.g. 78%, First Class" />
+                </div>
+              )}
             </div>
 
             {/* EQHE */}
@@ -463,8 +532,11 @@ const Resume = ({ formData = {}, onDownload }) => {
               <div className="exp-title">
                 <EditableField value={cv.englishTestType} onChange={update('englishTestType')} isEditing={isEditing} placeholder="Qualification Title" />
                 {cv.testScore && ` — Score ${cv.testScore}`}
+                {cv.eqheCountry && ` (${cv.eqheCountry})`}
               </div>
-              <div className="exp-period">Test Date: {formatDate(cv.testDate)}</div>
+              {cv.testDate && (
+                <div className="exp-period">Test Date: {formatDate(cv.testDate)}</div>
+              )}
               {hasScores && (
                 <div className="score-boxes-row">
                   {[
@@ -486,7 +558,7 @@ const Resume = ({ formData = {}, onDownload }) => {
             <SectionHeader title="Personal Information" />
             <div className="personal-info-grid">
               {[
-                ['Date of Birth',     'dateOfBirth',            false, true],   // [label, field, editable, dateFormat]
+                ['Date of Birth',     'dateOfBirth',            false, true ],
                 ['Gender',            'gender',                 true,  false],
                 ['Nationality',       'citizenship',            true,  false],
                 ['Place of Birth',    'placeOfBirth',           true,  false],
@@ -514,6 +586,12 @@ const Resume = ({ formData = {}, onDownload }) => {
                 <span className="personal-info-label">EU Citizen: </span>
                 <span className="personal-info-value">{cv.isEUCitizen ? 'Yes' : 'No'}</span>
               </div>
+              {cv.hasSpecialNeeds !== 'no' && cv.hasSpecialNeeds && (
+                <div className="personal-info-row">
+                  <span className="personal-info-label">Special Needs: </span>
+                  <span className="personal-info-value">{cv.hasSpecialNeeds}</span>
+                </div>
+              )}
             </div>
 
             {/* References */}
@@ -524,7 +602,7 @@ const Resume = ({ formData = {}, onDownload }) => {
             <div className="resume-actions no-print">
               {isEditing ? (
                 <>
-                  <button className="btn btn-save" onClick={handleSave}>💾 Save Changes</button>
+                  <button className="btn btn-save"   onClick={handleSave}>💾 Save Changes</button>
                   <button className="btn btn-cancel" onClick={() => setIsEditing(false)}>✕ Cancel</button>
                 </>
               ) : (

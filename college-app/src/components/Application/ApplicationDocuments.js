@@ -12,6 +12,7 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const token = localStorage.getItem("token");
+  const [showCVModal, setShowCVModal] = useState(false);
 
   const [isLoading,            setIsLoading]            = useState(true);
   const [isSubmitting,         setIsSubmitting]         = useState(false);
@@ -804,10 +805,13 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
 
                                         {/* Generate option */}
                                         <button
-                                          type="button"
-                                          className="cv-choice-card cv-choice-card--generate"
-                                          onClick={() => setCvMode('generate')}
-                                        >
+  type="button"
+  className="cv-choice-card cv-choice-card--generate"
+  onClick={() => {
+    setCvMode('generate');
+    setShowCVModal(true);
+  }}
+>
                                           <span className="cv-choice-emoji">✨</span>
                                           <span className="cv-choice-title">Generate CV</span>
                                           <span className="cv-choice-desc">
@@ -1116,7 +1120,27 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
           </div>
         </div>
       )}
+{showCVModal && (
+  <div className="resume-modal-backdrop">
+    <div className="resume-modal">
 
+      <button
+        className="resume-modal-close"
+        onClick={() => setShowCVModal(false)}
+      >
+        ✕
+      </button>
+
+      <Resume
+        formData={formData}
+        onDownload={(cv) => {
+          handleCVGenerated(cv);
+          setShowCVModal(false); // close after download
+        }}
+      />
+    </div>
+  </div>
+)}
     </div>
   );
 };
