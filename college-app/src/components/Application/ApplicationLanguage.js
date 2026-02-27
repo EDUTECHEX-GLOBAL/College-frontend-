@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './ApplicationLanguage.css';
 import axios from 'axios';
 
@@ -15,11 +15,44 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
     const [validationErrors, setValidationErrors] = useState({});
     const [fetchedData, setFetchedData] = useState(null);
 
-    // Load existing data on component mount
+    // ─────────────────────────────────────────────────────────────
+    // DEBUG: Confirm studentId is arriving (remove after testing)
+    // ─────────────────────────────────────────────────────────────
+    useEffect(() => {
+        console.log('🔍 ApplicationLanguage studentId:', studentId);
+    }, [studentId]);
+
+    // ─────────────────────────────────────────────────────────────
+    // HELPER: Map EQHE fields → Resume field names
+    // ✅ FIX: useCallback gives stable reference for useEffect deps
+    // ─────────────────────────────────────────────────────────────
+    const mapToResumeFields = useCallback((data) => {
+        onInputChange('englishTestType', data.eqheOriginalTitle || '');
+        onInputChange('testDate',        data.eqheDate         || '');
+        onInputChange('eqheCountry',     data.eqheCountry      || '');
+        onInputChange('eqheCity',        data.eqheCity         || '');
+
+        if (data.hasAnotherEQHE) {
+            onInputChange('anotherEqheOriginalTitle', data.anotherEqheOriginalTitle || '');
+            onInputChange('anotherEqheCountry',      data.anotherEqheCountry       || '');
+            onInputChange('anotherEqheDate',         data.anotherEqheDate          || '');
+            onInputChange('anotherEqheCity',         data.anotherEqheCity          || '');
+        }
+    }, [onInputChange]);
+
+    // ─────────────────────────────────────────────────────────────
+    // LOAD existing data on mount
+    // ✅ FIX: Guard against undefined/invalid studentId
+    // ✅ FIX: dep array is always the same size
+    // ─────────────────────────────────────────────────────────────
     useEffect(() => {
         const fetchExistingData = async () => {
-            if (!studentId) return;
-            
+            // Guard: don't call API if studentId is missing or invalid
+            if (!studentId || studentId === 'undefined') {
+                console.warn('⚠️ Skipping EQHE fetch — studentId not ready:', studentId);
+                return;
+            }
+
             setIsLoading(true);
             try {
                 const response = await axios.get(
@@ -34,52 +67,51 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                 if (response.data.success && response.data.data) {
                     const data = response.data.data;
                     setFetchedData(data);
-                    
-                    // Update form with existing data
-                    if (data.eqheDate) onInputChange('eqheDate', data.eqheDate);
-                    if (data.eqheCity) onInputChange('eqheCity', data.eqheCity);
-                    if (data.eqheCountry) onInputChange('eqheCountry', data.eqheCountry);
+
+                    if (data.eqheDate)          onInputChange('eqheDate',          data.eqheDate);
+                    if (data.eqheCity)          onInputChange('eqheCity',          data.eqheCity);
+                    if (data.eqheCountry)       onInputChange('eqheCountry',       data.eqheCountry);
                     if (data.eqheOriginalTitle) onInputChange('eqheOriginalTitle', data.eqheOriginalTitle);
-                    
+
                     const hasAnother = data.hasAnotherEQHE || false;
                     setShowAnotherEQHE(hasAnother);
-                    
+
                     if (hasAnother) {
-                        if (data.anotherEqheDate) onInputChange('anotherEqheDate', data.anotherEqheDate);
-                        if (data.anotherEqheCity) onInputChange('anotherEqheCity', data.anotherEqheCity);
-                        if (data.anotherEqheCountry) onInputChange('anotherEqheCountry', data.anotherEqheCountry);
+                        if (data.anotherEqheDate)          onInputChange('anotherEqheDate',          data.anotherEqheDate);
+                        if (data.anotherEqheCity)          onInputChange('anotherEqheCity',          data.anotherEqheCity);
+                        if (data.anotherEqheCountry)       onInputChange('anotherEqheCountry',       data.anotherEqheCountry);
                         if (data.anotherEqheOriginalTitle) onInputChange('anotherEqheOriginalTitle', data.anotherEqheOriginalTitle);
                     }
-                    
-                    if (data.eqheCertificateUrl) {
-                        // Handle existing certificate
-                    }
+
+                    mapToResumeFields(data);
                 }
             } catch (error) {
-                console.error('Error fetching EQHE data:', error);
+                // 404 = no saved data yet — perfectly normal, not an error
+                if (error.response?.status !== 404) {
+                    console.error('Error fetching EQHE data:', error);
+                }
             } finally {
                 setIsLoading(false);
             }
         };
 
         fetchExistingData();
-    }, [studentId]);
+    }, [studentId, mapToResumeFields, onInputChange]); // ✅ stable, always same size
 
+    // ─────────────────────────────────────────────────────────────
+    // FILE CHANGE
+    // ─────────────────────────────────────────────────────────────
     const handleFileChange = (e, field) => {
         const file = e.target.files[0];
         if (file) {
-            // Validate file type
             if (file.type !== 'application/pdf') {
                 setSaveError('Only PDF files are allowed');
                 return;
             }
-            
-            // Validate file size (max 2MB)
             if (file.size > 2 * 1024 * 1024) {
                 setSaveError('File size must be less than 2MB');
                 return;
             }
-            
             onFileUpload(field, file);
             setSaveError('');
         }
@@ -89,48 +121,39 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
         const value = e.target.checked;
         onInputChange('hasAnotherEQHE', value);
         setShowAnotherEQHE(value);
-        
+
         if (!value) {
-            // Clear another EQHE fields
-            onInputChange('anotherEqheDate', '');
-            onInputChange('anotherEqheCity', '');
-            onInputChange('anotherEqheCountry', '');
+            onInputChange('anotherEqheDate',          '');
+            onInputChange('anotherEqheCity',          '');
+            onInputChange('anotherEqheCountry',       '');
             onInputChange('anotherEqheOriginalTitle', '');
         }
     };
 
+    // ─────────────────────────────────────────────────────────────
+    // VALIDATION
+    // ─────────────────────────────────────────────────────────────
     const validateForm = (forContinue = false) => {
         const errors = {};
-        
-        // Validate required fields for continue
+
         if (forContinue) {
-            if (!formData.eqheCountry) {
-                errors.eqheCountry = 'Country of EQHE is required';
-            }
-            if (!formData.eqheOriginalTitle) {
-                errors.eqheOriginalTitle = 'EQHE title is required';
-            }
-            
-            // Validate another EQHE if checked
+            if (!formData.eqheCountry)       errors.eqheCountry       = 'Country of EQHE is required';
+            if (!formData.eqheOriginalTitle) errors.eqheOriginalTitle = 'EQHE title is required';
+
             if (showAnotherEQHE) {
-                if (!formData.anotherEqheCountry) {
-                    errors.anotherEqheCountry = 'Country is required for additional EQHE';
-                }
-                if (!formData.anotherEqheOriginalTitle) {
-                    errors.anotherEqheOriginalTitle = 'Title is required for additional EQHE';
-                }
+                if (!formData.anotherEqheCountry)       errors.anotherEqheCountry       = 'Country is required for additional EQHE';
+                if (!formData.anotherEqheOriginalTitle) errors.anotherEqheOriginalTitle = 'Title is required for additional EQHE';
             }
         }
-        
-        // Validate date format if provided
+
         if (formData.eqheDate && !isValidDate(formData.eqheDate)) {
             errors.eqheDate = 'Please enter a valid date';
         }
-        
+
         if (showAnotherEQHE && formData.anotherEqheDate && !isValidDate(formData.anotherEqheDate)) {
             errors.anotherEqheDate = 'Please enter a valid date';
         }
-        
+
         setValidationErrors(errors);
         return Object.keys(errors).length === 0;
     };
@@ -140,29 +163,36 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
         return date instanceof Date && !isNaN(date);
     };
 
+    // ─────────────────────────────────────────────────────────────
+    // SAVE (without navigate)
+    // ✅ FIX: Guard against missing studentId
+    // ─────────────────────────────────────────────────────────────
     const handleSave = async () => {
+        if (!studentId || studentId === 'undefined') {
+            setSaveError('Unable to save — student session not found. Please refresh and try again.');
+            return;
+        }
+
         if (!validateForm(false)) return;
-        
+
         setIsSaving(true);
         setSaveError('');
         setSaveSuccess(false);
 
         try {
-            // Prepare data for API
             const dataToSave = {
-                studentId: studentId,
-                eqheDate: formData.eqheDate || null,
-                eqheCity: formData.eqheCity || '',
-                eqheCountry: formData.eqheCountry || '',
-                eqheOriginalTitle: formData.eqheOriginalTitle || '',
-                hasAnotherEQHE: formData.hasAnotherEQHE || false,
-                anotherEqheDate: formData.anotherEqheDate || null,
-                anotherEqheCity: formData.anotherEqheCity || '',
-                anotherEqheCountry: formData.anotherEqheCountry || '',
+                studentId,
+                eqheDate:                 formData.eqheDate                || null,
+                eqheCity:                 formData.eqheCity                || '',
+                eqheCountry:              formData.eqheCountry             || '',
+                eqheOriginalTitle:        formData.eqheOriginalTitle       || '',
+                hasAnotherEQHE:           formData.hasAnotherEQHE          || false,
+                anotherEqheDate:          formData.anotherEqheDate         || null,
+                anotherEqheCity:          formData.anotherEqheCity         || '',
+                anotherEqheCountry:       formData.anotherEqheCountry      || '',
                 anotherEqheOriginalTitle: formData.anotherEqheOriginalTitle || ''
             };
 
-            // Make API call to save data
             const response = await axios.post(
                 `${API_URL}/api/application/language/student/${studentId}/eqhe`,
                 dataToSave,
@@ -176,21 +206,20 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
 
             if (response.data.success) {
                 setSaveSuccess(true);
-                
-                // Trigger storage event for sidebar update
+                mapToResumeFields(dataToSave);
+
                 localStorage.setItem('gusApplicationData', JSON.stringify({
                     ...formData,
                     ...dataToSave
                 }));
                 window.dispatchEvent(new Event('applicationUpdated'));
-                
-                // Auto-hide success message after 3 seconds
+
                 setTimeout(() => setSaveSuccess(false), 3000);
             }
         } catch (error) {
             console.error('Save error:', error);
             setSaveError(
-                error.response?.data?.message || 
+                error.response?.data?.message ||
                 'Failed to save data. Please check your connection and try again.'
             );
         } finally {
@@ -198,29 +227,36 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
         }
     };
 
+    // ─────────────────────────────────────────────────────────────
+    // SAVE & CONTINUE
+    // ✅ FIX: Guard against missing studentId
+    // ─────────────────────────────────────────────────────────────
     const handleSaveAndContinue = async () => {
+        if (!studentId || studentId === 'undefined') {
+            setSaveError('Unable to save — student session not found. Please refresh and try again.');
+            return;
+        }
+
         if (!validateForm(true)) return;
-        
+
         setIsSaving(true);
         setSaveError('');
         setSaveSuccess(false);
 
         try {
-            // Prepare data for API
             const dataToSave = {
-                studentId: studentId,
-                eqheDate: formData.eqheDate || null,
-                eqheCity: formData.eqheCity || '',
-                eqheCountry: formData.eqheCountry || '',
-                eqheOriginalTitle: formData.eqheOriginalTitle || '',
-                hasAnotherEQHE: formData.hasAnotherEQHE || false,
-                anotherEqheDate: formData.anotherEqheDate || null,
-                anotherEqheCity: formData.anotherEqheCity || '',
-                anotherEqheCountry: formData.anotherEqheCountry || '',
+                studentId,
+                eqheDate:                 formData.eqheDate                || null,
+                eqheCity:                 formData.eqheCity                || '',
+                eqheCountry:              formData.eqheCountry             || '',
+                eqheOriginalTitle:        formData.eqheOriginalTitle       || '',
+                hasAnotherEQHE:           formData.hasAnotherEQHE          || false,
+                anotherEqheDate:          formData.anotherEqheDate         || null,
+                anotherEqheCity:          formData.anotherEqheCity         || '',
+                anotherEqheCountry:       formData.anotherEqheCountry      || '',
                 anotherEqheOriginalTitle: formData.anotherEqheOriginalTitle || ''
             };
 
-            // Make API call to save data
             const response = await axios.post(
                 `${API_URL}/api/application/language/student/${studentId}/eqhe`,
                 dataToSave,
@@ -233,24 +269,20 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
             );
 
             if (response.data.success) {
-                // Update local storage
+                mapToResumeFields(dataToSave);
+
                 localStorage.setItem('gusApplicationData', JSON.stringify({
                     ...formData,
                     ...dataToSave
                 }));
-                
-                // Trigger storage event for sidebar update
                 window.dispatchEvent(new Event('applicationUpdated'));
-                
-                // Navigate to next step
-                if (onNext) {
-                    onNext();
-                }
+
+                if (onNext) onNext();
             }
         } catch (error) {
             console.error('Save error:', error);
             setSaveError(
-                error.response?.data?.message || 
+                error.response?.data?.message ||
                 error.message ||
                 'Failed to save data. Please check your connection and try again.'
             );
@@ -259,13 +291,16 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
         }
     };
 
+    // ─────────────────────────────────────────────────────────────
+    // CERTIFICATE UPLOAD
+    // ─────────────────────────────────────────────────────────────
     const handleUploadCertificate = async (file) => {
         if (!file) return;
 
-        const formData = new FormData();
-        formData.append('eqheCertificate', file);
-        formData.append('studentId', studentId);
-        formData.append('certificateType', 'eqheCertificate');
+        const uploadFormData = new FormData();
+        uploadFormData.append('eqheCertificate', file);
+        uploadFormData.append('studentId', studentId);
+        uploadFormData.append('certificateType', 'eqheCertificate');
 
         setShowUploadProgress(true);
         setUploadProgress(0);
@@ -273,14 +308,16 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
         try {
             const response = await axios.post(
                 `${API_URL}/api/application/language/student/${studentId}/eqhe/certificate`,
-                formData,
+                uploadFormData,
                 {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     },
                     onUploadProgress: (progressEvent) => {
-                        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                        const percentCompleted = Math.round(
+                            (progressEvent.loaded * 100) / progressEvent.total
+                        );
                         setUploadProgress(percentCompleted);
                     }
                 }
@@ -300,40 +337,46 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
         }
     };
 
+    // ─────────────────────────────────────────────────────────────
+    // STATIC DATA
+    // ─────────────────────────────────────────────────────────────
     const countries = [
-        { value: 'usa', label: 'United States' },
-        { value: 'uk', label: 'United Kingdom' },
-        { value: 'canada', label: 'Canada' },
+        { value: 'usa',       label: 'United States' },
+        { value: 'uk',        label: 'United Kingdom' },
+        { value: 'canada',    label: 'Canada' },
         { value: 'australia', label: 'Australia' },
-        { value: 'india', label: 'India' },
-        { value: 'china', label: 'China' },
-        { value: 'germany', label: 'Germany' },
-        { value: 'france', label: 'France' },
-        { value: 'japan', label: 'Japan' },
-        { value: 'skorea', label: 'South Korea' },
-        { value: 'russia', label: 'Russia' },
-        { value: 'mexico', label: 'Mexico' },
-        { value: 'colombia', label: 'Colombia' },
-        { value: 'italy', label: 'Italy' },
-        { value: 'spain', label: 'Spain' },
-        { value: 'brazil', label: 'Brazil' },
-        { value: 'nigeria', label: 'Nigeria' },
-        { value: 'thailand', label: 'Thailand' }
+        { value: 'india',     label: 'India' },
+        { value: 'china',     label: 'China' },
+        { value: 'germany',   label: 'Germany' },
+        { value: 'france',    label: 'France' },
+        { value: 'japan',     label: 'Japan' },
+        { value: 'skorea',    label: 'South Korea' },
+        { value: 'russia',    label: 'Russia' },
+        { value: 'mexico',    label: 'Mexico' },
+        { value: 'colombia',  label: 'Colombia' },
+        { value: 'italy',     label: 'Italy' },
+        { value: 'spain',     label: 'Spain' },
+        { value: 'brazil',    label: 'Brazil' },
+        { value: 'nigeria',   label: 'Nigeria' },
+        { value: 'thailand',  label: 'Thailand' }
     ];
 
     const eqheTitles = [
-        { value: 'senior_secondary_india', label: 'Senior Secondary School Certificate (India)' },
+        { value: 'senior_secondary_india',  label: 'Senior Secondary School Certificate (India)' },
         { value: 'high_school_diploma_usa', label: 'American High School Diploma (USA)' },
-        { value: 'mathayom_thailand', label: 'Mathayom VI (Thailand)' },
-        { value: 'attestat_russia', label: 'Attestat o srednem (polnom) obsecm obrazovanii (Russia)' },
-        { value: 'bachillerato_mexico', label: 'Bachillerato General (Mexico)' },
-        { value: 'west_african_nigeria', label: 'West African Senior School Certificate (Nigeria)' },
-        { value: 'diploma_italy', label: 'Diploma di superamento dell’esame di stato conclusive dei corsi di studio di... (Italy)' },
-        { value: 'high_school_china', label: 'Secondary School Certificate and Gaokao (China)' },
-        { value: 'bachiller_colombia', label: 'Titulo di Bachiller and Examen de Estado (Colombia)' },
-        { value: 'high_school_skorea', label: 'High School Certificate and College Scholastic Aptitude Test (South Korea)' }
+        { value: 'mathayom_thailand',       label: 'Mathayom VI (Thailand)' },
+        { value: 'attestat_russia',         label: 'Attestat o srednem (polnom) obsecm obrazovanii (Russia)' },
+        { value: 'bachillerato_mexico',     label: 'Bachillerato General (Mexico)' },
+        { value: 'west_african_nigeria',    label: 'West African Senior School Certificate (Nigeria)' },
+        { value: 'diploma_italy',           label: "Diploma di superamento dell'esame di stato conclusive dei corsi di studio di... (Italy)" },
+        { value: 'high_school_china',       label: 'Secondary School Certificate and Gaokao (China)' },
+        { value: 'bachiller_colombia',      label: 'Titulo di Bachiller and Examen de Estado (Colombia)' },
+        { value: 'high_school_skorea',      label: 'High School Certificate and College Scholastic Aptitude Test (South Korea)' }
     ];
 
+    // ─────────────────────────────────────────────────────────────
+    // LOADING STATE
+    // ─────────────────────────────────────────────────────────────
     if (isLoading) {
         return (
             <div className="language-container">
@@ -345,8 +388,12 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
         );
     }
 
+    // ─────────────────────────────────────────────────────────────
+    // RENDER
+    // ─────────────────────────────────────────────────────────────
     return (
         <div className="language-container">
+
             {/* Success Toast */}
             {saveSuccess && (
                 <div className="success-toast">
@@ -375,7 +422,8 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
             )}
 
             <div className="language-content">
-                {/* Header */}
+
+                {/* ── Header ── */}
                 <div className="section-header">
                     <div className="header-left">
                         <div className="section-number">3</div>
@@ -387,7 +435,7 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                     <div className="header-icon">🎓</div>
                 </div>
 
-                {/* Info Box */}
+                {/* ── Info Box ── */}
                 <div className="info-card">
                     <div className="info-icon">ℹ️</div>
                     <div className="info-content">
@@ -396,8 +444,9 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                     </div>
                 </div>
 
-                {/* Main Form Card */}
+                {/* ── Main Form Card ── */}
                 <div className="form-card">
+
                     {/* Primary EQHE Section */}
                     <div className="form-section">
                         <h3 className="section-heading">
@@ -406,6 +455,8 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                         </h3>
 
                         <div className="form-grid">
+
+                            {/* Date of EQHE */}
                             <div className="form-group">
                                 <label className="form-label" htmlFor="eqheDate">
                                     Date of EQHE
@@ -418,6 +469,7 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                                     value={formData.eqheDate || ''}
                                     onChange={(e) => {
                                         onInputChange('eqheDate', e.target.value);
+                                        onInputChange('testDate', e.target.value);
                                         if (validationErrors.eqheDate) {
                                             setValidationErrors({ ...validationErrors, eqheDate: null });
                                         }
@@ -431,6 +483,7 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                                 </p>
                             </div>
 
+                            {/* City of EQHE */}
                             <div className="form-group">
                                 <label className="form-label" htmlFor="eqheCity">City of EQHE</label>
                                 <input
@@ -443,6 +496,7 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                                 />
                             </div>
 
+                            {/* Country of EQHE */}
                             <div className="form-group">
                                 <label className="form-label required" htmlFor="eqheCountry">
                                     Country of EQHE *
@@ -454,6 +508,7 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                                     value={formData.eqheCountry || ''}
                                     onChange={(e) => {
                                         onInputChange('eqheCountry', e.target.value);
+                                        onInputChange('countryOfStudy', e.target.value);
                                         if (validationErrors.eqheCountry) {
                                             setValidationErrors({ ...validationErrors, eqheCountry: null });
                                         }
@@ -469,8 +524,10 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                                     <div className="field-error">{validationErrors.eqheCountry}</div>
                                 )}
                             </div>
+
                         </div>
 
+                        {/* Original Title of EQHE */}
                         <div className="form-group full-width">
                             <label className="form-label required" htmlFor="eqheOriginalTitle">
                                 Original title of EQHE *
@@ -482,6 +539,7 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                                 value={formData.eqheOriginalTitle || ''}
                                 onChange={(e) => {
                                     onInputChange('eqheOriginalTitle', e.target.value);
+                                    onInputChange('englishTestType', e.target.value);
                                     if (validationErrors.eqheOriginalTitle) {
                                         setValidationErrors({ ...validationErrors, eqheOriginalTitle: null });
                                     }
@@ -502,7 +560,7 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                         </div>
                     </div>
 
-                    {/* Another EQHE Checkbox */}
+                    {/* ── Another EQHE Checkbox ── */}
                     <div className="checkbox-section">
                         <label className="checkbox-wrapper">
                             <input
@@ -518,7 +576,7 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                         </label>
                     </div>
 
-                    {/* Another EQHE Section */}
+                    {/* ── Another EQHE Section ── */}
                     {showAnotherEQHE && (
                         <div className="form-section another-section">
                             <h3 className="section-heading">
@@ -527,6 +585,7 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                             </h3>
 
                             <div className="form-grid">
+
                                 <div className="form-group">
                                     <label className="form-label" htmlFor="anotherEqheDate">
                                         Date of EQHE
@@ -612,11 +671,12 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                                         <div className="field-error">{validationErrors.anotherEqheOriginalTitle}</div>
                                     )}
                                 </div>
+
                             </div>
                         </div>
                     )}
 
-                    {/* Certificate Upload Section */}
+                    {/* ── Certificate Upload ── */}
                     {showAnotherEQHE && (
                         <div className="form-section upload-section">
                             <h3 className="section-heading">
@@ -630,7 +690,7 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                                         <div className="upload-icon">📄</div>
                                         <h4>Upload EQHE Certificate</h4>
                                         <p>PDF format (Max: 2MB)</p>
-                                        <button 
+                                        <button
                                             className="upload-btn"
                                             onClick={() => document.getElementById('eqheCertificateUpload').click()}
                                             disabled={isSaving}
@@ -658,14 +718,14 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                                             </div>
                                         </div>
                                         <div className="file-actions">
-                                            <button 
+                                            <button
                                                 className="file-action-btn view"
                                                 onClick={() => window.open(URL.createObjectURL(formData.eqheCertificate))}
                                             >
                                                 <span className="btn-icon">👁️</span>
                                                 View
                                             </button>
-                                            <button 
+                                            <button
                                                 className="file-action-btn remove"
                                                 onClick={() => onFileUpload('eqheCertificate', null)}
                                                 disabled={isSaving}
@@ -680,7 +740,7 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                         </div>
                     )}
 
-                    {/* Requirements Box */}
+                    {/* ── Requirements Box ── */}
                     {!showAnotherEQHE && (
                         <div className="requirements-box">
                             <h4>Document Requirements</h4>
@@ -700,71 +760,41 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                             </ul>
                         </div>
                     )}
-                </div>
 
-                {/* Progress Steps */}
+                </div>
+                {/* end form-card */}
+
+                {/* ── Progress Steps ── */}
                 <div className="progress-steps">
-                    <div className="progress-step completed">
-                        <span className="step-number">1</span>
-                        <span className="step-label">Personal</span>
-                    </div>
-                    <div className="progress-step completed">
-                        <span className="step-number">2</span>
-                        <span className="step-label">Education</span>
-                    </div>
-                    <div className="progress-step active">
-                        <span className="step-number">3</span>
-                        <span className="step-label">EQHE</span>
-                    </div>
-                    <div className="progress-step">
-                        <span className="step-number">4</span>
-                        <span className="step-label">Special Needs</span>
-                    </div>
-                    <div className="progress-step">
-                        <span className="step-number">5</span>
-                        <span className="step-label">Review</span>
-                    </div>
+                    <div className="progress-step completed"><span className="step-number">1</span><span className="step-label">Personal</span></div>
+                    <div className="progress-step completed"><span className="step-number">2</span><span className="step-label">Education</span></div>
+                    <div className="progress-step active">   <span className="step-number">3</span><span className="step-label">EQHE</span></div>
+                    <div className="progress-step">          <span className="step-number">4</span><span className="step-label">Special Needs</span></div>
+                    <div className="progress-step">          <span className="step-number">5</span><span className="step-label">Review</span></div>
                 </div>
 
-                {/* Action Buttons */}
+                {/* ── Action Buttons ── */}
                 <div className="form-actions">
-                    <button 
-                        className="btn btn-secondary"
-                        onClick={handleSave}
-                        disabled={isSaving}
-                    >
+                    <button className="btn btn-secondary" onClick={handleSave} disabled={isSaving}>
                         {isSaving ? (
-                            <>
-                                <span className="spinner-small"></span>
-                                Saving...
-                            </>
+                            <><span className="spinner-small"></span>Saving...</>
                         ) : (
-                            <>
-                                <span className="btn-icon">💾</span>
-                                Save
-                            </>
+                            <><span className="btn-icon">💾</span>Save</>
                         )}
                     </button>
-                    
-                    <button 
-                        className="btn btn-primary"
-                        onClick={handleSaveAndContinue}
-                        disabled={isSaving}
-                    >
+
+                    <button className="btn btn-primary" onClick={handleSaveAndContinue} disabled={isSaving}>
                         {isSaving ? (
-                            <>
-                                <span className="spinner-small"></span>
-                                Saving...
-                            </>
+                            <><span className="spinner-small"></span>Saving...</>
                         ) : (
-                            <>
-                                Save & Continue
-                                <span className="btn-icon">→</span>
-                            </>
+                            <>Save & Continue<span className="btn-icon">→</span></>
                         )}
                     </button>
                 </div>
+
             </div>
+            {/* end language-content */}
+
         </div>
     );
 };

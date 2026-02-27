@@ -10,7 +10,14 @@ const API_URL = process.env.REACT_APP_API_BASE_URL
   ? `${process.env.REACT_APP_API_BASE_URL}/api/application/address`
   : "http://localhost:5000/api/application/address";
 
-const ApplicationAddress = () => {
+// =====================================================
+// PROPS:
+//   onAddressChange (optional) — called whenever address
+//   is saved successfully. Pushes mapped fields up to the
+//   parent (App.js) so Resume.js can read them.
+//   All other logic is completely unchanged.
+// =====================================================
+const ApplicationAddress = ({ onAddressChange }) => {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const location = useLocation();
@@ -47,6 +54,25 @@ const ApplicationAddress = () => {
   });
 
   // =====================================================
+  // ── RESUME ADAPTER ──────────────────────────────────
+  // Maps local address fields → Resume.js field names
+  // and pushes them to the parent via onAddressChange.
+  // Called after every successful save.
+  // =====================================================
+  const pushAddressToResume = (data) => {
+    if (typeof onAddressChange !== 'function') return;
+
+    onAddressChange({
+      // Resume.js field name  ← Address form field
+      currentAddress : data.streetAndHouseNumber || '',
+      city           : data.city                 || '',
+      state          : data.stateProvince        || '',
+      country        : data.country              || '',
+      postalCode     : data.postcode             || '',
+    });
+  };
+
+  // =====================================================
   // FETCH ADDRESS DATA ON LOAD
   // =====================================================
   useEffect(() => {
@@ -69,7 +95,7 @@ const ApplicationAddress = () => {
 
       if (res.data?.addressInfo) {
         const addr = res.data.addressInfo;
-        setFormData({
+        const loadedData = {
           careOf: addr.careOf || "",
           streetAndHouseNumber: addr.streetAndHouseNumber || "",
           city: addr.city || "",
@@ -92,8 +118,13 @@ const ApplicationAddress = () => {
                 originalName: addr.nationalIdOriginalName,
               }
             : null,
-        });
+        };
+
+        setFormData(loadedData);
         setAddressSaved(true);
+
+        // ── Push loaded address to Resume on mount ──
+        pushAddressToResume(loadedData);
         
         if (res.data.isCompleted) {
           setCompletionPercentage(66);
@@ -186,7 +217,6 @@ const ApplicationAddress = () => {
     }));
     setAddressSaved(false);
     
-    // Clear related validation errors
     setValidationErrors((prev) => {
       const newErrors = { ...prev };
       if (!hasDifferent) {
@@ -207,7 +237,6 @@ const ApplicationAddress = () => {
     const errors = {};
     const missingFields = [];
 
-    // Validate permanent address
     if (!formData.streetAndHouseNumber?.trim()) {
       errors.streetAndHouseNumber = 'Street and house number is required';
       missingFields.push('Street and house number');
@@ -233,39 +262,31 @@ const ApplicationAddress = () => {
       missingFields.push('Postcode');
     }
 
-    // Validate postcode format (basic validation)
     if (formData.postcode?.trim() && formData.postcode.length < 3) {
       errors.postcode = 'Please enter a valid postcode';
     }
 
-    // Validate correspondence address if different
     if (formData.hasDifferentCorrespondenceAddress) {
       if (!formData.correspondenceStreetAndHouseNumber?.trim()) {
         errors.correspondenceStreetAndHouseNumber = 'Correspondence street and house number is required';
         missingFields.push('Correspondence street and house number');
       }
-      
       if (!formData.correspondenceCity?.trim()) {
         errors.correspondenceCity = 'Correspondence city is required';
         missingFields.push('Correspondence city');
       }
-      
       if (!formData.correspondenceCountry?.trim()) {
         errors.correspondenceCountry = 'Correspondence country is required';
         missingFields.push('Correspondence country');
       }
-      
       if (!formData.correspondenceStateProvince?.trim()) {
         errors.correspondenceStateProvince = 'Correspondence state/province is required';
         missingFields.push('Correspondence state/province');
       }
-      
       if (!formData.correspondencePostcode?.trim()) {
         errors.correspondencePostcode = 'Correspondence postcode is required';
         missingFields.push('Correspondence postcode');
       }
-
-      // Validate correspondence postcode format
       if (formData.correspondencePostcode?.trim() && formData.correspondencePostcode.length < 3) {
         errors.correspondencePostcode = 'Please enter a valid postcode';
       }
@@ -286,7 +307,6 @@ const ApplicationAddress = () => {
 
     const validation = validateForm();
     if (!validation.isValid) {
-      // Scroll to first error
       const firstErrorField = Object.keys(validationErrors)[0];
       const element = document.getElementById(firstErrorField);
       if (element) {
@@ -294,7 +314,6 @@ const ApplicationAddress = () => {
         element.focus();
       }
       
-      // Show error toast/alert
       let errorMessage = 'Please fix the following errors:\n\n';
       Object.values(validationErrors).forEach(error => {
         errorMessage += `• ${error}\n`;
@@ -323,18 +342,17 @@ const ApplicationAddress = () => {
         correspondencePostcode: formData.correspondencePostcode,
       };
 
-      const res = await axios.post(
-        API_URL,
-        requestData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      await axios.post(API_URL, requestData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
-      // Show success message
+      // ── Push saved address to Resume ──────────────────
+      pushAddressToResume(formData);
+
+      // Show success toast
       const toast = document.createElement('div');
       toast.className = 'success-toast';
       toast.textContent = 'Address saved successfully!';
@@ -361,7 +379,6 @@ const ApplicationAddress = () => {
       console.error("Save error:", error.response?.data || error.message);
       setError(error.response?.data?.message || "Failed to save address");
       
-      // Show error toast
       const toast = document.createElement('div');
       toast.className = 'error-toast';
       toast.textContent = error.response?.data?.message || "Failed to save address. Please try again.";
@@ -378,14 +395,12 @@ const ApplicationAddress = () => {
   const handleFileUpload = async (file) => {
     if (!file) return;
 
-    // Validate file type
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
     if (!allowedTypes.includes(file.type)) {
       alert('Invalid file type. Only JPG, PNG, and PDF are allowed.');
       return;
     }
 
-    // Validate file size (5MB)
     if (file.size > 5 * 1024 * 1024) {
       alert('File size exceeds 5MB limit.');
       return;
@@ -404,7 +419,6 @@ const ApplicationAddress = () => {
         },
       });
 
-      // Show success toast
       const toast = document.createElement('div');
       toast.className = 'success-toast';
       toast.textContent = 'National ID uploaded successfully!';
@@ -424,7 +438,6 @@ const ApplicationAddress = () => {
     } catch (error) {
       console.error("Upload error:", error.response?.data || error.message);
       
-      // Show error toast
       const toast = document.createElement('div');
       toast.className = 'error-toast';
       toast.textContent = error.response?.data?.message || "Upload failed. Please try again.";
@@ -440,13 +453,12 @@ const ApplicationAddress = () => {
   // =====================================================
   const removeNationalId = async () => {
     try {
-      const res = await axios.delete(`${API_URL}/files/nationalId`, {
+      await axios.delete(`${API_URL}/files/nationalId`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      // Show success toast
       const toast = document.createElement('div');
       toast.className = 'success-toast';
       toast.textContent = 'National ID removed successfully!';
@@ -460,7 +472,6 @@ const ApplicationAddress = () => {
     } catch (error) {
       console.error("Remove error:", error.response?.data || error.message);
       
-      // Show error toast
       const toast = document.createElement('div');
       toast.className = 'error-toast';
       toast.textContent = "Failed to remove national ID";
@@ -488,7 +499,6 @@ const ApplicationAddress = () => {
   const handleSaveLater = async () => {
     try {
       await saveAddress();
-      // Show success message
       const toast = document.createElement('div');
       toast.className = 'success-toast';
       toast.textContent = 'Progress saved! You can continue later.';

@@ -134,7 +134,7 @@ body {
   font-weight: 500;
 }
 
-.progress-indicator {
+.applicationfirsteducation-progress-indicator {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -605,7 +605,7 @@ body {
     gap: var(--spacing-md);
   }
 
-  .progress-indicator {
+  .applicationfirsteducation-progress-indicator {
     align-items: flex-start;
   }
 

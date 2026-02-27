@@ -19,43 +19,67 @@ const ApplicationSpecialNeeds = ({ formData, onInputChange, onNext, onPrev }) =>
     const [otherDescription, setOtherDescription] = useState(
         formData.otherNeedsDescription || ""
     );
-    const [errors, setErrors] = useState({});
-    const [loading, setLoading] = useState(false);
-    const [fetchLoading, setFetchLoading] = useState(false);
-    const [showSuccess, setShowSuccess] = useState(false);
-    const [saveSuccess, setSaveSuccess] = useState(false);
-
-    // Common special needs categories
-    const specialNeedsCategories = [
-        { id: "physical", label: "Physical Disability", icon: "🦽" },
-        { id: "visual", label: "Visual Impairment", icon: "👁️" },
-        { id: "hearing", label: "Hearing Impairment", icon: "👂" },
-        { id: "learning", label: "Learning Disability", icon: "📚" },
-        { id: "medical", label: "Medical Condition", icon: "🏥" },
-        { id: "mental", label: "Mental Health", icon: "🧠" },
-        { id: "temporary", label: "Temporary Condition", icon: "⏱️" },
-        { id: "other", label: "Other", icon: "📝" }
-    ];
-
-    // Examination arrangements
-    const arrangements = [
-        { id: "extraTime", label: "Extra Time", icon: "⏰" },
-        { id: "separateRoom", label: "Separate Room", icon: "🚪" },
-        { id: "reader", label: "Reader/Assistant", icon: "👤" },
-        { id: "scribe", label: "Scribe", icon: "✍️" },
-        { id: "largePrint", label: "Large Print Papers", icon: "🔍" },
-        { id: "braille", label: "Braille Papers", icon: "⠃" },
-        { id: "computer", label: "Computer Access", icon: "💻" },
-        { id: "breaks", label: "Rest Breaks", icon: "☕" }
-    ];
+    const [errors, setErrors]               = useState({});
+    const [loading, setLoading]             = useState(false);
+    const [fetchLoading, setFetchLoading]   = useState(false);
+    const [showSuccess, setShowSuccess]     = useState(false);
+    const [saveSuccess, setSaveSuccess]     = useState(false);
 
     const [selectedArrangements, setSelectedArrangements] = useState(
         formData.requiredArrangements || []
     );
 
-    /* =========================
-       LOAD EXISTING DATA
-    ========================== */
+    // Special needs categories
+    const specialNeedsCategories = [
+        { id: "physical",  label: "Physical Disability",  icon: "🦽" },
+        { id: "visual",    label: "Visual Impairment",    icon: "👁️" },
+        { id: "hearing",   label: "Hearing Impairment",   icon: "👂" },
+        { id: "learning",  label: "Learning Disability",  icon: "📚" },
+        { id: "medical",   label: "Medical Condition",    icon: "🏥" },
+        { id: "mental",    label: "Mental Health",        icon: "🧠" },
+        { id: "temporary", label: "Temporary Condition",  icon: "⏱️" },
+        { id: "other",     label: "Other",                icon: "📝" }
+    ];
+
+    // Examination arrangements
+    const arrangements = [
+        { id: "extraTime",    label: "Extra Time",          icon: "⏰" },
+        { id: "separateRoom", label: "Separate Room",       icon: "🚪" },
+        { id: "reader",       label: "Reader/Assistant",    icon: "👤" },
+        { id: "scribe",       label: "Scribe",              icon: "✍️" },
+        { id: "largePrint",   label: "Large Print Papers",  icon: "🔍" },
+        { id: "braille",      label: "Braille Papers",      icon: "⠃"  },
+        { id: "computer",     label: "Computer Access",     icon: "💻" },
+        { id: "breaks",       label: "Rest Breaks",         icon: "☕" }
+    ];
+
+    // ─────────────────────────────────────────────────────────────
+    // HELPER — map SpecialNeeds fields → Resume.js field names
+    // Called after every successful load/save so Resume always
+    // has the latest values in central formData.
+    //
+    //  hasSpecialNeeds ("yes"/"no")  → hasDisability      (bool)
+    //  specialNeedsDescription       → disabilityType     (string)
+    //  requiredArrangements.length   → requiresAssistance (bool)
+    //  specialNeeds array            → specialNeedsList   (array)
+    // ─────────────────────────────────────────────────────────────
+    const mapToResumeFields = ({
+        hasSpecialNeedsVal,
+        descriptionVal,
+        arrangementsVal,
+        needsVal,
+        otherDescVal,
+    }) => {
+        onInputChange("hasDisability",      hasSpecialNeedsVal === "yes");
+        onInputChange("disabilityType",     hasSpecialNeedsVal === "yes" ? descriptionVal : "");
+        onInputChange("requiresAssistance", hasSpecialNeedsVal === "yes" && arrangementsVal.length > 0);
+        onInputChange("specialNeedsList",   hasSpecialNeedsVal === "yes" ? needsVal : []);
+        onInputChange("otherNeedsDescription", hasSpecialNeedsVal === "yes" ? otherDescVal : "");
+    };
+
+    // ─────────────────────────────────────────────────────────────
+    // LOAD existing data on mount
+    // ─────────────────────────────────────────────────────────────
     useEffect(() => {
         if (!token) return;
 
@@ -63,25 +87,41 @@ const ApplicationSpecialNeeds = ({ formData, onInputChange, onNext, onPrev }) =>
             try {
                 setFetchLoading(true);
                 const res = await axios.get(`${API_URL}/api/application/special-needs`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
+                    headers: { Authorization: `Bearer ${token}` },
                 });
-                
+
                 if (res.data?.data) {
                     const data = res.data.data;
 
-                    setHasSpecialNeeds(data.hasSpecialNeeds || "no");
-                    setDescription(data.specialNeedsDescription || "");
-                    setNeeds(data.specialNeeds || []);
-                    setSelectedArrangements(data.requiredArrangements || []);
-                    setOtherDescription(data.otherNeedsDescription || "");
+                    // Update local state
+                    const loadedHasNeeds   = data.hasSpecialNeeds        || "no";
+                    const loadedDesc       = data.specialNeedsDescription || "";
+                    const loadedNeeds      = data.specialNeeds            || [];
+                    const loadedArrange    = data.requiredArrangements    || [];
+                    const loadedOtherDesc  = data.otherNeedsDescription   || "";
 
-                    onInputChange("hasSpecialNeeds", data.hasSpecialNeeds || "no");
-                    onInputChange("specialNeedsDescription", data.specialNeedsDescription || "");
-                    onInputChange("specialNeeds", data.specialNeeds || []);
-                    onInputChange("requiredArrangements", data.requiredArrangements || []);
-                    onInputChange("otherNeedsDescription", data.otherNeedsDescription || "");
+                    setHasSpecialNeeds(loadedHasNeeds);
+                    setDescription(loadedDesc);
+                    setNeeds(loadedNeeds);
+                    setSelectedArrangements(loadedArrange);
+                    setOtherDescription(loadedOtherDesc);
+
+                    // Sync original field names to formData
+                    onInputChange("hasSpecialNeeds",          loadedHasNeeds);
+                    onInputChange("specialNeedsDescription",  loadedDesc);
+                    onInputChange("specialNeeds",             loadedNeeds);
+                    onInputChange("requiredArrangements",     loadedArrange);
+                    onInputChange("otherNeedsDescription",    loadedOtherDesc);
+
+                    // ── RESUME DATA MAPPING on load ──────────────────────
+                    mapToResumeFields({
+                        hasSpecialNeedsVal: loadedHasNeeds,
+                        descriptionVal:     loadedDesc,
+                        arrangementsVal:    loadedArrange,
+                        needsVal:           loadedNeeds,
+                        otherDescVal:       loadedOtherDesc,
+                    });
+                    // ────────────────────────────────────────────────────
                 }
             } catch (err) {
                 console.error("Failed to load special needs data", err);
@@ -93,9 +133,9 @@ const ApplicationSpecialNeeds = ({ formData, onInputChange, onNext, onPrev }) =>
         loadSpecialNeedsData();
     }, [token]);
 
-    /* =========================
-       HANDLERS
-    ========================== */
+    // ─────────────────────────────────────────────────────────────
+    // HANDLERS
+    // ─────────────────────────────────────────────────────────────
     const handleHasSpecialNeedsChange = (value) => {
         setHasSpecialNeeds(value);
         onInputChange("hasSpecialNeeds", value);
@@ -106,10 +146,24 @@ const ApplicationSpecialNeeds = ({ formData, onInputChange, onNext, onPrev }) =>
             setSelectedArrangements([]);
             setOtherDescription("");
             onInputChange("specialNeedsDescription", "");
-            onInputChange("specialNeeds", []);
-            onInputChange("requiredArrangements", []);
-            onInputChange("otherNeedsDescription", "");
+            onInputChange("specialNeeds",            []);
+            onInputChange("requiredArrangements",    []);
+            onInputChange("otherNeedsDescription",   "");
             setErrors({});
+
+            // ── RESUME DATA MAPPING — clear when "No" selected ──
+            mapToResumeFields({
+                hasSpecialNeedsVal: "no",
+                descriptionVal:     "",
+                arrangementsVal:    [],
+                needsVal:           [],
+                otherDescVal:       "",
+            });
+            // ────────────────────────────────────────────────────
+        } else {
+            // ── RESUME DATA MAPPING — set hasDisability true ────
+            onInputChange("hasDisability", true);
+            // ────────────────────────────────────────────────────
         }
     };
 
@@ -117,28 +171,30 @@ const ApplicationSpecialNeeds = ({ formData, onInputChange, onNext, onPrev }) =>
         const updatedNeeds = needs.includes(needId)
             ? needs.filter(id => id !== needId)
             : [...needs, needId];
-        
-        setNeeds(updatedNeeds);
-        onInputChange("specialNeeds", updatedNeeds);
 
-        // Clear other description if "other" is deselected
+        setNeeds(updatedNeeds);
+        onInputChange("specialNeeds",    updatedNeeds);
+        onInputChange("specialNeedsList", updatedNeeds);  // ← Resume field
+
         if (needId === "other" && needs.includes("other")) {
             setOtherDescription("");
             onInputChange("otherNeedsDescription", "");
         }
 
-        if (errors.needs) {
-            setErrors(prev => ({ ...prev, needs: "" }));
-        }
+        if (errors.needs) setErrors(prev => ({ ...prev, needs: "" }));
     };
 
     const toggleArrangement = (arrangementId) => {
         const updated = selectedArrangements.includes(arrangementId)
             ? selectedArrangements.filter(id => id !== arrangementId)
             : [...selectedArrangements, arrangementId];
-        
+
         setSelectedArrangements(updated);
         onInputChange("requiredArrangements", updated);
+
+        // ── RESUME DATA MAPPING — live update requiresAssistance ──
+        onInputChange("requiresAssistance", updated.length > 0);
+        // ──────────────────────────────────────────────────────────
     };
 
     const handleDescriptionChange = (e) => {
@@ -146,9 +202,11 @@ const ApplicationSpecialNeeds = ({ formData, onInputChange, onNext, onPrev }) =>
         setDescription(value);
         onInputChange("specialNeedsDescription", value);
 
-        if (errors.description) {
-            setErrors((prev) => ({ ...prev, description: "" }));
-        }
+        // ── RESUME DATA MAPPING — live update disabilityType ──
+        onInputChange("disabilityType", value);
+        // ──────────────────────────────────────────────────────
+
+        if (errors.description) setErrors(prev => ({ ...prev, description: "" }));
     };
 
     const handleOtherDescriptionChange = (e) => {
@@ -157,33 +215,28 @@ const ApplicationSpecialNeeds = ({ formData, onInputChange, onNext, onPrev }) =>
         onInputChange("otherNeedsDescription", value);
     };
 
-    /* =========================
-       VALIDATION
-    ========================== */
+    // ─────────────────────────────────────────────────────────────
+    // VALIDATION
+    // ─────────────────────────────────────────────────────────────
     const validateForm = () => {
         const newErrors = {};
 
         if (hasSpecialNeeds === "yes") {
-            if (needs.length === 0) {
+            if (needs.length === 0)
                 newErrors.needs = "Please select at least one category";
-            }
-            
-            if (!description.trim()) {
+            if (!description.trim())
                 newErrors.description = "Please provide details about your condition(s)";
-            }
-
-            if (needs.includes("other") && !otherDescription.trim()) {
+            if (needs.includes("other") && !otherDescription.trim())
                 newErrors.other = "Please specify your other needs";
-            }
         }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
-    /* =========================
-       SAVE TO API
-    ========================== */
+    // ─────────────────────────────────────────────────────────────
+    // SAVE TO API
+    // ─────────────────────────────────────────────────────────────
     const saveSpecialNeeds = async () => {
         if (!token) {
             alert("Student session expired. Please login again.");
@@ -192,16 +245,18 @@ const ApplicationSpecialNeeds = ({ formData, onInputChange, onNext, onPrev }) =>
 
         setLoading(true);
 
+        const payload = {
+            hasSpecialNeeds,
+            specialNeeds:             hasSpecialNeeds === "yes" ? needs            : [],
+            specialNeedsDescription:  hasSpecialNeeds === "yes" ? description      : "",
+            requiredArrangements:     hasSpecialNeeds === "yes" ? selectedArrangements : [],
+            otherNeedsDescription:    hasSpecialNeeds === "yes" && needs.includes("other") ? otherDescription : ""
+        };
+
         try {
             const response = await axios.post(
                 `${API_URL}/api/application/special-needs`,
-                {
-                    hasSpecialNeeds,
-                    specialNeeds: hasSpecialNeeds === "yes" ? needs : [],
-                    specialNeedsDescription: hasSpecialNeeds === "yes" ? description : "",
-                    requiredArrangements: hasSpecialNeeds === "yes" ? selectedArrangements : [],
-                    otherNeedsDescription: hasSpecialNeeds === "yes" && needs.includes("other") ? otherDescription : ""
-                },
+                payload,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -214,17 +269,20 @@ const ApplicationSpecialNeeds = ({ formData, onInputChange, onNext, onPrev }) =>
                 setLoading(false);
                 setSaveSuccess(true);
                 setShowSuccess(true);
-                
-                // Trigger storage event for sidebar update
-                localStorage.setItem('specialNeedsData', JSON.stringify({
-                    hasSpecialNeeds,
-                    specialNeeds: hasSpecialNeeds === "yes" ? needs : [],
-                    specialNeedsDescription: hasSpecialNeeds === "yes" ? description : "",
-                    requiredArrangements: hasSpecialNeeds === "yes" ? selectedArrangements : [],
-                    otherNeedsDescription: hasSpecialNeeds === "yes" && needs.includes("other") ? otherDescription : ""
-                }));
-                window.dispatchEvent(new Event('applicationUpdated'));
-                
+
+                // ── RESUME DATA MAPPING after successful save ────────
+                mapToResumeFields({
+                    hasSpecialNeedsVal: hasSpecialNeeds,
+                    descriptionVal:     description,
+                    arrangementsVal:    selectedArrangements,
+                    needsVal:           needs,
+                    otherDescVal:       otherDescription,
+                });
+                // ────────────────────────────────────────────────────
+
+                localStorage.setItem("specialNeedsData", JSON.stringify(payload));
+                window.dispatchEvent(new Event("applicationUpdated"));
+
                 setTimeout(() => setShowSuccess(false), 3000);
                 return true;
             }
@@ -236,19 +294,18 @@ const ApplicationSpecialNeeds = ({ formData, onInputChange, onNext, onPrev }) =>
         }
     };
 
-    /* =========================
-       NEXT STEP
-    ========================== */
+    // ─────────────────────────────────────────────────────────────
+    // NEXT STEP
+    // ─────────────────────────────────────────────────────────────
     const handleNext = async () => {
         if (!validateForm()) return;
-
         const saved = await saveSpecialNeeds();
         if (saved) onNext();
     };
 
-    /* =========================
-       LOADING STATE
-    ========================== */
+    // ─────────────────────────────────────────────────────────────
+    // LOADING STATE
+    // ─────────────────────────────────────────────────────────────
     if (fetchLoading) {
         return (
             <div className="special-needs-container">
@@ -260,11 +317,12 @@ const ApplicationSpecialNeeds = ({ formData, onInputChange, onNext, onPrev }) =>
         );
     }
 
-    /* =========================
-       UI
-    ========================== */
+    // ─────────────────────────────────────────────────────────────
+    // RENDER
+    // ─────────────────────────────────────────────────────────────
     return (
         <div className="special-needs-container">
+
             {/* Success Toast */}
             {showSuccess && (
                 <div className="success-toast">
@@ -282,7 +340,8 @@ const ApplicationSpecialNeeds = ({ formData, onInputChange, onNext, onPrev }) =>
             )}
 
             <div className="special-needs-content">
-                {/* Header */}
+
+                {/* ── Header ── */}
                 <div className="section-header">
                     <div className="header-left">
                         <div className="section-number">4</div>
@@ -295,9 +354,10 @@ const ApplicationSpecialNeeds = ({ formData, onInputChange, onNext, onPrev }) =>
                     </div>
                 </div>
 
-                {/* Main Form */}
+                {/* ── Main Form Card ── */}
                 <div className="form-card">
-                    {/* Question */}
+
+                    {/* Yes / No Question */}
                     <div className="question-section">
                         <label className="question-label">
                             Do you have any medical condition that may require special examination arrangements?
@@ -324,13 +384,13 @@ const ApplicationSpecialNeeds = ({ formData, onInputChange, onNext, onPrev }) =>
                         </div>
                     </div>
 
+                    {/* ── Special Needs Details (shown only when "yes") ── */}
                     {hasSpecialNeeds === "yes" && (
                         <div className="special-needs-form">
+
                             {/* Categories */}
                             <div className="form-section">
-                                <h3 className="section-heading">
-                                    Select Categories
-                                </h3>
+                                <h3 className="section-heading">Select Categories</h3>
                                 <p className="section-description">
                                     Please select all categories that apply to you
                                 </p>
@@ -359,9 +419,7 @@ const ApplicationSpecialNeeds = ({ formData, onInputChange, onNext, onPrev }) =>
                             {/* Other Description */}
                             {needs.includes("other") && (
                                 <div className="form-section">
-                                    <h3 className="section-heading">
-                                        Specify Other Needs
-                                    </h3>
+                                    <h3 className="section-heading">Specify Other Needs</h3>
                                     <textarea
                                         className={`form-textarea ${errors.other ? "error" : ""}`}
                                         value={otherDescription}
@@ -375,11 +433,9 @@ const ApplicationSpecialNeeds = ({ formData, onInputChange, onNext, onPrev }) =>
                                 </div>
                             )}
 
-                            {/* Description */}
+                            {/* Detailed Description */}
                             <div className="form-section">
-                                <h3 className="section-heading">
-                                    Detailed Description
-                                </h3>
+                                <h3 className="section-heading">Detailed Description</h3>
                                 <p className="section-description">
                                     Please provide detailed information about your condition(s) and how it may affect your studies
                                 </p>
@@ -397,9 +453,7 @@ const ApplicationSpecialNeeds = ({ formData, onInputChange, onNext, onPrev }) =>
 
                             {/* Required Arrangements */}
                             <div className="form-section">
-                                <h3 className="section-heading">
-                                    Required Arrangements
-                                </h3>
+                                <h3 className="section-heading">Required Arrangements</h3>
                                 <p className="section-description">
                                     Select any special arrangements you may need during examinations
                                 </p>
@@ -422,16 +476,17 @@ const ApplicationSpecialNeeds = ({ formData, onInputChange, onNext, onPrev }) =>
                                 </div>
                             </div>
 
-                            {/* Additional Information */}
+                            {/* Confidentiality Note */}
                             <div className="info-box">
                                 <div className="info-content">
                                     <h4>Confidentiality</h4>
                                     <p>
-                                        All information provided will be kept confidential and only shared with relevant 
+                                        All information provided will be kept confidential and only shared with relevant
                                         disability services and examination offices to ensure appropriate accommodations.
                                     </p>
                                 </div>
                             </div>
+
                         </div>
                     )}
 
@@ -447,17 +502,17 @@ const ApplicationSpecialNeeds = ({ formData, onInputChange, onNext, onPrev }) =>
                         </div>
                     )}
 
-                    {/* Form Actions */}
+                    {/* ── Form Actions ── */}
                     <div className="form-actions">
-                        <button 
-                            className="btn btn-secondary" 
+                        <button
+                            className="btn btn-secondary"
                             onClick={onPrev}
                             disabled={loading}
                         >
                             <span className="btn-icon">←</span>
                             Back
                         </button>
-                        
+
                         {saveSuccess ? (
                             <div className="save-success">
                                 <span className="success-icon">✓</span>
@@ -483,31 +538,19 @@ const ApplicationSpecialNeeds = ({ formData, onInputChange, onNext, onPrev }) =>
                             </button>
                         )}
                     </div>
+
+                </div>
+                {/* end form-card */}
+
+                {/* ── Progress Indicator ── */}
+                <div className="progress-indicator">
+                    <div className="progress-step completed"><span className="step-number">1</span><span className="step-label">Personal</span></div>
+                    <div className="progress-step completed"><span className="step-number">2</span><span className="step-label">Education</span></div>
+                    <div className="progress-step completed"><span className="step-number">3</span><span className="step-label">Program</span></div>
+                    <div className="progress-step active">   <span className="step-number">4</span><span className="step-label">Special Needs</span></div>
+                    <div className="progress-step">          <span className="step-number">5</span><span className="step-label">Review</span></div>
                 </div>
 
-                {/* Progress Indicator */}
-                <div className="progress-indicator">
-                    <div className="progress-step completed">
-                        <span className="step-number">1</span>
-                        <span className="step-label">Personal</span>
-                    </div>
-                    <div className="progress-step completed">
-                        <span className="step-number">2</span>
-                        <span className="step-label">Education</span>
-                    </div>
-                    <div className="progress-step completed">
-                        <span className="step-number">3</span>
-                        <span className="step-label">Program</span>
-                    </div>
-                    <div className="progress-step active">
-                        <span className="step-number">4</span>
-                        <span className="step-label">Special Needs</span>
-                    </div>
-                    <div className="progress-step">
-                        <span className="step-number">5</span>
-                        <span className="step-label">Review</span>
-                    </div>
-                </div>
             </div>
         </div>
     );
