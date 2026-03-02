@@ -555,7 +555,7 @@
 }
 
 /* ===== PROGRESS INDICATOR ===== */
-.progress-indicator {
+.applicationspecial-progress-indicator {
     display: flex;
     justify-content: space-between;
     background-color: white;
@@ -564,7 +564,7 @@
     border: 1px solid var(--border-light);
 }
 
-.progress-step {
+.applicationspecial-progress-step {
     display: flex;
     flex-direction: column;
     align-items: center;

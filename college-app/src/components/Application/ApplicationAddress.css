@@ -73,7 +73,7 @@
 }
 
 /* Progress Indicator */
-.progress-indicator {
+.applicationaddress-progress-indicator {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -647,7 +647,7 @@
   border: none;
 }
 
-.btn-primary {
+.applicationaddress-btn-primary {
   background: #0056b3;
   color: white;
 }

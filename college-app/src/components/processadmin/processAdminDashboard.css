@@ -750,7 +750,7 @@
 }
 
 /* Documents Summary */
-.documents-summary {
+.processadmindashboard-documents-summary {
   display: flex;
   gap: 20px;
   padding: 10px;

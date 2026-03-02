@@ -789,7 +789,7 @@
     box-shadow: var(--shadow-md);
 }
 
-.progress-step {
+.applicationlanguage-progress-step {
     display: flex;
     flex-direction: column;
     align-items: center;

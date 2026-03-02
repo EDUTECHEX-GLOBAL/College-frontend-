@@ -4,20 +4,18 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./processAdminDashboard.css";
 import Applications from "./Applications";
-import Documents from "./documents"; // Import the new Documents component
+import Documents from "./documents";
+import GusUniversity from "./gusuniversity"; // ✅ Import GUS University component
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 // Get process admin token - ONLY look for processAdminToken
 const getProcessAdminToken = () => {
-  // ONLY look for process-admin token
   const token = localStorage.getItem('processAdminToken');
-  
   if (token) {
     console.log('✅ Using processAdminToken');
     return token;
   }
-  
   console.error('❌ No process-admin token found');
   return null;
 };
@@ -66,7 +64,10 @@ const ProcessAdminDashboard = () => {
   const [processAdminData, setProcessAdminData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // ✅ Separate expanded state for each university menu
   const [kansusExpanded, setKansusExpanded] = useState(false);
+  const [gusExpanded, setGusExpanded] = useState(false);
 
   // Applications state
   const [applications, setApplications] = useState([]);
@@ -83,20 +84,18 @@ const ProcessAdminDashboard = () => {
   useEffect(() => {
     const token = getProcessAdminToken();
     const adminData = localStorage.getItem('processAdminData');
-    
+
     console.log('========== AUTH CHECK ==========');
     console.log('Process Admin Token exists:', !!token);
-    
+
     if (!token) {
       console.log('No process admin token found, redirecting to login');
       navigate("/process-admin-login");
       return;
     }
 
-    // Set axios default authorization header
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    
-    // Parse and set admin data
+
     try {
       if (adminData) {
         const parsed = JSON.parse(adminData);
@@ -106,7 +105,7 @@ const ProcessAdminDashboard = () => {
     } catch (error) {
       console.error("Error parsing admin data:", error);
     }
-    
+
     setLoading(false);
   }, [navigate]);
 
@@ -118,11 +117,9 @@ const ProcessAdminDashboard = () => {
   }, [activeTab]);
 
   const handleLogout = () => {
-    // Clear process admin tokens only
     localStorage.removeItem('processAdminToken');
     localStorage.removeItem('processAdminData');
     localStorage.removeItem('processAdminEmail');
-    
     delete axios.defaults.headers.common['Authorization'];
     navigate("/process-admin-login");
   };
@@ -135,7 +132,6 @@ const ProcessAdminDashboard = () => {
     if (activeTab === "applications") {
       fetchApplications();
     }
-    // Documents component handles its own refresh
   };
 
   const handleSearch = (e) => {
@@ -146,13 +142,18 @@ const ProcessAdminDashboard = () => {
     setKansusExpanded(!kansusExpanded);
   };
 
+  // ✅ Toggle GUS University sub-menu
+  const toggleGusMenu = () => {
+    setGusExpanded(!gusExpanded);
+  };
+
   // ============ APPLICATIONS APIs ============
   const fetchApplications = async () => {
     setApplicationsLoading(true);
     try {
       const token = getProcessAdminToken();
       console.log('Fetching applications with token:', token ? 'Present' : 'Missing');
-      
+
       if (!token) {
         console.error('No token found');
         navigate('/process-admin-login');
@@ -160,14 +161,14 @@ const ProcessAdminDashboard = () => {
       }
 
       const response = await axios.get(`${API_BASE_URL}/process-admin/documents/all`, {
-        headers: { 
+        headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
-      
+
       console.log('Applications response:', response.data);
-      
+
       if (response.data?.success && response.data?.data?.applications) {
         setApplications(response.data.data.applications);
       } else {
@@ -192,13 +193,12 @@ const ProcessAdminDashboard = () => {
       const response = await axios.get(`${API_BASE_URL}/process-admin/applications/${applicationId}/details`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      
-      // Handle response
+
       let appDetails = response.data;
       if (response.data.data) {
         appDetails = response.data.data;
       }
-      
+
       setSelectedApplication(appDetails);
     } catch (error) {
       console.error("Error fetching application details:", error);
@@ -209,11 +209,11 @@ const ProcessAdminDashboard = () => {
   const updateApplicationStatus = async (applicationId, status) => {
     try {
       const token = getProcessAdminToken();
-      await axios.put(`${API_BASE_URL}/process-admin/applications/${applicationId}/status`, 
+      await axios.put(`${API_BASE_URL}/process-admin/applications/${applicationId}/status`,
         { status },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
+
       fetchApplications();
       setSelectedApplication(null);
     } catch (error) {
@@ -223,7 +223,6 @@ const ProcessAdminDashboard = () => {
 
   // ============ RENDER FUNCTIONS ============
 
-  // Dashboard View
   const renderDashboard = () => {
     return (
       <div className="dashboard-content-area">
@@ -232,7 +231,6 @@ const ProcessAdminDashboard = () => {
           <p>Welcome, {processAdminData?.email || 'Process Admin'}!</p>
         </div>
 
-        {/* Stats Cards */}
         <div className="stats-grid">
           <div className="stat-card">
             <div className="stat-icon">📊</div>
@@ -268,7 +266,6 @@ const ProcessAdminDashboard = () => {
           </div>
         </div>
 
-        {/* Chart Placeholder */}
         <div className="chart-placeholder">
           <p>Process analytics will appear here</p>
         </div>
@@ -276,10 +273,9 @@ const ProcessAdminDashboard = () => {
     );
   };
 
-  // Applications View
   const renderApplications = () => {
     return (
-      <Applications 
+      <Applications
         applications={applications}
         applicationsLoading={applicationsLoading}
         searchQuery={searchQuery}
@@ -293,12 +289,15 @@ const ProcessAdminDashboard = () => {
     );
   };
 
-  // Documents View - Now using the separate Documents component
   const renderDocuments = () => {
     return <Documents />;
   };
 
-  // Render content based on active tab
+  // ✅ Render GUS University component
+  const renderGusUniversity = () => {
+    return <GusUniversity />;
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case "dashboard":
@@ -307,6 +306,8 @@ const ProcessAdminDashboard = () => {
         return renderApplications();
       case "documents":
         return renderDocuments();
+      case "gus-applications": // ✅ GUS University - Applications tab
+        return renderGusUniversity();
       default:
         return null;
     }
@@ -331,18 +332,19 @@ const ProcessAdminDashboard = () => {
             {sidebarOpen ? '◀' : '▶'}
           </button>
         </div>
-        
+
         <ul className="sidebar-menu">
-          <li 
+          {/* Dashboard */}
+          <li
             className={activeTab === "dashboard" ? "active" : ""}
             onClick={() => setActiveTab("dashboard")}
           >
             <span className="menu-icon">📊</span>
             {sidebarOpen && <span>Dashboard</span>}
           </li>
-          
-          {/* Kansus University with dropdown arrow */}
-          <li 
+
+          {/* ── Kansus University ── */}
+          <li
             className={`kansus-parent ${kansusExpanded ? 'expanded' : ''}`}
             onClick={toggleKansusMenu}
           >
@@ -354,18 +356,17 @@ const ProcessAdminDashboard = () => {
               </>
             )}
           </li>
-          
-          {/* Sub-menu items - Applications and Documents */}
+
           {kansusExpanded && sidebarOpen && (
             <ul className="sub-menu">
-              <li 
+              <li
                 className={activeTab === "applications" ? "active" : ""}
                 onClick={() => setActiveTab("applications")}
               >
                 <span className="menu-icon sub-icon">📋</span>
                 <span>Applications</span>
               </li>
-              <li 
+              <li
                 className={activeTab === "documents" ? "active" : ""}
                 onClick={() => setActiveTab("documents")}
               >
@@ -374,8 +375,35 @@ const ProcessAdminDashboard = () => {
               </li>
             </ul>
           )}
+
+          {/* ✅ ── GUS University ── */}
+          <li
+            className={`kansus-parent ${gusExpanded ? 'expanded' : ''}`}
+            onClick={toggleGusMenu}
+          >
+            <span className="menu-icon">🎓</span>
+            {sidebarOpen && (
+              <>
+                <span>GUS University</span>
+                <span className="dropdown-arrow">{gusExpanded ? '▼' : '▶'}</span>
+              </>
+            )}
+          </li>
+
+          {/* ✅ GUS University Sub-menu */}
+          {gusExpanded && sidebarOpen && (
+            <ul className="sub-menu">
+              <li
+                className={activeTab === "gus-applications" ? "active" : ""}
+                onClick={() => setActiveTab("gus-applications")}
+              >
+                <span className="menu-icon sub-icon">📋</span>
+                <span>Applications</span>
+              </li>
+            </ul>
+          )}
         </ul>
-        
+
         <div className="sidebar-footer">
           <button className="logout-btn-sidebar" onClick={handleLogout}>
             <span className="menu-icon">🚪</span>
@@ -391,7 +419,7 @@ const ProcessAdminDashboard = () => {
           <div className="navbar-left">
             <h1>Process Admin Dashboard</h1>
           </div>
-          
+
           <div className="navbar-center">
             <div className="search-container">
               <input
@@ -404,7 +432,7 @@ const ProcessAdminDashboard = () => {
               <button className="search-btn">🔍</button>
             </div>
           </div>
-          
+
           <div className="navbar-right">
             <div className="admin-profile">
               <span className="profile-icon">👨‍💼</span>

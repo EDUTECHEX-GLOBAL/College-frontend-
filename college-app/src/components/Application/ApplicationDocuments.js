@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import Resume from './Resume';              // ← CV Generator component
+import Resume from './Resume';
 import './ApplicationDocuments.css';
 
 const API_URL = process.env.REACT_APP_API_BASE_URL 
@@ -12,7 +12,6 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const token = localStorage.getItem("token");
-  const [showCVModal, setShowCVModal] = useState(false);
 
   const [isLoading,            setIsLoading]            = useState(true);
   const [isSubmitting,         setIsSubmitting]         = useState(false);
@@ -21,243 +20,97 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
   const [completionPercentage, setCompletionPercentage] = useState(0);
   const [localFormData,        setLocalFormData]        = useState(formData || {});
   const [expandedCategories,   setExpandedCategories]   = useState({
-    personal: true, education: true, language: true,
-    program: true,  university: true, additional: true
+    personal: true,
+    certificates: true,
   });
   const [dragActive,      setDragActive]      = useState(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [selectedDoc,     setSelectedDoc]     = useState(null);
   const [searchTerm,      setSearchTerm]      = useState('');
 
-  // ── NEW: CV card mode ─────────────────────────────────────────────
-  // 'choose'   → show "Upload" or "Generate" buttons
-  // 'upload'   → show standard file upload UI
-  // 'generate' → show full Resume generator below the card
+  // CV card mode — 'choose' | 'upload' | 'generate' | 'done'
   const [cvMode, setCvMode] = useState('choose');
+  // ✅ CV Generator is ALWAYS a modal — never inline
+  const [showCVModal, setShowCVModal] = useState(false);
 
-  // Document types based on GUS portal screenshots
   const documentTypes = [
     {
-      id: 'cv',
-      field: 'cv',
-      label: 'Curriculum vitae (Signed and dated)',
+      id: 'cv', field: 'cv',
+      label: 'Curriculum Vitae (Signed and dated)',
       description: 'Your updated CV/resume with your educational and professional background',
-      required: true,
-      accept: '.pdf,.jpg,.jpeg,.png',
-      maxSize: 5,
-      category: 'personal',
-      icon: '📄'
+      required: true, accept: '.pdf,.jpg,.jpeg,.png', maxSize: 5, category: 'personal', icon: '📄'
     },
     {
-      id: 'photo',
-      field: 'photo',
+      id: 'photo', field: 'photo',
       label: 'Photo',
       description: 'Recent passport-size photograph',
-      required: true,
-      accept: '.jpg,.jpeg,.png',
-      maxSize: 5,
-      category: 'personal',
-      icon: '📷'
+      required: true, accept: '.jpg,.jpeg,.png', maxSize: 5, category: 'personal', icon: '📷'
     },
     {
-      id: 'eqhe',
-      field: 'eqhe',
-      label: 'Higher Education Entrance Qualification',
-      description: 'Your secondary school certificate/university entrance qualification',
-      required: true,
-      accept: '.pdf,.jpg,.jpeg,.png',
-      maxSize: 5,
-      category: 'education',
-      icon: '🎓'
+      id: 'cert9th', field: 'cert9th',
+      label: '9th Grade Certificate',
+      description: 'Official certificate / marksheet from your 9th grade',
+      required: true, accept: '.pdf,.jpg,.jpeg,.png', maxSize: 5, category: 'certificates', icon: '📜'
     },
     {
-      id: 'finalEqhe',
-      field: 'finalEqhe',
-      label: 'Final Higher Education Entrance Qualification',
-      description: 'If you have not received your EQHE yet, please upload your highest qualifying school certificate',
-      required: false,
-      accept: '.pdf,.jpg,.jpeg,.png',
-      maxSize: 5,
-      category: 'education',
-      note: 'If you have not received your entrance qualification of higher education (EQHE) yet, please upload your highest qualifying school certificate (with German or English translation)',
-      icon: '📜'
+      id: 'cert10th', field: 'cert10th',
+      label: '10th Grade Certificate',
+      description: 'Official certificate / marksheet from your 10th grade (Secondary School)',
+      required: true, accept: '.pdf,.jpg,.jpeg,.png', maxSize: 5, category: 'certificates', icon: '📜'
     },
     {
-      id: 'germanCertificate',
-      field: 'germanCertificate',
-      label: 'Language certificate (German)',
-      description: 'German language proficiency certificate (if available)',
-      required: false,
-      accept: '.pdf,.jpg,.jpeg,.png',
-      maxSize: 5,
-      category: 'language',
-      note: 'Please upload, if already available',
-      icon: '🇩🇪'
+      id: 'cert11th', field: 'cert11th',
+      label: '11th Grade Certificate',
+      description: 'Official certificate / marksheet from your 11th grade',
+      required: true, accept: '.pdf,.jpg,.jpeg,.png', maxSize: 5, category: 'certificates', icon: '📜'
     },
     {
-      id: 'englishCertificate',
-      field: 'englishCertificate',
-      label: 'Language certificate (English)',
-      description: 'English language proficiency certificate (TOEFL, IELTS, etc.)',
-      required: true,
-      accept: '.pdf,.jpg,.jpeg,.png',
-      maxSize: 5,
-      category: 'language',
-      note: 'Please upload, if already available',
-      icon: '🇬🇧'
+      id: 'cert12th', field: 'cert12th',
+      label: '12th Grade Certificate',
+      description: 'Official certificate / marksheet from your 12th grade (Higher Secondary / A-Level)',
+      required: true, accept: '.pdf,.jpg,.jpeg,.png', maxSize: 5, category: 'certificates', icon: '🎓'
     },
-    {
-      id: 'portfolio',
-      field: 'portfolio',
-      label: 'Portfolio',
-      description: 'Creative portfolio for design/arts programs',
-      required: true,
-      accept: '.pdf,.jpg,.jpeg,.png',
-      maxSize: 5,
-      category: 'program',
-      link: '#',
-      linkText: 'Click Here to understand the Portfolio requirements for your selected program',
-      icon: '🎨'
-    },
-    {
-      id: 'noObjection',
-      field: 'noObjection',
-      label: 'No objection certificate',
-      description: 'Certificate from your last university stating that you are still eligible to take final exams',
-      required: false,
-      accept: '.pdf,.jpg,.jpeg,.png',
-      maxSize: 5,
-      category: 'university',
-      note: 'This is a certificate from your last university stating that you are still eligible to take final exams.',
-      icon: '📋'
-    },
-    {
-      id: 'deRegistration',
-      field: 'deRegistration',
-      label: 'De-registration certificate',
-      description: 'Proof from your previous university that you are no longer officially listed as a student',
-      required: false,
-      accept: '.pdf,.jpg,.jpeg,.png',
-      maxSize: 5,
-      category: 'university',
-      note: 'A de-registration certificate is proof from your previous university that you are no longer officially listed as a student (only applies if you already have a completed German degree).',
-      icon: '📑'
-    },
-    {
-      id: 'other',
-      field: 'other',
-      label: 'Other (e.g. clearance certificate, additional supporting documents)',
-      description: 'Any additional documents that support your application',
-      required: false,
-      accept: '.pdf,.jpg,.jpeg,.png',
-      maxSize: 5,
-      category: 'additional',
-      icon: '📎'
-    },
-    {
-      id: 'bachelorTranscript',
-      field: 'bachelorTranscript',
-      label: 'Bachelor transcript',
-      description: 'Official transcripts from your bachelor degree (if applicable)',
-      required: false,
-      accept: '.pdf,.jpg,.jpeg,.png',
-      maxSize: 5,
-      category: 'education',
-      icon: '📊'
-    },
-    {
-      id: 'bachelorCertificate',
-      field: 'bachelorCertificate',
-      label: 'Bachelor certificate',
-      description: 'Official bachelor degree certificate (if applicable)',
-      required: false,
-      accept: '.pdf,.jpg,.jpeg,.png',
-      maxSize: 5,
-      category: 'education',
-      icon: '🏆'
-    }
   ];
 
-  // Group documents by category
   const documentCategories = {
     personal: {
-      title: 'Personal Documents',
-      icon: '👤',
-      color: '#4299e1',
+      title: 'Personal Documents', icon: '👤', color: '#4299e1',
       documents: documentTypes.filter(doc => doc.category === 'personal')
     },
-    education: {
-      title: 'Education Documents',
-      icon: '📚',
-      color: '#48bb78',
-      documents: documentTypes.filter(doc => doc.category === 'education')
+    certificates: {
+      title: 'School Certificates', icon: '📚', color: '#48bb78',
+      documents: documentTypes.filter(doc => doc.category === 'certificates')
     },
-    language: {
-      title: 'Language Certificates',
-      icon: '🌐',
-      color: '#ed8936',
-      documents: documentTypes.filter(doc => doc.category === 'language')
-    },
-    program: {
-      title: 'Program Specific Documents',
-      icon: '🎯',
-      color: '#9f7aea',
-      documents: documentTypes.filter(doc => doc.category === 'program')
-    },
-    university: {
-      title: 'University Documents',
-      icon: '🏛️',
-      color: '#f56565',
-      documents: documentTypes.filter(doc => doc.category === 'university')
-    },
-    additional: {
-      title: 'Additional Documents',
-      icon: '📌',
-      color: '#667eea',
-      documents: documentTypes.filter(doc => doc.category === 'additional')
-    }
   };
 
-  // Filter documents based on search term
   const filteredCategories = searchTerm
     ? Object.entries(documentCategories).reduce((acc, [key, category]) => {
         const filteredDocs = category.documents.filter(doc =>
           doc.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
           doc.description.toLowerCase().includes(searchTerm.toLowerCase())
         );
-        if (filteredDocs.length > 0) {
-          acc[key] = { ...category, documents: filteredDocs };
-        }
+        if (filteredDocs.length > 0) acc[key] = { ...category, documents: filteredDocs };
         return acc;
       }, {})
     : documentCategories;
 
-  // =====================================================
-  // FETCH DOCUMENTS DATA ON LOAD
-  // =====================================================
+  // ── Fetch documents ──────────────────────────────────────────
   useEffect(() => {
     let isMounted = true;
-    if (token) {
-      fetchDocuments(isMounted);
-    } else {
-      setError("No authentication token found");
-      setIsLoading(false);
-    }
+    if (token) fetchDocuments(isMounted);
+    else { setError("No authentication token found"); setIsLoading(false); }
     return () => { isMounted = false; };
   }, [token]);
 
   const fetchDocuments = async (isMounted) => {
     try {
       setIsLoading(true);
-      console.log("Fetching documents from:", API_URL);
       const res = await axios.get(API_URL, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
       if (isMounted && res.data.success) {
         if (res.data.documents) {
           setLocalFormData(res.data.documents);
-          // ── If CV already exists, skip the choice screen ───────
           if (res.data.documents.cv?.fileName) {
             setCvMode(res.data.documents.cv.generated ? 'generate' : 'upload');
           }
@@ -270,7 +123,6 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
       console.error("Fetch documents error:", error.response?.data || error.message);
       if (isMounted) {
         if (error.response?.status === 404) {
-          console.log("No existing documents found, starting fresh");
           const emptyDocs = {};
           documentTypes.forEach(doc => { emptyDocs[doc.field] = null; });
           setLocalFormData(emptyDocs);
@@ -283,36 +135,28 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
     }
   };
 
-  // =====================================================
-  // DRAG AND DROP HANDLERS
-  // =====================================================
+  // ── Drag and drop ────────────────────────────────────────────
   const handleDrag = (e, field) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     if (e.type === "dragenter" || e.type === "dragover") setDragActive(field);
     else if (e.type === "dragleave") setDragActive(null);
   };
 
   const handleDrop = async (e, field, docType) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     setDragActive(null);
     const files = e.dataTransfer.files;
     if (files && files[0]) await handleFileUpload(files[0], field, docType);
   };
 
-  // =====================================================
-  // HANDLE FILE UPLOAD
-  // =====================================================
+  // ── File upload ──────────────────────────────────────────────
   const handleFileUpload = async (file, field, docType) => {
     if (!file) return;
-
     if (file.size > docType.maxSize * 1024 * 1024) {
       setError(`File size must be less than ${docType.maxSize}MB`);
       setTimeout(() => setError(''), 3000);
       return;
     }
-
     const allowedTypes  = docType.accept.split(',');
     const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
     if (!allowedTypes.includes(fileExtension)) {
@@ -320,7 +164,6 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
       setTimeout(() => setError(''), 3000);
       return;
     }
-
     if (file.type.startsWith('image/')) {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -328,27 +171,14 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
       };
       reader.readAsDataURL(file);
     }
-
     setUploading(prev => ({ ...prev, [field]: true }));
     setShowUploadModal(false);
-
     try {
       const uploadData = new FormData();
       uploadData.append("file", file);
-
-      console.log(`Uploading ${field} to:`, `${API_URL}/upload/${field}`);
-
-      const res = await axios.post(
-        `${API_URL}/upload/${field}`,
-        uploadData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
+      const res = await axios.post(`${API_URL}/upload/${field}`, uploadData, {
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
+      });
       if (res.data.success) {
         const updatedFile = {
           name:       file.name,
@@ -358,19 +188,9 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
           fileUrl:    res.data.fileData?.fileUrl  || res.data.fileUrl,
           uploadedAt: new Date().toISOString()
         };
-
-        setLocalFormData(prev => ({
-          ...prev,
-          [field]:               updatedFile,
-          [`${field}Preview`]:   prev[`${field}Preview`]
-        }));
-
-        if (res.data.completionPercentage !== undefined) {
-          setCompletionPercentage(res.data.completionPercentage);
-        }
-
+        setLocalFormData(prev => ({ ...prev, [field]: updatedFile, [`${field}Preview`]: prev[`${field}Preview`] }));
+        if (res.data.completionPercentage !== undefined) setCompletionPercentage(res.data.completionPercentage);
         if (onFileUpload) onFileUpload(field, updatedFile);
-
         setError('');
         setTimeout(() => alert(`${docType.label} uploaded successfully!`), 100);
       }
@@ -392,12 +212,9 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
     if (file) await handleFileUpload(file, field, docType);
   };
 
-  // =====================================================
-  // REMOVE FILE
-  // =====================================================
+  // ── Remove file ──────────────────────────────────────────────
   const handleRemoveFile = async (field) => {
     if (!window.confirm('Are you sure you want to remove this file?')) return;
-
     try {
       if (!localFormData[field] || !localFormData[field].fileName) {
         setLocalFormData(prev => ({ ...prev, [field]: null, [`${field}Preview`]: null }));
@@ -405,19 +222,14 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
         const requiredDocs     = documentTypes.filter(doc => doc.required);
         const uploadedRequired = requiredDocs.filter(doc => localFormData[doc.field]).length;
         setCompletionPercentage(Math.round((uploadedRequired / requiredDocs.length) * 100));
-        // Reset CV mode when CV is removed
         if (field === 'cv') setCvMode('choose');
         alert("File removed from local storage");
         return;
       }
-
-      console.log(`Removing file: ${field} from`, `${API_URL}/files/${field}`);
-
       try {
         const res = await axios.delete(`${API_URL}/files/${field}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-
         if (res.data.success) {
           setLocalFormData(prev => ({ ...prev, [field]: null, [`${field}Preview`]: null }));
           if (res.data.completionPercentage !== undefined) setCompletionPercentage(res.data.completionPercentage);
@@ -426,11 +238,10 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
           alert("File removed successfully!");
         }
       } catch (apiError) {
-        console.log("API error, but clearing locally:", apiError.response?.data);
         setLocalFormData(prev => ({ ...prev, [field]: null, [`${field}Preview`]: null }));
-        const requiredDocs   = documentTypes.filter(doc => doc.required);
-        const updatedData    = { ...localFormData, [field]: null };
-        const uploaded       = requiredDocs.filter(doc => updatedData[doc.field]).length;
+        const requiredDocs = documentTypes.filter(doc => doc.required);
+        const updatedData  = { ...localFormData, [field]: null };
+        const uploaded     = requiredDocs.filter(doc => updatedData[doc.field]).length;
         setCompletionPercentage(Math.round((uploaded / requiredDocs.length) * 100));
         if (onFileUpload) onFileUpload(field, null);
         if (field === 'cv') setCvMode('choose');
@@ -442,27 +253,25 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
     }
   };
 
-  // =====================================================
-  // CV GENERATOR — called by Resume when student downloads
-  // Marks the CV as "generated" so it counts as completed
-  // =====================================================
+  // ── CV generated ─────────────────────────────────────────────
   const handleCVGenerated = (cvData) => {
     const generatedCV = {
-      name:        `CV_${cvData.firstName || 'Student'}_${cvData.lastName || ''}.pdf`,
-      size:        0,
-      type:        'application/pdf',
-      fileName:    `generated_cv_${Date.now()}`,
-      fileUrl:     null,
-      generated:   true,          // distinguishes generated vs uploaded
-      uploadedAt:  new Date().toISOString()
+      name:       `CV_${cvData.firstName || 'Student'}_${cvData.lastName || ''}.pdf`,
+      size:       0,
+      type:       'application/pdf',
+      fileName:   `generated_cv_${Date.now()}`,
+      fileUrl:    null,
+      generated:  true,
+      uploadedAt: new Date().toISOString()
     };
     setLocalFormData(prev => ({ ...prev, cv: generatedCV }));
     if (onFileUpload) onFileUpload('cv', generatedCV);
+    // Close modal after generating
+    setShowCVModal(false);
+    setCvMode('generate');
   };
 
-  // =====================================================
-  // CALCULATE COMPLETION
-  // =====================================================
+  // ── Completion ───────────────────────────────────────────────
   const calculateCompletion = useCallback(() => {
     const requiredDocs     = documentTypes.filter(doc => doc.required);
     const uploadedRequired = requiredDocs.filter(doc => localFormData[doc.field]).length;
@@ -473,34 +282,19 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
     setCompletionPercentage(calculateCompletion());
   }, [localFormData, calculateCompletion]);
 
-  // =====================================================
-  // TOGGLE CATEGORY
-  // =====================================================
   const toggleCategory = (category) => {
     setExpandedCategories(prev => ({ ...prev, [category]: !prev[category] }));
   };
 
-  // =====================================================
-  // OPEN UPLOAD MODAL
-  // =====================================================
-  const openUploadModal = (doc) => {
-    setSelectedDoc(doc);
-    setShowUploadModal(true);
-  };
-
-  // =====================================================
-  // HANDLE NEXT
-  // =====================================================
+  // ── Navigation ───────────────────────────────────────────────
   const handleNext = async () => {
     const missingRequired = documentTypes
       .filter(doc => doc.required && !localFormData[doc.field])
       .map(doc => doc.label);
-
     if (missingRequired.length > 0) {
       setError(`Please upload all required documents:\n\n• ${missingRequired.join('\n• ')}`);
       return;
     }
-
     setIsSubmitting(true);
     try {
       try {
@@ -509,74 +303,58 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
           { documents: localFormData, completed: true },
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        console.log("Documents status saved successfully");
       } catch (statusError) {
         console.log("Status endpoint not available, continuing anyway");
       }
-
-      let targetPath;
-      if (location.pathname.includes('/documents')) {
-        targetPath = location.pathname.replace('/documents', '/special-needs');
-      } else {
-        targetPath = '/firstyear/dashboard/application/special-needs';
-      }
-      console.log("Navigating to:", targetPath);
+      let targetPath = location.pathname.includes('/documents')
+        ? location.pathname.replace('/documents', '/special-needs')
+        : '/firstyear/dashboard/application/special-needs';
       navigate(targetPath);
-
     } catch (error) {
       console.error("Error in handleNext:", error);
-      let targetPath;
-      if (location.pathname.includes('/documents')) {
-        targetPath = location.pathname.replace('/documents', '/special-needs');
-      } else {
-        targetPath = '/firstyear/dashboard/application/special-needs';
-      }
+      let targetPath = location.pathname.includes('/documents')
+        ? location.pathname.replace('/documents', '/special-needs')
+        : '/firstyear/dashboard/application/special-needs';
       navigate(targetPath);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // =====================================================
-  // HANDLE BACK
-  // =====================================================
   const handleBack = () => {
-    let backPath;
-    if (location.pathname.includes('/documents')) {
-      backPath = location.pathname.replace('/documents', '/firsteducation');
-    } else {
-      backPath = '/firstyear/dashboard/application/firsteducation';
-    }
+    let backPath = location.pathname.includes('/documents')
+      ? location.pathname.replace('/documents', '/firsteducation')
+      : '/firstyear/dashboard/application/firsteducation';
     navigate(backPath);
   };
 
-  // =====================================================
-  // HELPERS
-  // =====================================================
+  // ✅ Close CV modal — resets to 'choose' only if no CV is saved yet
+  const handleCloseCV = () => {
+    setShowCVModal(false);
+    if (!localFormData.cv?.fileName) {
+      setCvMode('choose');
+    }
+  };
+
+  // ── Helpers ──────────────────────────────────────────────────
   const getFileIcon = (fileName) => {
     const ext = fileName?.split('.').pop()?.toLowerCase();
     switch (ext) {
       case 'pdf':  return '📕';
-      case 'jpg':
-      case 'jpeg':
-      case 'png':
-      case 'gif':  return '🖼️';
-      case 'doc':
-      case 'docx': return '📘';
-      default:     return '📄';
+      case 'jpg': case 'jpeg': case 'png': case 'gif': return '🖼️';
+      case 'doc': case 'docx': return '📘';
+      default: return '📄';
     }
   };
 
   const formatFileSize = (bytes) => {
     if (!bytes || bytes === 0) return '—';
-    if (bytes < 1024)          return bytes + ' B';
-    if (bytes < 1024 * 1024)   return (bytes / 1024).toFixed(1) + ' KB';
+    if (bytes < 1024)        return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
-  // =====================================================
-  // LOADING STATE
-  // =====================================================
+  // ── Loading ──────────────────────────────────────────────────
   if (isLoading) {
     return (
       <div className="application-documents">
@@ -588,13 +366,13 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
     );
   }
 
-  // =====================================================
+  // ════════════════════════════════════════════════════════════
   // MAIN UI
-  // =====================================================
+  // ════════════════════════════════════════════════════════════
   return (
     <div className="application-documents">
 
-      {/* Header with Application ID */}
+      {/* Header */}
       <div className="documents-header">
         <div className="header-left">
           <h1>BA Communication Design</h1>
@@ -639,16 +417,16 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
         })}
       </div>
 
-      {/* Error Message */}
+      {/* Error Banner */}
       {error && (
         <div className="error-banner">
           <i className="fas fa-exclamation-triangle"></i>
           <span>{error}</span>
-          <button onClick={() => setError('')} className="error-close-btn">×</button>
+          <button type="button" onClick={() => setError('')} className="error-close-btn">×</button>
         </div>
       )}
 
-      {/* Main Form Container */}
+      {/* Main Form */}
       <div className="documents-form-container">
         <div className="form-header">
           <h2>Application Documents</h2>
@@ -656,8 +434,6 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
             <i className="fas fa-info-circle"></i>
             <span>Upload all required documents marked with <span className="required-star">*</span></span>
           </div>
-
-          {/* Search Bar */}
           <div className="search-container">
             <i className="fas fa-search search-icon"></i>
             <input
@@ -675,11 +451,10 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
 
         <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
 
-          {/* ── Documents by Category ── */}
+          {/* Documents by Category */}
           {Object.entries(filteredCategories).map(([key, category]) => (
             category.documents.length > 0 && (
               <div key={key} className="document-category">
-
                 <div
                   className="category-header"
                   onClick={() => toggleCategory(key)}
@@ -701,14 +476,10 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
                   <div className="documents-grid">
                     {category.documents.map((doc) => {
 
-                      /* ╔══════════════════════════════════════════════════╗
-                         ║   SPECIAL CV CARD — Upload OR Generate CV        ║
-                         ╚══════════════════════════════════════════════════╝ */
+                      /* ── SPECIAL CV CARD ── */
                       if (doc.id === 'cv') {
                         return (
                           <div key={doc.id} className="document-card cv-document-card">
-
-                            {/* Card header — same as all other cards */}
                             <div className="document-header">
                               <div className="document-icon">{doc.icon}</div>
                               <div className="document-title-wrapper">
@@ -721,12 +492,9 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
                             </div>
 
                             <div className="document-upload-area">
-
-                              {/* ── CV already provided (uploaded or generated) ── */}
+                              {/* ── CV already saved ── */}
                               {localFormData.cv?.fileName ? (
-
                                 localFormData.cv.generated ? (
-                                  /* Generated badge */
                                   <div className="cv-generated-badge">
                                     <span className="cv-gen-check">✅</span>
                                     <div className="cv-gen-info">
@@ -734,24 +502,17 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
                                       <span className="cv-gen-tag">Generated CV</span>
                                     </div>
                                     <div className="cv-gen-actions">
-                                      <button
-                                        type="button"
-                                        className="cv-action-btn cv-action-edit"
-                                        onClick={() => setCvMode('generate')}
-                                      >
+                                      <button type="button" className="cv-action-btn cv-action-edit"
+                                        onClick={() => { setCvMode('generate'); setShowCVModal(true); }}>
                                         ✏️ Edit / Re-download
                                       </button>
-                                      <button
-                                        type="button"
-                                        className="cv-action-btn cv-action-remove"
-                                        onClick={() => handleRemoveFile('cv')}
-                                      >
+                                      <button type="button" className="cv-action-btn cv-action-remove"
+                                        onClick={() => handleRemoveFile('cv')}>
                                         🗑 Remove
                                       </button>
                                     </div>
                                   </div>
                                 ) : (
-                                  /* Uploaded file info */
                                   <div className="file-info">
                                     <span className="file-icon-large">
                                       {getFileIcon(localFormData.cv.name || localFormData.cv.fileName)}
@@ -776,64 +537,37 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
                                     </div>
                                   </div>
                                 )
-
                               ) : (
-                                /* ── CV not yet provided — show mode switcher ── */
+                                /* ── No CV yet: choose mode ── */
                                 <>
-                                  {/* ── MODE: choose ── */}
                                   {cvMode === 'choose' && (
                                     <div className="cv-choice-wrapper">
-                                      <p className="cv-choice-prompt">
-                                        How would you like to provide your CV?
-                                      </p>
+                                      <p className="cv-choice-prompt">How would you like to provide your CV?</p>
                                       <div className="cv-choice-row">
-
-                                        {/* Upload option */}
-                                        <button
-                                          type="button"
-                                          className="cv-choice-card"
-                                          onClick={() => setCvMode('upload')}
-                                        >
+                                        <button type="button" className="cv-choice-card"
+                                          onClick={() => setCvMode('upload')}>
                                           <span className="cv-choice-emoji">📤</span>
                                           <span className="cv-choice-title">Upload CV</span>
-                                          <span className="cv-choice-desc">
-                                            Upload your existing CV as PDF or image
-                                          </span>
+                                          <span className="cv-choice-desc">Upload your existing CV as PDF or image</span>
                                         </button>
-
                                         <div className="cv-choice-or">OR</div>
-
-                                        {/* Generate option */}
-                                        <button
-  type="button"
-  className="cv-choice-card cv-choice-card--generate"
-  onClick={() => {
-    setCvMode('generate');
-    setShowCVModal(true);
-  }}
->
+                                        {/* ✅ Generate CV → opens modal only, NO inline panel */}
+                                        <button type="button" className="cv-choice-card cv-choice-card--generate"
+                                          onClick={() => { setCvMode('generate'); setShowCVModal(true); }}>
                                           <span className="cv-choice-emoji">✨</span>
                                           <span className="cv-choice-title">Generate CV</span>
-                                          <span className="cv-choice-desc">
-                                            Auto-fill from your form data, edit &amp; download as PDF
-                                          </span>
+                                          <span className="cv-choice-desc">Auto-fill from your form data, edit &amp; download as PDF</span>
                                         </button>
-
                                       </div>
                                     </div>
                                   )}
 
-                                  {/* ── MODE: upload ── */}
                                   {cvMode === 'upload' && (
                                     <div className="upload-placeholder">
-                                      <button
-                                        type="button"
-                                        className="cv-back-link"
-                                        onClick={() => setCvMode('choose')}
-                                      >
+                                      <button type="button" className="cv-back-link"
+                                        onClick={() => setCvMode('choose')}>
                                         ← Choose differently
                                       </button>
-
                                       <div
                                         className={`upload-prompt ${dragActive === doc.field ? 'drag-active' : ''}`}
                                         onDragEnter={(e) => handleDrag(e, doc.field)}
@@ -847,7 +581,6 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
                                           {doc.accept.replace(/\./g, '').toUpperCase()} • Max {doc.maxSize}MB
                                         </p>
                                       </div>
-
                                       <input
                                         type="file"
                                         id="cvFileInput"
@@ -856,17 +589,31 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
                                         onChange={(e) => handleFileChange(e, doc.field, doc)}
                                         disabled={uploading[doc.field] || isSubmitting}
                                       />
-                                      <button
-                                        type="button"
-                                        className="upload-button"
+                                      <button type="button" className="upload-button"
                                         onClick={() => document.getElementById('cvFileInput').click()}
-                                        disabled={uploading[doc.field] || isSubmitting}
-                                      >
-                                        {uploading[doc.field] ? (
-                                          <><span className="spinner-small"></span> Uploading...</>
-                                        ) : (
-                                          <><i className="fas fa-upload"></i> Browse Files</>
-                                        )}
+                                        disabled={uploading[doc.field] || isSubmitting}>
+                                        {uploading[doc.field]
+                                          ? <><span className="spinner-small"></span> Uploading...</>
+                                          : <><i className="fas fa-upload"></i> Browse Files</>
+                                        }
+                                      </button>
+                                    </div>
+                                  )}
+
+                                  {/* ✅ cvMode === 'generate' with no saved CV → show "Open Generator" button, NOT inline panel */}
+                                  {cvMode === 'generate' && (
+                                    <div className="cv-choice-wrapper">
+                                      <p className="cv-choice-prompt">CV Generator is ready</p>
+                                      <button type="button" className="cv-choice-card cv-choice-card--generate"
+                                        onClick={() => setShowCVModal(true)}>
+                                        <span className="cv-choice-emoji">✨</span>
+                                        <span className="cv-choice-title">Open CV Generator</span>
+                                        <span className="cv-choice-desc">Click to edit and download your CV as PDF</span>
+                                      </button>
+                                      <button type="button" className="cv-back-link"
+                                        style={{ marginTop: '8px' }}
+                                        onClick={() => setCvMode('choose')}>
+                                        ← Choose differently
                                       </button>
                                     </div>
                                   )}
@@ -877,9 +624,7 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
                         );
                       }
 
-                      /* ╔══════════════════════════════════════════════════╗
-                         ║   ALL OTHER DOCUMENT CARDS (unchanged)           ║
-                         ╚══════════════════════════════════════════════════╝ */
+                      /* ── ALL OTHER DOCUMENT CARDS ── */
                       return (
                         <div
                           key={doc.id}
@@ -899,32 +644,18 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
                               <p className="document-description">{doc.description}</p>
                               {doc.note && (
                                 <p className="document-note">
-                                  <i className="fas fa-info-circle"></i>
-                                  {doc.note}
+                                  <i className="fas fa-info-circle"></i>{doc.note}
                                 </p>
                               )}
                             </div>
                           </div>
 
                           <div className="document-upload-area">
-                            {doc.link && (
-                              <p className="document-link">
-                                <a href={doc.link} target="_blank" rel="noopener noreferrer">
-                                  <i className="fas fa-external-link-alt"></i>
-                                  {doc.linkText}
-                                </a>
-                              </p>
-                            )}
-
                             {localFormData[doc.field] && localFormData[doc.field].fileName ? (
                               <div className="file-preview">
                                 {localFormData[`${doc.field}Preview`] ? (
                                   <div className="image-preview-container">
-                                    <img
-                                      src={localFormData[`${doc.field}Preview`]}
-                                      alt={doc.label}
-                                      className="image-preview"
-                                    />
+                                    <img src={localFormData[`${doc.field}Preview`]} alt={doc.label} className="image-preview" />
                                     <div className="image-preview-overlay">
                                       <button type="button" className="view-image-btn"
                                         onClick={() => window.open(localFormData[`${doc.field}Preview`], '_blank')}>
@@ -943,15 +674,10 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
                                     </span>
                                     <div className="file-details">
                                       <span className="file-name" title={localFormData[doc.field].originalName || localFormData[doc.field].name || localFormData[doc.field].fileName}>
-                                        {localFormData[doc.field].originalName ||
-                                         localFormData[doc.field].name ||
-                                         localFormData[doc.field].fileName ||
-                                         'Uploaded file'}
+                                        {localFormData[doc.field].originalName || localFormData[doc.field].name || localFormData[doc.field].fileName || 'Uploaded file'}
                                       </span>
                                       {localFormData[doc.field].size && (
-                                        <span className="file-size">
-                                          {formatFileSize(localFormData[doc.field].size)}
-                                        </span>
+                                        <span className="file-size">{formatFileSize(localFormData[doc.field].size)}</span>
                                       )}
                                     </div>
                                     <div className="file-actions">
@@ -985,17 +711,13 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
                                   onChange={(e) => handleFileChange(e, doc.field, doc)}
                                   disabled={uploading[doc.field] || isSubmitting}
                                 />
-                                <button
-                                  type="button"
-                                  className="upload-button"
+                                <button type="button" className="upload-button"
                                   onClick={() => document.getElementById(`${doc.field}Upload`).click()}
-                                  disabled={uploading[doc.field] || isSubmitting}
-                                >
-                                  {uploading[doc.field] ? (
-                                    <><span className="spinner-small"></span> Uploading...</>
-                                  ) : (
-                                    <><i className="fas fa-upload"></i> Browse</>
-                                  )}
+                                  disabled={uploading[doc.field] || isSubmitting}>
+                                  {uploading[doc.field]
+                                    ? <><span className="spinner-small"></span> Uploading...</>
+                                    : <><i className="fas fa-upload"></i> Browse</>
+                                  }
                                 </button>
                               </div>
                             )}
@@ -1009,39 +731,7 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
             )
           ))}
 
-          {/* ╔══════════════════════════════════════════════════════════╗
-              ║  CV GENERATOR PANEL                                      ║
-              ║  Appears below all document categories when              ║
-              ║  cvMode === 'generate'. Student edits → downloads PDF.   ║
-              ╚══════════════════════════════════════════════════════════╝ */}
-          {cvMode === 'generate' && (
-            <div className="cv-generator-panel">
-              <div className="cv-generator-panel-header">
-                <div className="cv-generator-panel-title">
-                  <span>✨</span>
-                  <h3>CV Generator</h3>
-                  <span className="cv-gen-panel-hint">
-                    Your form data has been auto-filled below — edit any field, then click Download PDF
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  className="cv-generator-close-btn"
-                  onClick={() => setCvMode(localFormData.cv?.fileName ? 'done' : 'choose')}
-                >
-                  ✕ Close Generator
-                </button>
-              </div>
-
-              {/* The full editable Resume component */}
-              <Resume
-                formData={formData}
-                onDownload={handleCVGenerated}
-              />
-            </div>
-          )}
-
-          {/* Summary Section */}
+          {/* Upload Summary */}
           <div className="documents-summary">
             <div className="summary-header">
               <i className="fas fa-chart-pie"></i>
@@ -1087,7 +777,7 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
         </form>
       </div>
 
-      {/* Upload Modal (for other docs) */}
+      {/* ── Upload Modal ── */}
       {showUploadModal && selectedDoc && (
         <div className="modal-overlay" onClick={() => setShowUploadModal(false)}>
           <div className="upload-modal" onClick={(e) => e.stopPropagation()}>
@@ -1108,10 +798,7 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
                 id="modalFileInput"
                 accept={selectedDoc.accept}
                 className="file-input-hidden"
-                onChange={(e) => {
-                  handleFileChange(e, selectedDoc.field, selectedDoc);
-                  setShowUploadModal(false);
-                }}
+                onChange={(e) => { handleFileChange(e, selectedDoc.field, selectedDoc); setShowUploadModal(false); }}
               />
               <button className="modal-upload-btn" onClick={() => document.getElementById('modalFileInput').click()}>
                 <i className="fas fa-upload"></i> Select File
@@ -1120,27 +807,28 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
           </div>
         </div>
       )}
-{showCVModal && (
-  <div className="resume-modal-backdrop">
-    <div className="resume-modal">
 
-      <button
-        className="resume-modal-close"
-        onClick={() => setShowCVModal(false)}
-      >
-        ✕
-      </button>
+      {/* ✅ CV GENERATOR — ALWAYS A FULL-SCREEN MODAL, never inline */}
+      {showCVModal && (
+        <div className="resume-modal-backdrop" onClick={handleCloseCV}>
+          <div className="resume-modal" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className="resume-modal-close"
+              onClick={handleCloseCV}
+              aria-label="Close CV Generator"
+            >
+              ✕
+            </button>
+            <Resume
+              formData={formData}
+              onDownload={(cv) => { handleCVGenerated(cv); }}
+              onPrev={handleCloseCV}
+            />
+          </div>
+        </div>
+      )}
 
-      <Resume
-        formData={formData}
-        onDownload={(cv) => {
-          handleCVGenerated(cv);
-          setShowCVModal(false); // close after download
-        }}
-      />
-    </div>
-  </div>
-)}
     </div>
   );
 };

@@ -1,47 +1,60 @@
 // src/components/Resume.js
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import './Resume.css';
 
-// ─────────────────────────────────────────────────────────────────
-//  Helper: format ISO date string → "14 May 1999"
-// ─────────────────────────────────────────────────────────────────
-const formatDate = (dateStr) => {
-  if (!dateStr) return '—';
-  return new Date(dateStr).toLocaleDateString('en-GB', {
-    year: 'numeric', month: 'short', day: 'numeric',
-  });
+const API_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+
+/* ─────────────────────────────────────────────────
+   LABEL MAPS
+───────────────────────────────────────────────── */
+const DEGREE_LABELS = {
+  bachelor: "Bachelor's Degree",
+  master:   "Master's Degree",
+  diploma:  "Diploma",
+  phd:      "PhD / Doctorate",
 };
 
-// ─────────────────────────────────────────────────────────────────
-//  EditableField — plain text normally, input/textarea in edit mode
-// ─────────────────────────────────────────────────────────────────
-const EditableField = ({
-  value,
-  onChange,
-  isEditing,
-  multiline   = false,
-  className   = '',
-  placeholder = '—',
-}) => {
-  if (!isEditing) {
-    return <span className={`editable-value ${className}`}>{value || placeholder}</span>;
-  }
-  if (multiline) {
-    return (
-      <textarea
-        className={`editable-input editable-textarea ${className}`}
-        value={value || ''}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        rows={3}
-      />
-    );
-  }
+const toTitleCase = (str) => {
+  if (!str) return '';
+  return str.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+};
+
+const degreeLabel = (val) => DEGREE_LABELS[val] || toTitleCase(val) || '—';
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' });
+};
+
+const extractYear = (dateStr) => {
+  if (!dateStr) return '';
+  if (/^\d{4}$/.test(String(dateStr))) return String(dateStr);
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return '';
+  return String(d.getFullYear());
+};
+
+/* ─────────────────────────────────────────────────
+   EDITABLE FIELD
+───────────────────────────────────────────────── */
+const EditableField = ({ value, onChange, isEditing, multiline = false, className = '', placeholder = '—' }) => {
+  if (!isEditing) return <span className={`ev ${className}`}>{value || <span className="ev-empty">{placeholder}</span>}</span>;
+  if (multiline) return (
+    <textarea
+      className={`ei ei-ta ${className}`}
+      value={value || ''}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      rows={4}
+    />
+  );
   return (
     <input
       type="text"
-      className={`editable-input ${className}`}
+      className={`ei ${className}`}
       value={value || ''}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
@@ -49,38 +62,11 @@ const EditableField = ({
   );
 };
 
-// ─────────────────────────────────────────────────────────────────
-//  Static sub-components
-// ─────────────────────────────────────────────────────────────────
-const SideLabel = ({ title }) => (
-  <div className="sidebar-section-label">{title}</div>
-);
-
-const SectionHeader = ({ title }) => (
-  <div className="section-header">
-    <div className="section-header-inner">
-      <div className="section-header-bar" />
-      <span className="section-header-title">{title}</span>
-    </div>
-    <div className="section-header-line" />
-  </div>
-);
-
-const EditableContactRow = ({ icon, value, onChange, isEditing, placeholder }) => (
-  <div className="contact-row">
-    <span className="contact-icon">{icon}</span>
-    <EditableField
-      value={value}
-      onChange={onChange}
-      isEditing={isEditing}
-      className="contact-text"
-      placeholder={placeholder}
-    />
-  </div>
-);
-
+/* ─────────────────────────────────────────────────
+   SKILL BAR
+───────────────────────────────────────────────── */
 const SkillBar = ({ label, pct }) => (
-  <div className="skill-bar-wrapper">
+  <div className="skill-bar">
     <div className="skill-bar-label">{label}</div>
     <div className="skill-bar-track">
       <div className="skill-bar-fill" style={{ width: `${Math.min(pct || 0, 100)}%` }} />
@@ -88,85 +74,89 @@ const SkillBar = ({ label, pct }) => (
   </div>
 );
 
-// ─────────────────────────────────────────────────────────────────
-//  Main Resume Component — fetches data via JWT token
-// ─────────────────────────────────────────────────────────────────
-const Resume = ({ onDownload }) => {
-  const [cv, setCv]           = useState(null);
+/* ─────────────────────────────────────────────────
+   SECTION TITLE
+───────────────────────────────────────────────── */
+const SectionTitle = ({ title, icon }) => (
+  <div className="sec-title">
+    {icon && <span className="sec-icon">{icon}</span>}
+    <span>{title}</span>
+  </div>
+);
+
+/* ─────────────────────────────────────────────────
+   INFO ROW
+───────────────────────────────────────────────── */
+const InfoRow = ({ icon, children }) => (
+  <div className="info-row">
+    <span className="info-icon">{icon}</span>
+    <span className="info-text">{children}</span>
+  </div>
+);
+
+/* ═════════════════════════════════════════════════
+   MAIN RESUME COMPONENT
+═════════════════════════════════════════════════ */
+const Resume = ({ onDownload, onPrev }) => {
+  const [cv,        setCv]        = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaved,   setIsSaved]   = useState(false);
   const [loading,   setLoading]   = useState(true);
   const [error,     setError]     = useState(null);
+  const [mobileTab, setMobileTab] = useState('main');
 
-  // ── Fetch resume from API using JWT ──────────────────────────────
+  /* ── Fetch ─────────────────────────────────── */
   useEffect(() => {
     const fetchResume = async () => {
       try {
         const token = localStorage.getItem('token');
+        if (!token) { setError('No authentication token. Please sign in.'); setLoading(false); return; }
 
-        if (!token) {
-          setError('No authentication token found. Please sign in.');
-          setLoading(false);
-          return;
-        }
-
-        const res = await axios.get('http://localhost:5000/api/application/resume', {
+        const res = await axios.get(`${API_URL}/api/application/resume`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
         if (res.data?.success) {
           const r = res.data.resume;
-
-          // Map API response → local cv state
-          // API returns: firstName, lastName, email, mobile,
-          //              permanentAddress, education{degree,institutionName},
-          //              language{eqheOriginalTitle,eqheCountry},
-          //              specialNeeds{hasSpecialNeeds}
           setCv({
-            // Personal
-            firstName:    r.firstName    || '',
-            lastName:     r.lastName     || '',
-            email:        r.email        || '',
-            mobile:       r.mobile       || '',
-
-            // Address — API returns permanentAddress as a single string
-            currentAddress: r.permanentAddress || '',
-            city:           '',
-            state:          '',
-            postalCode:     '',
-            country:        '',
-
-            // Education (nested object from API)
-            qualificationLevel: r.education?.degree           || '',
-            institutionName:    r.education?.institutionName  || '',
-            boardUniversity:    '',
-            countryOfStudy:     '',
-            startYear:          '',
-            endYear:            '',
-            score:              '',
-            resultStatus:       '',
-            gradingSystem:      '',
-
-            // Language / EQHE (nested object from API)
+            title:       r.title       || '',
+            firstName:   r.firstName   || '',
+            lastName:    r.lastName    || '',
+            email:       r.email       || '',
+            mobile:      r.mobile      || '',
+            dateOfBirth:            r.dateOfBirth            || '',
+            placeOfBirth:           r.placeOfBirth           || '',
+            countryOfBirth:         r.countryOfBirth         || '',
+            citizenship:            r.citizenship            || '',
+            gender:                 r.gender                 || '',
+            correspondenceLanguage: r.correspondenceLanguage || '',
+            isEUCitizen:            r.isEUCitizen            ?? false,
+            needVisa:               r.needVisa               || '',
+            passportNumber:     r.passportNumber     || '',
+            passportIssueDate:  r.passportIssueDate  || '',
+            passportExpiryDate: r.passportExpiryDate || '',
+            issuingCountry:     r.issuingCountry     || '',
+            currentAddress: r.currentAddress || r.permanentAddress || '',
+            city:           r.city           || '',
+            state:          r.state          || '',
+            postalCode:     r.postalCode     || '',
+            country:        r.country        || '',
+            qualificationLevel: r.education?.degree          || '',
+            institutionName:    r.education?.institutionName || '',
+            boardUniversity:    r.education?.boardUniversity || '',
+            countryOfStudy:     r.education?.countryOfStudy  || '',
+            startYear: extractYear(r.education?.startYear || r.education?.startDate || ''),
+            endYear:   extractYear(r.education?.endYear   || r.education?.endDate   || ''),
+            score:     r.education?.score || '',
             englishTestType: r.language?.eqheOriginalTitle || '',
-            testScore:       '',
-            testDate:        '',
-            listeningScore:  '',
-            readingScore:    '',
-            writingScore:    '',
-            speakingScore:   '',
-            eqheCountry:     r.language?.eqheCountry || '',
-
-            // Special Needs
-            hasSpecialNeeds: r.specialNeeds?.hasSpecialNeeds || 'no',
-
-            // Passport (not in API yet, editable manually)
-            passportNumber:     '',
-            passportExpiryDate: '',
-            issuingCountry:     '',
-            needVisa:           '',
-
-            // Course (not in API yet, editable manually)
+            eqheCountry:     r.language?.eqheCountry       || '',
+            testScore:       r.language?.testScore         || '',
+            testDate:        r.language?.testDate          || '',
+            listeningScore:  r.language?.listeningScore    || '',
+            readingScore:    r.language?.readingScore      || '',
+            writingScore:    r.language?.writingScore      || '',
+            speakingScore:   r.language?.speakingScore     || '',
+            hasSpecialNeeds:    r.specialNeeds?.hasSpecialNeeds || 'no',
             selectedCountry:    '',
             selectedUniversity: '',
             campus:             '',
@@ -177,18 +167,7 @@ const Resume = ({ onDownload }) => {
             intakeYear:         '',
             secondPreference:   '',
             thirdPreference:    '',
-
-            // Other
-            dateOfBirth:            '',
-            placeOfBirth:           '',
-            countryOfBirth:         '',
-            citizenship:            '',
-            gender:                 '',
-            correspondenceLanguage: '',
-            isEUCitizen:            false,
-
-            // Custom summary (student can personalise)
-            customSummary: '',
+            customSummary:      '',
           });
         } else {
           setError('Resume data could not be loaded.');
@@ -200,425 +179,491 @@ const Resume = ({ onDownload }) => {
         setLoading(false);
       }
     };
-
     fetchResume();
   }, []);
 
-  // ── Loading / Error states ────────────────────────────────────────
-  if (loading) {
-    return (
-      <div className="resume-wrapper">
-        <div className="resume-loading">
-          <div className="loading-spinner" />
-          <p>Loading your CV…</p>
+  /* ── Helpers ───────────────────────────────── */
+  const update = useCallback((field) => (value) => setCv(prev => ({ ...prev, [field]: value })), []);
+
+  const handleSave       = () => { setIsEditing(false); setIsSaved(true); setTimeout(() => setIsSaved(false), 3000); };
+  const handleCloseError = (e) => { e.preventDefault(); e.stopPropagation(); setError(null); };
+  const handleRetry      = (e) => { e.preventDefault(); e.stopPropagation(); setError(null); setLoading(true); window.location.reload(); };
+
+  // FIX 1: Cancel = exit edit mode only; Close (view mode) = close panel entirely
+  const handleExitEdit = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isEditing) {
+      setIsEditing(false);
+    } else {
+      if (onPrev) onPrev();
+    }
+  };
+
+  const handleClose = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsEditing(false);
+    if (onPrev) onPrev();
+  };
+
+  // FIX 2: Clean print window — only the .rv-card, no app chrome/sidebar/navbar
+  const handleDownload = () => {
+    if (onDownload) onDownload(cv);
+
+    const cvCardEl = document.querySelector('.rv-card');
+    if (!cvCardEl) { window.print(); return; }
+
+    const stylesHtml = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
+      .map(el => el.outerHTML)
+      .join('\n');
+
+    const printWindow = window.open('', '_blank', 'width=960,height=720');
+    if (!printWindow) { window.print(); return; }
+
+    printWindow.document.write(`<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>CV — ${cv?.firstName || ''} ${cv?.lastName || ''}</title>
+    ${stylesHtml}
+    <style>
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+      }
+      .rv-card {
+        display: flex !important;
+        width: 100% !important;
+        min-height: 100vh !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+      }
+      .rv-sidebar {
+        min-width: 220px !important;
+        max-width: 260px !important;
+        background: #1a2236 !important;
+        color: #fff !important;
+        padding: 24px 16px !important;
+      }
+      .rv-main { flex: 1 !important; padding: 32px 40px !important; }
+      .no-print, .rv-toolbar, .edit-banner,
+      .mobile-tabs, .cv-actions { display: none !important; }
+      @page { margin: 0; size: A4 portrait; }
+    </style>
+  </head>
+  <body>
+    ${cvCardEl.outerHTML}
+    <script>
+      window.onload = function() {
+        setTimeout(function() { window.print(); window.close(); }, 600);
+      };
+    <\/script>
+  </body>
+</html>`);
+    printWindow.document.close();
+  };
+
+  /* ── Loading ───────────────────────────────── */
+  if (loading) return (
+    <div className="rv-wrapper">
+      <div className="rv-loading">
+        <div className="rv-spinner" />
+        <p>Loading your CV…</p>
+      </div>
+    </div>
+  );
+
+  /* ── Error state — closeable card ────────────── */
+  if (error || !cv) return (
+    <div className="rv-wrapper">
+      <div className="rv-error-card">
+        <button
+          type="button"
+          className="rv-error-close"
+          onClick={handleCloseError}
+          aria-label="Dismiss error"
+        >✕</button>
+
+        <div className="rv-error-icon">⚠️</div>
+        <p className="rv-error-msg">{error || 'No resume data found.'}</p>
+
+        <div className="rv-error-actions">
+          <button type="button" className="rv-err-btn primary" onClick={handleRetry}>
+            ↺ Try Again
+          </button>
+          <button type="button" className="rv-err-btn secondary" onClick={handleCloseError}>
+            Dismiss
+          </button>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
 
-  if (error || !cv) {
-    return (
-      <div className="resume-wrapper">
-        <div className="resume-error">
-          <p>⚠️ {error || 'No resume data found.'}</p>
-        </div>
-      </div>
-    );
-  }
+  /* ── Derived values ─────────────────────────── */
+  const initials      = `${(cv.firstName || 'A')[0]}${(cv.lastName || 'S')[0]}`.toUpperCase();
+  const displayDegree = degreeLabel(cv.qualificationLevel);
+  const displayEqhe   = toTitleCase(cv.englishTestType) || '—';
+  const hasScores     = cv.listeningScore || cv.readingScore || cv.writingScore || cv.speakingScore;
 
-  // ── State helpers ─────────────────────────────────────────────────
-  const update = (field) => (value) => setCv(prev => ({ ...prev, [field]: value }));
-
-  // Avatar initials
-  const initials = `${(cv.firstName || 'A')[0]}${(cv.lastName || 'S')[0]}`.toUpperCase();
-
-  // Skill bars
-  const ieltsBands = [
-    { label: `Listening  ${cv.listeningScore}`, pct: (parseFloat(cv.listeningScore) / 9) * 100 },
-    { label: `Reading    ${cv.readingScore}`,   pct: (parseFloat(cv.readingScore)   / 9) * 100 },
-    { label: `Writing    ${cv.writingScore}`,   pct: (parseFloat(cv.writingScore)   / 9) * 100 },
-    { label: `Speaking   ${cv.speakingScore}`,  pct: (parseFloat(cv.speakingScore)  / 9) * 100 },
-  ];
-  const hasScores = cv.listeningScore || cv.readingScore || cv.writingScore || cv.speakingScore;
-
-  // Auto-generated summary fallback
   const autoSummary =
-    `Motivated and academically accomplished applicant from ${cv.institutionName || 'my institution'}, ` +
-    `${cv.countryOfStudy || cv.eqheCountry || ''}, holding a ${cv.qualificationLevel || 'degree'}` +
+    `Motivated and academically accomplished applicant` +
+    `${cv.institutionName ? ` from ${cv.institutionName}` : ''}` +
+    `${cv.countryOfStudy  ? `, ${cv.countryOfStudy}`      : ''}` +
+    `, holding a ${displayDegree}` +
     `${cv.score ? ` with a score of ${cv.score}` : ''}. ` +
-    `Currently applying for ${cv.courseName || 'the selected course'} at ` +
-    `${cv.selectedUniversity || 'my chosen university'}${cv.selectedCountry ? ', ' + cv.selectedCountry : ''}. ` +
-    `Strong academic background with ${cv.englishTestType || 'English qualification'} ` +
-    `${cv.testScore ? `overall score of ${cv.testScore}` : 'proficiency'}. ` +
+    `${cv.courseName ? `Currently applying for ${cv.courseName}` : 'Currently applying'}` +
+    `${cv.selectedUniversity ? ` at ${cv.selectedUniversity}` : ''}. ` +
+    `Strong academic background with ${displayEqhe} proficiency. ` +
     `Passionate, disciplined, and eager to contribute to a diverse academic environment.`;
 
   const displaySummary = cv.customSummary || autoSummary;
 
-  const handleSave = () => {
-    setIsEditing(false);
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 3000);
-  };
+  const scoreBands = [
+    { label: 'Listening', score: cv.listeningScore },
+    { label: 'Reading',   score: cv.readingScore },
+    { label: 'Writing',   score: cv.writingScore },
+    { label: 'Speaking',  score: cv.speakingScore },
+  ];
 
-  const handleDownload = () => {
-    if (onDownload) onDownload(cv);
-    window.print();
-  };
+  /* ─────────────────────────────────────────────
+     SIDEBAR CONTENT
+  ───────────────────────────────────────────── */
+  const SidebarContent = () => (
+    <>
+      <div className="sb-top">
+        <div className="sb-avatar">{initials}</div>
+        <div className="sb-name">
+          <EditableField value={cv.firstName} onChange={update('firstName')} isEditing={isEditing} placeholder="First Name" />
+          {' '}
+          <EditableField value={cv.lastName}  onChange={update('lastName')}  isEditing={isEditing} placeholder="Last Name" />
+        </div>
+        <div className="sb-role">
+          <EditableField value={cv.programLevel ? toTitleCase(cv.programLevel) : ''} onChange={update('programLevel')} isEditing={isEditing} placeholder="Program Level" /> Applicant
+        </div>
+      </div>
 
-  // ─────────────────────────────────────────────────────────────────
-  // RENDER
-  // ─────────────────────────────────────────────────────────────────
+      <div className="sb-body">
+        <div className="sb-label">Contact</div>
+        <InfoRow icon="✉"><EditableField value={cv.email}  onChange={update('email')}  isEditing={isEditing} placeholder="Email" /></InfoRow>
+        <InfoRow icon="📱"><EditableField value={cv.mobile} onChange={update('mobile')} isEditing={isEditing} placeholder="Mobile" /></InfoRow>
+        <InfoRow icon="📍"><EditableField value={cv.currentAddress} onChange={update('currentAddress')} isEditing={isEditing} placeholder="Address" /></InfoRow>
+        {isEditing ? (
+          <div className="addr-row">
+            <input className="ei mini" value={cv.city}       onChange={(e) => update('city')(e.target.value)}       placeholder="City"     />
+            <input className="ei mini" value={cv.state}      onChange={(e) => update('state')(e.target.value)}      placeholder="State"    />
+            <input className="ei mini" value={cv.postalCode} onChange={(e) => update('postalCode')(e.target.value)} placeholder="Postcode" />
+          </div>
+        ) : (
+          <InfoRow icon="🏙">{[cv.city, cv.state, cv.postalCode].filter(Boolean).join(', ') || '—'}</InfoRow>
+        )}
+        <InfoRow icon="🌍"><EditableField value={cv.country} onChange={update('country')} isEditing={isEditing} placeholder="Country" /></InfoRow>
+
+        <div className="sb-label">Passport</div>
+        <InfoRow icon="🛂">
+          {isEditing
+            ? <input className="ei" value={cv.passportNumber} onChange={(e) => update('passportNumber')(e.target.value)} placeholder="Passport No." />
+            : `No: ${cv.passportNumber || '—'}`}
+        </InfoRow>
+        <InfoRow icon="🏳️">
+          {isEditing
+            ? <input className="ei" value={cv.issuingCountry} onChange={(e) => update('issuingCountry')(e.target.value)} placeholder="Issuing Country" />
+            : `Issued: ${cv.issuingCountry || '—'}`}
+        </InfoRow>
+        <InfoRow icon="📅">Expiry: {formatDate(cv.passportExpiryDate)}</InfoRow>
+        <InfoRow icon="✈️">Visa: {cv.needVisa ? toTitleCase(cv.needVisa) : 'N/A'}</InfoRow>
+
+        <div className="sb-label">Education</div>
+        {isEditing
+          ? <EditableField value={cv.qualificationLevel} onChange={update('qualificationLevel')} isEditing={isEditing} className="sb-deg" placeholder="Degree" />
+          : <span className="ev sb-deg">{displayDegree}</span>}
+        <EditableField value={cv.institutionName} onChange={update('institutionName')} isEditing={isEditing} className="sb-inst" placeholder="Institution" />
+        <div className="sb-period">
+          {cv.startYear || cv.endYear ? `${cv.startYear || '?'} – ${cv.endYear || 'Present'}` : '—'}
+          {cv.score ? ` · ${cv.score}` : ''}
+        </div>
+
+        <div className="sb-label">Entrance Qual.</div>
+        {isEditing
+          ? <EditableField value={cv.englishTestType} onChange={update('englishTestType')} isEditing={isEditing} className="sb-eqhe" placeholder="EQHE Title" />
+          : <span className="ev sb-eqhe">{displayEqhe}</span>}
+        {cv.eqheCountry && <div className="sb-period">Country: {toTitleCase(cv.eqheCountry)}</div>}
+        {cv.testDate    && <div className="sb-period">Date: {formatDate(cv.testDate)}</div>}
+        {hasScores && (
+          <div className="sb-scores">
+            <div className="sb-overall-row">
+              <span className="sb-overall-label">Overall</span>
+              <EditableField value={cv.testScore} onChange={update('testScore')} isEditing={isEditing} className="sb-overall-score" placeholder="—" />
+            </div>
+            {scoreBands.map(b => (
+              <SkillBar key={b.label} label={`${b.label}  ${b.score || ''}`} pct={(parseFloat(b.score) / 9) * 100} />
+            ))}
+          </div>
+        )}
+
+        <div className="sb-label">Target University</div>
+        <InfoRow icon="🎓"><EditableField value={cv.selectedUniversity} onChange={update('selectedUniversity')} isEditing={isEditing} placeholder="University" /></InfoRow>
+        <InfoRow icon="🌍"><EditableField value={cv.selectedCountry}    onChange={update('selectedCountry')}    isEditing={isEditing} placeholder="Country" /></InfoRow>
+        {isEditing ? (
+          <div className="addr-row">
+            <input className="ei mini" value={cv.intakeMonth} onChange={(e) => update('intakeMonth')(e.target.value)} placeholder="Month" />
+            <input className="ei mini" value={cv.intakeYear}  onChange={(e) => update('intakeYear')(e.target.value)}  placeholder="Year"  />
+          </div>
+        ) : (
+          <InfoRow icon="📆">
+            {cv.intakeMonth || cv.intakeYear ? `${cv.intakeMonth} ${cv.intakeYear}`.trim() : '—'}
+          </InfoRow>
+        )}
+      </div>
+    </>
+  );
+
+  /* ─────────────────────────────────────────────
+     MAIN CONTENT
+  ───────────────────────────────────────────── */
+  const MainContent = () => (
+    <>
+      <div className="main-header">
+        <div className="main-name">{cv.firstName} {cv.lastName}</div>
+        {(cv.courseName || cv.selectedUniversity) && (
+          <div className="main-sub">
+            {[cv.courseName, cv.selectedUniversity].filter(Boolean).join(' · ')}
+          </div>
+        )}
+      </div>
+
+      <SectionTitle title="Personal Summary" icon="📝" />
+      {isEditing && (
+        <div className="edit-hint no-print">✏️ Personalise your summary below, or leave blank to auto-generate.</div>
+      )}
+      <EditableField
+        value={isEditing ? (cv.customSummary || '') : displaySummary}
+        onChange={update('customSummary')}
+        isEditing={isEditing}
+        multiline
+        className="summary-text"
+        placeholder={autoSummary}
+      />
+
+      {(cv.courseName || cv.selectedUniversity || isEditing) && (
+        <>
+          <SectionTitle title="Course Preferences" icon="🎯" />
+          <div className="entry-block">
+            <div className="entry-title">1st Choice — <EditableField value={cv.courseName} onChange={update('courseName')} isEditing={isEditing} placeholder="Course name" /></div>
+            <div className="entry-org"><EditableField value={cv.selectedUniversity} onChange={update('selectedUniversity')} isEditing={isEditing} placeholder="University" /></div>
+            <div className="entry-meta">
+              <EditableField value={cv.programLevel} onChange={update('programLevel')} isEditing={isEditing} placeholder="Level" />
+              {cv.studyMode       && <><span className="dot">·</span><EditableField value={cv.studyMode}       onChange={update('studyMode')}       isEditing={isEditing} placeholder="Mode" /></>}
+              {cv.selectedCountry && <><span className="dot">·</span><EditableField value={cv.selectedCountry} onChange={update('selectedCountry')} isEditing={isEditing} placeholder="Country" /></>}
+            </div>
+            {(cv.intakeMonth || cv.intakeYear || isEditing) && (
+              <div className="entry-detail">
+                Intake: <EditableField value={cv.intakeMonth} onChange={update('intakeMonth')} isEditing={isEditing} placeholder="Month" />
+                {' '}<EditableField value={cv.intakeYear} onChange={update('intakeYear')} isEditing={isEditing} placeholder="Year" />
+              </div>
+            )}
+          </div>
+          {(cv.secondPreference || isEditing) && (
+            <div className="entry-block">
+              <div className="entry-title">2nd Choice — <EditableField value={cv.secondPreference} onChange={update('secondPreference')} isEditing={isEditing} placeholder="Second preference" /></div>
+            </div>
+          )}
+          {(cv.thirdPreference || isEditing) && (
+            <div className="entry-block">
+              <div className="entry-title">3rd Choice — <EditableField value={cv.thirdPreference} onChange={update('thirdPreference')} isEditing={isEditing} placeholder="Third preference" /></div>
+            </div>
+          )}
+        </>
+      )}
+
+      {(cv.qualificationLevel || cv.institutionName || isEditing) && (
+        <>
+          <SectionTitle title="Educational Background" icon="🎓" />
+          <div className="entry-block">
+            <div className="entry-title">
+              {isEditing
+                ? <EditableField value={cv.qualificationLevel} onChange={update('qualificationLevel')} isEditing={isEditing} placeholder="Degree" />
+                : displayDegree}
+            </div>
+            <div className="entry-org"><EditableField value={cv.institutionName} onChange={update('institutionName')} isEditing={isEditing} placeholder="Institution" /></div>
+            <div className="entry-meta">
+              {isEditing ? (
+                <>
+                  <EditableField value={cv.startYear} onChange={update('startYear')} isEditing={isEditing} placeholder="Start" />
+                  {' – '}
+                  <EditableField value={cv.endYear}   onChange={update('endYear')}   isEditing={isEditing} placeholder="End" />
+                </>
+              ) : (
+                cv.startYear || cv.endYear ? `${cv.startYear || '?'} – ${cv.endYear || 'Present'}` : '—'
+              )}
+              {cv.countryOfStudy && <><span className="dot">·</span>{cv.countryOfStudy}</>}
+            </div>
+            {(cv.boardUniversity || isEditing) && <div className="entry-detail">Awarding Body: <EditableField value={cv.boardUniversity} onChange={update('boardUniversity')} isEditing={isEditing} placeholder="Board / University" /></div>}
+            {(cv.score || isEditing) && <div className="entry-detail">Score / Grade: <EditableField value={cv.score} onChange={update('score')} isEditing={isEditing} placeholder="e.g. 78%" /></div>}
+          </div>
+        </>
+      )}
+
+      {(cv.englishTestType || isEditing) && (
+        <>
+          <SectionTitle title="Entrance Qualification (EQHE)" icon="📋" />
+          <div className="entry-block">
+            <div className="entry-title">
+              {isEditing
+                ? <EditableField value={cv.englishTestType} onChange={update('englishTestType')} isEditing={isEditing} placeholder="Qualification Title" />
+                : displayEqhe}
+              {cv.testScore   && <> — Score {cv.testScore}</>}
+              {cv.eqheCountry && <> ({toTitleCase(cv.eqheCountry)})</>}
+            </div>
+            {cv.testDate && <div className="entry-meta">Test Date: {formatDate(cv.testDate)}</div>}
+            {hasScores && (
+              <div className="score-grid">
+                {scoreBands.map(({ label, score }, idx) => (
+                  <div key={label} className="score-chip">
+                    <div className="score-chip-label">{label}</div>
+                    <EditableField
+                      value={score}
+                      onChange={update(['listeningScore','readingScore','writingScore','speakingScore'][idx])}
+                      isEditing={isEditing}
+                      className="score-chip-val"
+                      placeholder="—"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      <SectionTitle title="Personal Information" icon="👤" />
+      <div className="pi-grid">
+        {[
+          ['Date of Birth',    formatDate(cv.dateOfBirth),             false, null],
+          ['Gender',           toTitleCase(cv.gender),                 true,  'gender'],
+          ['Nationality',      toTitleCase(cv.citizenship),            true,  'citizenship'],
+          ['Place of Birth',   cv.placeOfBirth,                        true,  'placeOfBirth'],
+          ['Country of Birth', cv.countryOfBirth,                      true,  'countryOfBirth'],
+          ['Correspondence',   toTitleCase(cv.correspondenceLanguage), false, null],
+          ['Visa Required',    toTitleCase(cv.needVisa) || 'N/A',      false, null],
+          ['EU Citizen',       cv.isEUCitizen === true ? 'Yes' : cv.isEUCitizen === false ? 'No' : '—', false, null],
+        ].map(([label, val, editable, field]) => (
+          <div key={label} className="pi-row">
+            <span className="pi-label">{label}</span>
+            {editable && isEditing
+              ? <input className="ei inline" value={cv[field] || ''} onChange={(e) => update(field)(e.target.value)} placeholder={label} />
+              : <span className="pi-val">{val || '—'}</span>}
+          </div>
+        ))}
+        {cv.hasSpecialNeeds && cv.hasSpecialNeeds !== 'no' && (
+          <div className="pi-row">
+            <span className="pi-label">Special Needs</span>
+            <span className="pi-val">{toTitleCase(cv.hasSpecialNeeds)}</span>
+          </div>
+        )}
+      </div>
+
+      <SectionTitle title="References" icon="🤝" />
+      <p className="ref-text">References available upon request.</p>
+
+      <div className="cv-actions no-print">
+        {isEditing ? (
+          <>
+            <button type="button" className="cv-btn save"   onClick={handleSave}>💾 Save</button>
+            <button type="button" className="cv-btn cancel" onClick={handleExitEdit}>✕ Cancel</button>
+          </>
+        ) : (
+          <>
+            <button type="button" className="cv-btn edit" onClick={() => setIsEditing(true)}>✏️ Edit CV</button>
+            {onPrev && (
+              <button type="button" className="cv-btn cancel" onClick={handleClose}>✕ Close</button>
+            )}
+          </>
+        )}
+        <button type="button" className="cv-btn download" onClick={handleDownload}>⬇ Download PDF</button>
+        <button type="button" className="cv-btn print"    onClick={handleDownload}>🖨 Print</button>
+      </div>
+    </>
+  );
+
+  /* ─────────────────────────────────────────────
+     RENDER
+  ───────────────────────────────────────────── */
   return (
-    <div className="resume-wrapper">
+    <div className="rv-wrapper">
 
-      {/* ── Toolbar (hidden on print) ── */}
-      <div className="resume-toolbar no-print">
-        <div className="toolbar-left">
+      {/* ── Toolbar ── */}
+      <div className="rv-toolbar no-print">
+        <div className="toolbar-l">
           <span className="toolbar-title">📄 CV Preview</span>
           {isEditing && <span className="toolbar-hint">✏️ Click any field to edit</span>}
         </div>
-        <div className="toolbar-right">
-          {isSaved && <span className="toolbar-saved">✓ Changes saved</span>}
+        <div className="toolbar-r">
+          {isSaved && <span className="saved-badge">✓ Saved</span>}
+
+          {/* Edit/Save toggle */}
           {isEditing ? (
-            <>
-              <button className="toolbar-btn toolbar-btn-save"   onClick={handleSave}>💾 Save Changes</button>
-              <button className="toolbar-btn toolbar-btn-cancel" onClick={() => setIsEditing(false)}>Cancel</button>
-            </>
+            <button type="button" className="tb-btn tb-save" onClick={handleSave}>💾 Save</button>
           ) : (
-            <button className="toolbar-btn toolbar-btn-edit" onClick={() => setIsEditing(true)}>✏️ Edit CV</button>
+            <button type="button" className="tb-btn tb-edit" onClick={() => setIsEditing(true)}>✏️ Edit</button>
           )}
-          <button className="toolbar-btn toolbar-btn-download" onClick={handleDownload}>⬇ Download PDF</button>
+
+          {/* Cancel (editing) → exits edit mode only
+              Close  (viewing) → closes the panel/modal entirely */}
+          <button
+            type="button"
+            className="tb-btn tb-cancel"
+            onClick={handleExitEdit}
+          >
+            {isEditing ? '✕ Cancel' : '✕ Close'}
+          </button>
+
+          {/* PDF — clean print window, no app chrome */}
+          <button type="button" className="tb-btn tb-dl" onClick={handleDownload}>⬇ PDF</button>
         </div>
       </div>
 
-      {/* ── Editing banner ── */}
+      {/* ── Edit mode banner with ✕ close ── */}
       {isEditing && (
         <div className="edit-banner no-print">
-          ✏️ <strong>Editing mode</strong> — All highlighted fields are editable. Click any text to change it.
+          <span>✏️ <strong>Edit mode</strong> — tap any highlighted field to change it.</span>
+          <button
+            type="button"
+            className="banner-close"
+            onClick={handleExitEdit}
+            aria-label="Exit edit mode"
+          >✕</button>
         </div>
       )}
 
-      {/* ══════════════════════════════════════════════════════
-          RESUME CARD
-      ══════════════════════════════════════════════════════ */}
-      <div className="resume-page">
-        <div className="resume-card">
-
-          {/* ══════════════ LEFT SIDEBAR ══════════════ */}
-          <div className="resume-sidebar">
-
-            {/* Avatar + Name */}
-            <div className="sidebar-top">
-              <div className="sidebar-avatar">{initials}</div>
-              <div className="sidebar-name">
-                <EditableField value={cv.firstName} onChange={update('firstName')} isEditing={isEditing} placeholder="First Name" />
-                &nbsp;
-                <EditableField value={cv.lastName}  onChange={update('lastName')}  isEditing={isEditing} placeholder="Last Name" />
-              </div>
-              <div className="sidebar-role">
-                <EditableField value={cv.programLevel} onChange={update('programLevel')} isEditing={isEditing} placeholder="Program Level" /> Applicant
-              </div>
-            </div>
-
-            <div className="sidebar-body">
-
-              {/* Contact */}
-              <SideLabel title="Contact Details" />
-              <EditableContactRow icon="✉"  value={cv.email}          onChange={update('email')}          isEditing={isEditing} placeholder="Email address" />
-              <EditableContactRow icon="📱" value={cv.mobile}         onChange={update('mobile')}         isEditing={isEditing} placeholder="Mobile number" />
-              <EditableContactRow icon="📍" value={cv.currentAddress} onChange={update('currentAddress')} isEditing={isEditing} placeholder="Street address" />
-
-              {/* City/State/Postcode */}
-              {isEditing ? (
-                <div className="address-edit-row">
-                  <input className="editable-input mini" value={cv.city}       onChange={(e) => update('city')(e.target.value)}       placeholder="City"     />
-                  <input className="editable-input mini" value={cv.state}      onChange={(e) => update('state')(e.target.value)}      placeholder="State"    />
-                  <input className="editable-input mini" value={cv.postalCode} onChange={(e) => update('postalCode')(e.target.value)} placeholder="Postcode" />
-                </div>
-              ) : (
-                <div className="contact-row">
-                  <span className="contact-icon">🏙</span>
-                  <span className="contact-text">
-                    {[cv.city, cv.state, cv.postalCode].filter(Boolean).join(', ') || '—'}
-                  </span>
-                </div>
-              )}
-              <EditableContactRow icon="🌍" value={cv.country} onChange={update('country')} isEditing={isEditing} placeholder="Country" />
-
-              {/* Passport */}
-              <SideLabel title="Passport" />
-              <div className="contact-row">
-                <span className="contact-icon">🛂</span>
-                {isEditing
-                  ? <input className="editable-input" value={cv.passportNumber} onChange={(e) => update('passportNumber')(e.target.value)} placeholder="Passport Number" />
-                  : <span className="contact-text">No: {cv.passportNumber || '—'}</span>
-                }
-              </div>
-              <div className="contact-row">
-                <span className="contact-icon">🏳️</span>
-                {isEditing
-                  ? <input className="editable-input" value={cv.issuingCountry} onChange={(e) => update('issuingCountry')(e.target.value)} placeholder="Issuing Country" />
-                  : <span className="contact-text">Issued: {cv.issuingCountry || '—'}</span>
-                }
-              </div>
-              <div className="contact-row">
-                <span className="contact-icon">📅</span>
-                <span className="contact-text">Expiry: {formatDate(cv.passportExpiryDate)}</span>
-              </div>
-              <div className="contact-row">
-                <span className="contact-icon">✈️</span>
-                {isEditing
-                  ? <input className="editable-input" value={cv.needVisa} onChange={(e) => update('needVisa')(e.target.value)} placeholder="Visa Required?" />
-                  : <span className="contact-text">Visa Required: {cv.needVisa || 'N/A'}</span>
-                }
-              </div>
-
-              {/* Education summary */}
-              <SideLabel title="Education" />
-              <EditableField value={cv.qualificationLevel} onChange={update('qualificationLevel')} isEditing={isEditing} className="sidebar-edu-degree"      placeholder="Degree" />
-              <EditableField value={cv.institutionName}    onChange={update('institutionName')}    isEditing={isEditing} className="sidebar-edu-institution" placeholder="Institution" />
-              <div className="sidebar-edu-period">
-                <EditableField value={cv.startYear} onChange={update('startYear')} isEditing={isEditing} placeholder="Start" />
-                {' – '}
-                <EditableField value={cv.endYear}   onChange={update('endYear')}   isEditing={isEditing} placeholder="End" />
-                {cv.score ? ` · ${cv.score}` : ''}
-              </div>
-
-              {/* EQHE / English */}
-              <SideLabel title="Entrance Qualification" />
-              <EditableField value={cv.englishTestType} onChange={update('englishTestType')} isEditing={isEditing} className="sidebar-eqhe-title" placeholder="EQHE Title" />
-              {cv.eqheCountry && (
-                <div className="sidebar-eqhe-date">Country: {cv.eqheCountry}</div>
-              )}
-              <div className="sidebar-eqhe-date">Date: {formatDate(cv.testDate)}</div>
-              {hasScores && (
-                <>
-                  <div className="ielts-overall-row">
-                    <span className="ielts-label">Overall</span>
-                    <EditableField value={cv.testScore} onChange={update('testScore')} isEditing={isEditing} className="ielts-score" placeholder="—" />
-                  </div>
-                  {ieltsBands.map(b => <SkillBar key={b.label} label={b.label} pct={b.pct} />)}
-                </>
-              )}
-
-              {/* Target University */}
-              <SideLabel title="Target University" />
-              <EditableContactRow icon="🎓" value={cv.selectedUniversity} onChange={update('selectedUniversity')} isEditing={isEditing} placeholder="University" />
-              <EditableContactRow icon="🌍" value={cv.selectedCountry}    onChange={update('selectedCountry')}    isEditing={isEditing} placeholder="Country" />
-              {isEditing ? (
-                <div className="address-edit-row">
-                  <input className="editable-input mini" value={cv.intakeMonth} onChange={(e) => update('intakeMonth')(e.target.value)} placeholder="Month" />
-                  <input className="editable-input mini" value={cv.intakeYear}  onChange={(e) => update('intakeYear')(e.target.value)}  placeholder="Year"  />
-                </div>
-              ) : (
-                <div className="contact-row">
-                  <span className="contact-icon">📆</span>
-                  <span className="contact-text">{cv.intakeMonth} {cv.intakeYear}</span>
-                </div>
-              )}
-
-            </div>
-          </div>
-          {/* end sidebar */}
-
-          {/* ══════════════ MAIN CONTENT ══════════════ */}
-          <div className="resume-main">
-
-            {/* Name / Role */}
-            <div className="main-name">
-              <EditableField value={cv.firstName} onChange={update('firstName')} isEditing={isEditing} placeholder="First Name" />
-              &nbsp;
-              <EditableField value={cv.lastName}  onChange={update('lastName')}  isEditing={isEditing} placeholder="Last Name" />
-            </div>
-            <div className="main-role">
-              <EditableField value={cv.courseName}         onChange={update('courseName')}         isEditing={isEditing} placeholder="Course Name" />
-              {cv.courseName && cv.selectedUniversity && <>&nbsp;·&nbsp;</>}
-              <EditableField value={cv.selectedUniversity} onChange={update('selectedUniversity')} isEditing={isEditing} placeholder="University" />
-            </div>
-
-            {/* Summary */}
-            <SectionHeader title="Personal Summary" />
-            {isEditing && (
-              <div className="summary-edit-hint no-print">
-                ✏️ Personalise your summary below. Leave blank to use the auto-generated version.
-              </div>
-            )}
-            <EditableField
-              value={isEditing ? (cv.customSummary || '') : displaySummary}
-              onChange={update('customSummary')}
-              isEditing={isEditing}
-              multiline={true}
-              className="summary-text"
-              placeholder={autoSummary}
-            />
-
-            {/* Course Preferences */}
-            <SectionHeader title="Course Preferences" />
-
-            <div className="exp-block">
-              <div className="exp-title">
-                1st Choice —&nbsp;
-                <EditableField value={cv.courseName} onChange={update('courseName')} isEditing={isEditing} placeholder="Course Name" />
-              </div>
-              <div className="exp-org">
-                <EditableField value={cv.selectedUniversity} onChange={update('selectedUniversity')} isEditing={isEditing} placeholder="University" />
-                {cv.campus && `, ${cv.campus}`}
-              </div>
-              <div className="exp-period">
-                <EditableField value={cv.programLevel}    onChange={update('programLevel')}    isEditing={isEditing} placeholder="Level" />
-                {cv.studyMode && <>&nbsp;·&nbsp;<EditableField value={cv.studyMode} onChange={update('studyMode')} isEditing={isEditing} placeholder="Study Mode" /></>}
-                {cv.selectedCountry && <>&nbsp;·&nbsp;<EditableField value={cv.selectedCountry} onChange={update('selectedCountry')} isEditing={isEditing} placeholder="Country" /></>}
-              </div>
-              <div className="exp-bullet">
-                Intake:&nbsp;
-                <EditableField value={cv.intakeMonth} onChange={update('intakeMonth')} isEditing={isEditing} placeholder="Month" />
-                &nbsp;
-                <EditableField value={cv.intakeYear}  onChange={update('intakeYear')}  isEditing={isEditing} placeholder="Year" />
-              </div>
-            </div>
-
-            {(cv.secondPreference || isEditing) && (
-              <div className="exp-block">
-                <div className="exp-title">
-                  2nd Choice —&nbsp;
-                  <EditableField value={cv.secondPreference} onChange={update('secondPreference')} isEditing={isEditing} placeholder="Second preference" />
-                </div>
-              </div>
-            )}
-
-            {(cv.thirdPreference || isEditing) && (
-              <div className="exp-block">
-                <div className="exp-title">
-                  3rd Choice —&nbsp;
-                  <EditableField value={cv.thirdPreference} onChange={update('thirdPreference')} isEditing={isEditing} placeholder="Third preference" />
-                </div>
-              </div>
-            )}
-
-            {/* Educational Background */}
-            <SectionHeader title="Educational Background" />
-            <div className="exp-block">
-              <div className="exp-title">
-                <EditableField value={cv.qualificationLevel} onChange={update('qualificationLevel')} isEditing={isEditing} placeholder="Degree / Qualification" />
-              </div>
-              <div className="exp-org">
-                <EditableField value={cv.institutionName} onChange={update('institutionName')} isEditing={isEditing} placeholder="Institution Name" />
-              </div>
-              <div className="exp-period">
-                <EditableField value={cv.startYear}      onChange={update('startYear')}      isEditing={isEditing} placeholder="Start Year" />
-                {' – '}
-                <EditableField value={cv.endYear}        onChange={update('endYear')}        isEditing={isEditing} placeholder="End Year" />
-                {cv.countryOfStudy && (
-                  <>&nbsp;·&nbsp;<EditableField value={cv.countryOfStudy} onChange={update('countryOfStudy')} isEditing={isEditing} placeholder="Country" /></>
-                )}
-              </div>
-              {(cv.boardUniversity || isEditing) && (
-                <div className="exp-bullet">
-                  Awarding Body:&nbsp;
-                  <EditableField value={cv.boardUniversity} onChange={update('boardUniversity')} isEditing={isEditing} placeholder="Board / University" />
-                </div>
-              )}
-              {(cv.score || isEditing) && (
-                <div className="exp-bullet">
-                  Score / Grade:&nbsp;
-                  <EditableField value={cv.score} onChange={update('score')} isEditing={isEditing} placeholder="e.g. 78%, First Class" />
-                </div>
-              )}
-            </div>
-
-            {/* EQHE */}
-            <SectionHeader title="Entrance Qualification (EQHE)" />
-            <div className="exp-block">
-              <div className="exp-title">
-                <EditableField value={cv.englishTestType} onChange={update('englishTestType')} isEditing={isEditing} placeholder="Qualification Title" />
-                {cv.testScore && ` — Score ${cv.testScore}`}
-                {cv.eqheCountry && ` (${cv.eqheCountry})`}
-              </div>
-              {cv.testDate && (
-                <div className="exp-period">Test Date: {formatDate(cv.testDate)}</div>
-              )}
-              {hasScores && (
-                <div className="score-boxes-row">
-                  {[
-                    ['Listening', 'listeningScore'],
-                    ['Reading',   'readingScore'],
-                    ['Writing',   'writingScore'],
-                    ['Speaking',  'speakingScore'],
-                  ].map(([label, field]) => (
-                    <div key={label} className="score-box">
-                      <div className="score-box-label">{label}</div>
-                      <EditableField value={cv[field]} onChange={update(field)} isEditing={isEditing} className="score-box-value" placeholder="—" />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Personal Information grid */}
-            <SectionHeader title="Personal Information" />
-            <div className="personal-info-grid">
-              {[
-                ['Date of Birth',     'dateOfBirth',            false, true ],
-                ['Gender',            'gender',                 true,  false],
-                ['Nationality',       'citizenship',            true,  false],
-                ['Place of Birth',    'placeOfBirth',           true,  false],
-                ['Country of Birth',  'countryOfBirth',         true,  false],
-                ['Correspondence',    'correspondenceLanguage', true,  false],
-                ['Visa Required',     'needVisa',               true,  false],
-              ].map(([label, field, editable, isDate]) => (
-                <div key={label} className="personal-info-row">
-                  <span className="personal-info-label">{label}: </span>
-                  {editable && isEditing ? (
-                    <input
-                      className="editable-input inline"
-                      value={cv[field] || ''}
-                      onChange={(e) => update(field)(e.target.value)}
-                      placeholder={label}
-                    />
-                  ) : (
-                    <span className="personal-info-value">
-                      {isDate ? formatDate(cv[field]) : (cv[field] || '—')}
-                    </span>
-                  )}
-                </div>
-              ))}
-              <div className="personal-info-row">
-                <span className="personal-info-label">EU Citizen: </span>
-                <span className="personal-info-value">{cv.isEUCitizen ? 'Yes' : 'No'}</span>
-              </div>
-              {cv.hasSpecialNeeds !== 'no' && cv.hasSpecialNeeds && (
-                <div className="personal-info-row">
-                  <span className="personal-info-label">Special Needs: </span>
-                  <span className="personal-info-value">{cv.hasSpecialNeeds}</span>
-                </div>
-              )}
-            </div>
-
-            {/* References */}
-            <SectionHeader title="References" />
-            <p className="references-text">References available upon request.</p>
-
-            {/* Action Buttons */}
-            <div className="resume-actions no-print">
-              {isEditing ? (
-                <>
-                  <button className="btn btn-save"   onClick={handleSave}>💾 Save Changes</button>
-                  <button className="btn btn-cancel" onClick={() => setIsEditing(false)}>✕ Cancel</button>
-                </>
-              ) : (
-                <button className="btn btn-edit" onClick={() => setIsEditing(true)}>✏️ Edit CV</button>
-              )}
-              <button className="btn btn-download" onClick={handleDownload}>⬇ Download PDF</button>
-              <button className="btn btn-print"    onClick={() => window.print()}>🖨 Print</button>
-            </div>
-
-          </div>
-          {/* end resume-main */}
-
-        </div>
-        {/* end resume-card */}
+      {/* ── Mobile Tab Bar ── */}
+      <div className="mobile-tabs no-print">
+        <button
+          type="button"
+          className={`mob-tab ${mobileTab === 'sidebar' ? 'active' : ''}`}
+          onClick={() => setMobileTab('sidebar')}
+        >Profile</button>
+        <button
+          type="button"
+          className={`mob-tab ${mobileTab === 'main' ? 'active' : ''}`}
+          onClick={() => setMobileTab('main')}
+        >Details</button>
       </div>
-      {/* end resume-page */}
+
+      {/* ── Resume Card ── */}
+      <div className="rv-page">
+        <div className="rv-card">
+          <aside className={`rv-sidebar ${mobileTab === 'main' ? 'mob-hidden' : ''}`}>
+            <SidebarContent />
+          </aside>
+          <main className={`rv-main ${mobileTab === 'sidebar' ? 'mob-hidden' : ''}`}>
+            <MainContent />
+          </main>
+        </div>
+      </div>
 
     </div>
   );

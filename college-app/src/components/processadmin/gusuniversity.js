@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import './GusUniversity.css';
+import './gusuniversity.css'; // ✅ FIXED: lowercase to match actual filename on disk
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
@@ -18,42 +18,59 @@ const GusUniversity = () => {
         underReview: 0
     });
 
-    useEffect(() => {
-        fetchApplications();
-    }, []);
-
-    const fetchApplications = async () => {
-        setLoading(true);
+    // ─── Helpers ───────────────────────────────────────────────
+    const formatDate = (d) => {
+        if (!d) return '—';
         try {
-            const token = localStorage.getItem('token');
-            const response = await axios.get(
-                `${API_URL}/api/application/admin/gus-university/applications`,
-                { headers: { 'Authorization': `Bearer ${token}` } }
-            );
-            if (response.data.success) {
-                const apps = response.data.data || [];
-                setApplications(apps);
-                calculateStats(apps);
-            }
-        } catch (err) {
-            console.error('API not ready, using mock data:', err);
-            const mock = getMockData();
-            setApplications(mock);
-            calculateStats(mock);
-        } finally {
-            setLoading(false);
-        }
+            return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        } catch { return '—'; }
     };
 
-    const calculateStats = (apps) => {
-        setStats({
-            total: apps.length,
-            completed: apps.filter(a => getStatusLabel(a) === 'COMPLETED').length,
-            incomplete: apps.filter(a => getStatusLabel(a) === 'INCOMPLETE').length,
-            underReview: apps.filter(a => getStatusLabel(a) === 'IN PROGRESS').length
-        });
+    const getStatusLabel = (app) => {
+        if (app.completionPercentage === 100) return 'COMPLETED';
+        if (app.completionPercentage > 0) return 'IN PROGRESS';
+        return 'INCOMPLETE';
     };
 
+    const getStatusClass = (app) => {
+        const s = getStatusLabel(app);
+        if (s === 'COMPLETED') return 'status-completed';
+        if (s === 'IN PROGRESS') return 'status-inprogress';
+        return 'status-incomplete';
+    };
+
+    const getInitials = (name) =>
+        (name || '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+
+    const avatarColors = ['#6C63FF', '#5B50E8', '#7B74FF', '#4A90D9', '#43B89C'];
+    const getAvatarColor = (name) =>
+        avatarColors[(name?.charCodeAt(0) || 0) % avatarColors.length];
+
+    const eqheTitleMap = {
+        'senior_secondary_india': 'Senior Secondary School Certificate (India)',
+        'high_school_diploma_usa': 'American High School Diploma (USA)',
+        'mathayom_thailand': 'Mathayom VI (Thailand)',
+        'attestat_russia': 'Attestat (Russia)',
+        'bachillerato_mexico': 'Bachillerato General (Mexico)',
+        'west_african_nigeria': 'West African Senior School Certificate (Nigeria)',
+        'diploma_italy': 'Diploma (Italy)',
+        'high_school_china': 'Secondary School Certificate + Gaokao (China)',
+        'bachiller_colombia': 'Titulo di Bachiller + Examen de Estado (Colombia)',
+        'high_school_skorea': 'High School Certificate + CSAT (South Korea)'
+    };
+
+    const countryMap = {
+        'india': 'India', 'usa': 'United States', 'uk': 'United Kingdom',
+        'canada': 'Canada', 'australia': 'Australia', 'china': 'China',
+        'germany': 'Germany', 'france': 'France', 'japan': 'Japan',
+        'skorea': 'South Korea', 'russia': 'Russia', 'mexico': 'Mexico',
+        'colombia': 'Colombia', 'italy': 'Italy', 'spain': 'Spain',
+        'brazil': 'Brazil', 'nigeria': 'Nigeria', 'thailand': 'Thailand'
+    };
+
+    const fmt = (map, val) => map[val] || val || '—';
+
+    // ─── Mock Data ─────────────────────────────────────────────
     const getMockData = () => [
         {
             _id: '1',
@@ -173,57 +190,48 @@ const GusUniversity = () => {
         }
     ];
 
-    // ─── Helpers ───────────────────────────────────────────────
-    const formatDate = (d) => {
-        if (!d) return '—';
+    // ─── calculateStats wrapped in useCallback ─────────────────
+    // ✅ FIXED: useCallback prevents new reference on every render,
+    //    so fetchApplications dependency stays stable
+    const calculateStats = useCallback((apps) => {
+        setStats({
+            total: apps.length,
+            completed: apps.filter(a => a.completionPercentage === 100).length,
+            incomplete: apps.filter(a => a.completionPercentage === 0).length,
+            underReview: apps.filter(a => a.completionPercentage > 0 && a.completionPercentage < 100).length
+        });
+    }, []); // no external deps — stable forever
+
+    // ─── fetchApplications wrapped in useCallback ──────────────
+    // ✅ FIXED: wrapped in useCallback so useEffect dep array is valid
+    const fetchApplications = useCallback(async () => {
+        setLoading(true);
         try {
-            return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-        } catch { return '—'; }
-    };
+            const token = localStorage.getItem('token');
+            const response = await axios.get(
+                `${API_URL}/api/application/admin/gus-university/applications`,
+                { headers: { 'Authorization': `Bearer ${token}` } }
+            );
+            if (response.data.success) {
+                const apps = response.data.data || [];
+                setApplications(apps);
+                calculateStats(apps);
+            }
+        } catch (err) {
+            console.error('API not ready, using mock data:', err);
+            const mock = getMockData();
+            setApplications(mock);
+            calculateStats(mock);
+        } finally {
+            setLoading(false);
+        }
+    }, [calculateStats]); // ✅ only depends on calculateStats (which is stable)
 
-    const getStatusLabel = (app) => {
-        if (app.completionPercentage === 100) return 'COMPLETED';
-        if (app.completionPercentage > 0) return 'IN PROGRESS';
-        return 'INCOMPLETE';
-    };
-
-    const getStatusClass = (app) => {
-        const s = getStatusLabel(app);
-        if (s === 'COMPLETED') return 'status-completed';
-        if (s === 'IN PROGRESS') return 'status-inprogress';
-        return 'status-incomplete';
-    };
-
-    const getInitials = (name) =>
-        (name || '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-
-    const avatarColors = ['#6C63FF', '#5B50E8', '#7B74FF', '#4A90D9', '#43B89C'];
-    const getAvatarColor = (name) =>
-        avatarColors[(name?.charCodeAt(0) || 0) % avatarColors.length];
-
-    const eqheTitleMap = {
-        'senior_secondary_india': 'Senior Secondary School Certificate (India)',
-        'high_school_diploma_usa': 'American High School Diploma (USA)',
-        'mathayom_thailand': 'Mathayom VI (Thailand)',
-        'attestat_russia': 'Attestat (Russia)',
-        'bachillerato_mexico': 'Bachillerato General (Mexico)',
-        'west_african_nigeria': 'West African Senior School Certificate (Nigeria)',
-        'diploma_italy': 'Diploma (Italy)',
-        'high_school_china': 'Secondary School Certificate + Gaokao (China)',
-        'bachiller_colombia': 'Titulo di Bachiller + Examen de Estado (Colombia)',
-        'high_school_skorea': 'High School Certificate + CSAT (South Korea)'
-    };
-
-    const countryMap = {
-        'india': 'India', 'usa': 'United States', 'uk': 'United Kingdom',
-        'canada': 'Canada', 'australia': 'Australia', 'china': 'China',
-        'germany': 'Germany', 'france': 'France', 'japan': 'Japan',
-        'skorea': 'South Korea', 'russia': 'Russia', 'mexico': 'Mexico',
-        'colombia': 'Colombia', 'italy': 'Italy', 'spain': 'Spain',
-        'brazil': 'Brazil', 'nigeria': 'Nigeria', 'thailand': 'Thailand'
-    };
-
-    const fmt = (map, val) => map[val] || val || '—';
+    // ✅ FIXED: fetchApplications is now a stable reference so it's
+    //    safe to include in the dependency array — no more exhaustive-deps warning
+    useEffect(() => {
+        fetchApplications();
+    }, [fetchApplications]);
 
     // ─── Filter ────────────────────────────────────────────────
     const filtered = applications.filter(app => {
@@ -402,12 +410,9 @@ const GusUniversity = () => {
                         ) : (
                             filtered.map((app, idx) => (
                                 <tr key={app._id} className="gus-tbody-row" style={{ animationDelay: `${idx * 0.04}s` }}>
-                                    {/* College ID */}
                                     <td>
                                         <span className="gus-college-badge">{app.studentId}</span>
                                     </td>
-
-                                    {/* Student */}
                                     <td>
                                         <div className="gus-student-cell">
                                             <div className="gus-avatar" style={{ background: getAvatarColor(app.studentName) }}>
@@ -420,20 +425,14 @@ const GusUniversity = () => {
                                             </div>
                                         </div>
                                     </td>
-
-                                    {/* Status */}
                                     <td>
                                         <span className={`gus-badge ${getStatusClass(app)}`}>
                                             {getStatusLabel(app)}
                                         </span>
                                     </td>
-
-                                    {/* Submitted */}
                                     <td>
                                         <span className="gus-date-text">{formatDate(app.updatedAt || app.createdAt)}</span>
                                     </td>
-
-                                    {/* Progress */}
                                     <td>
                                         <div className="gus-prog-cell">
                                             <div className="gus-prog-track">
@@ -445,8 +444,6 @@ const GusUniversity = () => {
                                             <span className="gus-prog-pct">{app.completionPercentage || 0}%</span>
                                         </div>
                                     </td>
-
-                                    {/* Actions */}
                                     <td>
                                         <div className="gus-action-group">
                                             <button className="gus-btn-view" onClick={() => openModal(app)}>
@@ -479,7 +476,6 @@ const GusUniversity = () => {
                 <div className="gus-overlay" onClick={closeModal}>
                     <div className="gus-modal" onClick={e => e.stopPropagation()}>
 
-                        {/* Modal Header */}
                         <div className="gus-modal-hdr">
                             <div className="gus-modal-hdr-left">
                                 <div className="gus-modal-avatar" style={{ background: getAvatarColor(selectedApp.studentName) }}>
@@ -498,10 +494,8 @@ const GusUniversity = () => {
                             </div>
                         </div>
 
-                        {/* Modal Body */}
                         <div className="gus-modal-body">
 
-                            {/* Student Info */}
                             <div className="gus-modal-sec">
                                 <div className="gus-modal-sec-title">
                                     <span className="gus-sec-dot gus-dot-blue" />
@@ -527,7 +521,6 @@ const GusUniversity = () => {
                                 </div>
                             </div>
 
-                            {/* Primary EQHE */}
                             <div className="gus-modal-sec">
                                 <div className="gus-modal-sec-title">
                                     <span className="gus-sec-dot gus-dot-purple" />
@@ -557,7 +550,6 @@ const GusUniversity = () => {
                                 </div>
                             </div>
 
-                            {/* Additional EQHE */}
                             {selectedApp.hasAnotherEQHE && (
                                 <div className="gus-modal-sec">
                                     <div className="gus-modal-sec-title">
@@ -585,7 +577,6 @@ const GusUniversity = () => {
                                 </div>
                             )}
 
-                            {/* Progress */}
                             <div className="gus-modal-sec">
                                 <div className="gus-modal-sec-title">
                                     <span className="gus-sec-dot gus-dot-green" />
@@ -603,7 +594,6 @@ const GusUniversity = () => {
                             </div>
                         </div>
 
-                        {/* Modal Footer */}
                         <div className="gus-modal-ftr">
                             <button className="gus-modal-dl-btn" onClick={() => handleDownload(selectedApp)}>
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{width:16,height:16,marginRight:6}}>

@@ -320,7 +320,7 @@
   letter-spacing: -0.3px;
 }
 
-.progress-indicator, .college-count {
+.dashboard-progress-indicator, .college-count {
   font-size: 14px;
   font-weight: 600;
   color: #718096;
@@ -717,7 +717,7 @@
 }
 
 /* Enhanced progress indicators */
-.progress-indicator {
+.dashboard-progress-indicator {
   font-size: 14px;
   font-weight: 600;
   color: #718096;

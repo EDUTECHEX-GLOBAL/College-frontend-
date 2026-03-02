@@ -25,11 +25,11 @@ const personalInfoSchema = new mongoose.Schema(
     maxlength: 50
   },
 
-  title: {
-    type: String,
-    enum: ['mr', 'mrs', 'ms', 'dr', 'prof', ''],
-    default: ''
-  },
+ title: {
+  type: String,
+  enum: ['Mr.', 'Mrs.', 'Ms.', 'Dr.', 'Prof.', 'mr', 'mrs', 'ms', 'dr', 'prof', ''],
+  default: ''
+},
 
   dateOfBirth: {
     type: Date,

@@ -49,7 +49,7 @@ import processAdminRoutes from "./routes/processAdminRoutes.js";
 import processAdminDocumentRoutes from "./routes/processAdminDocumentRoutes.js";
 import documentRoutes from "./routes/documentRoutes.js";
 import resumeRoutes from "./routes/resumeRoutes.js";
-
+import previewRoutes from './routes/applicationPreviewRoutes.js';
 dotenv.config();
 
 // Initialize
@@ -212,6 +212,7 @@ app.use("/api/application/documents", applicationDocumentRoutes);
 app.use("/api/admin", adminUniversityRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/documents", documentRoutes);
+app.use('/api/application/preview', previewRoutes);
 app.use("/api/colleges", collegeRoutes);
 app.use("/api/general", generalRoutes);
 app.use("/api/academics", firstAcademicRoutes);
