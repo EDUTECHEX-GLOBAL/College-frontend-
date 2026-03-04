@@ -1,4 +1,4 @@
-// src/components/DashboardLayout.js - FULLY MERGED VERSION
+// src/components/DashboardLayout.js - FULLY UPDATED WITH SCORES INTEGRATION
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -18,7 +18,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
 
   // Calculate completed sections for "My Common Application" in sidebar
   const calculateCommonAppProgress = () => {
-    if (!userData) return '0/7';
+    if (!userData) return '0/8'; // Updated to 8 sections
     
     const sections = [
       userData.applicationProgress?.application || 0,
@@ -262,7 +262,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     return userData?.applicationProgress?.application || 0;
   };
 
-  // Calculate step-by-step application progress
+  // Calculate step-by-step application progress - UPDATED with Test Scores step
   const calculateApplicationStepProgress = (step) => {
     const gusAppData = JSON.parse(localStorage.getItem('gusApplicationData') || '{}');
     const isFieldFilled = (fieldValue) => {
@@ -270,6 +270,14 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
       if (typeof fieldValue === 'string') return fieldValue.trim() !== '';
       if (typeof fieldValue === 'number') return true;
       if (Array.isArray(fieldValue)) return fieldValue.length > 0;
+      if (typeof fieldValue === 'object') {
+        // Check if it's a scores object with at least one value
+        if (fieldValue.grade9 || fieldValue.grade10 || fieldValue.grade11 || fieldValue.grade12 || 
+            fieldValue.satTotal || fieldValue.act || fieldValue.toefl || fieldValue.ielts) {
+          return true;
+        }
+        return Object.keys(fieldValue).length > 0;
+      }
       return !!fieldValue;
     };
     
@@ -301,6 +309,12 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
         const educationFilled = educationFields.filter(field => isFieldFilled(gusAppData[field])).length;
         return (educationFilled / educationFields.length) * 100;
         
+      case 'test-scores': // NEW STEP
+        const scores = gusAppData.scores || {};
+        const hasAnyScore = scores.grade9 || scores.grade10 || scores.grade11 || scores.grade12 || 
+                           scores.satTotal || scores.act || scores.toefl || scores.ielts;
+        return hasAnyScore ? 100 : 0;
+        
       case 'documents':
         const documentFields = ['passport', 'transcripts', 'degreeCertificate', 'sop', 'lor1', 'lor2', 'eqheCertificate'];
         const documentFilled = documentFields.filter(field => {
@@ -325,6 +339,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     if (path.includes('/application/language')) return 'entrance-qualification';
     if (path.includes('/application/specialneeds')) return 'special-needs';
     if (path.includes('/application/firsteducation') || path.includes('/application/education')) return 'education';
+    if (path.includes('/application/scores')) return 'test-scores'; // NEW STEP
     if (path.includes('/application/documents')) return 'documents';
     if (path.includes('/application/preview')) return 'preview';
     if (path.includes('/application/overview')) return 'overview';
@@ -734,7 +749,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
       );
     }
 
-    // Application Section - Updated for 7-step application flow (added Special Needs)
+    // Application Section - UPDATED for 8-step application flow (added Test Scores)
     if (activeMainSection === 'application') {
       const applicationSteps = [
         { id: 'overview', name: 'Application Overview', route: `${basePath}/application/overview` },
@@ -743,6 +758,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
         { id: 'entrance-qualification', name: 'Entrance Qualification', route: `${basePath}/application/language` },
         { id: 'special-needs', name: 'Special Needs', route: `${basePath}/application/specialneeds` },
         { id: 'education', name: 'Education', route: `${basePath}/application/firsteducation` },
+        { id: 'test-scores', name: 'Test Scores', route: `${basePath}/application/scores` }, // NEW STEP
         { id: 'documents', name: 'Documents', route: `${basePath}/application/documents` },
         { id: 'preview', name: 'Preview & Submit', route: `${basePath}/application/preview` }
       ];
@@ -764,7 +780,8 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
               const stepProgress = calculateApplicationStepProgress(step.id);
               const isActive = location.pathname === step.route || 
                              (step.id === 'entrance-qualification' && location.pathname.includes('/application/language')) ||
-                             (step.id === 'special-needs' && location.pathname.includes('/application/specialneeds'));
+                             (step.id === 'special-needs' && location.pathname.includes('/application/specialneeds')) ||
+                             (step.id === 'test-scores' && location.pathname.includes('/application/scores'));
               return (
                 <li key={step.id} className={`nav-item ${isActive ? 'active' : ''}`}>
                   <div 
@@ -780,7 +797,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
             
             <li className="nav-item">
               <div className="nav-content" onClick={() => {
-                alert('GUS University Application Portal\n\nComplete your application in 7 steps:\n\n1. Personal Information\n2. Address\n3. Entrance Qualification\n4. Special Needs\n5. Education\n6. Documents\n7. Preview & Submit');
+                alert('GUS University Application Portal\n\nComplete your application in 8 steps:\n\n1. Personal Information\n2. Address\n3. Entrance Qualification\n4. Special Needs\n5. Education\n6. Test Scores\n7. Documents\n8. Preview & Submit');
               }}>
                 <span className="nav-text">Application Guide</span>
               </div>
@@ -797,7 +814,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
                       const stepProgress = calculateApplicationStepProgress(step.id);
                       return stepProgress >= 100;
                     }).length;
-                    alert(`Application Progress: ${completedSteps}/7 steps completed\nOverall Progress: ${applicationProgress}%`);
+                    alert(`Application Progress: ${completedSteps}/8 steps completed\nOverall Progress: ${applicationProgress}%`);
                   } catch (e) {
                     alert('No application data saved yet.');
                   }
@@ -850,7 +867,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
             </div>
           </li>
 
-          {/* Expandable Application Section */}
+          {/* Expandable Application Section - UPDATED with Test Scores */}
           <li className="nav-section-expandable">
             <div 
               className={`nav-header ${expandedSections.application ? 'expanded' : ''}`}
@@ -900,6 +917,13 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
                     <div className="nav-progress-tiny">{Math.round(calculateApplicationStepProgress('education'))}%</div>
                   </div>
                 </li>
+                {/* NEW Test Scores Step */}
+                <li className={`nav-subitem ${location.pathname.includes('/application/scores') ? 'active' : ''}`}>
+                  <div className="nav-content" onClick={() => navigate(`${basePath}/application/scores`)}>
+                    <span className="nav-text">• Test Scores</span>
+                    <div className="nav-progress-tiny">{Math.round(calculateApplicationStepProgress('test-scores'))}%</div>
+                  </div>
+                </li>
                 <li className={`nav-subitem ${location.pathname.includes('/application/documents') ? 'active' : ''}`}>
                   <div className="nav-content" onClick={() => navigate(`${basePath}/application/documents`)}>
                     <span className="nav-text">• Documents</span>
@@ -909,7 +933,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
                 
                 <li className="nav-subitem">
                   <div className="nav-content" onClick={() => {
-                    alert('GUS University Application Portal\n\nComplete your application in 7 steps:\n\n1. Personal Information\n2. Address\n3. Entrance Qualification\n4. Special Needs\n5. Education\n6. Documents\n7. Preview & Submit');
+                    alert('GUS University Application Portal\n\nComplete your application in 8 steps:\n\n1. Personal Information\n2. Address\n3. Entrance Qualification\n4. Special Needs\n5. Education\n6. Test Scores\n7. Documents\n8. Preview & Submit');
                   }}>
                     <span className="nav-text">Application Guide</span>
                   </div>
@@ -920,12 +944,12 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
                     if (appData) {
                       try {
                         const parsedData = JSON.parse(appData);
-                        const steps = ['personal', 'address', 'entrance-qualification', 'special-needs', 'education', 'documents', 'preview'];
+                        const steps = ['personal', 'address', 'entrance-qualification', 'special-needs', 'education', 'test-scores', 'documents', 'preview'];
                         const completedSteps = steps.filter(step => {
                           const stepProgress = calculateApplicationStepProgress(step);
                           return stepProgress >= 100;
                         }).length;
-                        alert(`Application Progress: ${completedSteps}/7 steps completed\nOverall Progress: ${applicationProgress}%`);
+                        alert(`Application Progress: ${completedSteps}/8 steps completed\nOverall Progress: ${applicationProgress}%`);
                       } catch (e) {
                         alert('No application data saved yet.');
                       }

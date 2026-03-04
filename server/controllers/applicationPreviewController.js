@@ -1,10 +1,10 @@
 // server/controllers/applicationPreviewController.js
 
-import PersonalInfo        from '../models/applicationModel.js';
-import ApplicationAddress  from '../models/applicationAddressModels.js';
-import ApplicationEducation from '../models/applicationEducationModel.js';
-import ApplicationLanguage from '../models/ApplicationLanguageModel.js';
-import ApplicationDocument from '../models/applicationDocumentModel.js';
+import PersonalInfo          from '../models/applicationModel.js';
+import ApplicationAddress    from '../models/applicationAddressModels.js';
+import ApplicationEducation  from '../models/applicationEducationModel.js';
+import ApplicationLanguage   from '../models/ApplicationLanguageModel.js';
+import ApplicationDocument   from '../models/applicationDocumentModel.js';
 import ApplicationSpecialNeed from '../models/ApplicationSpecialNeed.js';
 
 /* ======================================================
@@ -20,13 +20,7 @@ const fmt = (date) => {
 };
 
 /* ======================================================
-   HELPER: File display name
-====================================================== */
-const fileLabel = (originalName, fileName) =>
-  originalName || fileName || 'Not uploaded';
-
-/* ======================================================
-   HELPER: doc sub-object label (applicationDocumentModel)
+   HELPER: File display name from a doc sub-object
 ====================================================== */
 const docLabel = (docObj) =>
   docObj?.originalName || docObj?.fileName || 'Not uploaded';
@@ -42,27 +36,25 @@ const buildSections = ({ personal, address, education, language, documents, spec
     sections.push({
       title: 'Personal Information',
       data: [
-        { label: 'Title',                    value: personal.title || 'Not provided' },
-        { label: 'Full Name',                value: [personal.firstName, personal.lastName].filter(Boolean).join(' ') || 'Not provided' },
-        { label: 'Date of Birth',            value: fmt(personal.dateOfBirth) },
-        { label: 'Place of Birth',           value: personal.placeOfBirth || 'Not provided' },
-        { label: 'Country of Birth',         value: personal.countryOfBirth || 'Not provided' },
+        { label: 'Title',                     value: personal.title || 'Not provided' },
+        { label: 'Full Name',                 value: [personal.firstName, personal.lastName].filter(Boolean).join(' ') || 'Not provided' },
+        { label: 'Date of Birth',             value: fmt(personal.dateOfBirth) },
+        { label: 'Place of Birth',            value: personal.placeOfBirth || 'Not provided' },
+        { label: 'Country of Birth',          value: personal.countryOfBirth || 'Not provided' },
         { label: 'Citizenship / Nationality', value: personal.citizenship || 'Not provided' },
-        { label: 'Gender',                   value: personal.gender || 'Not provided' },
-        { label: 'EU Citizen',               value: personal.isEUCitizen === true ? 'Yes' : personal.isEUCitizen === false ? 'No' : 'Not provided' },
-        { label: 'Document Type',            value: personal.documentType || 'Not provided' },
-        { label: 'Needs Visa',               value: personal.needVisa || 'Not provided' },
-        { label: 'Refer a Friend',           value: personal.referFriend || 'Not provided' },
-        { label: 'Email',                    value: personal.email || 'Not provided' },
-        { label: 'Mobile',                   value: personal.mobile || 'Not provided' },
-        { label: 'Landline',                 value: personal.landline || 'Not provided' },
-        { label: 'Correspondence Language',  value: personal.correspondenceLanguage || 'Not provided' },
-        { label: 'Passport Number',          value: personal.passportNumber || 'Not provided' },
-        { label: 'Passport Issue Date',      value: fmt(personal.passportIssueDate) },
-        { label: 'Passport Expiry Date',     value: fmt(personal.passportExpiryDate) },
-        { label: 'Issuing Country',          value: personal.issuingCountry || 'Not provided' },
-        { label: 'Passport Document',        value: fileLabel(personal.passportOriginalName, personal.passportFileName) },
-        { label: 'Photograph',               value: fileLabel(personal.photographOriginalName, personal.photographFileName) },
+        { label: 'Gender',                    value: personal.gender || 'Not provided' },
+        { label: 'EU Citizen',                value: personal.isEUCitizen === true ? 'Yes' : personal.isEUCitizen === false ? 'No' : 'Not provided' },
+        { label: 'Document Type',             value: personal.documentType || 'Not provided' },
+        { label: 'Needs Visa',                value: personal.needVisa || 'Not provided' },
+        { label: 'Refer a Friend',            value: personal.referFriend || 'Not provided' },
+        { label: 'Email',                     value: personal.email || 'Not provided' },
+        { label: 'Mobile',                    value: personal.mobile || 'Not provided' },
+        { label: 'Landline',                  value: personal.landline || 'Not provided' },
+        { label: 'Correspondence Language',   value: personal.correspondenceLanguage || 'Not provided' },
+        { label: 'Passport Number',           value: personal.passportNumber || 'Not provided' },
+        { label: 'Passport Issue Date',       value: fmt(personal.passportIssueDate) },
+        { label: 'Passport Expiry Date',      value: fmt(personal.passportExpiryDate) },
+        { label: 'Issuing Country',           value: personal.issuingCountry || 'Not provided' },
       ]
     });
   }
@@ -92,14 +84,14 @@ const buildSections = ({ personal, address, education, language, documents, spec
     sections.push({
       title: 'Address',
       data: [
-        { label: 'Permanent Address',           value: permAddr },
-        { label: 'City',                         value: address.city || 'Not provided' },
-        { label: 'State / Province',             value: address.stateProvince || 'Not provided' },
-        { label: 'Country',                      value: address.country || 'Not provided' },
-        { label: 'Postcode',                     value: address.postcode || 'Not provided' },
+        { label: 'Permanent Address',             value: permAddr },
+        { label: 'City',                          value: address.city || 'Not provided' },
+        { label: 'State / Province',              value: address.stateProvince || 'Not provided' },
+        { label: 'Country',                       value: address.country || 'Not provided' },
+        { label: 'Postcode',                      value: address.postcode || 'Not provided' },
         { label: 'Different Correspondence Addr', value: address.hasDifferentCorrespondenceAddress ? 'Yes' : 'No' },
-        { label: 'Correspondence Address',       value: corrAddr },
-        { label: 'National ID',                  value: fileLabel(address.nationalIdOriginalName, address.nationalIdFileName) },
+        { label: 'Correspondence Address',        value: corrAddr },
+        { label: 'National ID',                   value: docLabel({ originalName: address.nationalIdOriginalName, fileName: address.nationalIdFileName }) },
       ]
     });
   }
@@ -107,12 +99,12 @@ const buildSections = ({ personal, address, education, language, documents, spec
   /* ── 3. Entrance Qualification (Language model) ────── */
   if (language) {
     const rows = [
-      { label: 'EQHE Country',          value: language.eqheCountry || 'Not provided' },
-      { label: 'EQHE Original Title',   value: language.eqheOriginalTitle || 'Not provided' },
-      { label: 'EQHE Date',             value: fmt(language.eqheDate) },
-      { label: 'EQHE City',             value: language.eqheCity || 'Not provided' },
-      { label: 'EQHE Certificate',      value: fileLabel(language.eqheCertificateFileName, language.eqheCertificate) },
-      { label: 'Has Another EQHE',      value: language.hasAnotherEQHE ? 'Yes' : 'No' },
+      { label: 'EQHE Country',        value: language.eqheCountry || 'Not provided' },
+      { label: 'EQHE Original Title', value: language.eqheOriginalTitle || 'Not provided' },
+      { label: 'EQHE Date',           value: fmt(language.eqheDate) },
+      { label: 'EQHE City',           value: language.eqheCity || 'Not provided' },
+      { label: 'EQHE Certificate',    value: docLabel({ originalName: language.eqheCertificateFileName, fileName: language.eqheCertificate }) },
+      { label: 'Has Another EQHE',    value: language.hasAnotherEQHE ? 'Yes' : 'No' },
     ];
     if (language.hasAnotherEQHE) {
       rows.push(
@@ -120,7 +112,7 @@ const buildSections = ({ personal, address, education, language, documents, spec
         { label: 'Additional EQHE Original Title', value: language.anotherEqheOriginalTitle || 'Not provided' },
         { label: 'Additional EQHE Date',           value: fmt(language.anotherEqheDate) },
         { label: 'Additional EQHE City',           value: language.anotherEqheCity || 'Not provided' },
-        { label: 'Additional EQHE Certificate',    value: fileLabel(language.anotherEqheCertificateFileName, language.anotherEqheCertificate) },
+        { label: 'Additional EQHE Certificate',    value: docLabel({ originalName: language.anotherEqheCertificateFileName, fileName: language.anotherEqheCertificate }) },
       );
     }
     sections.push({ title: 'Entrance Qualification (EQHE)', data: rows });
@@ -129,24 +121,24 @@ const buildSections = ({ personal, address, education, language, documents, spec
   /* ── 4. Higher Education ───────────────────────────── */
   if (education) {
     const baseRows = [
-      { label: 'Previously Enrolled at HEI', value: education.wasEnrolled === true ? 'Yes' : education.wasEnrolled === false ? 'No' : 'Not provided' },
-      { label: 'Currently Enrolled Elsewhere', value: education.isCurrentlyEnrolled === true ? 'Yes' : education.isCurrentlyEnrolled === false ? 'No' : 'Not provided' },
+      { label: 'Previously Enrolled at HEI',   value: education.wasEnrolled === true ? 'Yes' : education.wasEnrolled === false ? 'No' : 'Not provided' },
+      { label: 'Currently Enrolled Elsewhere',  value: education.isCurrentlyEnrolled === true ? 'Yes' : education.isCurrentlyEnrolled === false ? 'No' : 'Not provided' },
     ];
 
     if (education.educationEntries?.length > 0) {
       education.educationEntries.forEach((entry, i) => {
         baseRows.push(
-          { label: `[Entry ${i + 1}] Country of Registration`, value: entry.countryOfInitialRegistration || 'Not provided' },
+          { label: `[Entry ${i + 1}] Country of Registration`,  value: entry.countryOfInitialRegistration || 'Not provided' },
           { label: `[Entry ${i + 1}] Semester of Registration`, value: entry.semesterOfInitialRegistration || 'Not provided' },
           { label: `[Entry ${i + 1}] Entry Type`,               value: entry.entryType || 'Not provided' },
           { label: `[Entry ${i + 1}] Degree`,                   value: entry.degree || 'Not provided' },
           { label: `[Entry ${i + 1}] Specialisation`,           value: entry.specialisation || 'Not provided' },
-          { label: `[Entry ${i + 1}] Study Period`,              value: entry.standardStudyPeriod || 'Not provided' },
+          { label: `[Entry ${i + 1}] Study Period`,             value: entry.standardStudyPeriod || 'Not provided' },
           { label: `[Entry ${i + 1}] Institution`,              value: entry.institutionName || 'Not provided' },
           { label: `[Entry ${i + 1}] City`,                     value: entry.city || 'Not provided' },
           { label: `[Entry ${i + 1}] Start Date`,               value: fmt(entry.startDate) },
           { label: `[Entry ${i + 1}] End Date`,                 value: entry.isCurrentEnrollment ? 'Currently enrolled' : fmt(entry.endDate) },
-          { label: `[Entry ${i + 1}] Transcript`,               value: fileLabel(entry.transcriptOriginalName, entry.transcriptFileName) },
+          { label: `[Entry ${i + 1}] Transcript`,               value: docLabel({ originalName: entry.transcriptOriginalName, fileName: entry.transcriptFileName }) },
           { label: `[Entry ${i + 1}] Remarks`,                  value: entry.remarks || 'None' },
         );
       });
@@ -154,24 +146,56 @@ const buildSections = ({ personal, address, education, language, documents, spec
     sections.push({ title: 'Higher Education', data: baseRows });
   }
 
-  /* ── 5. Documents ──────────────────────────────────── */
+  /* ── 5. Supporting Documents ───────────────────────────────────────────
+     Field names MUST match applicationDocumentModel.js schema fields:
+       cv, photo, passport, transcript, diploma,
+       cert9th, cert10th, cert11th, cert12th,
+       testScores, languageProficiency, recommendationLetter
+  ────────────────────────────────────────────────────────────────────── */
   if (documents) {
+    const certRows = [];
+
+    // Grade certificates — show expected date if no file uploaded
+    ['cert9th', 'cert10th', 'cert11th', 'cert12th'].forEach((field) => {
+      const label = {
+        cert9th:  '9th Grade Certificate',
+        cert10th: '10th Grade Certificate',
+        cert11th: '11th Grade Certificate',
+        cert12th: '12th Grade Certificate',
+      }[field];
+
+      let value = 'Not uploaded';
+      if (documents[field]?.fileName) {
+        value = docLabel(documents[field]);
+      } else if (documents[`${field}_expectedDate`]) {
+        // Expected date stored as "YYYY-MM" — display as "Month YYYY"
+        const [yyyy, mm] = documents[`${field}_expectedDate`].split('-');
+        const monthName = mm
+          ? new Date(2000, parseInt(mm, 10) - 1).toLocaleString('en-US', { month: 'long' })
+          : '';
+        value = `Expected: ${monthName} ${yyyy}`.trim();
+      }
+      certRows.push({ label, value });
+    });
+
     sections.push({
       title: 'Supporting Documents',
       data: [
-        { label: 'CV / Resume',                value: docLabel(documents.cv) },
-        { label: 'Photo',                      value: docLabel(documents.photo) },
-        { label: 'EQHE Document',              value: docLabel(documents.eqhe) },
-        { label: 'Final EQHE Document',        value: docLabel(documents.finalEqhe) },
-        { label: 'Bachelor Transcript',        value: docLabel(documents.bachelorTranscript) },
-        { label: 'Bachelor Certificate',       value: docLabel(documents.bachelorCertificate) },
-        { label: 'German Certificate',         value: docLabel(documents.germanCertificate) },
-        { label: 'English Certificate',        value: docLabel(documents.englishCertificate) },
-        { label: 'Portfolio',                  value: docLabel(documents.portfolio) },
-        { label: 'Portfolio Link',             value: documents.portfolioLink || 'Not provided' },
-        { label: 'No Objection Certificate',   value: docLabel(documents.noObjection) },
-        { label: 'De-registration Document',   value: docLabel(documents.deRegistration) },
-        { label: 'Other Document',             value: docLabel(documents.other) },
+        // ── Personal ──
+        { label: 'CV / Resume',                       value: docLabel(documents.cv) },
+        { label: 'Photo',                             value: docLabel(documents.photo) },
+        { label: 'Passport / ID Proof',               value: docLabel(documents.passport) },
+        // ── Academic ──
+        { label: 'High School Transcript',            value: docLabel(documents.transcript) },
+        { label: 'High School Diploma / Certificate', value: docLabel(documents.diploma) },
+        // ── Grade Certificates ──
+        ...certRows,
+        // ── Optional ──
+        { label: 'Standardized Test Scores',          value: docLabel(documents.testScores) },
+        { label: 'English Language Proficiency',      value: docLabel(documents.languageProficiency) },
+        { label: 'Letters of Recommendation',         value: docLabel(documents.recommendationLetter) },
+        // ── CV Portfolio link (if any) ──
+        { label: 'Portfolio Link',                    value: documents.portfolioLink || 'Not provided' },
       ]
     });
   }
@@ -179,16 +203,16 @@ const buildSections = ({ personal, address, education, language, documents, spec
   /* ── 6. Special Needs ──────────────────────────────── */
   if (specialNeed) {
     const rows = [
-      { label: 'Has Special Needs',      value: specialNeed.hasSpecialNeeds === 'yes' ? 'Yes' : specialNeed.hasSpecialNeeds === 'no' ? 'No' : 'Not provided' },
-      { label: 'Description',            value: specialNeed.specialNeedsDescription || 'Not provided' },
-      { label: 'Other Description',      value: specialNeed.otherNeedsDescription || 'Not provided' },
-      { label: 'Status',                 value: specialNeed.status || 'Not provided' },
+      { label: 'Has Special Needs',  value: specialNeed.hasSpecialNeeds === 'yes' ? 'Yes' : specialNeed.hasSpecialNeeds === 'no' ? 'No' : 'Not provided' },
+      { label: 'Description',        value: specialNeed.specialNeedsDescription || 'Not provided' },
+      { label: 'Other Description',  value: specialNeed.otherNeedsDescription || 'Not provided' },
+      { label: 'Status',             value: specialNeed.status || 'Not provided' },
     ];
     if (specialNeed.specialNeeds?.length > 0) {
-      rows.push({ label: 'Types of Special Needs',    value: specialNeed.specialNeeds.join(', ') });
+      rows.push({ label: 'Types of Special Needs',  value: specialNeed.specialNeeds.join(', ') });
     }
     if (specialNeed.requiredArrangements?.length > 0) {
-      rows.push({ label: 'Required Arrangements',     value: specialNeed.requiredArrangements.join(', ') });
+      rows.push({ label: 'Required Arrangements',   value: specialNeed.requiredArrangements.join(', ') });
     }
     sections.push({ title: 'Special Needs / Disability', data: rows });
   }
@@ -198,6 +222,7 @@ const buildSections = ({ personal, address, education, language, documents, spec
 
 /* ======================================================
    COMPUTE COMPLETION STATUS PER SECTION
+   Uses actual schema field names from applicationDocumentModel.js
 ====================================================== */
 const computeCompletion = ({ personal, address, education, language, documents, specialNeed }) => {
   const p = personal || {};
@@ -205,9 +230,7 @@ const computeCompletion = ({ personal, address, education, language, documents, 
     p.firstName && p.lastName && p.dateOfBirth && p.countryOfBirth &&
     p.citizenship && p.email && p.mobile && p.passportNumber &&
     p.passportIssueDate && p.passportExpiryDate && p.issuingCountry &&
-    p.correspondenceLanguage &&
-    (p.passportFileName || p.passportOriginalName) &&
-    (p.photographFileName || p.photographOriginalName)
+    p.correspondenceLanguage
   );
 
   const addressDone = !!(
@@ -215,23 +238,32 @@ const computeCompletion = ({ personal, address, education, language, documents, 
     address?.country && address?.stateProvince && address?.postcode
   );
 
-  const educationDone = !!(education?.wasEnrolled !== null && education?.isCurrentlyEnrolled !== null);
+  const educationDone = !!(
+    education?.wasEnrolled !== null &&
+    education?.isCurrentlyEnrolled !== null
+  );
 
   const languageDone = !!(language?.eqheCountry && language?.eqheOriginalTitle);
 
+  // Required documents: cv, photo, passport, transcript, diploma,
+  // cert9th–cert12th (file OR expectedDate counts)
+  const CERT_FIELDS = ['cert9th', 'cert10th', 'cert11th', 'cert12th'];
   const documentsDone = !!(
     documents &&
     documents.cv?.fileName &&
     documents.photo?.fileName &&
-    documents.eqhe?.fileName &&
-    documents.englishCertificate?.fileName &&
-    documents.portfolio?.fileName
+    documents.passport?.fileName &&
+    documents.transcript?.fileName &&
+    documents.diploma?.fileName &&
+    CERT_FIELDS.every(field =>
+      documents[field]?.fileName || documents[`${field}_expectedDate`]
+    )
   );
 
   const specialNeedDone = !!(specialNeed?.hasSpecialNeeds);
 
   const sections = { personalDone, addressDone, educationDone, languageDone, documentsDone, specialNeedDone };
-  const overall = Object.values(sections).every(Boolean);
+  const overall  = Object.values(sections).every(Boolean);
   return { ...sections, overall };
 };
 
@@ -252,9 +284,7 @@ const getMissing = (personal) => {
   if (!personal?.passportExpiryDate)     m.push('Passport expiry date');
   if (!personal?.issuingCountry)         m.push('Issuing country');
   if (!personal?.correspondenceLanguage) m.push('Correspondence language');
-  if (!personal?.passportFileName && !personal?.passportOriginalName)     m.push('Passport document');
-  if (!personal?.photographFileName && !personal?.photographOriginalName) m.push('Photograph');
-  if (personal?.isEUCitizen === false && !personal?.needVisa)             m.push('Visa requirement');
+  if (personal?.isEUCitizen === false && !personal?.needVisa) m.push('Visa requirement');
   return m;
 };
 
@@ -291,8 +321,8 @@ export const getApplicationPreview = async (req, res) => {
       success: true,
       preview: {
         applicationId,
-        previewDate:    new Date().toISOString(),
-        agreedToTerms:  personal.agreedToTerms || false,
+        previewDate:       new Date().toISOString(),
+        agreedToTerms:     personal.agreedToTerms || false,
         applicationStatus: personal.applicationStatus || 'draft',
         sections,
         completionStatus,
@@ -313,8 +343,8 @@ export const getApplicationPreview = async (req, res) => {
 ====================================================== */
 export const saveAgreedToTerms = async (req, res) => {
   try {
-    const userId         = req.user.userId;
-    const { agreed }     = req.body;
+    const userId     = req.user.userId;
+    const { agreed } = req.body;
 
     if (typeof agreed !== 'boolean') {
       return res.status(400).json({ success: false, message: 'agreed must be a boolean' });

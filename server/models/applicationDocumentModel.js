@@ -20,7 +20,7 @@ const documentSchema = new mongoose.Schema(
     },
     fileType: {
       type: String,
-      enum: ["pdf", "jpg", "jpeg", "png", ""],
+      enum: ["pdf", "jpg", "jpeg", "png", "doc", "docx", ""],
       default: "",
     },
     fileSize: {
@@ -40,6 +40,10 @@ const documentSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    generated: {
+      type: Boolean,
+      default: false,
+    },
   },
   { _id: false }
 );
@@ -53,7 +57,7 @@ const applicationDocumentSchema = new mongoose.Schema(
       unique: true,
     },
 
-    // Personal Documents
+    // ── Personal Documents ──────────────────────────────────────
     cv: {
       type: documentSchema,
       default: () => ({}),
@@ -62,65 +66,82 @@ const applicationDocumentSchema = new mongoose.Schema(
       type: documentSchema,
       default: () => ({}),
     },
-
-    // Education Documents
-    eqhe: {
-      type: documentSchema,
-      default: () => ({}),
-    },
-    finalEqhe: {
-      type: documentSchema,
-      default: () => ({}),
-    },
-    bachelorTranscript: {
-      type: documentSchema,
-      default: () => ({}),
-    },
-    bachelorCertificate: {
+    passport: {
       type: documentSchema,
       default: () => ({}),
     },
 
-    // Language Certificates
-    germanCertificate: {
+    // ── Academic Documents ──────────────────────────────────────
+    transcript: {
       type: documentSchema,
       default: () => ({}),
     },
-    englishCertificate: {
-      type: documentSchema,
-      default: () => ({}),
-    },
-
-    // Program Specific
-    portfolio: {
+    diploma: {
       type: documentSchema,
       default: () => ({}),
     },
 
-    // University Documents
-    noObjection: {
+    // ── Grade Certificates ──────────────────────────────────────
+    cert9th: {
       type: documentSchema,
       default: () => ({}),
     },
-    deRegistration: {
+    cert10th: {
+      type: documentSchema,
+      default: () => ({}),
+    },
+    cert11th: {
+      type: documentSchema,
+      default: () => ({}),
+    },
+    cert12th: {
       type: documentSchema,
       default: () => ({}),
     },
 
-    // Additional Documents
-    other: {
+    // ── Optional Documents ──────────────────────────────────────
+    testScores: {
+      type: documentSchema,
+      default: () => ({}),
+    },
+    languageProficiency: {
+      type: documentSchema,
+      default: () => ({}),
+    },
+    recommendationLetter: {
       type: documentSchema,
       default: () => ({}),
     },
 
-    // Metadata for portfolio link
+    // ── Certificate expected dates ──────────────────────────────
+    // Stored as "YYYY-MM" string (e.g. "2025-06")
+    // Set by the frontend Month/Year dropdowns when student
+    // selects "No, not yet" for a grade certificate.
+    cert9th_expectedDate: {
+      type: String,
+      default: "",
+    },
+    cert10th_expectedDate: {
+      type: String,
+      default: "",
+    },
+    cert11th_expectedDate: {
+      type: String,
+      default: "",
+    },
+    cert12th_expectedDate: {
+      type: String,
+      default: "",
+    },
+
+    // ── CV metadata ─────────────────────────────────────────────
     portfolioLink: {
       type: String,
       default: "",
       trim: true,
     },
 
-    // Completion tracking
+    // ── Completion tracking ─────────────────────────────────────
     isCompleted: {
       type: Boolean,
       default: false,
@@ -130,7 +151,7 @@ const applicationDocumentSchema = new mongoose.Schema(
       default: null,
     },
 
-    // Verification status
+    // ── Verification ────────────────────────────────────────────
     isVerified: {
       type: Boolean,
       default: false,
@@ -156,94 +177,100 @@ const applicationDocumentSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true },
+    toJSON:   { virtuals: true },
     toObject: { virtuals: true },
   }
 );
 
 /* =====================================================
+   CONSTANTS
+===================================================== */
+
+// All document field names
+const ALL_DOC_FIELDS = [
+  "cv", "photo", "passport",
+  "transcript", "diploma",
+  "cert9th", "cert10th", "cert11th", "cert12th",
+  "testScores", "languageProficiency", "recommendationLetter",
+];
+
+// Required document fields
+// A cert counts as "handled" if a file is uploaded OR an expected date is set
+const REQUIRED_DOC_FIELDS = [
+  "cv", "photo", "passport",
+  "transcript", "diploma",
+  "cert9th", "cert10th", "cert11th", "cert12th",
+];
+
+// Certificate fields that support the Yes/No + expected date flow
+const CERT_FIELDS = ["cert9th", "cert10th", "cert11th", "cert12th"];
+
+/* =====================================================
    VIRTUALS
 ===================================================== */
 
-// Get all uploaded documents
+// All uploaded documents list
 applicationDocumentSchema.virtual("uploadedDocuments").get(function () {
   const documents = [];
-  const docFields = [
-    "cv", "photo", "eqhe", "finalEqhe", "bachelorTranscript",
-    "bachelorCertificate", "germanCertificate", "englishCertificate",
-    "portfolio", "noObjection", "deRegistration", "other"
-  ];
-
-  docFields.forEach(field => {
+  ALL_DOC_FIELDS.forEach((field) => {
     if (this[field] && this[field].fileName) {
-      documents.push({
-        type: field,
-        ...this[field].toObject()
-      });
+      documents.push({ type: field, ...this[field].toObject() });
     }
   });
-
   return documents;
 });
 
-// Get required documents status
+// Required documents upload status map
+// A cert is "done" if file uploaded OR expectedDate is set (e.g. "2025-06")
 applicationDocumentSchema.virtual("requiredDocumentsStatus").get(function () {
-  const requiredDocs = ["cv", "photo", "eqhe", "englishCertificate", "portfolio"];
   const status = {};
-
-  requiredDocs.forEach(doc => {
-    status[doc] = !!(this[doc] && this[doc].fileName);
+  REQUIRED_DOC_FIELDS.forEach((doc) => {
+    const hasFile        = !!(this[doc] && this[doc].fileName);
+    const hasPendingDate = CERT_FIELDS.includes(doc) && !!this[`${doc}_expectedDate`];
+    status[doc] = hasFile || hasPendingDate;
   });
-
   return status;
 });
 
-// Check if all required documents are uploaded
+// Whether all required docs are uploaded or declared pending
 applicationDocumentSchema.virtual("areRequiredDocumentsUploaded").get(function () {
-  const requiredDocs = ["cv", "photo", "eqhe", "englishCertificate", "portfolio"];
-  
-  return requiredDocs.every(doc => this[doc] && this[doc].fileName);
+  return REQUIRED_DOC_FIELDS.every((doc) => {
+    if (this[doc] && this[doc].fileName) return true;
+    if (CERT_FIELDS.includes(doc) && this[`${doc}_expectedDate`]) return true;
+    return false;
+  });
 });
 
-// Calculate completion percentage
+// Completion percentage based on required docs
+// expectedDate of format "YYYY-MM" counts as handled
 applicationDocumentSchema.virtual("completionPercentage").get(function () {
-  const requiredDocs = ["cv", "photo", "eqhe", "englishCertificate", "portfolio"];
-  const uploadedCount = requiredDocs.filter(doc => this[doc] && this[doc].fileName).length;
-  
-  return Math.round((uploadedCount / requiredDocs.length) * 100);
+  const handledCount = REQUIRED_DOC_FIELDS.filter((doc) => {
+    if (this[doc] && this[doc].fileName) return true;
+    if (CERT_FIELDS.includes(doc) && this[`${doc}_expectedDate`]) return true;
+    return false;
+  }).length;
+
+  return Math.round((handledCount / REQUIRED_DOC_FIELDS.length) * 100);
 });
 
-// Get document counts
+// Document counts summary
 applicationDocumentSchema.virtual("documentCounts").get(function () {
-  const total = 12; // Total document types
+  const total = ALL_DOC_FIELDS.length;
   let uploaded = 0;
-  let pending = 0;
+  let pending  = 0;
   let approved = 0;
   let rejected = 0;
 
-  const docFields = [
-    "cv", "photo", "eqhe", "finalEqhe", "bachelorTranscript",
-    "bachelorCertificate", "germanCertificate", "englishCertificate",
-    "portfolio", "noObjection", "deRegistration", "other"
-  ];
-
-  docFields.forEach(field => {
+  ALL_DOC_FIELDS.forEach((field) => {
     if (this[field] && this[field].fileName) {
       uploaded++;
       if (this[field].documentStatus === "approved") approved++;
       if (this[field].documentStatus === "rejected") rejected++;
-      if (this[field].documentStatus === "pending") pending++;
+      if (this[field].documentStatus === "pending")  pending++;
     }
   });
 
-  return {
-    total,
-    uploaded,
-    pending,
-    approved,
-    rejected,
-    missing: total - uploaded
-  };
+  return { total, uploaded, pending, approved, rejected, missing: total - uploaded };
 });
 
 /* =====================================================
@@ -253,7 +280,6 @@ applicationDocumentSchema.virtual("documentCounts").get(function () {
 applicationDocumentSchema.pre("save", function (next) {
   this.lastUpdated = new Date();
 
-  // Check if all required documents are uploaded
   if (this.areRequiredDocumentsUploaded && !this.isCompleted) {
     this.isCompleted = true;
     this.completedAt = new Date();
@@ -290,21 +316,17 @@ applicationDocumentSchema.statics.findByUserId = function (userId) {
 };
 
 applicationDocumentSchema.statics.findPendingVerification = function () {
-  return this.find({ 
-    isVerified: false, 
-    isCompleted: true 
-  }).populate("userId", "email firstName lastName");
+  return this.find({ isVerified: false, isCompleted: true }).populate(
+    "userId",
+    "email firstName lastName"
+  );
 };
 
 applicationDocumentSchema.statics.findByDocumentStatus = function (status) {
   const query = {
-    $or: [
-      { "cv.documentStatus": status },
-      { "photo.documentStatus": status },
-      { "eqhe.documentStatus": status },
-      { "englishCertificate.documentStatus": status },
-      { "portfolio.documentStatus": status }
-    ]
+    $or: ALL_DOC_FIELDS.map((field) => ({
+      [`${field}.documentStatus`]: status,
+    })),
   };
   return this.find(query).populate("userId", "email firstName lastName");
 };
@@ -313,35 +335,31 @@ applicationDocumentSchema.statics.findByDocumentStatus = function (status) {
    INSTANCE METHODS
 ===================================================== */
 
-applicationDocumentSchema.methods.updateDocument = function (
-  documentType,
-  fileData
-) {
+applicationDocumentSchema.methods.updateDocument = function (documentType, fileData) {
   if (!this[documentType]) {
     this[documentType] = {};
   }
-
   this[documentType] = {
     ...this[documentType].toObject?.(),
     ...fileData,
-    uploadedAt: new Date(),
+    uploadedAt:     new Date(),
     documentStatus: "pending",
   };
-
   return this.save();
 };
 
 applicationDocumentSchema.methods.removeDocument = function (documentType) {
-  if (this[documentType]) {
+  if (this[documentType] !== undefined) {
     this[documentType] = {
-      fileName: "",
-      fileUrl: "",
-      originalName: "",
-      fileType: "",
-      fileSize: 0,
-      uploadedAt: null,
+      fileName:       "",
+      fileUrl:        "",
+      originalName:   "",
+      fileType:       "",
+      fileSize:       0,
+      uploadedAt:     null,
       documentStatus: "not_uploaded",
-      adminRemark: "",
+      adminRemark:    "",
+      generated:      false,
     };
   }
   return this.save();
@@ -367,16 +385,21 @@ applicationDocumentSchema.methods.markAsCompleted = function () {
     this.completedAt = new Date();
     return this.save();
   }
-  return Promise.reject(new Error("Required documents are not uploaded"));
+  return Promise.reject(
+    new Error("Required documents are not all uploaded or declared")
+  );
 };
 
 applicationDocumentSchema.methods.verifyAll = function (adminId) {
-  this.isVerified = true;
-  this.verifiedBy = adminId;
-  this.verifiedAt = new Date();
+  this.isVerified  = true;
+  this.verifiedBy  = adminId;
+  this.verifiedAt  = new Date();
   return this.save();
 };
 
-const ApplicationDocument = mongoose.model("ApplicationDocument", applicationDocumentSchema);
+const ApplicationDocument = mongoose.model(
+  "ApplicationDocument",
+  applicationDocumentSchema
+);
 
 export default ApplicationDocument;

@@ -6,6 +6,7 @@ import ApplicationAddress from './ApplicationAddress';
 import ApplicationLanguage from './ApplicationLanguage';
 import ApplicationSpecialNeeds from './ApplicationSpecialNeeds';
 import ApplicationEducation from './ApplicationFirstEducation';
+import Score from './score'; // Import the Score component
 import ApplicationDocuments from './ApplicationDocuments';
 import ApplicationPreview from './ApplicationPreview';
 import Overview from './Overview';
@@ -54,8 +55,9 @@ const Application = () => {
         if (path.includes('/language'))       return 3;
         if (path.includes('/specialneeds'))   return 4;
         if (path.includes('/firsteducation')) return 5;
-        if (path.includes('/documents'))      return 6;
-        if (path.includes('/preview'))        return 7;
+        if (path.includes('/scores'))         return 6; // New step for scores
+        if (path.includes('/documents'))      return 7;
+        if (path.includes('/preview'))        return 8;
         return 0;
     });
 
@@ -113,6 +115,21 @@ const Application = () => {
         transcripts: null,
         degreeCertificate: null,
 
+        // Test Scores
+        scores: {
+            grade9: '',
+            grade10: '',
+            grade11: '',
+            grade12: '',
+            satTotal: '',
+            satMath: '',
+            satReading: '',
+            act: '',
+            toefl: '',
+            ielts: '',
+            ap: ''
+        },
+
         // Supporting Documents
         sop: null,
         lor1: null,
@@ -131,8 +148,9 @@ const Application = () => {
         { id: 3, title: 'Entrance Qualification', path: 'language',       component: ApplicationLanguage },
         { id: 4, title: 'Special Needs',          path: 'specialneeds',   component: ApplicationSpecialNeeds },
         { id: 5, title: 'Education',              path: 'firsteducation', component: ApplicationEducation },
-        { id: 6, title: 'Documents',              path: 'documents',      component: ApplicationDocuments },
-        { id: 7, title: 'Preview',                path: 'preview',        component: ApplicationPreview }
+        { id: 6, title: 'Test Scores',            path: 'scores',         component: Score }, // New step
+        { id: 7, title: 'Documents',              path: 'documents',      component: ApplicationDocuments },
+        { id: 8, title: 'Preview',                 path: 'preview',        component: ApplicationPreview }
     ];
 
     // ─────────────────────────────────────────────────────────────
@@ -149,8 +167,13 @@ const Application = () => {
                 if (formData.hasSpecialNeeds === 'yes' && formData.specialNeedsDescription?.trim()) return true;
                 return false;
             case 5: return !!(formData.qualificationLevel && formData.institutionName);
-            case 6: return !!(formData.sop && formData.lor1 && formData.lor2);
-            case 7: return !!formData.agreedToTerms;
+            case 6:
+                // Check if at least one test score is provided
+                const scores = formData.scores;
+                return !!(scores.grade9 || scores.grade10 || scores.grade11 || scores.grade12 || 
+                         scores.satTotal || scores.act || scores.toefl || scores.ielts);
+            case 7: return !!(formData.sop && formData.lor1 && formData.lor2);
+            case 8: return !!formData.agreedToTerms;
             default: return false;
         }
     }, [formData]);
@@ -211,8 +234,9 @@ const Application = () => {
         else if (path.includes('/language'))         setCurrentStep(3);
         else if (path.includes('/specialneeds'))     setCurrentStep(4);
         else if (path.includes('/firsteducation'))   setCurrentStep(5);
-        else if (path.includes('/documents'))        setCurrentStep(6);
-        else if (path.includes('/preview'))          setCurrentStep(7);
+        else if (path.includes('/scores'))           setCurrentStep(6); // New step
+        else if (path.includes('/documents'))        setCurrentStep(7);
+        else if (path.includes('/preview'))          setCurrentStep(8);
     }, [location.pathname]);
 
     // ─────────────────────────────────────────────────────────────
@@ -273,6 +297,11 @@ const Application = () => {
         setFormData(prev => ({ ...prev, [field]: file }));
     }, []);
 
+    // New handler for score updates
+    const handleScoreChange = useCallback((scores) => {
+        setFormData(prev => ({ ...prev, scores }));
+    }, []);
+
     const handleStartApplication = useCallback(() => {
         navigateToStep(1);
     }, [navigateToStep]);
@@ -312,6 +341,7 @@ const Application = () => {
         if (path.includes('/language'))       return ApplicationLanguage;
         if (path.includes('/specialneeds'))   return ApplicationSpecialNeeds;
         if (path.includes('/firsteducation')) return ApplicationEducation;
+        if (path.includes('/scores'))         return Score; // New step
         if (path.includes('/documents'))      return ApplicationDocuments;
         if (path.includes('/preview'))        return ApplicationPreview;
         return Overview;
@@ -357,16 +387,24 @@ const Application = () => {
                     </div>
 
                     {/* ── Form Content ── */}
-                    {/* ✅ FIX 2: studentId is now passed to ALL step components */}
                     <div className="form-content">
-                        <CurrentComponent
-                            formData={formData}
-                            onInputChange={handleInputChange}
-                            onFileUpload={handleFileUpload}
-                            onNext={handleNext}
-                            onPrev={handlePrev}
-                            studentId={studentId}
-                        />
+                        {currentStep === 6 ? (
+                            // Special handling for Score component
+                            <Score 
+                                scores={formData.scores}
+                                onScoreChange={handleScoreChange}
+                                studentId={studentId}
+                            />
+                        ) : (
+                            <CurrentComponent
+                                formData={formData}
+                                onInputChange={handleInputChange}
+                                onFileUpload={handleFileUpload}
+                                onNext={handleNext}
+                                onPrev={handlePrev}
+                                studentId={studentId}
+                            />
+                        )}
                     </div>
 
                     {/* ── Navigation ── */}

@@ -4,6 +4,8 @@ import {
   getDocumentsInfo,
   uploadDocument,
   removeDocument,
+  saveCertExpectedDate,
+  clearCertExpectedDate,
   updatePortfolioLink,
   updateDocumentsStatus,
   checkDocumentsCompletion,
@@ -13,41 +15,41 @@ import {
   verifyDocument,
   verifyAllDocuments,
 } from "../controllers/applicationDocumentController.js";
-import { 
-  createUploader, 
-  ensureDirectoryExists 
+import {
+  createUploader,
+  ensureDirectoryExists,
 } from "../middleware/uploadMiddleware.js";
 
 const router = express.Router();
 
 /* =====================================================
-   ENSURE DOCUMENT UPLOAD FOLDERS EXIST
+   ENSURE ALL DOCUMENT UPLOAD FOLDERS EXIST ON STARTUP
 ===================================================== */
 const documentFolders = [
   "documents/cv",
   "documents/photo",
-  "documents/education",
-  "documents/language",
-  "documents/portfolio",
-  "documents/university",
+  "documents/personal",      // passport
+  "documents/academic",      // transcript, diploma
+  "documents/certificates",  // cert9th–cert12th
+  "documents/optional",      // testScores, languageProficiency, recommendationLetter
   "documents/other",
 ];
 
-// Create all document folders
-documentFolders.forEach(folder => {
+documentFolders.forEach((folder) => {
   ensureDirectoryExists(folder);
   console.log(`✅ Document folder ready: ${folder}`);
 });
 
 /* =====================================================
-   MULTER UPLOADER FOR DOCUMENTS
-   - Max size: 5MB
-   - Accepts: PDF, JPG, PNG
+   MULTER UPLOADER
+   - Handles all document uploads
+   - Max size enforced per-field in the controller
+   - 10 MB ceiling here to accommodate academic/optional docs
 ===================================================== */
-const documentUpload = createUploader("documents", 5);
+const documentUpload = createUploader("documents", 10);
 
 /* =====================================================
-   TEST ROUTE - To verify API is working
+   TEST ROUTE
 ===================================================== */
 router.get("/test", (req, res) => {
   res.json({
@@ -55,56 +57,86 @@ router.get("/test", (req, res) => {
     message: "Application Documents API is working",
     timestamp: new Date().toISOString(),
     availableEndpoints: {
-      GET: ["/", "/completion", "/files/:documentType", "/admin/all", "/admin/user/:userId", "/test"],
-      POST: ["/upload/:documentType", "/portfolio-link", "/status"],
-      DELETE: ["/files/:documentType"],
-      PUT: ["/admin/verify/:id", "/admin/verify-all/:id"]
-    }
+      GET: [
+        "/",
+        "/completion",
+        "/files/:documentType",
+        "/admin/all",
+        "/admin/user/:userId",
+        "/test",
+      ],
+      POST: [
+        "/upload/:documentType",
+        "/cert-expected-date",
+        "/portfolio-link",
+        "/status",
+      ],
+      DELETE: [
+        "/files/:documentType",
+        "/cert-expected-date/:field",
+      ],
+      PUT: [
+        "/admin/verify/:id",
+        "/admin/verify-all/:id",
+      ],
+    },
+    validDocumentTypes: [
+      "cv", "photo", "passport",
+      "transcript", "diploma",
+      "cert9th", "cert10th", "cert11th", "cert12th",
+      "testScores", "languageProficiency", "recommendationLetter",
+    ],
   });
 });
 
 /* =====================================================
-   PROTECTED ROUTES - All routes require authentication
+   ALL ROUTES BELOW REQUIRE AUTHENTICATION
 ===================================================== */
 router.use(authMiddleware);
 
 /* =====================================================
-   USER ROUTES
+   USER ROUTES — Documents
 ===================================================== */
 
 /**
  * @route   GET /api/application/documents
- * @desc    Get all documents for current user
+ * @desc    Get all documents for the current user
  * @access  Private
  */
 router.get("/", getDocumentsInfo);
 
 /**
  * @route   GET /api/application/documents/completion
- * @desc    Check documents completion status
+ * @desc    Check document completion status
  * @access  Private
  */
 router.get("/completion", checkDocumentsCompletion);
 
 /**
- * @route   POST /api/application/documents/upload/:documentType
- * @desc    Upload a document by type
+ * @route   GET /api/application/documents/files/:documentType
+ * @desc    Serve a document file (streams file back)
  * @access  Private
+ */
+router.get("/files/:documentType", getDocumentFile);
+
+/**
+ * @route   POST /api/application/documents/upload/:documentType
+ * @desc    Upload a document by field name
+ * @access  Private
+ * @valid   documentType must be one of the VALID_DOCUMENT_TYPES
  */
 router.post(
   "/upload/:documentType",
   (req, res, next) => {
-    // Log upload attempt
-    console.log(`📤 Upload attempt for document type: ${req.params.documentType}`);
+    console.log(`📤 Upload attempt — documentType: ${req.params.documentType}`);
     next();
   },
   documentUpload.single("file"),
   (req, res, next) => {
-    // Check for multer errors
     if (req.fileValidationError) {
       return res.status(400).json({
         success: false,
-        message: req.fileValidationError
+        message: req.fileValidationError,
       });
     }
     next();
@@ -113,32 +145,54 @@ router.post(
 );
 
 /**
+ * @route   DELETE /api/application/documents/files/:documentType
+ * @desc    Remove a document by field name
+ * @access  Private
+ */
+router.delete("/files/:documentType", removeDocument);
+
+/* =====================================================
+   USER ROUTES — Certificate Expected Dates
+   Used by the Yes/No availability flow in the frontend.
+   When a student selects "No, not yet" for a grade cert,
+   the Month + Year dropdowns send a "YYYY-MM" string.
+===================================================== */
+
+/**
+ * @route   POST /api/application/documents/cert-expected-date
+ * @desc    Save an expected receipt month/year for a grade certificate
+ * @body    {
+ *            field:        "cert9th" | "cert10th" | "cert11th" | "cert12th",
+ *            expectedDate: "YYYY-MM"  ← e.g. "2025-06"
+ *          }
+ * @access  Private
+ */
+router.post("/cert-expected-date", saveCertExpectedDate);
+
+/**
+ * @route   DELETE /api/application/documents/cert-expected-date/:field
+ * @desc    Clear an expected receipt date (when student resets their answer)
+ * @access  Private
+ */
+router.delete("/cert-expected-date/:field", clearCertExpectedDate);
+
+/* =====================================================
+   USER ROUTES — Misc
+===================================================== */
+
+/**
  * @route   POST /api/application/documents/portfolio-link
- * @desc    Update portfolio link
+ * @desc    Save a portfolio URL
  * @access  Private
  */
 router.post("/portfolio-link", updatePortfolioLink);
 
 /**
  * @route   POST /api/application/documents/status
- * @desc    Update documents status
+ * @desc    Mark documents section as completed
  * @access  Private
  */
 router.post("/status", updateDocumentsStatus);
-
-/**
- * @route   GET /api/application/documents/files/:documentType
- * @desc    Get document file by type
- * @access  Private
- */
-router.get("/files/:documentType", getDocumentFile);
-
-/**
- * @route   DELETE /api/application/documents/files/:documentType
- * @desc    Remove document by type
- * @access  Private
- */
-router.delete("/files/:documentType", removeDocument);
 
 /* =====================================================
    ADMIN ROUTES
@@ -146,28 +200,30 @@ router.delete("/files/:documentType", removeDocument);
 
 /**
  * @route   GET /api/application/documents/admin/all
- * @desc    Get all documents (admin only)
+ * @desc    Get all users' documents (paginated, filterable)
+ * @query   page, limit, status, documentType, userId
  * @access  Private/Admin
  */
 router.get("/admin/all", getAllDocuments);
 
 /**
  * @route   GET /api/application/documents/admin/user/:userId
- * @desc    Get documents by user ID (admin only)
+ * @desc    Get one user's documents by userId
  * @access  Private/Admin
  */
 router.get("/admin/user/:userId", getDocumentsByUserId);
 
 /**
  * @route   PUT /api/application/documents/admin/verify/:id
- * @desc    Verify a specific document
+ * @desc    Approve or reject a specific document
+ * @body    { documentType, status: "approved"|"rejected"|"pending", remark? }
  * @access  Private/Admin
  */
 router.put("/admin/verify/:id", verifyDocument);
 
 /**
  * @route   PUT /api/application/documents/admin/verify-all/:id
- * @desc    Verify all documents for a user
+ * @desc    Mark all documents as verified for a user
  * @access  Private/Admin
  */
 router.put("/admin/verify-all/:id", verifyAllDocuments);

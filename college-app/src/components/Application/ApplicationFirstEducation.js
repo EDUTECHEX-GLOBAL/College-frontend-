@@ -247,16 +247,17 @@ const ApplicationFirstEducation = ({ onInputChange }) => {
   };
 
   // ─────────────────────────────────────────────────────────────
-  // NAVIGATION
+  // NAVIGATION - UPDATED to go to /scores instead of /documents
   // ─────────────────────────────────────────────────────────────
   const handleNext = async () => {
     const saved = await saveEducation();
     if (saved) {
       let targetPath;
       if (location.pathname.includes("/firsteducation")) {
-        targetPath = location.pathname.replace("/firsteducation", "/documents");
+        // Replace /firsteducation with /scores
+        targetPath = location.pathname.replace("/firsteducation", "/scores");
       } else {
-        targetPath = "/firstyear/dashboard/application/documents";
+        targetPath = "/firstyear/dashboard/application/scores";
       }
       navigate(targetPath);
     }
@@ -265,9 +266,9 @@ const ApplicationFirstEducation = ({ onInputChange }) => {
   const handleBack = () => {
     let backPath;
     if (location.pathname.includes("/firsteducation")) {
-      backPath = location.pathname.replace("/firsteducation", "/address");
+      backPath = location.pathname.replace("/firsteducation", "/specialneeds");
     } else {
-      backPath = "/firstyear/dashboard/application/address";
+      backPath = "/firstyear/dashboard/application/specialneeds";
     }
     navigate(backPath);
   };
@@ -304,25 +305,27 @@ const ApplicationFirstEducation = ({ onInputChange }) => {
         </div>
       </div>
 
-      {/* ── Navigation Steps ── */}
+      {/* ── Navigation Steps - UPDATED to reflect 8-step flow ── */}
       <div className="steps-container">
         {[
           "Study programme",
           "Applicant Details",
           "Address",
           "Entrance qualification",
-          "Higher Education",
-          "Documents",
           "Special Needs",
+          "Higher Education",
+          "Test Scores", // Added Test Scores step
+          "Documents",
           "Declaration",
           "Review",
         ].map((step, index) => {
           let stepClass = "step-item";
-          if (index < 3) stepClass += " completed";
-          if (index === 3) stepClass += " active";
+          // Update active/completed logic based on current step (index 5 is Higher Education)
+          if (index < 5) stepClass += " completed";
+          if (index === 5) stepClass += " active";
           return (
             <div key={step} className={stepClass}>
-              <span className="step-marker">{index < 3 ? "✓" : index + 1}</span>
+              <span className="step-marker">{index < 5 ? "✓" : index + 1}</span>
               <span className="step-text">{step}</span>
             </div>
           );

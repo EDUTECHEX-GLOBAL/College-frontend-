@@ -9,9 +9,9 @@ const API_URL = process.env.REACT_APP_API_BASE_URL
   : "http://localhost:5000/api/application/documents";
 
 const ApplicationDocuments = ({ formData, onFileUpload }) => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const token = localStorage.getItem("token");
+  const navigate  = useNavigate();
+  const location  = useLocation();
+  const token     = localStorage.getItem("token");
 
   const [isLoading,            setIsLoading]            = useState(true);
   const [isSubmitting,         setIsSubmitting]         = useState(false);
@@ -21,19 +21,62 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
   const [localFormData,        setLocalFormData]        = useState(formData || {});
   const [expandedCategories,   setExpandedCategories]   = useState({
     personal: true,
+    academic: true,
     certificates: true,
+    optional: true,
   });
   const [dragActive,      setDragActive]      = useState(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [selectedDoc,     setSelectedDoc]     = useState(null);
   const [searchTerm,      setSearchTerm]      = useState('');
 
-  // CV card mode — 'choose' | 'upload' | 'generate' | 'done'
-  const [cvMode, setCvMode] = useState('choose');
-  // ✅ CV Generator is ALWAYS a modal — never inline
+  // CV state
+  const [cvMode,      setCvMode]      = useState('choose');
   const [showCVModal, setShowCVModal] = useState(false);
 
+  // ── Certificate availability state ──────────────────────────
+  const [certAvailability, setCertAvailability] = useState({
+    cert9th:  null,
+    cert10th: null,
+    cert11th: null,
+    cert12th: null,
+  });
+
+  const [certExpectedMonth, setCertExpectedMonth] = useState({
+    cert9th:  '',
+    cert10th: '',
+    cert11th: '',
+    cert12th: '',
+  });
+  const [certExpectedYear, setCertExpectedYear] = useState({
+    cert9th:  '',
+    cert10th: '',
+    cert11th: '',
+    cert12th: '',
+  });
+
+  const CERT_FIELDS = ['cert9th', 'cert10th', 'cert11th', 'cert12th'];
+
+  const MONTHS = [
+    { value: '01', label: 'January' },
+    { value: '02', label: 'February' },
+    { value: '03', label: 'March' },
+    { value: '04', label: 'April' },
+    { value: '05', label: 'May' },
+    { value: '06', label: 'June' },
+    { value: '07', label: 'July' },
+    { value: '08', label: 'August' },
+    { value: '09', label: 'September' },
+    { value: '10', label: 'October' },
+    { value: '11', label: 'November' },
+    { value: '12', label: 'December' },
+  ];
+
+  const currentYear = new Date().getFullYear();
+  const YEARS = Array.from({ length: 6 }, (_, i) => String(currentYear + i));
+
   const documentTypes = [
+    // ── Personal Documents ──
     {
       id: 'cv', field: 'cv',
       label: 'Curriculum Vitae (Signed and dated)',
@@ -46,6 +89,28 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
       description: 'Recent passport-size photograph',
       required: true, accept: '.jpg,.jpeg,.png', maxSize: 5, category: 'personal', icon: '📷'
     },
+    {
+      id: 'passport', field: 'passport',
+      label: 'Passport / ID Proof',
+      description: 'Upload your passport or government-issued ID.',
+      required: true, accept: '.pdf,.jpg,.jpeg,.png', maxSize: 10, category: 'personal', icon: '🪪'
+    },
+
+    // ── Academic Documents ──
+    {
+      id: 'transcript', field: 'transcript',
+      label: 'High School Transcript',
+      description: 'Upload your official high school transcript. Must be translated if not in English.',
+      required: true, accept: '.pdf,.jpg,.jpeg,.png,.doc,.docx', maxSize: 10, category: 'academic', icon: '📋'
+    },
+    {
+      id: 'diploma', field: 'diploma',
+      label: 'High School Diploma / Graduation Certificate',
+      description: 'Upload your Diploma/Graduation Certificate.',
+      required: true, accept: '.pdf,.jpg,.jpeg,.png,.doc,.docx', maxSize: 10, category: 'academic', icon: '🎓'
+    },
+
+    // ── Grade Certificates ──
     {
       id: 'cert9th', field: 'cert9th',
       label: '9th Grade Certificate',
@@ -70,6 +135,26 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
       description: 'Official certificate / marksheet from your 12th grade (Higher Secondary / A-Level)',
       required: true, accept: '.pdf,.jpg,.jpeg,.png', maxSize: 5, category: 'certificates', icon: '🎓'
     },
+
+    // ── Optional Documents ──
+    {
+      id: 'testScores', field: 'testScores',
+      label: 'Standardized Test Scores (Optional)',
+      description: 'Upload SAT or ACT score report if required.',
+      required: false, accept: '.pdf,.jpg,.jpeg,.png,.doc,.docx', maxSize: 10, category: 'optional', icon: '📊'
+    },
+    {
+      id: 'languageProficiency', field: 'languageProficiency',
+      label: 'English Language Proficiency (International Students)',
+      description: 'Upload TOEFL, IELTS, or Duolingo scores.',
+      required: false, accept: '.pdf,.jpg,.jpeg,.png,.doc,.docx', maxSize: 10, category: 'optional', icon: '🌐'
+    },
+    {
+      id: 'recommendationLetter', field: 'recommendationLetter',
+      label: 'Letters of Recommendation (Optional)',
+      description: 'Upload your letters of recommendation & personal statement about academic goals and motivations.',
+      required: false, accept: '.pdf,.jpg,.jpeg,.png,.doc,.docx', maxSize: 10, category: 'optional', icon: '✉️'
+    },
   ];
 
   const documentCategories = {
@@ -77,9 +162,17 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
       title: 'Personal Documents', icon: '👤', color: '#4299e1',
       documents: documentTypes.filter(doc => doc.category === 'personal')
     },
+    academic: {
+      title: 'Academic Documents', icon: '🏫', color: '#ed8936',
+      documents: documentTypes.filter(doc => doc.category === 'academic')
+    },
     certificates: {
       title: 'School Certificates', icon: '📚', color: '#48bb78',
       documents: documentTypes.filter(doc => doc.category === 'certificates')
+    },
+    optional: {
+      title: 'Optional Documents', icon: '📎', color: '#9f7aea',
+      documents: documentTypes.filter(doc => doc.category === 'optional')
     },
   };
 
@@ -114,6 +207,27 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
           if (res.data.documents.cv?.fileName) {
             setCvMode(res.data.documents.cv.generated ? 'generate' : 'upload');
           }
+          const avail  = {};
+          const months = {};
+          const years  = {};
+          CERT_FIELDS.forEach(field => {
+            if (res.data.documents[field]?.fileName) {
+              avail[field] = 'yes';
+            } else if (res.data.documents[`${field}_expectedDate`]) {
+              avail[field] = 'no';
+              const saved = res.data.documents[`${field}_expectedDate`];
+              const parts = saved.split('-');
+              years[field]  = parts[0] || '';
+              months[field] = parts[1] || '';
+            } else {
+              avail[field] = null;
+            }
+            months[field] = months[field] || '';
+            years[field]  = years[field]  || '';
+          });
+          setCertAvailability(prev => ({ ...prev, ...avail }));
+          setCertExpectedMonth(prev => ({ ...prev, ...months }));
+          setCertExpectedYear(prev  => ({ ...prev, ...years }));
         }
         if (res.data.completionPercentage !== undefined) {
           setCompletionPercentage(res.data.completionPercentage);
@@ -133,6 +247,78 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
     } finally {
       if (isMounted) setIsLoading(false);
     }
+  };
+
+  // ── Cert availability handlers ───────────────────────────────
+  const handleCertAvailability = (field, answer) => {
+    setCertAvailability(prev => ({ ...prev, [field]: answer }));
+    if (answer === 'yes') {
+      setCertExpectedMonth(prev => ({ ...prev, [field]: '' }));
+      setCertExpectedYear(prev  => ({ ...prev, [field]: '' }));
+      setLocalFormData(prev => ({ ...prev, [`${field}_expectedDate`]: '' }));
+    }
+    if (answer === 'no' && localFormData[field]?.fileName) {
+      handleRemoveFile(field);
+    }
+  };
+
+  const handleExpectedMonthChange = async (field, month) => {
+  setCertExpectedMonth(prev => ({ ...prev, [field]: month }));
+  const year = certExpectedYear[field];
+  const combined = year && month ? `${year}-${month}` : '';
+  setLocalFormData(prev => ({ ...prev, [`${field}_expectedDate`]: combined }));
+
+  if (year && month) {
+    try {
+      await axios.post(
+        `${API_URL}/cert-expected-date`,
+        { field, expectedDate: combined },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+    } catch (err) {
+      console.error('Failed to save cert expected date:', err.response?.data || err.message);
+    }
+  }
+};
+
+ const handleExpectedYearChange = async (field, year) => {
+  setCertExpectedYear(prev => ({ ...prev, [field]: year }));
+  const month = certExpectedMonth[field];
+  const combined = year && month ? `${year}-${month}` : '';
+  setLocalFormData(prev => ({ ...prev, [`${field}_expectedDate`]: combined }));
+
+  if (year && month) {
+    try {
+      await axios.post(
+        `${API_URL}/cert-expected-date`,
+        { field, expectedDate: combined },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+    } catch (err) {
+      console.error('Failed to save cert expected date:', err.response?.data || err.message);
+    }
+  }
+};
+const handleCertAvailReset = async (field) => {
+  setCertAvailability(prev  => ({ ...prev, [field]: null }));
+  setCertExpectedMonth(prev => ({ ...prev, [field]: '' }));
+  setCertExpectedYear(prev  => ({ ...prev, [field]: '' }));
+  setLocalFormData(prev => ({ ...prev, [`${field}_expectedDate`]: '' }));
+
+  try {
+    await axios.delete(
+      `${API_URL}/cert-expected-date/${field}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+  } catch (err) {
+    console.error('Failed to clear cert expected date:', err.response?.data || err.message);
+  }
+};
+
+  const getCertExpectedDate = (field) => {
+    const m = certExpectedMonth[field];
+    const y = certExpectedYear[field];
+    return m && y ? `${y}-${m}` : '';
   };
 
   // ── Drag and drop ────────────────────────────────────────────
@@ -266,17 +452,22 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
     };
     setLocalFormData(prev => ({ ...prev, cv: generatedCV }));
     if (onFileUpload) onFileUpload('cv', generatedCV);
-    // Close modal after generating
     setShowCVModal(false);
     setCvMode('generate');
   };
 
   // ── Completion ───────────────────────────────────────────────
   const calculateCompletion = useCallback(() => {
-    const requiredDocs     = documentTypes.filter(doc => doc.required);
-    const uploadedRequired = requiredDocs.filter(doc => localFormData[doc.field]).length;
-    return Math.round((uploadedRequired / requiredDocs.length) * 100);
-  }, [localFormData]);
+    const requiredDocs = documentTypes.filter(doc => doc.required);
+    const uploadedOrDeclared = requiredDocs.filter(doc => {
+      if (localFormData[doc.field]) return true;
+      if (CERT_FIELDS.includes(doc.field)) {
+        return getCertExpectedDate(doc.field) !== '';
+      }
+      return false;
+    }).length;
+    return Math.round((uploadedOrDeclared / requiredDocs.length) * 100);
+  }, [localFormData, certExpectedMonth, certExpectedYear]);
 
   useEffect(() => {
     setCompletionPercentage(calculateCompletion());
@@ -288,13 +479,20 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
 
   // ── Navigation ───────────────────────────────────────────────
   const handleNext = async () => {
-    const missingRequired = documentTypes
-      .filter(doc => doc.required && !localFormData[doc.field])
-      .map(doc => doc.label);
+    const missingRequired = documentTypes.filter(doc => {
+      if (!doc.required) return false;
+      if (localFormData[doc.field]) return false;
+      if (CERT_FIELDS.includes(doc.field)) {
+        if (getCertExpectedDate(doc.field) !== '') return false;
+      }
+      return true;
+    }).map(doc => doc.label);
+
     if (missingRequired.length > 0) {
-      setError(`Please upload all required documents:\n\n• ${missingRequired.join('\n• ')}`);
+      setError(`Please upload all required documents or provide an expected month & year:\n\n• ${missingRequired.join('\n• ')}`);
       return;
     }
+
     setIsSubmitting(true);
     try {
       try {
@@ -306,21 +504,27 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
       } catch (statusError) {
         console.log("Status endpoint not available, continuing anyway");
       }
+
+      // ✅ CHANGED: Navigate to /preview instead of /special-needs
       let targetPath = location.pathname.includes('/documents')
-        ? location.pathname.replace('/documents', '/special-needs')
-        : '/firstyear/dashboard/application/special-needs';
+        ? location.pathname.replace('/documents', '/preview')
+        : '/firstyear/dashboard/application/preview';
       navigate(targetPath);
+
     } catch (error) {
       console.error("Error in handleNext:", error);
+
+      // ✅ CHANGED: Fallback also navigates to /preview
       let targetPath = location.pathname.includes('/documents')
-        ? location.pathname.replace('/documents', '/special-needs')
-        : '/firstyear/dashboard/application/special-needs';
+        ? location.pathname.replace('/documents', '/preview')
+        : '/firstyear/dashboard/application/preview';
       navigate(targetPath);
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  // ✅ CHANGED: Back navigates to /firsteducation (was already correct, kept as-is)
   const handleBack = () => {
     let backPath = location.pathname.includes('/documents')
       ? location.pathname.replace('/documents', '/firsteducation')
@@ -328,12 +532,9 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
     navigate(backPath);
   };
 
-  // ✅ Close CV modal — resets to 'choose' only if no CV is saved yet
   const handleCloseCV = () => {
     setShowCVModal(false);
-    if (!localFormData.cv?.fileName) {
-      setCvMode('choose');
-    }
+    if (!localFormData.cv?.fileName) setCvMode('choose');
   };
 
   // ── Helpers ──────────────────────────────────────────────────
@@ -352,6 +553,186 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
     if (bytes < 1024)        return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  };
+
+  // ── Certificate Upload Area ──────────────────────────────────
+  const CertUploadArea = ({ doc }) => {
+    const field        = doc.field;
+    const availability = certAvailability[field];
+    const month        = certExpectedMonth[field];
+    const year         = certExpectedYear[field];
+    const fileData     = localFormData[field];
+    const expectedDate = getCertExpectedDate(field);
+
+    if (fileData?.fileName) {
+      return (
+        <div className="file-preview">
+          {localFormData[`${field}Preview`] ? (
+            <div className="image-preview-container">
+              <img src={localFormData[`${field}Preview`]} alt={doc.label} className="image-preview" />
+              <div className="image-preview-overlay">
+                <button type="button" className="view-image-btn"
+                  onClick={() => window.open(localFormData[`${field}Preview`], '_blank')}>
+                  <i className="fas fa-eye"></i>
+                </button>
+                <button type="button" className="remove-image-btn"
+                  onClick={() => { handleRemoveFile(field); handleCertAvailReset(field); }}
+                  disabled={isSubmitting}>
+                  <i className="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="file-info">
+              <span className="file-icon-large">{getFileIcon(fileData.name || fileData.fileName)}</span>
+              <div className="file-details">
+                <span className="file-name" title={fileData.originalName || fileData.name || fileData.fileName}>
+                  {fileData.originalName || fileData.name || fileData.fileName || 'Uploaded file'}
+                </span>
+                {fileData.size > 0 && <span className="file-size">{formatFileSize(fileData.size)}</span>}
+              </div>
+              <div className="file-actions">
+                {fileData.fileUrl && (
+                  <a href={fileData.fileUrl} target="_blank" rel="noopener noreferrer" className="view-link">
+                    <i className="fas fa-eye"></i> View
+                  </a>
+                )}
+                <button type="button" className="remove-btn"
+                  onClick={() => { handleRemoveFile(field); handleCertAvailReset(field); }}
+                  disabled={isSubmitting}>
+                  <i className="fas fa-times"></i> Remove
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (availability === null) {
+      return (
+        <div className="cert-availability-question">
+          <div className="cert-question-icon">🎓</div>
+          <p className="cert-question-text">
+            Do you currently have your <strong>{doc.label}</strong>?
+          </p>
+          <div className="cert-yn-buttons">
+            <button type="button" className="cert-yn-btn cert-yn-yes"
+              onClick={() => handleCertAvailability(field, 'yes')}>
+              ✅ Yes, I have it
+            </button>
+            <button type="button" className="cert-yn-btn cert-yn-no"
+              onClick={() => handleCertAvailability(field, 'no')}>
+              ❌ No, not yet
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (availability === 'yes') {
+      return (
+        <div className="upload-placeholder">
+          <button type="button" className="cert-change-answer"
+            onClick={() => handleCertAvailReset(field)}>
+            ← Change answer
+          </button>
+          <div
+            className={`upload-prompt ${dragActive === field ? 'drag-active' : ''}`}
+            onDragEnter={(e) => handleDrag(e, field)}
+            onDragLeave={(e) => handleDrag(e, field)}
+            onDragOver={(e) => handleDrag(e, field)}
+            onDrop={(e) => handleDrop(e, field, doc)}
+          >
+            <i className="fas fa-cloud-upload-alt upload-icon"></i>
+            <p>Drag &amp; drop or click to upload</p>
+            <p className="upload-hint">
+              {doc.accept.replace(/\./g, '').toUpperCase()} • Max {doc.maxSize}MB
+            </p>
+          </div>
+          <input
+            type="file"
+            id={`${field}Upload`}
+            accept={doc.accept}
+            className="file-input-hidden"
+            onChange={(e) => handleFileChange(e, field, doc)}
+            disabled={uploading[field] || isSubmitting}
+          />
+          <button type="button" className="upload-button"
+            onClick={() => document.getElementById(`${field}Upload`).click()}
+            disabled={uploading[field] || isSubmitting}>
+            {uploading[field]
+              ? <><span className="spinner-small"></span> Uploading...</>
+              : <><i className="fas fa-upload"></i> Browse Files</>
+            }
+          </button>
+        </div>
+      );
+    }
+
+    if (availability === 'no') {
+      return (
+        <div className="cert-expected-date-wrapper">
+          <button type="button" className="cert-change-answer"
+            onClick={() => handleCertAvailReset(field)}>
+            ← Change answer
+          </button>
+          <div className="cert-no-icon">📅</div>
+          <p className="cert-no-title">No problem! When do you expect to receive it?</p>
+          <p className="cert-no-subtitle">
+            Please provide the expected month and year you will receive your{' '}
+            <strong>{doc.label}</strong>. You can upload the document later once you have it.
+          </p>
+          <div className="cert-date-input-group cert-monthyear-row">
+            <div className="cert-select-wrap">
+              <label className="cert-date-label" htmlFor={`${field}_month`}>Month</label>
+              <select
+                id={`${field}_month`}
+                className="cert-date-select"
+                value={month}
+                onChange={(e) => handleExpectedMonthChange(field, e.target.value)}
+              >
+                <option value="">-- Month --</option>
+                {MONTHS.map(m => (
+                  <option key={m.value} value={m.value}>{m.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="cert-select-wrap">
+              <label className="cert-date-label" htmlFor={`${field}_year`}>Year</label>
+              <select
+                id={`${field}_year`}
+                className="cert-date-select"
+                value={year}
+                onChange={(e) => handleExpectedYearChange(field, e.target.value)}
+              >
+                <option value="">-- Year --</option>
+                {YEARS.map(y => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          {expectedDate ? (
+            <div className="cert-date-confirmed">
+              <span className="cert-date-confirmed-icon">✅</span>
+              <span>
+                Expected by:{' '}
+                <strong>
+                  {MONTHS.find(m => m.value === month)?.label} {year}
+                </strong>
+              </span>
+            </div>
+          ) : (
+            <p className="cert-date-hint">
+              ⚠️ Please select both a month and a year to continue
+            </p>
+          )}
+        </div>
+      );
+    }
+
+    return null;
   };
 
   // ── Loading ──────────────────────────────────────────────────
@@ -401,9 +782,9 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
       {/* Navigation Steps */}
       <div className="application-steps">
         {[
-          "Study programme", "Applicant Details", "Address",
-          "Entrance qualification", "Higher Education",
-          "Application Documents", "Special Needs", "Declaration", "Review"
+          "Study programme","Applicant Details","Address",
+          "Entrance qualification","Higher Education",
+          "Application Documents","Special Needs","Declaration","Review"
         ].map((step, index) => {
           let stepClass = "step";
           if (index < 5) stepClass += " completed";
@@ -451,7 +832,6 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
 
         <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
 
-          {/* Documents by Category */}
           {Object.entries(filteredCategories).map(([key, category]) => (
             category.documents.length > 0 && (
               <div key={key} className="document-category">
@@ -464,7 +844,11 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
                     <span className="category-icon">{category.icon}</span>
                     <h3 className="category-title">{category.title}</h3>
                     <span className="category-count">
-                      {category.documents.filter(doc => localFormData[doc.field]).length}/{category.documents.length}
+                      {category.documents.filter(doc => {
+                        if (localFormData[doc.field]) return true;
+                        if (CERT_FIELDS.includes(doc.field) && getCertExpectedDate(doc.field)) return true;
+                        return false;
+                      }).length}/{category.documents.length}
                     </span>
                   </div>
                   <div className="category-actions">
@@ -492,7 +876,6 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
                             </div>
 
                             <div className="document-upload-area">
-                              {/* ── CV already saved ── */}
                               {localFormData.cv?.fileName ? (
                                 localFormData.cv.generated ? (
                                   <div className="cv-generated-badge">
@@ -538,7 +921,6 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
                                   </div>
                                 )
                               ) : (
-                                /* ── No CV yet: choose mode ── */
                                 <>
                                   {cvMode === 'choose' && (
                                     <div className="cv-choice-wrapper">
@@ -551,7 +933,6 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
                                           <span className="cv-choice-desc">Upload your existing CV as PDF or image</span>
                                         </button>
                                         <div className="cv-choice-or">OR</div>
-                                        {/* ✅ Generate CV → opens modal only, NO inline panel */}
                                         <button type="button" className="cv-choice-card cv-choice-card--generate"
                                           onClick={() => { setCvMode('generate'); setShowCVModal(true); }}>
                                           <span className="cv-choice-emoji">✨</span>
@@ -600,7 +981,6 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
                                     </div>
                                   )}
 
-                                  {/* ✅ cvMode === 'generate' with no saved CV → show "Open Generator" button, NOT inline panel */}
                                   {cvMode === 'generate' && (
                                     <div className="cv-choice-wrapper">
                                       <p className="cv-choice-prompt">CV Generator is ready</p>
@@ -624,6 +1004,39 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
                         );
                       }
 
+                      /* ── CERTIFICATE CARDS (9th–12th) ── */
+                      if (CERT_FIELDS.includes(doc.field)) {
+                        const hasFile = localFormData[doc.field]?.fileName;
+                        const hasDate = certAvailability[doc.field] === 'no' && getCertExpectedDate(doc.field);
+
+                        return (
+                          <div
+                            key={doc.id}
+                            className={`document-card cert-card
+                              ${hasFile ? 'uploaded' : ''}
+                              ${hasDate ? 'cert-card--pending' : ''}
+                              ${dragActive === doc.field ? 'drag-active' : ''}
+                            `}
+                          >
+                            <div className="document-header">
+                              <div className="document-icon">{doc.icon}</div>
+                              <div className="document-title-wrapper">
+                                <h4 className="document-title">
+                                  {doc.label}
+                                  {doc.required && <span className="required-badge">*</span>}
+                                  {hasFile && <span className="cert-status-pill cert-status-pill--done">✅ Uploaded</span>}
+                                  {hasDate && <span className="cert-status-pill cert-status-pill--pending">🕐 Pending</span>}
+                                </h4>
+                                <p className="document-description">{doc.description}</p>
+                              </div>
+                            </div>
+                            <div className="document-upload-area">
+                              <CertUploadArea doc={doc} />
+                            </div>
+                          </div>
+                        );
+                      }
+
                       /* ── ALL OTHER DOCUMENT CARDS ── */
                       return (
                         <div
@@ -640,6 +1053,7 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
                               <h4 className="document-title">
                                 {doc.label}
                                 {doc.required && <span className="required-badge">*</span>}
+                                {!doc.required && <span className="optional-badge">Optional</span>}
                               </h4>
                               <p className="document-description">{doc.description}</p>
                               {doc.note && (
@@ -649,7 +1063,6 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
                               )}
                             </div>
                           </div>
-
                           <div className="document-upload-area">
                             {localFormData[doc.field] && localFormData[doc.field].fileName ? (
                               <div className="file-preview">
@@ -744,11 +1157,22 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
               </div>
               <div className="stat-item">
                 <span className="stat-label">Uploaded:</span>
-                <span className="stat-value">{documentTypes.filter(doc => localFormData[doc.field]).length}</span>
+                <span className="stat-value">
+                  {documentTypes.filter(doc =>
+                    localFormData[doc.field] ||
+                    (CERT_FIELDS.includes(doc.field) && getCertExpectedDate(doc.field))
+                  ).length}
+                </span>
               </div>
               <div className="stat-item">
                 <span className="stat-label">Remaining:</span>
-                <span className="stat-value">{documentTypes.filter(doc => doc.required && !localFormData[doc.field]).length}</span>
+                <span className="stat-value">
+                  {documentTypes.filter(doc => {
+                    if (localFormData[doc.field]) return false;
+                    if (CERT_FIELDS.includes(doc.field) && getCertExpectedDate(doc.field)) return false;
+                    return doc.required;
+                  }).length}
+                </span>
               </div>
             </div>
             <div className="summary-progress">
@@ -777,7 +1201,7 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
         </form>
       </div>
 
-      {/* ── Upload Modal ── */}
+      {/* Upload Modal */}
       {showUploadModal && selectedDoc && (
         <div className="modal-overlay" onClick={() => setShowUploadModal(false)}>
           <div className="upload-modal" onClick={(e) => e.stopPropagation()}>
@@ -808,7 +1232,7 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
         </div>
       )}
 
-      {/* ✅ CV GENERATOR — ALWAYS A FULL-SCREEN MODAL, never inline */}
+      {/* CV Generator Modal */}
       {showCVModal && (
         <div className="resume-modal-backdrop" onClick={handleCloseCV}>
           <div className="resume-modal" onClick={(e) => e.stopPropagation()}>

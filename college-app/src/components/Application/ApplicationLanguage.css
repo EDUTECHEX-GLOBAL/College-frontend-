@@ -191,7 +191,7 @@
     overflow: hidden;
 }
 
-.progress-bar {
+.applicationlanguage-progress-bar {
     height: 100%;
     background: var(--primary-gradient);
     border-radius: var(--border-radius-full);

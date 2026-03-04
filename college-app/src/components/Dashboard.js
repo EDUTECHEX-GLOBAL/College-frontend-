@@ -114,7 +114,7 @@ const Dashboard = () => {
     }
   }, []);
 
-  // Calculate application progress from localStorage data - UPDATED with Special Needs
+  // Calculate application progress from localStorage data - UPDATED with Special Needs and Test Scores
   const calculateLocalApplicationProgress = (appData) => {
     if (!appData) return 0;
     
@@ -126,6 +126,14 @@ const Dashboard = () => {
       if (typeof fieldValue === 'string') return fieldValue.trim() !== '';
       if (typeof fieldValue === 'boolean') return true;
       if (typeof fieldValue === 'number') return true;
+      if (typeof fieldValue === 'object') {
+        // Check if it's a scores object with at least one value
+        if (fieldValue.grade9 || fieldValue.grade10 || fieldValue.grade11 || fieldValue.grade12 || 
+            fieldValue.satTotal || fieldValue.act || fieldValue.toefl || fieldValue.ielts) {
+          return true;
+        }
+        return Object.keys(fieldValue).length > 0;
+      }
       return !!fieldValue;
     };
     
@@ -172,6 +180,13 @@ const Dashboard = () => {
                             'countryOfStudy', 'startYear', 'endYear', 'resultStatus', 
                             'gradingSystem', 'transcriptsFileName', 'degreeCertificateFileName'];
     educationFields.forEach(field => {
+      totalFields++;
+      if (isFieldFilled(appData[field])) completedFields++;
+    });
+    
+    // Test Scores - New section
+    const scoresFields = ['scores'];
+    scoresFields.forEach(field => {
       totalFields++;
       if (isFieldFilled(appData[field])) completedFields++;
     });
@@ -546,7 +561,7 @@ const Dashboard = () => {
     ? Object.keys(userData.applicationProgress).length 
     : 0;
 
-  // Application sections with progress - UPDATED for new flow
+  // Application sections with progress - UPDATED for new flow with 7 steps
   const applicationSections = [
     { 
       name: "University Application", 
@@ -726,7 +741,7 @@ const Dashboard = () => {
     </>
   );
 
-  // DashboardHome Component - UPDATED quick access text
+  // DashboardHome Component - UPDATED quick access text to show 7 steps
   const DashboardHome = () => (
     <>
       <header className="main-header">

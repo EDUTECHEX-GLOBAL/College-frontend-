@@ -50,6 +50,7 @@ import processAdminDocumentRoutes from "./routes/processAdminDocumentRoutes.js";
 import documentRoutes from "./routes/documentRoutes.js";
 import resumeRoutes from "./routes/resumeRoutes.js";
 import previewRoutes from './routes/applicationPreviewRoutes.js';
+import applicationScoreRoutes from "./routes/applicationscoreroutes.js";
 dotenv.config();
 
 // Initialize
@@ -213,6 +214,7 @@ app.use("/api/admin", adminUniversityRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/documents", documentRoutes);
 app.use('/api/application/preview', previewRoutes);
+app.use("/api/application/score", applicationScoreRoutes);
 app.use("/api/colleges", collegeRoutes);
 app.use("/api/general", generalRoutes);
 app.use("/api/academics", firstAcademicRoutes);

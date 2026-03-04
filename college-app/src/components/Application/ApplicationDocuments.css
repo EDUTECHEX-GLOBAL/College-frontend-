@@ -43,7 +43,7 @@
   display: inline-block;
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(255,255,255,0.3);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   border-top-color: #ffffff;
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
@@ -220,19 +220,11 @@
 }
 
 @keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.error-banner i {
-  font-size: 20px;
-}
+.error-banner i { font-size: 20px; }
 
 .error-close-btn {
   margin-left: auto;
@@ -244,9 +236,7 @@
   padding: 0 4px;
 }
 
-.error-close-btn:hover {
-  opacity: 0.8;
-}
+.error-close-btn:hover { opacity: 0.8; }
 
 /* =====================================================
    FORM CONTAINER
@@ -279,16 +269,14 @@
   margin-bottom: 16px;
 }
 
-.info-message i {
-  color: #4299e1;
-}
+.info-message i { color: #4299e1; }
 
 .required-star {
   color: #f56565;
   font-weight: bold;
 }
 
-/* Search Bar */
+/* ── Search Bar ── */
 .search-container {
   position: relative;
   max-width: 400px;
@@ -331,9 +319,7 @@
   padding: 0 4px;
 }
 
-.clear-search:hover {
-  color: #718096;
-}
+.clear-search:hover { color: #718096; }
 
 /* =====================================================
    DOCUMENT CATEGORIES
@@ -361,9 +347,7 @@
   transition: background 0.2s ease;
 }
 
-.category-header:hover {
-  background: #edf2f7;
-}
+.category-header:hover { background: #edf2f7; }
 
 .category-title-wrapper {
   display: flex;
@@ -371,9 +355,7 @@
   gap: 12px;
 }
 
-.category-icon {
-  font-size: 24px;
-}
+.category-icon { font-size: 24px; }
 
 .category-title {
   margin: 0;
@@ -390,10 +372,7 @@
   border-radius: 20px;
 }
 
-.category-actions {
-  display: flex;
-  align-items: center;
-}
+.category-actions { display: flex; align-items: center; }
 
 .expand-icon {
   font-size: 14px;
@@ -449,9 +428,7 @@
   line-height: 1;
 }
 
-.document-title-wrapper {
-  flex: 1;
-}
+.document-title-wrapper { flex: 1; }
 
 .document-title {
   margin: 0 0 8px 0;
@@ -464,6 +441,7 @@
   flex-wrap: wrap;
 }
 
+/* ── Required badge (red) ── */
 .required-badge {
   display: inline-block;
   background: #f56565;
@@ -471,6 +449,18 @@
   font-size: 12px;
   padding: 2px 8px;
   border-radius: 20px;
+}
+
+/* ── Optional badge (purple) ── */
+.optional-badge {
+  display: inline-block;
+  background: #e9d8fd;
+  color: #553c9a;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.2px;
 }
 
 .document-description {
@@ -492,13 +482,9 @@
   gap: 6px;
 }
 
-.document-note i {
-  font-size: 12px;
-}
+.document-note i { font-size: 12px; }
 
-.document-link {
-  margin: 12px 0;
-}
+.document-link { margin: 12px 0; }
 
 .document-link a {
   color: #4299e1;
@@ -521,9 +507,7 @@
 /* =====================================================
    UPLOAD AREA
    ===================================================== */
-.document-upload-area {
-  margin-top: 16px;
-}
+.document-upload-area { margin-top: 16px; }
 
 .upload-placeholder {
   border: 2px dashed #e2e8f0;
@@ -538,9 +522,7 @@
   background: #f7fafc;
 }
 
-.upload-prompt {
-  margin-bottom: 16px;
-}
+.upload-prompt { margin-bottom: 16px; }
 
 .upload-icon {
   font-size: 40px;
@@ -559,9 +541,7 @@
   color: #a0aec0 !important;
 }
 
-.file-input-hidden {
-  display: none;
-}
+.file-input-hidden { display: none; }
 
 .upload-button {
   background: #4299e1;
@@ -614,10 +594,7 @@
 
 .image-preview-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
@@ -627,9 +604,7 @@
   transition: opacity 0.2s ease;
 }
 
-.image-preview-container:hover .image-preview-overlay {
-  opacity: 1;
-}
+.image-preview-container:hover .image-preview-overlay { opacity: 1; }
 
 .view-image-btn,
 .remove-image-btn {
@@ -646,17 +621,8 @@
   transition: all 0.2s ease;
 }
 
-.view-image-btn:hover {
-  background: #4299e1;
-  color: white;
-  transform: scale(1.1);
-}
-
-.remove-image-btn:hover {
-  background: #f56565;
-  color: white;
-  transform: scale(1.1);
-}
+.view-image-btn:hover  { background: #4299e1; color: white; transform: scale(1.1); }
+.remove-image-btn:hover { background: #f56565; color: white; transform: scale(1.1); }
 
 .file-info {
   display: flex;
@@ -664,9 +630,7 @@
   gap: 12px;
 }
 
-.file-icon-large {
-  font-size: 32px;
-}
+.file-icon-large { font-size: 32px; }
 
 .file-details {
   flex: 1;
@@ -706,10 +670,7 @@
   transition: all 0.2s ease;
 }
 
-.view-link:hover {
-  background: #bee3f8;
-  color: #2c5282;
-}
+.view-link:hover { background: #bee3f8; color: #2c5282; }
 
 .remove-btn {
   background: none;
@@ -725,15 +686,8 @@
   transition: all 0.2s ease;
 }
 
-.remove-btn:hover:not(:disabled) {
-  background: #fed7d7;
-  color: #c53030;
-}
-
-.remove-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+.remove-btn:hover:not(:disabled) { background: #fed7d7; color: #c53030; }
+.remove-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* =====================================================
    SUMMARY SECTION
@@ -753,9 +707,7 @@
   margin-bottom: 20px;
 }
 
-.summary-header i {
-  font-size: 24px;
-}
+.summary-header i { font-size: 24px; }
 
 .summary-header h3 {
   margin: 0;
@@ -770,9 +722,7 @@
   margin-bottom: 20px;
 }
 
-.stat-item {
-  text-align: center;
-}
+.stat-item { text-align: center; }
 
 .stat-label {
   display: block;
@@ -804,7 +754,8 @@
 /* =====================================================
    FORM ACTIONS
    ===================================================== */
-.form-actions {
+.form-actions,
+.applicationdocuments-form-actions {
   display: flex;
   justify-content: space-between;
   padding: 24px 32px;
@@ -813,7 +764,7 @@
 }
 
 .btn-secondary,
-.applicationdocument-btn-primary {
+.btn-primary {
   padding: 12px 32px;
   border-radius: 30px;
   font-size: 16px;
@@ -838,17 +789,20 @@
   transform: translateX(-2px);
 }
 
-.applicationdocument-btn-primary {
+.applicationdocument-btn-primary,
+.btn-primary {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
+.applicationdocument-btn-primary:hover:not(:disabled),
 .btn-primary:hover:not(:disabled) {
   transform: translateX(2px);
   box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
 }
 
+.applicationdocument-btn-primary:disabled,
 .btn-primary:disabled,
 .btn-secondary:disabled {
   opacity: 0.5;
@@ -871,29 +825,16 @@
   transition: all 0.2s ease;
 }
 
-.language-selector:hover {
-  background: #f7fafc;
-  color: #4a5568;
-}
-
-.language-selector i:first-child {
-  font-size: 16px;
-}
-
-.language-selector i:last-child {
-  font-size: 12px;
-  margin-left: auto;
-}
+.language-selector:hover { background: #f7fafc; color: #4a5568; }
+.language-selector i:first-child { font-size: 16px; }
+.language-selector i:last-child  { font-size: 12px; margin-left: auto; }
 
 /* =====================================================
-   MODAL
+   UPLOAD MODAL
    ===================================================== */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
@@ -904,7 +845,7 @@
 
 @keyframes fadeIn {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
 }
 
 .upload-modal {
@@ -918,14 +859,8 @@
 }
 
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .modal-header {
@@ -953,9 +888,7 @@
   line-height: 1;
 }
 
-.modal-close:hover {
-  color: #718096;
-}
+.modal-close:hover { color: #718096; }
 
 .modal-body {
   padding: 24px;
@@ -1000,10 +933,7 @@
   gap: 8px;
 }
 
-.modal-requirements i {
-  color: #4299e1;
-  width: 20px;
-}
+.modal-requirements i { color: #4299e1; width: 20px; }
 
 .modal-upload-btn {
   width: 100%;
@@ -1028,189 +958,12 @@
 }
 
 /* =====================================================
-   RESPONSIVE DESIGN
+   CV CARD — full width + choice UI
    ===================================================== */
-@media (max-width: 768px) {
-  .application-documents {
-    padding: 16px;
-  }
-
-  .documents-header {
-    flex-direction: column;
-    text-align: center;
-    gap: 16px;
-  }
-
-  .header-left h1 {
-    font-size: 20px;
-  }
-
-  .application-steps {
-    overflow-x: auto;
-    padding: 12px;
-  }
-
-  .step {
-    min-width: 80px;
-  }
-
-  .step-name {
-    display: none;
-  }
-
-  .form-header {
-    padding: 20px;
-  }
-
-  .form-header h2 {
-    font-size: 24px;
-  }
-
-  .document-category {
-    margin: 16px;
-  }
-
-  .documents-grid {
-    grid-template-columns: 1fr;
-    padding: 16px;
-  }
-
-  .category-header {
-    padding: 12px 16px;
-  }
-
-  .category-title {
-    font-size: 16px;
-  }
-
-  .documents-summary {
-    margin: 16px;
-    padding: 16px;
-  }
-
-  .summary-stats {
-    gap: 10px;
-  }
-
-  .stat-value {
-    font-size: 20px;
-  }
-
-  .form-actions {
-    padding: 20px;
-    flex-direction: column-reverse;
-    gap: 12px;
-  }
-
-  .btn-secondary,
-  .btn-primary {
-    width: 100%;
-    justify-content: center;
-  }
-}
-
-@media (max-width: 480px) {
-  .document-card {
-    padding: 16px;
-  }
-
-  .document-header {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .document-icon {
-    font-size: 24px;
-  }
-
-  .file-info {
-    flex-wrap: wrap;
-  }
-
-  .file-actions {
-    width: 100%;
-    justify-content: flex-end;
-  }
-
-  .summary-stats {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  .modal-body {
-    padding: 16px;
-  }
-}
-
-/* =====================================================
-   ANIMATIONS
-   ===================================================== */
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-.uploading-pulse {
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-/* =====================================================
-   UTILITY CLASSES
-   ===================================================== */
-.text-center {
-  text-align: center;
-}
-
-.mt-4 {
-  margin-top: 16px;
-}
-
-.mb-4 {
-  margin-bottom: 16px;
-}
-
-.hidden {
-  display: none;
-}
-
-/* =====================================================
-   SCROLLBAR STYLING
-   ===================================================== */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #cbd5e0;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #a0aec0;
-}
-/* ═══════════════════════════════════════════════════════════════
-   ApplicationDocuments — CV Upload OR Generate additions
-   Add these styles to the BOTTOM of ApplicationDocuments.css
-   ═══════════════════════════════════════════════════════════════ */
-
-/* ── CV card gets full width so the generator fits nicely ── */
 .cv-document-card {
-  grid-column: 1 / -1;       /* span full row */
+  grid-column: 1 / -1;
 }
 
-/* ────────────────────────────────────────────────────────────
-   CHOICE SCREEN  (Upload OR Generate)
-──────────────────────────────────────────────────────────── */
 .cv-choice-wrapper {
   display: flex;
   flex-direction: column;
@@ -1255,19 +1008,14 @@
   transform: translateY(-2px);
 }
 
-.cv-choice-card--generate {
-  border-color: #e2e8f0;
-}
+.cv-choice-card--generate { border-color: #e2e8f0; }
 
 .cv-choice-card--generate:hover {
   border-color: #f59e0b;
   background: #fffbeb;
 }
 
-.cv-choice-emoji {
-  font-size: 28px;
-  line-height: 1;
-}
+.cv-choice-emoji { font-size: 28px; line-height: 1; }
 
 .cv-choice-title {
   font-size: 14px;
@@ -1293,7 +1041,6 @@
   letter-spacing: 0.5px;
 }
 
-/* ── Back link inside upload mode ── */
 .cv-back-link {
   background: none;
   border: none;
@@ -1305,13 +1052,9 @@
   display: block;
 }
 
-.cv-back-link:hover {
-  text-decoration: underline;
-}
+.cv-back-link:hover { text-decoration: underline; }
 
-/* ────────────────────────────────────────────────────────────
-   GENERATED CV BADGE  (after student downloads)
-──────────────────────────────────────────────────────────── */
+/* ── Generated CV badge ── */
 .cv-generated-badge {
   display: flex;
   align-items: center;
@@ -1322,10 +1065,7 @@
   padding: 12px 16px;
 }
 
-.cv-gen-check {
-  font-size: 24px;
-  flex-shrink: 0;
-}
+.cv-gen-check { font-size: 24px; flex-shrink: 0; }
 
 .cv-gen-info {
   flex: 1;
@@ -1369,33 +1109,18 @@
   white-space: nowrap;
 }
 
-.cv-action-edit {
-  background: #3b82f6;
-  color: #fff;
-}
+.cv-action-edit   { background: #3b82f6; color: #fff; }
+.cv-action-edit:hover { background: #2563eb; }
+.cv-action-remove { background: #fee2e2; color: #991b1b; }
+.cv-action-remove:hover { background: #fecaca; }
 
-.cv-action-edit:hover {
-  background: #2563eb;
-}
-
-.cv-action-remove {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.cv-action-remove:hover {
-  background: #fecaca;
-}
-
-/* ────────────────────────────────────────────────────────────
-   CV GENERATOR PANEL  (full Resume below document list)
-──────────────────────────────────────────────────────────── */
+/* ── Legacy inline generator panel ── */
 .cv-generator-panel {
   margin-top: 24px;
   border: 2px solid #f59e0b;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(245,158,11,0.15);
+  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);
 }
 
 .cv-generator-panel-header {
@@ -1412,7 +1137,6 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 16px;
 }
 
 .cv-generator-panel-title h3 {
@@ -1422,10 +1146,6 @@
   margin: 0;
 }
 
-.cv-generator-panel-title span:first-child {
-  font-size: 20px;
-}
-
 .cv-gen-panel-hint {
   font-size: 12px !important;
   color: #94a3b8;
@@ -1433,8 +1153,8 @@
 }
 
 .cv-generator-close-btn {
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   color: #f1f5f9;
   padding: 7px 14px;
   border-radius: 6px;
@@ -1444,69 +1164,458 @@
   transition: background 0.15s;
 }
 
-.cv-generator-close-btn:hover {
-  background: rgba(255,255,255,0.18);
+.cv-generator-close-btn:hover { background: rgba(255, 255, 255, 0.18); }
+
+/* =====================================================
+   CV GENERATOR MODAL — full-screen overlay
+   ===================================================== */
+.resume-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(0, 0, 0, 0.72);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+  animation: fadeIn 0.2s ease;
 }
 
-/* ── Resume wrapper inside panel — remove standalone page padding ── */
-.cv-generator-panel .resume-wrapper {
-  background: #f8fafc;
-  min-height: auto;
-  padding-bottom: 0;
+.resume-modal {
+  position: relative;
+  width: 100%;
+  max-width: 1150px;
+  margin: auto;
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.45);
+  max-height: 92vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
 }
 
-.cv-generator-panel .resume-toolbar {
-  position: static;      /* not sticky inside the panel */
-  border-radius: 0;
+.resume-modal-close {
+  position: sticky;
+  top: 12px;
+  float: right;
+  margin: 12px 12px 0 0;
+  z-index: 10;
+  background: #e53e3e;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  font-size: 17px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.15s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 
-/* ── Responsive ── */
-@media (max-width: 600px) {
+.resume-modal-close:hover {
+  background: #c53030;
+  transform: scale(1.08);
+}
+
+/* =====================================================
+   CERTIFICATE AVAILABILITY — Yes / No flow
+   ===================================================== */
+
+/* Card state: pending (No + date given) */
+.cert-card--pending {
+  border-left: 4px solid #f6ad55 !important;
+  background: #fffaf0 !important;
+}
+
+/* Status pills next to the cert title */
+.cert-status-pill {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin-left: 8px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.cert-status-pill--done    { background: #c6f6d5; color: #276749; }
+.cert-status-pill--pending { background: #feebc8; color: #92400e; }
+
+/* ── Step 1: Yes / No question block ── */
+.cert-availability-question {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 28px 16px;
+  text-align: center;
+}
+
+.cert-question-icon { font-size: 40px; }
+
+.cert-question-text {
+  font-size: 15px;
+  color: #2d3748;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Yes / No button row ── */
+.cert-yn-buttons {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+
+.cert-yn-btn {
+  flex: 1;
+  min-width: 140px;
+  max-width: 200px;
+  padding: 14px 16px;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.cert-yn-yes {
+  background: #f0fff4;
+  border-color: #48bb78;
+  color: #276749;
+}
+
+.cert-yn-yes:hover {
+  background: #48bb78;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(72, 187, 120, 0.35);
+}
+
+.cert-yn-no {
+  background: #fff5f5;
+  border-color: #fc8181;
+  color: #c53030;
+}
+
+.cert-yn-no:hover {
+  background: #fc8181;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(252, 129, 129, 0.35);
+}
+
+/* ── "Change answer" back link ── */
+.cert-change-answer {
+  background: none;
+  border: none;
+  color: #4299e1;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  align-self: flex-start;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.cert-change-answer:hover { color: #2b6cb0; }
+
+/* ── Step 2b: "No" path — expected date wrapper ── */
+.cert-expected-date-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+}
+
+.cert-no-icon {
+  font-size: 36px;
+  text-align: center;
+}
+
+.cert-no-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0;
+  text-align: center;
+}
+
+.cert-no-subtitle {
+  font-size: 13px;
+  color: #718096;
+  margin: 0;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* ── Date input group ── */
+.cert-date-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ✅ Month + Year side-by-side row */
+.cert-monthyear-row {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+/* ✅ Each labelled select column */
+.cert-select-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 120px;
+}
+
+.cert-date-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4a5568;
+}
+
+/* ✅ Styled select dropdown */
+.cert-date-select {
+  width: 100%;
+  padding: 11px 36px 11px 14px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #2d3748;
+  background-color: #fff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.cert-date-select:focus {
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.18);
+  background-color: #f7fafc;
+}
+
+.cert-date-select:hover:not(:focus) {
+  border-color: #a0aec0;
+}
+
+/* Keep old cert-date-input in case it's used elsewhere */
+.cert-date-input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #2d3748;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+  background: #fff;
+}
+
+.cert-date-input:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.18);
+}
+
+/* ── Date confirmed banner ── */
+.cert-date-confirmed {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f0fff4;
+  border: 1.5px solid #9ae6b4;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #276749;
+}
+
+.cert-date-confirmed-icon { font-size: 18px; }
+
+/* ── Warning hint (no month/year selected yet) ── */
+.cert-date-hint {
+  font-size: 12px;
+  color: #c05621;
+  background: #fffaf0;
+  border: 1px solid #fbd38d;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 0;
+  text-align: center;
+}
+
+/* =====================================================
+   OPTIONAL DOCUMENT CARD STYLE
+   ===================================================== */
+.document-card:has(.optional-badge) {
+  border-color: #e9d8fd;
+  background: linear-gradient(to bottom right, #ffffff, #faf5ff);
+}
+
+.document-card:has(.optional-badge):hover {
+  border-color: #9f7aea;
+  box-shadow: 0 8px 16px rgba(159, 122, 234, 0.12);
+}
+
+/* =====================================================
+   ANIMATIONS
+   ===================================================== */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+.uploading-pulse { animation: pulse 1.5s ease-in-out infinite; }
+
+/* =====================================================
+   UTILITY CLASSES
+   ===================================================== */
+.text-center { text-align: center; }
+.mt-4        { margin-top: 16px; }
+.mb-4        { margin-bottom: 16px; }
+.hidden      { display: none; }
+
+/* =====================================================
+   SCROLLBAR STYLING
+   ===================================================== */
+::-webkit-scrollbar       { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #a0aec0; }
+
+/* =====================================================
+   RESPONSIVE
+   ===================================================== */
+@media (max-width: 768px) {
+  .application-documents { padding: 16px; }
+
+  .documents-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .header-left h1 { font-size: 20px; }
+
+  .application-steps {
+    overflow-x: auto;
+    padding: 12px;
+  }
+
+  .step     { min-width: 80px; }
+  .step-name { display: none; }
+
+  .form-header   { padding: 20px; }
+  .form-header h2 { font-size: 24px; }
+
+  .document-category { margin: 16px; }
+
+  .documents-grid {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+  .category-header { padding: 12px 16px; }
+  .category-title  { font-size: 16px; }
+
+  .documents-summary { margin: 16px; padding: 16px; }
+
+  .summary-stats     { gap: 10px; }
+  .stat-value        { font-size: 20px; }
+
+  .form-actions,
+  .applicationdocuments-form-actions {
+    padding: 20px;
+    flex-direction: column-reverse;
+    gap: 12px;
+  }
+
+  .btn-secondary,
+  .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+
   .cv-choice-row {
     flex-direction: column;
     max-width: 100%;
   }
-  .cv-choice-or {
-    width: auto;
-    padding: 4px 0;
+
+  .cv-choice-or { width: auto; padding: 4px 0; }
+
+  .cv-generated-badge { flex-wrap: wrap; }
+
+  .cv-generator-panel-header { flex-direction: column; align-items: flex-start; }
+  .cv-gen-panel-hint { display: none; }
+
+  /* Cert Yes/No */
+  .cert-yn-buttons   { flex-direction: column; align-items: stretch; }
+  .cert-yn-btn       { max-width: 100%; }
+
+  /* CV modal full-screen on mobile */
+  .resume-modal-backdrop { padding: 0; }
+  .resume-modal {
+    border-radius: 0;
+    max-height: 100vh;
+    height: 100vh;
   }
-  .cv-generated-badge {
-    flex-wrap: wrap;
-  }
-  .cv-generator-panel-header {
+}
+
+@media (max-width: 480px) {
+  .document-card { padding: 16px; }
+
+  .document-header {
     flex-direction: column;
-    align-items: flex-start;
+    gap: 8px;
   }
-  .cv-gen-panel-hint {
-    display: none;
+
+  .document-icon { font-size: 24px; }
+
+  .file-info    { flex-wrap: wrap; }
+  .file-actions { width: 100%; justify-content: flex-end; }
+
+  .summary-stats { grid-template-columns: 1fr; gap: 16px; }
+
+  .modal-body    { padding: 16px; }
+
+  .cert-availability-question { padding: 20px 12px; }
+
+  .optional-badge { font-size: 10px; padding: 2px 6px; }
+
+  /* ✅ Stack month/year dropdowns on very small screens */
+  .cert-monthyear-row {
+    flex-direction: column;
+    gap: 12px;
   }
-}
-.resume-modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.65);
-  z-index: 99999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 
-.resume-modal {
-  background: #fff;
-  width: 95%;
-  max-width: 1200px;
-  height: 90vh;
-  overflow-y: auto;
-  border-radius: 12px;
-  position: relative;
-}
-
-.resume-modal-close {
-  position: absolute;
-  top: 12px;
-  right: 16px;
-  font-size: 22px;
-  border: none;
-  background: none;
-  cursor: pointer;
+  .cert-select-wrap {
+    min-width: 100%;
+  }
 }

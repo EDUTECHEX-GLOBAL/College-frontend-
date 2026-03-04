@@ -8,7 +8,6 @@ import RoleSelection from "./components/RoleSelection";
 // ✅ Admin Login Page
 import AdminLogin from "./components/AdminLogin";
 
-
 // ✅ Process Admin Login Page
 import ProcessAdminLogin from "./components/processadmin/ProcessAdminLogin";
 
@@ -18,9 +17,12 @@ import UserProfile from "./components/UserProfile";
 // ✅ Admin Dashboard Page
 import AdminDashboard from "./components/admin/admindashboard";
 
-
 // ✅ Process Admin Dashboard Page
 import ProcessAdminDashboard from "./components/processadmin/processAdminDashboard";
+
+// ✅ Summer Program Pages
+import SummerSign from "./components/summarprogram/summersign";
+import SummerLogin from "./components/summarprogram/summerlogin";
 
 // Core pages
 import Home from "./components/Home";
@@ -60,11 +62,13 @@ function App() {
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
 
-        
-
         {/* Process Admin Routes */}
         <Route path="/process-admin-login" element={<ProcessAdminLogin />} />
         <Route path="/process-admin-dashboard" element={<ProcessAdminDashboard />} />
+
+        {/* ✅ Summer Program Routes */}
+        <Route path="/summer/sign-up" element={<SummerSign />} />
+        <Route path="/summer/login" element={<SummerLogin />} />
 
         {/* Forgot Password Routes */}
         <Route path="/firstyear/forgot-password" element={<ForgotPassword />} />

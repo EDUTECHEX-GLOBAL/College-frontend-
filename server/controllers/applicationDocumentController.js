@@ -7,31 +7,100 @@ import {
 import path from "path";
 import fs from "fs";
 
-// Document type to folder mapping
+/* =====================================================
+   CONSTANTS - must mirror the model
+===================================================== */
+
+// All valid document field names (must match frontend documentTypes[].field)
+const VALID_DOCUMENT_TYPES = [
+  // Personal
+  "cv", "photo", "passport",
+  // Academic
+  "transcript", "diploma",
+  // Certificates
+  "cert9th", "cert10th", "cert11th", "cert12th",
+  // Optional
+  "testScores", "languageProficiency", "recommendationLetter",
+];
+
+// Required document fields
+const REQUIRED_DOCUMENTS = [
+  "cv", "photo", "passport",
+  "transcript", "diploma",
+  "cert9th", "cert10th", "cert11th", "cert12th",
+];
+
+// Cert fields that support expected-date fallback
+const CERT_FIELDS = ["cert9th", "cert10th", "cert11th", "cert12th"];
+
+// Maps each field to its upload subfolder
 const documentFolderMap = {
-  cv: "documents/cv",
-  photo: "documents/photo",
-  eqhe: "documents/education",
-  finalEqhe: "documents/education",
-  bachelorTranscript: "documents/education",
-  bachelorCertificate: "documents/education",
-  germanCertificate: "documents/language",
-  englishCertificate: "documents/language",
-  portfolio: "documents/portfolio",
-  noObjection: "documents/university",
-  deRegistration: "documents/university",
-  other: "documents/other",
+  cv:                   "documents/cv",
+  photo:                "documents/photo",
+  passport:             "documents/personal",
+  transcript:           "documents/academic",
+  diploma:              "documents/academic",
+  cert9th:              "documents/certificates",
+  cert10th:             "documents/certificates",
+  cert11th:             "documents/certificates",
+  cert12th:             "documents/certificates",
+  testScores:           "documents/optional",
+  languageProficiency:  "documents/optional",
+  recommendationLetter: "documents/optional",
 };
 
-// Required documents for completion
-const REQUIRED_DOCUMENTS = ["cv", "photo", "eqhe", "englishCertificate", "portfolio"];
+// Max file size per field in MB
+const MAX_FILE_SIZE_MB = {
+  cv:                   5,
+  photo:                5,
+  passport:             10,
+  transcript:           10,
+  diploma:              10,
+  cert9th:              5,
+  cert10th:             5,
+  cert11th:             5,
+  cert12th:             5,
+  testScores:           10,
+  languageProficiency:  10,
+  recommendationLetter: 10,
+};
 
 /* =====================================================
-   HELPER FUNCTION TO CHECK IF USER IS ADMIN
+   HELPER — validate "YYYY-MM" format
+   The frontend Month/Year dropdowns produce values like "2025-06".
+   Full date strings ("2025-06-15") are intentionally rejected here
+   so the stored format stays consistent.
 ===================================================== */
-const isAdmin = (req) => {
-  return req.user && (req.user.role === 'admin' || req.user.role === 'superadmin');
+const isValidYearMonth = (value) => {
+  if (!value || typeof value !== "string") return false;
+  // Must match exactly YYYY-MM
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(value)) return false;
+  const year = parseInt(value.split("-")[0], 10);
+  const currentYear = new Date().getFullYear();
+  // Year must be current year or up to 10 years ahead
+  if (year < currentYear || year > currentYear + 10) return false;
+  return true;
 };
+
+/* =====================================================
+   HELPER — build empty document template
+===================================================== */
+const buildEmptyDocuments = () => {
+  const empty = { portfolioLink: "", isCompleted: false };
+  VALID_DOCUMENT_TYPES.forEach((field) => {
+    empty[field] = null;
+  });
+  CERT_FIELDS.forEach((field) => {
+    empty[`${field}_expectedDate`] = "";
+  });
+  return empty;
+};
+
+/* =====================================================
+   HELPER — check if user is admin
+===================================================== */
+const isAdmin = (req) =>
+  req.user && (req.user.role === "admin" || req.user.role === "superadmin");
 
 /* =====================================================
    GET DOCUMENTS INFO
@@ -39,73 +108,43 @@ const isAdmin = (req) => {
 export const getDocumentsInfo = async (req, res) => {
   try {
     if (!req.userId) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized. User ID missing.",
-      });
+      return res.status(401).json({ success: false, message: "Unauthorized." });
     }
 
-    let documents = await ApplicationDocument.findOne({
-      userId: req.userId,
-    });
+    let documents = await ApplicationDocument.findOne({ userId: req.userId });
 
     if (!documents) {
-      // Return empty template
       return res.status(200).json({
         success: true,
-        documents: {
-          userId: req.userId,
-          cv: {},
-          photo: {},
-          eqhe: {},
-          finalEqhe: {},
-          bachelorTranscript: {},
-          bachelorCertificate: {},
-          germanCertificate: {},
-          englishCertificate: {},
-          portfolio: {},
-          noObjection: {},
-          deRegistration: {},
-          other: {},
-          portfolioLink: "",
-          isCompleted: false,
-        },
+        documents: { userId: req.userId, ...buildEmptyDocuments() },
         completionPercentage: 0,
         documentCounts: {
-          total: 12,
+          total: VALID_DOCUMENT_TYPES.length,
           uploaded: 0,
           pending: 0,
           approved: 0,
           rejected: 0,
-          missing: 12
+          missing: VALID_DOCUMENT_TYPES.length,
         },
-        requiredDocumentsStatus: {
-          cv: false,
-          photo: false,
-          eqhe: false,
-          englishCertificate: false,
-          portfolio: false,
-        },
+        requiredDocumentsStatus: Object.fromEntries(
+          REQUIRED_DOCUMENTS.map((d) => [d, false])
+        ),
       });
     }
 
-    const completionPercentage = documents.completionPercentage || 0;
-    const documentCounts = documents.documentCounts || {};
-    const requiredDocumentsStatus = documents.requiredDocumentsStatus || {};
-
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       documents,
-      completionPercentage,
-      documentCounts,
-      requiredDocumentsStatus,
+      completionPercentage: documents.completionPercentage,
+      documentCounts: documents.documentCounts,
+      requiredDocumentsStatus: documents.requiredDocumentsStatus,
     });
   } catch (error) {
     console.error("❌ Get Documents Error:", error);
-    res.status(500).json({ 
-      success: false, 
+    return res.status(500).json({
+      success: false,
       message: "Server error",
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 };
@@ -116,130 +155,97 @@ export const getDocumentsInfo = async (req, res) => {
 export const uploadDocument = async (req, res) => {
   try {
     if (!req.userId) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized. User ID missing.",
-      });
+      return res.status(401).json({ success: false, message: "Unauthorized." });
     }
 
     const { documentType } = req.params;
 
-    // Validate document type
-    const validDocumentTypes = [
-      "cv", "photo", "eqhe", "finalEqhe", "bachelorTranscript",
-      "bachelorCertificate", "germanCertificate", "englishCertificate",
-      "portfolio", "noObjection", "deRegistration", "other"
-    ];
-
-    if (!validDocumentTypes.includes(documentType)) {
+    if (!VALID_DOCUMENT_TYPES.includes(documentType)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid document type",
+        message: `Invalid document type. Allowed: ${VALID_DOCUMENT_TYPES.join(", ")}`,
       });
     }
 
     if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: "No file uploaded",
-      });
+      return res.status(400).json({ success: false, message: "No file uploaded." });
     }
 
-    // Get folder for document type
     const folder = documentFolderMap[documentType] || "documents/other";
-    
-    // Ensure directory exists
     ensureDirectoryExists(folder);
 
-    // Validate file type
-    const allowedTypes = {
-      images: ["image/jpeg", "image/jpg", "image/png"],
-      pdf: ["application/pdf"],
-    };
-
-    const allAllowedTypes = [...allowedTypes.images, ...allowedTypes.pdf];
-    
-    if (!allAllowedTypes.includes(req.file.mimetype)) {
-      // Delete invalid file
-      if (fs.existsSync(req.file.path)) {
-        fs.unlinkSync(req.file.path);
-      }
+    // Validate MIME type
+    const allowedMimeTypes = [
+      "image/jpeg", "image/jpg", "image/png",
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+    if (!allowedMimeTypes.includes(req.file.mimetype)) {
+      fs.existsSync(req.file.path) && fs.unlinkSync(req.file.path);
       return res.status(400).json({
         success: false,
-        message: "Invalid file type. Only PDF, JPG, and PNG are allowed.",
+        message: "Invalid file type. Allowed: PDF, JPG, PNG, DOC, DOCX.",
       });
     }
 
-    // Validate file size (5MB max)
-    const maxSize = 5 * 1024 * 1024;
-    if (req.file.size > maxSize) {
-      // Delete oversized file
-      if (fs.existsSync(req.file.path)) {
-        fs.unlinkSync(req.file.path);
-      }
+    // Validate file size
+    const maxBytes = (MAX_FILE_SIZE_MB[documentType] || 5) * 1024 * 1024;
+    if (req.file.size > maxBytes) {
+      fs.existsSync(req.file.path) && fs.unlinkSync(req.file.path);
       return res.status(400).json({
         success: false,
-        message: "File size exceeds 5MB limit.",
+        message: `File size exceeds ${MAX_FILE_SIZE_MB[documentType] || 5}MB limit.`,
       });
     }
 
-    let documents = await ApplicationDocument.findOne({
-      userId: req.userId,
-    });
-
+    let documents = await ApplicationDocument.findOne({ userId: req.userId });
     if (!documents) {
-      // Create new document record
-      documents = new ApplicationDocument({
-        userId: req.userId,
-      });
+      documents = new ApplicationDocument({ userId: req.userId });
     }
 
-    // Get file extension
-    const fileExt = path.extname(req.file.originalname).toLowerCase().replace('.', '');
-
-    // Remove old file if exists
-    const oldFile = documents[documentType]?.fileName;
-    if (oldFile) {
-      deleteFileFromFolder(oldFile, folder);
+    // Remove old file if it exists
+    const oldFileName = documents[documentType]?.fileName;
+    if (oldFileName) {
+      deleteFileFromFolder(oldFileName, folder);
     }
 
-    // Prepare file data
+    const fileExt = path.extname(req.file.originalname).toLowerCase().replace(".", "");
+
     const fileData = {
-      fileName: req.file.filename,
-      fileUrl: getDynamicFileUrl(req.file.filename, folder),
-      originalName: req.file.originalname,
-      fileType: fileExt,
-      fileSize: req.file.size,
-      uploadedAt: new Date(),
+      fileName:       req.file.filename,
+      fileUrl:        getDynamicFileUrl(req.file.filename, folder),
+      originalName:   req.file.originalname,
+      fileType:       fileExt,
+      fileSize:       req.file.size,
+      uploadedAt:     new Date(),
       documentStatus: "pending",
+      generated:      false,
     };
 
-    // Update document
     documents[documentType] = fileData;
+
+    // Clear expected date now that the actual file is uploaded
+    if (CERT_FIELDS.includes(documentType)) {
+      documents[`${documentType}_expectedDate`] = "";
+    }
+
     await documents.save();
 
-    // Calculate updated completion
-    const completionPercentage = documents.completionPercentage;
-
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Document uploaded successfully",
       documentType,
       fileData,
-      completionPercentage,
+      completionPercentage: documents.completionPercentage,
       requiredDocumentsStatus: documents.requiredDocumentsStatus,
     });
   } catch (error) {
     console.error("❌ Upload Document Error:", error);
-
-    // Clean up uploaded file on error
-    if (req.file?.path && fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path);
-    }
-
-    res.status(500).json({
+    req.file?.path && fs.existsSync(req.file.path) && fs.unlinkSync(req.file.path);
+    return res.status(500).json({
       success: false,
-      message: error.message || "Upload failed",
+      message: error.message || "Upload failed.",
     });
   }
 };
@@ -250,110 +256,148 @@ export const uploadDocument = async (req, res) => {
 export const removeDocument = async (req, res) => {
   try {
     if (!req.userId) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized. User ID missing.",
-      });
+      return res.status(401).json({ success: false, message: "Unauthorized." });
     }
 
     const { documentType } = req.params;
 
-    // Validate document type
-    const validDocumentTypes = [
-      "cv", "photo", "eqhe", "finalEqhe", "bachelorTranscript",
-      "bachelorCertificate", "germanCertificate", "englishCertificate",
-      "portfolio", "noObjection", "deRegistration", "other"
-    ];
-
-    if (!validDocumentTypes.includes(documentType)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid document type",
-      });
+    if (!VALID_DOCUMENT_TYPES.includes(documentType)) {
+      return res.status(400).json({ success: false, message: "Invalid document type." });
     }
 
-    const documents = await ApplicationDocument.findOne({
-      userId: req.userId,
-    });
-
+    const documents = await ApplicationDocument.findOne({ userId: req.userId });
     if (!documents) {
-      return res.status(404).json({
-        success: false,
-        message: "Documents record not found",
-      });
+      return res.status(404).json({ success: false, message: "Documents record not found." });
     }
 
-    if (!documents[documentType] || !documents[documentType].fileName) {
+    if (!documents[documentType]?.fileName) {
       return res.status(200).json({
         success: true,
-        message: "No file to remove",
+        message: "No file to remove.",
         completionPercentage: documents.completionPercentage,
       });
     }
 
-    // Get folder for document type
     const folder = documentFolderMap[documentType] || "documents/other";
+    deleteFileFromFolder(documents[documentType].fileName, folder);
 
-    // Delete file from server
-    const fileName = documents[documentType].fileName;
-    deleteFileFromFolder(fileName, folder);
-
-    // Remove document from database using the model method
     await documents.removeDocument(documentType);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      message: "Document removed successfully",
+      message: "Document removed successfully.",
       completionPercentage: documents.completionPercentage,
       requiredDocumentsStatus: documents.requiredDocumentsStatus,
     });
   } catch (error) {
     console.error("❌ Remove Document Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    return res.status(500).json({ success: false, message: "Server error." });
   }
 };
 
 /* =====================================================
-   UPDATE PORTFOLIO LINK
+   SAVE CERT EXPECTED DATE
+   POST /api/application/documents/cert-expected-date
+
+   Body: {
+     field:        "cert9th" | "cert10th" | "cert11th" | "cert12th",
+     expectedDate: "YYYY-MM"   ← e.g. "2025-06"
+   }
+
+   The frontend Month/Year dropdowns combine their values into
+   "YYYY-MM" before sending. Full date strings are rejected.
 ===================================================== */
-export const updatePortfolioLink = async (req, res) => {
+export const saveCertExpectedDate = async (req, res) => {
   try {
     if (!req.userId) {
-      return res.status(401).json({
+      return res.status(401).json({ success: false, message: "Unauthorized." });
+    }
+
+    const { field, expectedDate } = req.body;
+
+    // Validate cert field name
+    if (!CERT_FIELDS.includes(field)) {
+      return res.status(400).json({
         success: false,
-        message: "Unauthorized. User ID missing.",
+        message: `Invalid cert field. Allowed: ${CERT_FIELDS.join(", ")}`,
       });
     }
 
-    const { portfolioLink } = req.body;
+    // Require a value
+    if (!expectedDate) {
+      return res.status(400).json({
+        success: false,
+        message: "Expected date is required.",
+      });
+    }
 
-    let documents = await ApplicationDocument.findOne({
-      userId: req.userId,
-    });
+    // ✅ Validate YYYY-MM format produced by the Month/Year dropdowns
+    if (!isValidYearMonth(expectedDate)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Invalid format. Expected 'YYYY-MM' (e.g. '2025-06'). " +
+          "Year must be current year or within the next 10 years.",
+      });
+    }
 
+    let documents = await ApplicationDocument.findOne({ userId: req.userId });
     if (!documents) {
-      documents = new ApplicationDocument({
-        userId: req.userId,
-      });
+      documents = new ApplicationDocument({ userId: req.userId });
     }
 
-    documents.portfolioLink = portfolioLink;
+    documents[`${field}_expectedDate`] = expectedDate;
     await documents.save();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      message: "Portfolio link updated successfully",
-      portfolioLink,
+      message: "Expected date saved.",
+      field,
+      expectedDate,
+      completionPercentage: documents.completionPercentage,
+      requiredDocumentsStatus: documents.requiredDocumentsStatus,
     });
   } catch (error) {
-    console.error("❌ Update Portfolio Link Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
+    console.error("❌ Save Cert Expected Date Error:", error);
+    return res.status(500).json({ success: false, message: "Server error." });
+  }
+};
+
+/* =====================================================
+   CLEAR CERT EXPECTED DATE
+   DELETE /api/application/documents/cert-expected-date/:field
+
+   Called when student clicks "← Change answer" to reset
+   their Yes/No selection and start over.
+===================================================== */
+export const clearCertExpectedDate = async (req, res) => {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized." });
+    }
+
+    const { field } = req.params;
+
+    if (!CERT_FIELDS.includes(field)) {
+      return res.status(400).json({ success: false, message: "Invalid cert field." });
+    }
+
+    const documents = await ApplicationDocument.findOne({ userId: req.userId });
+    if (!documents) {
+      return res.status(404).json({ success: false, message: "Documents record not found." });
+    }
+
+    documents[`${field}_expectedDate`] = "";
+    await documents.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Expected date cleared.",
+      completionPercentage: documents.completionPercentage,
     });
+  } catch (error) {
+    console.error("❌ Clear Cert Expected Date Error:", error);
+    return res.status(500).json({ success: false, message: "Server error." });
   }
 };
 
@@ -363,49 +407,31 @@ export const updatePortfolioLink = async (req, res) => {
 export const updateDocumentsStatus = async (req, res) => {
   try {
     if (!req.userId) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized. User ID missing.",
-      });
+      return res.status(401).json({ success: false, message: "Unauthorized." });
     }
 
     const { completed } = req.body;
 
-    const documents = await ApplicationDocument.findOne({
-      userId: req.userId,
-    });
-
+    const documents = await ApplicationDocument.findOne({ userId: req.userId });
     if (!documents) {
-      return res.status(404).json({
-        success: false,
-        message: "Documents record not found",
-      });
+      return res.status(404).json({ success: false, message: "Documents record not found." });
     }
 
-    if (completed) {
-      const allRequiredUploaded = REQUIRED_DOCUMENTS.every(
-        doc => documents[doc] && documents[doc].fileName
-      );
-
-      if (allRequiredUploaded) {
-        documents.isCompleted = true;
-        documents.completedAt = new Date();
-        await documents.save();
-      }
+    if (completed && documents.areRequiredDocumentsUploaded) {
+      documents.isCompleted = true;
+      documents.completedAt = new Date();
+      await documents.save();
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      message: "Documents status updated successfully",
+      message: "Documents status updated.",
       isCompleted: documents.isCompleted,
       completionPercentage: documents.completionPercentage,
     });
   } catch (error) {
     console.error("❌ Update Documents Status Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    return res.status(500).json({ success: false, message: "Server error." });
   }
 };
 
@@ -415,57 +441,39 @@ export const updateDocumentsStatus = async (req, res) => {
 export const checkDocumentsCompletion = async (req, res) => {
   try {
     if (!req.userId) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized. User ID missing.",
-      });
+      return res.status(401).json({ success: false, message: "Unauthorized." });
     }
 
-    const documents = await ApplicationDocument.findOne({
-      userId: req.userId,
-    });
+    const documents = await ApplicationDocument.findOne({ userId: req.userId });
 
     if (!documents) {
       return res.status(200).json({
         success: true,
         isCompleted: false,
         completionPercentage: 0,
-        requiredDocumentsStatus: {
-          cv: false,
-          photo: false,
-          eqhe: false,
-          englishCertificate: false,
-          portfolio: false,
-        },
+        requiredDocumentsStatus: Object.fromEntries(
+          REQUIRED_DOCUMENTS.map((d) => [d, false])
+        ),
         uploadedDocuments: [],
       });
     }
 
-    // Get list of uploaded documents
-    const uploadedDocs = [];
-    for (const doc of REQUIRED_DOCUMENTS) {
-      if (documents[doc] && documents[doc].fileName) {
-        uploadedDocs.push({
-          type: doc,
-          ...documents[doc].toObject?.() || documents[doc]
-        });
-      }
-    }
+    // Build uploaded list for required docs
+    const uploadedDocuments = REQUIRED_DOCUMENTS
+      .filter((doc) => documents[doc]?.fileName)
+      .map((doc) => ({ type: doc, ...documents[doc].toObject?.() || documents[doc] }));
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       isCompleted: documents.isCompleted,
       completionPercentage: documents.completionPercentage,
       requiredDocumentsStatus: documents.requiredDocumentsStatus,
       documentCounts: documents.documentCounts,
-      uploadedDocuments: uploadedDocs,
+      uploadedDocuments,
     });
   } catch (error) {
     console.error("❌ Check Documents Completion Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    return res.status(500).json({ success: false, message: "Server error." });
   }
 };
 
@@ -475,23 +483,19 @@ export const checkDocumentsCompletion = async (req, res) => {
 export const getDocumentFile = async (req, res) => {
   try {
     if (!req.userId) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized. User ID missing.",
-      });
+      return res.status(401).json({ success: false, message: "Unauthorized." });
     }
 
     const { documentType } = req.params;
 
-    const documents = await ApplicationDocument.findOne({
-      userId: req.userId,
-    });
+    if (!VALID_DOCUMENT_TYPES.includes(documentType)) {
+      return res.status(400).json({ success: false, message: "Invalid document type." });
+    }
+
+    const documents = await ApplicationDocument.findOne({ userId: req.userId });
 
     if (!documents || !documents[documentType]?.fileName) {
-      return res.status(404).json({
-        success: false,
-        message: "Document not found",
-      });
+      return res.status(404).json({ success: false, message: "Document not found." });
     }
 
     const folder = documentFolderMap[documentType] || "documents/other";
@@ -503,61 +507,71 @@ export const getDocumentFile = async (req, res) => {
     );
 
     if (!fs.existsSync(filePath)) {
-      return res.status(404).json({
-        success: false,
-        message: "File not found on server",
-      });
+      return res.status(404).json({ success: false, message: "File not found on server." });
     }
 
-    res.sendFile(filePath);
+    return res.sendFile(filePath);
   } catch (error) {
     console.error("❌ Get Document File Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    return res.status(500).json({ success: false, message: "Server error." });
   }
 };
 
 /* =====================================================
-   ADMIN GET ALL DOCUMENTS
+   UPDATE PORTFOLIO LINK
+===================================================== */
+export const updatePortfolioLink = async (req, res) => {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized." });
+    }
+
+    const { portfolioLink } = req.body;
+
+    let documents = await ApplicationDocument.findOne({ userId: req.userId });
+    if (!documents) {
+      documents = new ApplicationDocument({ userId: req.userId });
+    }
+
+    documents.portfolioLink = portfolioLink || "";
+    await documents.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Portfolio link updated.",
+      portfolioLink,
+    });
+  } catch (error) {
+    console.error("❌ Update Portfolio Link Error:", error);
+    return res.status(500).json({ success: false, message: "Server error." });
+  }
+};
+
+/* =====================================================
+   ADMIN — GET ALL DOCUMENTS
 ===================================================== */
 export const getAllDocuments = async (req, res) => {
   try {
-    // Check if user is admin
     if (!isAdmin(req)) {
-      return res.status(403).json({
-        success: false,
-        message: "Access denied. Admin privileges required.",
-      });
+      return res.status(403).json({ success: false, message: "Access denied." });
     }
 
     const { page = 1, limit = 20, status, documentType, userId } = req.query;
-    
     let query = {};
-    
-    // Filter by userId if provided
-    if (userId) {
-      query.userId = userId;
-    }
-    
-    // Filter by document status
+
+    if (userId) query.userId = userId;
+
     if (status) {
-      if (documentType) {
+      if (documentType && VALID_DOCUMENT_TYPES.includes(documentType)) {
         query[`${documentType}.documentStatus`] = status;
       } else {
-        query.$or = [
-          { "cv.documentStatus": status },
-          { "photo.documentStatus": status },
-          { "eqhe.documentStatus": status },
-          { "englishCertificate.documentStatus": status },
-          { "portfolio.documentStatus": status }
-        ];
+        query.$or = VALID_DOCUMENT_TYPES.map((field) => ({
+          [`${field}.documentStatus`]: status,
+        }));
       }
     }
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
-
     const data = await ApplicationDocument.find(query)
       .populate("userId", "email firstName lastName")
       .sort({ createdAt: -1 })
@@ -566,145 +580,119 @@ export const getAllDocuments = async (req, res) => {
 
     const total = await ApplicationDocument.countDocuments(query);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data,
       pagination: {
         total,
-        page: parseInt(page),
+        page:  parseInt(page),
         pages: Math.ceil(total / parseInt(limit)),
         limit: parseInt(limit),
       },
     });
   } catch (error) {
     console.error("❌ Admin Get All Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    return res.status(500).json({ success: false, message: "Server error." });
   }
 };
 
 /* =====================================================
-   ADMIN GET DOCUMENTS BY USER ID
+   ADMIN — GET DOCUMENTS BY USER ID
 ===================================================== */
 export const getDocumentsByUserId = async (req, res) => {
   try {
-    // Check if user is admin
     if (!isAdmin(req)) {
-      return res.status(403).json({
-        success: false,
-        message: "Access denied. Admin privileges required.",
-      });
+      return res.status(403).json({ success: false, message: "Access denied." });
     }
 
     const { userId } = req.params;
-
-    const documents = await ApplicationDocument.findOne({ userId })
-      .populate("userId", "email firstName lastName");
+    const documents = await ApplicationDocument.findOne({ userId }).populate(
+      "userId",
+      "email firstName lastName"
+    );
 
     if (!documents) {
       return res.status(404).json({
         success: false,
-        message: "Documents not found for this user",
+        message: "Documents not found for this user.",
       });
     }
 
-    res.status(200).json({
-      success: true,
-      data: documents,
-    });
+    return res.status(200).json({ success: true, data: documents });
   } catch (error) {
     console.error("❌ Admin Get By User ID Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    return res.status(500).json({ success: false, message: "Server error." });
   }
 };
 
 /* =====================================================
-   ADMIN VERIFY DOCUMENT
+   ADMIN — VERIFY DOCUMENT
 ===================================================== */
 export const verifyDocument = async (req, res) => {
   try {
-    // Check if user is admin
     if (!isAdmin(req)) {
-      return res.status(403).json({
-        success: false,
-        message: "Access denied. Admin privileges required.",
-      });
+      return res.status(403).json({ success: false, message: "Access denied." });
     }
 
     const { id } = req.params;
     const { documentType, status, remark } = req.body;
 
-    const documents = await ApplicationDocument.findById(id);
+    if (!VALID_DOCUMENT_TYPES.includes(documentType)) {
+      return res.status(400).json({ success: false, message: "Invalid document type." });
+    }
 
-    if (!documents) {
-      return res.status(404).json({
+    if (!["approved", "rejected", "pending"].includes(status)) {
+      return res.status(400).json({
         success: false,
-        message: "Documents record not found",
+        message: "Invalid status. Allowed: approved, rejected, pending.",
       });
     }
 
+    const documents = await ApplicationDocument.findById(id);
+    if (!documents) {
+      return res.status(404).json({ success: false, message: "Documents record not found." });
+    }
+
     if (!documents[documentType]) {
-      return res.status(404).json({
-        success: false,
-        message: "Document type not found",
-      });
+      return res.status(404).json({ success: false, message: "Document type not found." });
     }
 
     await documents.verifyDocument(documentType, status, remark);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      message: `Document ${status} successfully`,
+      message: `Document ${status} successfully.`,
     });
   } catch (error) {
     console.error("❌ Admin Verify Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    return res.status(500).json({ success: false, message: "Server error." });
   }
 };
 
 /* =====================================================
-   ADMIN VERIFY ALL DOCUMENTS
+   ADMIN — VERIFY ALL DOCUMENTS
 ===================================================== */
 export const verifyAllDocuments = async (req, res) => {
   try {
-    // Check if user is admin
     if (!isAdmin(req)) {
-      return res.status(403).json({
-        success: false,
-        message: "Access denied. Admin privileges required.",
-      });
+      return res.status(403).json({ success: false, message: "Access denied." });
     }
 
     const { id } = req.params;
-
     const documents = await ApplicationDocument.findById(id);
 
     if (!documents) {
-      return res.status(404).json({
-        success: false,
-        message: "Documents record not found",
-      });
+      return res.status(404).json({ success: false, message: "Documents record not found." });
     }
 
     await documents.verifyAll(req.userId);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      message: "All documents verified successfully",
+      message: "All documents verified successfully.",
     });
   } catch (error) {
     console.error("❌ Admin Verify All Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    return res.status(500).json({ success: false, message: "Server error." });
   }
 };

@@ -19,16 +19,13 @@ const toTitleCase = (str) => {
   if (!str) return '';
   return str.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 };
-
 const degreeLabel = (val) => DEGREE_LABELS[val] || toTitleCase(val) || '—';
-
-const formatDate = (dateStr) => {
+const formatDate  = (dateStr) => {
   if (!dateStr) return '—';
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return '—';
   return d.toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' });
 };
-
 const extractYear = (dateStr) => {
   if (!dateStr) return '';
   if (/^\d{4}$/.test(String(dateStr))) return String(dateStr);
@@ -38,27 +35,74 @@ const extractYear = (dateStr) => {
 };
 
 /* ─────────────────────────────────────────────────
+   SCORE CONSTANTS
+───────────────────────────────────────────────── */
+const GRADE_KEYS  = ['grade9', 'grade10', 'grade11', 'grade12'];
+const GRADE_LABELS = { grade9: '9th Grade', grade10: '10th Grade', grade11: '11th Grade', grade12: '12th Grade' };
+const TEST_LABELS  = { satTotal: 'SAT', act: 'ACT', toefl: 'TOEFL', ielts: 'IELTS', pte: 'PTE', duolingo: 'Duolingo', psatTotal: 'PSAT', ap: 'AP' };
+const TEST_MAX     = { satTotal: 1600, act: 36, toefl: 120, ielts: 9, pte: 90, duolingo: 160, psatTotal: 1520, ap: 5 };
+
+const calcAvg = (subjects = []) => {
+  const valid = subjects.filter(s => s.marks !== '' && !isNaN(parseFloat(s.marks)));
+  if (!valid.length) return null;
+  return (valid.reduce((a, b) => a + parseFloat(b.marks), 0) / valid.length).toFixed(1);
+};
+
+/* ─────────────────────────────────────────────────
+   PARSE SCORES — handles both nested (r.scores.*)
+   and flat (r.gradeSubjects) shapes from the API
+───────────────────────────────────────────────── */
+const parseScores = (r) => {
+  // Controller puts scores inside r.scores; fall back to r itself if missing
+  const sd = (r.scores && typeof r.scores === 'object' && Object.keys(r.scores).length > 0)
+    ? r.scores
+    : r;
+
+  const gradeSubjects = (sd.gradeSubjects && typeof sd.gradeSubjects === 'object') ? sd.gradeSubjects : {};
+  const subjectMarks  = (sd.subjectMarks  && typeof sd.subjectMarks  === 'object') ? sd.subjectMarks  : {};
+
+  const grades = {};
+  GRADE_KEYS.forEach((gk) => {
+    const subjectList = Array.isArray(gradeSubjects[gk]) ? gradeSubjects[gk] : [];
+    const marksMap    = (subjectMarks[gk] && typeof subjectMarks[gk] === 'object') ? subjectMarks[gk] : {};
+    grades[gk] = subjectList.map(s => ({ subject: s, marks: marksMap[s] ?? '' }));
+  });
+
+  return {
+    grades,
+    satTotal:     sd.satTotal     || '',
+    satMath:      sd.satMath      || '',
+    satReading:   sd.satReading   || '',
+    satDate:      sd.satDate      || '',
+    psatTotal:    sd.psatTotal    || '',
+    psatMath:     sd.psatMath     || '',
+    psatReading:  sd.psatReading  || '',
+    psatDate:     sd.psatDate     || '',
+    act:          sd.act          || '',
+    actDate:      sd.actDate      || '',
+    toefl:        sd.toefl        || '',
+    toeflDate:    sd.toeflDate    || '',
+    ielts:        sd.ielts        || '',
+    ieltsDate:    sd.ieltsDate    || '',
+    ap:           sd.ap           || '',
+    apDate:       sd.apDate       || '',
+    pte:          sd.pte          || '',
+    pteDate:      sd.pteDate      || '',
+    duolingo:     sd.duolingo     || '',
+    duolingoDate: sd.duolingoDate || '',
+  };
+};
+
+/* ─────────────────────────────────────────────────
    EDITABLE FIELD
 ───────────────────────────────────────────────── */
 const EditableField = ({ value, onChange, isEditing, multiline = false, className = '', placeholder = '—' }) => {
   if (!isEditing) return <span className={`ev ${className}`}>{value || <span className="ev-empty">{placeholder}</span>}</span>;
-  if (multiline) return (
-    <textarea
-      className={`ei ei-ta ${className}`}
-      value={value || ''}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      rows={4}
-    />
+  if (multiline)  return (
+    <textarea className={`ei ei-ta ${className}`} value={value || ''} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} rows={4} />
   );
   return (
-    <input
-      type="text"
-      className={`ei ${className}`}
-      value={value || ''}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-    />
+    <input type="text" className={`ei ${className}`} value={value || ''} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} />
   );
 };
 
@@ -99,13 +143,14 @@ const InfoRow = ({ icon, children }) => (
 ═════════════════════════════════════════════════ */
 const Resume = ({ onDownload, onPrev }) => {
   const [cv,        setCv]        = useState(null);
+  const [scoreData, setScoreData] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaved,   setIsSaved]   = useState(false);
   const [loading,   setLoading]   = useState(true);
   const [error,     setError]     = useState(null);
   const [mobileTab, setMobileTab] = useState('main');
 
-  /* ── Fetch ─────────────────────────────────── */
+  /* ── Single fetch — controller embeds scores inside resume ── */
   useEffect(() => {
     const fetchResume = async () => {
       try {
@@ -118,6 +163,7 @@ const Resume = ({ onDownload, onPrev }) => {
 
         if (res.data?.success) {
           const r = res.data.resume;
+
           setCv({
             title:       r.title       || '',
             firstName:   r.firstName   || '',
@@ -169,6 +215,10 @@ const Resume = ({ onDownload, onPrev }) => {
             thirdPreference:    '',
             customSummary:      '',
           });
+
+          // Parse scores — works whether they're in r.scores or flat on r
+          setScoreData(parseScores(r));
+
         } else {
           setError('Resume data could not be loaded.');
         }
@@ -182,41 +232,32 @@ const Resume = ({ onDownload, onPrev }) => {
     fetchResume();
   }, []);
 
-  /* ── Helpers ───────────────────────────────── */
+  /* ── Helpers ── */
   const update = useCallback((field) => (value) => setCv(prev => ({ ...prev, [field]: value })), []);
 
   const handleSave       = () => { setIsEditing(false); setIsSaved(true); setTimeout(() => setIsSaved(false), 3000); };
   const handleCloseError = (e) => { e.preventDefault(); e.stopPropagation(); setError(null); };
   const handleRetry      = (e) => { e.preventDefault(); e.stopPropagation(); setError(null); setLoading(true); window.location.reload(); };
 
-  // FIX 1: Cancel = exit edit mode only; Close (view mode) = close panel entirely
   const handleExitEdit = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (isEditing) {
-      setIsEditing(false);
-    } else {
-      if (onPrev) onPrev();
-    }
+    e.preventDefault(); e.stopPropagation();
+    if (isEditing) setIsEditing(false);
+    else if (onPrev) onPrev();
   };
 
   const handleClose = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     setIsEditing(false);
     if (onPrev) onPrev();
   };
 
-  // FIX 2: Clean print window — only the .rv-card, no app chrome/sidebar/navbar
   const handleDownload = () => {
     if (onDownload) onDownload(cv);
-
     const cvCardEl = document.querySelector('.rv-card');
     if (!cvCardEl) { window.print(); return; }
 
     const stylesHtml = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
-      .map(el => el.outerHTML)
-      .join('\n');
+      .map(el => el.outerHTML).join('\n');
 
     const printWindow = window.open('', '_blank', 'width=960,height=720');
     if (!printWindow) { window.print(); return; }
@@ -229,85 +270,59 @@ const Resume = ({ onDownload, onPrev }) => {
     ${stylesHtml}
     <style>
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-      html, body {
-        margin: 0 !important;
-        padding: 0 !important;
-        background: #fff !important;
-      }
+      html, body { margin: 0 !important; padding: 0 !important; background: #fff !important; }
       .rv-card {
-        display: flex !important;
-        width: 100% !important;
-        min-height: 100vh !important;
-        box-shadow: none !important;
-        border-radius: 0 !important;
-        margin: 0 !important;
+        display: flex !important; width: 100% !important;
+        min-height: 100vh !important; box-shadow: none !important;
+        border-radius: 0 !important; margin: 0 !important;
       }
       .rv-sidebar {
-        min-width: 220px !important;
-        max-width: 260px !important;
-        background: #1a2236 !important;
-        color: #fff !important;
+        min-width: 220px !important; max-width: 260px !important;
+        background: #1a2236 !important; color: #fff !important;
         padding: 24px 16px !important;
       }
       .rv-main { flex: 1 !important; padding: 32px 40px !important; }
-      .no-print, .rv-toolbar, .edit-banner,
-      .mobile-tabs, .cv-actions { display: none !important; }
+      .no-print, .rv-toolbar, .edit-banner, .mobile-tabs, .cv-actions { display: none !important; }
       @page { margin: 0; size: A4 portrait; }
     </style>
   </head>
   <body>
     ${cvCardEl.outerHTML}
     <script>
-      window.onload = function() {
-        setTimeout(function() { window.print(); window.close(); }, 600);
-      };
+      window.onload = function() { setTimeout(function() { window.print(); window.close(); }, 600); };
     <\/script>
   </body>
 </html>`);
     printWindow.document.close();
   };
 
-  /* ── Loading ───────────────────────────────── */
+  /* ── Loading ── */
   if (loading) return (
     <div className="rv-wrapper">
-      <div className="rv-loading">
-        <div className="rv-spinner" />
-        <p>Loading your CV…</p>
-      </div>
+      <div className="rv-loading"><div className="rv-spinner" /><p>Loading your CV…</p></div>
     </div>
   );
 
-  /* ── Error state — closeable card ────────────── */
+  /* ── Error ── */
   if (error || !cv) return (
     <div className="rv-wrapper">
       <div className="rv-error-card">
-        <button
-          type="button"
-          className="rv-error-close"
-          onClick={handleCloseError}
-          aria-label="Dismiss error"
-        >✕</button>
-
+        <button type="button" className="rv-error-close" onClick={handleCloseError} aria-label="Dismiss error">✕</button>
         <div className="rv-error-icon">⚠️</div>
         <p className="rv-error-msg">{error || 'No resume data found.'}</p>
-
         <div className="rv-error-actions">
-          <button type="button" className="rv-err-btn primary" onClick={handleRetry}>
-            ↺ Try Again
-          </button>
-          <button type="button" className="rv-err-btn secondary" onClick={handleCloseError}>
-            Dismiss
-          </button>
+          <button type="button" className="rv-err-btn primary"   onClick={handleRetry}>↺ Try Again</button>
+          <button type="button" className="rv-err-btn secondary" onClick={handleCloseError}>Dismiss</button>
         </div>
       </div>
     </div>
   );
 
-  /* ── Derived values ─────────────────────────── */
+  /* ── Derived values ── */
   const initials      = `${(cv.firstName || 'A')[0]}${(cv.lastName || 'S')[0]}`.toUpperCase();
   const displayDegree = degreeLabel(cv.qualificationLevel);
   const displayEqhe   = toTitleCase(cv.englishTestType) || '—';
-  const hasScores     = cv.listeningScore || cv.readingScore || cv.writingScore || cv.speakingScore;
+  const hasEqheScores = cv.listeningScore || cv.readingScore || cv.writingScore || cv.speakingScore;
 
   const autoSummary =
     `Motivated and academically accomplished applicant` +
@@ -324,10 +339,18 @@ const Resume = ({ onDownload, onPrev }) => {
 
   const scoreBands = [
     { label: 'Listening', score: cv.listeningScore },
-    { label: 'Reading',   score: cv.readingScore },
-    { label: 'Writing',   score: cv.writingScore },
-    { label: 'Speaking',  score: cv.speakingScore },
+    { label: 'Reading',   score: cv.readingScore   },
+    { label: 'Writing',   score: cv.writingScore   },
+    { label: 'Speaking',  score: cv.speakingScore  },
   ];
+
+  // Only show grades/tests that actually have data
+  const activeGrades = scoreData
+    ? GRADE_KEYS.filter(gk => scoreData.grades[gk]?.length > 0)
+    : [];
+  const activeTests = scoreData
+    ? Object.entries(TEST_LABELS).filter(([key]) => scoreData[key] && scoreData[key] !== '')
+    : [];
 
   /* ─────────────────────────────────────────────
      SIDEBAR CONTENT
@@ -347,6 +370,7 @@ const Resume = ({ onDownload, onPrev }) => {
       </div>
 
       <div className="sb-body">
+        {/* Contact */}
         <div className="sb-label">Contact</div>
         <InfoRow icon="✉"><EditableField value={cv.email}  onChange={update('email')}  isEditing={isEditing} placeholder="Email" /></InfoRow>
         <InfoRow icon="📱"><EditableField value={cv.mobile} onChange={update('mobile')} isEditing={isEditing} placeholder="Mobile" /></InfoRow>
@@ -362,6 +386,7 @@ const Resume = ({ onDownload, onPrev }) => {
         )}
         <InfoRow icon="🌍"><EditableField value={cv.country} onChange={update('country')} isEditing={isEditing} placeholder="Country" /></InfoRow>
 
+        {/* Passport */}
         <div className="sb-label">Passport</div>
         <InfoRow icon="🛂">
           {isEditing
@@ -376,6 +401,7 @@ const Resume = ({ onDownload, onPrev }) => {
         <InfoRow icon="📅">Expiry: {formatDate(cv.passportExpiryDate)}</InfoRow>
         <InfoRow icon="✈️">Visa: {cv.needVisa ? toTitleCase(cv.needVisa) : 'N/A'}</InfoRow>
 
+        {/* Education */}
         <div className="sb-label">Education</div>
         {isEditing
           ? <EditableField value={cv.qualificationLevel} onChange={update('qualificationLevel')} isEditing={isEditing} className="sb-deg" placeholder="Degree" />
@@ -386,13 +412,14 @@ const Resume = ({ onDownload, onPrev }) => {
           {cv.score ? ` · ${cv.score}` : ''}
         </div>
 
+        {/* Entrance Qual. */}
         <div className="sb-label">Entrance Qual.</div>
         {isEditing
           ? <EditableField value={cv.englishTestType} onChange={update('englishTestType')} isEditing={isEditing} className="sb-eqhe" placeholder="EQHE Title" />
           : <span className="ev sb-eqhe">{displayEqhe}</span>}
         {cv.eqheCountry && <div className="sb-period">Country: {toTitleCase(cv.eqheCountry)}</div>}
         {cv.testDate    && <div className="sb-period">Date: {formatDate(cv.testDate)}</div>}
-        {hasScores && (
+        {hasEqheScores && (
           <div className="sb-scores">
             <div className="sb-overall-row">
               <span className="sb-overall-label">Overall</span>
@@ -404,6 +431,38 @@ const Resume = ({ onDownload, onPrev }) => {
           </div>
         )}
 
+        {/* ── Academic Grades Summary (sidebar) ── */}
+        {activeGrades.length > 0 && (
+          <>
+            <div className="sb-label">Academic Grades</div>
+            {activeGrades.map(gk => {
+              const avg = calcAvg(scoreData.grades[gk]);
+              return (
+                <div key={gk} className="sb-grade-row">
+                  <span className="sb-grade-label">{GRADE_LABELS[gk]}</span>
+                  {avg !== null && <span className="sb-grade-avg">{avg}%</span>}
+                </div>
+              );
+            })}
+          </>
+        )}
+
+        {/* ── Test Score Badges (sidebar) ── */}
+        {activeTests.length > 0 && (
+          <>
+            <div className="sb-label">Test Scores</div>
+            <div className="sb-test-badges">
+              {activeTests.map(([key, label]) => (
+                <div key={key} className="sb-test-badge">
+                  <span className="sb-test-name">{label}</span>
+                  <span className="sb-test-score">{scoreData[key]}</span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* Target University */}
         <div className="sb-label">Target University</div>
         <InfoRow icon="🎓"><EditableField value={cv.selectedUniversity} onChange={update('selectedUniversity')} isEditing={isEditing} placeholder="University" /></InfoRow>
         <InfoRow icon="🌍"><EditableField value={cv.selectedCountry}    onChange={update('selectedCountry')}    isEditing={isEditing} placeholder="Country" /></InfoRow>
@@ -435,6 +494,7 @@ const Resume = ({ onDownload, onPrev }) => {
         )}
       </div>
 
+      {/* Personal Summary */}
       <SectionTitle title="Personal Summary" icon="📝" />
       {isEditing && (
         <div className="edit-hint no-print">✏️ Personalise your summary below, or leave blank to auto-generate.</div>
@@ -448,6 +508,7 @@ const Resume = ({ onDownload, onPrev }) => {
         placeholder={autoSummary}
       />
 
+      {/* Course Preferences */}
       {(cv.courseName || cv.selectedUniversity || isEditing) && (
         <>
           <SectionTitle title="Course Preferences" icon="🎯" />
@@ -479,6 +540,7 @@ const Resume = ({ onDownload, onPrev }) => {
         </>
       )}
 
+      {/* Educational Background */}
       {(cv.qualificationLevel || cv.institutionName || isEditing) && (
         <>
           <SectionTitle title="Educational Background" icon="🎓" />
@@ -507,6 +569,99 @@ const Resume = ({ onDownload, onPrev }) => {
         </>
       )}
 
+      {/* ══════════════════════════════════════════
+          ACADEMIC SCORES — subject-wise tables
+      ══════════════════════════════════════════ */}
+      {activeGrades.length > 0 && (
+        <>
+          <SectionTitle title="Academic Scores" icon="📊" />
+          {activeGrades.map(gk => {
+            const subjects = scoreData.grades[gk];
+            const avg      = calcAvg(subjects);
+            return (
+              <div key={gk} className="entry-block score-grade-block">
+                <div className="score-grade-header">
+                  <span className="score-grade-title">{GRADE_LABELS[gk]}</span>
+                  {avg !== null && <span className="score-grade-avg">Average: {avg}%</span>}
+                </div>
+                <div className="score-subject-table">
+                  <div className="score-subject-head">
+                    <span>Subject</span>
+                    <span>Marks</span>
+                    <span>Grade</span>
+                  </div>
+                  {subjects.map(({ subject, marks }) => {
+                    const num = parseFloat(marks);
+                    const grade =
+                      marks === '' || isNaN(num) ? '—'
+                      : num >= 90 ? 'A+'
+                      : num >= 80 ? 'A'
+                      : num >= 70 ? 'B+'
+                      : num >= 60 ? 'B'
+                      : num >= 50 ? 'C'
+                      : 'F';
+                    const colorClass =
+                      marks === '' || isNaN(num) ? ''
+                      : num >= 80 ? 'grade-hi'
+                      : num >= 60 ? 'grade-mid'
+                      : 'grade-lo';
+                    return (
+                      <div key={subject} className="score-subject-row">
+                        <span className="score-subject-name">{subject}</span>
+                        <span className="score-subject-marks">{marks !== '' ? `${marks}/100` : '—'}</span>
+                        <span className={`score-subject-grade ${colorClass}`}>{grade}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </>
+      )}
+
+      {/* ══════════════════════════════════════════
+          STANDARDISED TEST SCORES — card grid
+      ══════════════════════════════════════════ */}
+      {activeTests.length > 0 && (
+        <>
+          <SectionTitle title="Standardised Test Scores" icon="🏆" />
+          <div className="entry-block">
+            <div className="score-test-grid">
+              {activeTests.map(([key, label]) => {
+                const val       = scoreData[key];
+                const max       = TEST_MAX[key];
+                const pct       = max ? Math.round((parseFloat(val) / max) * 100) : null;
+                const subScores = key === 'satTotal'
+                  ? [
+                      scoreData.satMath    ? `Math: ${scoreData.satMath}`   : null,
+                      scoreData.satReading ? `R&W: ${scoreData.satReading}` : null,
+                    ].filter(Boolean)
+                  : [];
+                const dateKey  = key.replace('Total', '') + 'Date';
+                const testDate = scoreData[dateKey];
+                return (
+                  <div key={key} className="score-test-card">
+                    <div className="score-test-top">
+                      <span className="score-test-label">{label}</span>
+                      <span className="score-test-val">{val}{max ? `/${max}` : ''}</span>
+                    </div>
+                    {pct !== null && (
+                      <div className="score-test-bar-wrap">
+                        <div className="score-test-bar" style={{ width: `${pct}%` }} />
+                      </div>
+                    )}
+                    {subScores.length > 0 && <div className="score-test-sub">{subScores.join('  ·  ')}</div>}
+                    {testDate && <div className="score-test-date">{formatDate(testDate)}</div>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Entrance Qualification (EQHE) */}
       {(cv.englishTestType || isEditing) && (
         <>
           <SectionTitle title="Entrance Qualification (EQHE)" icon="📋" />
@@ -519,7 +674,7 @@ const Resume = ({ onDownload, onPrev }) => {
               {cv.eqheCountry && <> ({toTitleCase(cv.eqheCountry)})</>}
             </div>
             {cv.testDate && <div className="entry-meta">Test Date: {formatDate(cv.testDate)}</div>}
-            {hasScores && (
+            {hasEqheScores && (
               <div className="score-grid">
                 {scoreBands.map(({ label, score }, idx) => (
                   <div key={label} className="score-chip">
@@ -539,6 +694,7 @@ const Resume = ({ onDownload, onPrev }) => {
         </>
       )}
 
+      {/* Personal Information */}
       <SectionTitle title="Personal Information" icon="👤" />
       <div className="pi-grid">
         {[
@@ -566,9 +722,11 @@ const Resume = ({ onDownload, onPrev }) => {
         )}
       </div>
 
+      {/* References */}
       <SectionTitle title="References" icon="🤝" />
       <p className="ref-text">References available upon request.</p>
 
+      {/* Action buttons */}
       <div className="cv-actions no-print">
         {isEditing ? (
           <>
@@ -595,7 +753,7 @@ const Resume = ({ onDownload, onPrev }) => {
   return (
     <div className="rv-wrapper">
 
-      {/* ── Toolbar ── */}
+      {/* Toolbar */}
       <div className="rv-toolbar no-print">
         <div className="toolbar-l">
           <span className="toolbar-title">📄 CV Preview</span>
@@ -603,65 +761,37 @@ const Resume = ({ onDownload, onPrev }) => {
         </div>
         <div className="toolbar-r">
           {isSaved && <span className="saved-badge">✓ Saved</span>}
-
-          {/* Edit/Save toggle */}
           {isEditing ? (
             <button type="button" className="tb-btn tb-save" onClick={handleSave}>💾 Save</button>
           ) : (
             <button type="button" className="tb-btn tb-edit" onClick={() => setIsEditing(true)}>✏️ Edit</button>
           )}
-
-          {/* Cancel (editing) → exits edit mode only
-              Close  (viewing) → closes the panel/modal entirely */}
-          <button
-            type="button"
-            className="tb-btn tb-cancel"
-            onClick={handleExitEdit}
-          >
+          <button type="button" className="tb-btn tb-cancel" onClick={handleExitEdit}>
             {isEditing ? '✕ Cancel' : '✕ Close'}
           </button>
-
-          {/* PDF — clean print window, no app chrome */}
           <button type="button" className="tb-btn tb-dl" onClick={handleDownload}>⬇ PDF</button>
         </div>
       </div>
 
-      {/* ── Edit mode banner with ✕ close ── */}
+      {/* Edit banner */}
       {isEditing && (
         <div className="edit-banner no-print">
           <span>✏️ <strong>Edit mode</strong> — tap any highlighted field to change it.</span>
-          <button
-            type="button"
-            className="banner-close"
-            onClick={handleExitEdit}
-            aria-label="Exit edit mode"
-          >✕</button>
+          <button type="button" className="banner-close" onClick={handleExitEdit} aria-label="Exit edit mode">✕</button>
         </div>
       )}
 
-      {/* ── Mobile Tab Bar ── */}
+      {/* Mobile Tab Bar */}
       <div className="mobile-tabs no-print">
-        <button
-          type="button"
-          className={`mob-tab ${mobileTab === 'sidebar' ? 'active' : ''}`}
-          onClick={() => setMobileTab('sidebar')}
-        >Profile</button>
-        <button
-          type="button"
-          className={`mob-tab ${mobileTab === 'main' ? 'active' : ''}`}
-          onClick={() => setMobileTab('main')}
-        >Details</button>
+        <button type="button" className={`mob-tab ${mobileTab === 'sidebar' ? 'active' : ''}`} onClick={() => setMobileTab('sidebar')}>Profile</button>
+        <button type="button" className={`mob-tab ${mobileTab === 'main'    ? 'active' : ''}`} onClick={() => setMobileTab('main')}>Details</button>
       </div>
 
-      {/* ── Resume Card ── */}
+      {/* Resume Card */}
       <div className="rv-page">
         <div className="rv-card">
-          <aside className={`rv-sidebar ${mobileTab === 'main' ? 'mob-hidden' : ''}`}>
-            <SidebarContent />
-          </aside>
-          <main className={`rv-main ${mobileTab === 'sidebar' ? 'mob-hidden' : ''}`}>
-            <MainContent />
-          </main>
+          <aside className={`rv-sidebar ${mobileTab === 'main'    ? 'mob-hidden' : ''}`}><SidebarContent /></aside>
+          <main  className={`rv-main   ${mobileTab === 'sidebar' ? 'mob-hidden' : ''}`}><MainContent /></main>
         </div>
       </div>
 
@@ -670,3 +800,4 @@ const Resume = ({ onDownload, onPrev }) => {
 };
 
 export default Resume;
+// file written OK

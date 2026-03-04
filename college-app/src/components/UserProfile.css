@@ -419,7 +419,7 @@
 }
 
 /* Form Actions */
-.form-actions {
+.userprofile-form-actions {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
@@ -445,7 +445,7 @@
 }
 
 .continue-btn,
-.submit-btn {
+.userprofile-submit-btn {
   padding: 0.7rem 2rem;
   background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
   border: none;
@@ -471,7 +471,7 @@
   cursor: not-allowed;
 }
 
-.submit-btn {
+.userprofile-submit-btn {
   background: linear-gradient(135deg, #96CEB4, #4ECDC4);
   box-shadow: 0 4px 15px rgba(150, 206, 180, 0.3);
 }
