@@ -1377,3 +1377,68 @@
     color: #cbd5e1;
   }
 }
+/* Add to your University.css - Program level badges */
+.level-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  color: white;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.description-text {
+  line-height: 1.6;
+  color: #475569;
+  margin-top: 8px;
+}
+
+.source-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.source-badge.bachelors {
+  background: #e8edff;
+  color: #667eea;
+}
+
+.source-badge.admin {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.item-badge.custom {
+  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+  color: white;
+}
+
+.item-badge.imported {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+/* Program tags in preview */
+.program-tag {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  color: white;
+  display: inline-block;
+  margin: 2px;
+  transition: all 0.2s ease;
+}
+
+.program-tag.more {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.program-tag.more:hover {
+  background: #cbd5e1;
+}

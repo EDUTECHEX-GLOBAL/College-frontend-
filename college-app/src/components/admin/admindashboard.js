@@ -3,7 +3,10 @@ import { useNavigate } from "react-router-dom";
 import AdminUserManagement from "./adminuser";
 import "./admindashboard.css";
 import Notifications from "./Notifications";
-import University from "./University"; // Import the University component
+import University from "./University";
+import Bachelors from "./Bachelors"; // Import Bachelors component
+import Masters from "./Masters"; // Import Masters component
+import PhD from "./PhD"; // Import PhD component
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -12,10 +15,9 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [userFilter, setUserFilter] = useState("all");
-  // Add unreadCount state
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // Dashboard stats - updated to match reference
+  // Dashboard stats
   const [dashboardData, setDashboardData] = useState({
     todayRegistrations: 0,
     todayPercentChange: 0,
@@ -52,7 +54,6 @@ const AdminDashboard = () => {
       return;
     }
 
-    // Load dashboard data only when on dashboard tab
     if (activeTab === "dashboard") {
       loadDashboardData();
     }
@@ -61,9 +62,7 @@ const AdminDashboard = () => {
   const loadDashboardData = () => {
     setLoading(true);
     
-    // Simulate API call
     setTimeout(() => {
-      // Updated mock data to match reference
       setDashboardData({
         todayRegistrations: 0,
         todayPercentChange: 0,
@@ -112,9 +111,6 @@ const AdminDashboard = () => {
     loadDashboardData();
   };
 
-  // REMOVED: Applications component lazy loading
-
-  // Format number with Indian Rupee symbol
   const formatIndianRupee = (amount) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -123,7 +119,7 @@ const AdminDashboard = () => {
     }).format(amount);
   };
 
-  // Render the stats cards
+  // Render stats cards
   const renderStatsCards = () => {
     const stats = [
       {
@@ -160,7 +156,7 @@ const AdminDashboard = () => {
     );
   };
 
-  // Render registration over time chart
+  // Render registration chart
   const renderRegistrationChart = () => {
     const maxValue = Math.max(...dashboardData.registrationTrend.data);
     
@@ -188,11 +184,10 @@ const AdminDashboard = () => {
     );
   };
 
-  // Render payment conversion funnel
+  // Render payment funnel
   const renderPaymentFunnel = () => {
     const stages = [
       { label: "Registrations", value: dashboardData.paymentFunnel.registrations, percentage: 100 },
-      
     ];
 
     return (
@@ -262,9 +257,7 @@ const AdminDashboard = () => {
     );
   };
 
-  // REMOVED: renderApplicationsContent function
-
-  // Render users content using the imported component
+  // Render users content
   const renderUsersContent = () => {
     return <AdminUserManagement />;
   };
@@ -272,6 +265,21 @@ const AdminDashboard = () => {
   // Render university content
   const renderUniversityContent = () => {
     return <University />;
+  };
+
+  // Render bachelors content
+  const renderBachelorsContent = () => {
+    return <Bachelors />;
+  };
+
+  // Render masters content
+  const renderMastersContent = () => {
+    return <Masters />;
+  };
+
+  // Render PhD content
+  const renderPhDContent = () => {
+    return <PhD />;
   };
 
   // Render settings content
@@ -320,7 +328,7 @@ const AdminDashboard = () => {
     );
   };
 
-  // Render content based on active tab - REMOVED applications case
+  // Render content based on active tab
   const renderContent = () => {
     switch (activeTab) {
       case "dashboard":
@@ -329,6 +337,12 @@ const AdminDashboard = () => {
         return renderUsersContent();
       case "university":
         return renderUniversityContent();
+      case "bachelors":
+        return renderBachelorsContent();
+      case "masters":
+        return renderMastersContent();
+      case "phd":
+        return renderPhDContent();
       case "settings":
         return renderSettingsContent();
       default:
@@ -336,7 +350,7 @@ const AdminDashboard = () => {
     }
   };
 
-  // Update navbar title based on active tab - REMOVED applications case
+  // Update navbar title based on active tab
   const getNavbarTitle = () => {
     switch (activeTab) {
       case "dashboard":
@@ -345,6 +359,12 @@ const AdminDashboard = () => {
         return "User Management";
       case "university":
         return "University Data Import";
+      case "bachelors":
+        return "Bachelors Programs";
+      case "masters":
+        return "Masters Programs";
+      case "phd":
+        return "PhD Programs";
       case "notifications":
         return "Notification Management";
       case "settings":
@@ -383,8 +403,6 @@ const AdminDashboard = () => {
             {sidebarOpen && <span>Dashboard</span>}
           </li>
           
-          {/* REMOVED: Applications menu item */}
-          
           <li 
             className={activeTab === "users" ? "active" : ""}
             onClick={() => setActiveTab("users")}
@@ -400,6 +418,33 @@ const AdminDashboard = () => {
           >
             <span className="menu-icon">🏛️</span>
             {sidebarOpen && <span>University Data</span>}
+          </li>
+
+          {/* Bachelors Menu Item */}
+          <li 
+            className={activeTab === "bachelors" ? "active" : ""}
+            onClick={() => setActiveTab("bachelors")}
+          >
+            <span className="menu-icon">🎓</span>
+            {sidebarOpen && <span>Bachelors</span>}
+          </li>
+
+          {/* Masters Menu Item */}
+          <li 
+            className={activeTab === "masters" ? "active" : ""}
+            onClick={() => setActiveTab("masters")}
+          >
+            <span className="menu-icon">📚</span>
+            {sidebarOpen && <span>Masters</span>}
+          </li>
+
+          {/* PhD Menu Item */}
+          <li 
+            className={activeTab === "phd" ? "active" : ""}
+            onClick={() => setActiveTab("phd")}
+          >
+            <span className="menu-icon">🔬</span>
+            {sidebarOpen && <span>PhD</span>}
           </li>
           
           {/* Notification Menu Item */}
@@ -462,7 +507,6 @@ const AdminDashboard = () => {
           </div>
           
           <div className="navbar-right">
-            {/* Pass setUnreadCount to the Notifications component */}
             <Notifications 
               adminId={localStorage.getItem("adminEmail")} 
               onUnreadCountChange={setUnreadCount}
@@ -484,7 +528,6 @@ const AdminDashboard = () => {
                 <h2>Notifications</h2>
                 <p>Manage and view all your notifications here</p>
               </div>
-              {/* Your Notifications component will render here */}
               <Notifications 
                 adminId={localStorage.getItem("adminEmail")} 
                 fullView={true}

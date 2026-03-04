@@ -729,4 +729,3 @@ export const testUniversityData = async (req, res) => {
     });
   }
 };
-

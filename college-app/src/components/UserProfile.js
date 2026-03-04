@@ -220,150 +220,218 @@ const UserProfile = () => {
   }, [courseSearchTerm, courseFilter, currentUniversityCourses]);
 
   // Fetch universities from MongoDB
-  const fetchUniversitiesFromMongoDB = async () => {
-    if (!token) {
-      console.log("No token available for fetching universities");
-      setLoading(false);
-      return;
-    }
+// Fetch universities from MongoDB
+const fetchUniversitiesFromMongoDB = async () => {
+  if (!token) {
+    console.log("No token available for fetching universities");
+    setLoading(false);
+    return;
+  }
 
-    setLoading(true);
-    setError('');
+  setLoading(true);
+  setError('');
+  
+  try {
+    console.log("Fetching universities from both APIs...");
     
-    try {
-      console.log("Fetching universities from MongoDB...");
-      
-      const response = await axios.get(`${API_URL}/api/admin/universities`, {
+    // Fetch from both APIs simultaneously
+    const [adminResponse, bachelorsResponse] = await Promise.all([
+      axios.get(`${API_URL}/api/admin/universities`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
-      });
+      }).catch(err => ({ data: { success: false, data: [] } })),
       
-      if (response.data.success) {
-        console.log(`✅ Loaded ${response.data.data.length} universities from MongoDB`);
-        setUniversities(response.data.data || []);
-        
-        // Pre-fetch courses for all universities
-        for (const uni of response.data.data) {
-          await fetchUniversityCourses(uni);
+      axios.get(`${API_URL}/api/bachelors/universities`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
-      } else {
-        setError(response.data.message || "Failed to load universities");
-      }
-    } catch (error) {
-      console.error("Error fetching universities:", error);
-      
-      if (error.response?.status === 401) {
-        setError("Your session has expired. Please login again.");
-        setTimeout(() => navigate('/login'), 2000);
-      } else if (error.code === 'ERR_NETWORK') {
-        setError("Cannot connect to server. Please make sure the server is running.");
-      } else {
-        setError(error.response?.data?.message || "Failed to load universities. Please try again.");
-      }
-    } finally {
-      setLoading(false);
+      }).catch(err => ({ data: { success: false, data: [] } }))
+    ]);
+    
+    let allUniversities = [];
+    
+    // Add imported universities (from admin API)
+    if (adminResponse.data.success) {
+      console.log(`✅ Loaded ${adminResponse.data.data.length} imported universities`);
+      const imported = adminResponse.data.data.map(uni => ({
+        ...uni,
+        source: 'admin',
+        importedByAdmin: true
+      }));
+      allUniversities = [...allUniversities, ...imported];
     }
-  };
+    
+    // Add custom universities (from bachelors API)
+    if (bachelorsResponse.data.success) {
+      console.log(`✅ Loaded ${bachelorsResponse.data.data.length} custom universities`);
+      const custom = bachelorsResponse.data.data.map(uni => ({
+        ...uni,
+        source: 'bachelors',
+        importedByAdmin: false,
+        INSTNM: uni.universityName,
+        UNITID: uni.universityCode,
+        CITY: uni.city,
+        STABBR: uni.state,
+        ADDR: uni.address,
+        ZIP: uni.zipCode,
+        WEBADDR: uni.website,
+        location: {
+          city: uni.city,
+          state: uni.state,
+          country: uni.country
+        }
+      }));
+      allUniversities = [...allUniversities, ...custom];
+    }
+    
+    console.log(`📊 Total universities: ${allUniversities.length} (${allUniversities.filter(u => u.source === 'admin').length} imported, ${allUniversities.filter(u => u.source === 'bachelors').length} custom)`);
+    
+    setUniversities(allUniversities);
+    
+    // Pre-fetch courses for all universities
+    for (const uni of allUniversities) {
+      await fetchUniversityCourses(uni);
+    }
+    
+  } catch (error) {
+    console.error("Error fetching universities:", error);
+    
+    if (error.response?.status === 401) {
+      setError("Your session has expired. Please login again.");
+      setTimeout(() => navigate('/login'), 2000);
+    } else if (error.code === 'ERR_NETWORK') {
+      setError("Cannot connect to server. Please make sure the server is running.");
+    } else {
+      setError(error.response?.data?.message || "Failed to load universities. Please try again.");
+    }
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Fetch courses for a specific university
-  const fetchUniversityCourses = async (university) => {
-    try {
-      const uniId = university.UNITID || university._id;
-      
-      // Skip Kansas universities (they don't have courses)
-      if (university.INSTNM?.toLowerCase().includes('kansas')) {
-        return;
-      }
-      
-      console.log(`🔍 Fetching courses for ${university.INSTNM}`);
-      
-      let courses = [];
-      
-      // Try multiple possible locations for course data
-      
-      // 1. Check if programs are already in the university object
-      if (university.programs && Array.isArray(university.programs)) {
-        console.log(`📚 Found ${university.programs.length} programs in university.programs`);
-        courses = university.programs.map(prog => ({
-          id: prog.id || prog.programId || `prog-${Date.now()}-${Math.random()}`,
-          title: prog.title || prog.program_name || 'Program',
-          program_name: prog.program_name || prog.title,
-          level: prog.level || 'Undergraduate',
-          studyMode: prog.studyMode || 'On Campus',
-          locations: prog.locations || [`${university.CITY || ''}, ${university.STABBR || ''}`],
-          duration: prog.duration || '3-4 years',
-          description: prog.description || `${prog.title} program at ${university.INSTNM}`,
-          majorArea: prog.majorArea || 'General'
-        }));
-      }
-      
-      // 2. Check GUS_DATA.programs_data
-      else if (university.GUS_DATA?.programs_data) {
-        console.log(`📚 Found ${university.GUS_DATA.programs_data.length} programs in GUS_DATA.programs_data`);
-        courses = university.GUS_DATA.programs_data.map(prog => ({
-          id: prog.id || `prog-${Date.now()}-${Math.random()}`,
-          title: prog.title || prog.program_name || 'Program',
-          program_name: prog.program_name || prog.title,
-          level: prog.level || university.GUS_DATA?.level || 'Undergraduate',
-          studyMode: prog.studyMode || 'On Campus',
-          locations: prog.locations || [`${university.CITY || ''}, ${university.STABBR || ''}`],
-          duration: prog.duration || '3-4 years',
-          description: prog.description || `${prog.title} program at ${university.INSTNM}`,
-          majorArea: prog.majorArea || 'General'
-        }));
-      }
-      
-      // 3. Check GUS_DATA.major_areas
-      else if (university.GUS_DATA?.major_areas) {
-        console.log(`📚 Found major areas in GUS_DATA.major_areas`);
-        university.GUS_DATA.major_areas.forEach(area => {
-          if (area.specific_programs) {
-            area.specific_programs.forEach(prog => {
-              courses.push({
-                id: `area-${area.major_area}-${prog.program_name.replace(/\s+/g, '-')}`,
-                title: prog.program_name,
-                program_name: prog.program_name,
-                level: university.GUS_DATA?.level || 'Undergraduate',
-                studyMode: 'On Campus',
-                locations: [`${university.CITY || ''}, ${university.STABBR || ''}`],
-                majorArea: area.major_area,
-                duration: '3-4 years',
-                description: `${prog.program_name} program in ${area.major_area} at ${university.INSTNM}`
-              });
-            });
-          }
-        });
-      }
-      
-      // 4. Check metadata.programs
-      else if (university.metadata?.programs) {
-        console.log(`📚 Found ${university.metadata.programs.length} programs in metadata.programs`);
-        courses = university.metadata.programs.map(prog => ({
-          id: prog.id || `prog-${Date.now()}-${Math.random()}`,
-          title: prog.title || prog.program_name || 'Program',
-          program_name: prog.program_name || prog.title,
-          level: prog.level || 'Undergraduate',
-          studyMode: prog.studyMode || 'On Campus',
-          locations: prog.locations || [`${university.CITY || ''}, ${university.STABBR || ''}`],
-          duration: prog.duration || '3-4 years',
-          description: prog.description || `${prog.title} program at ${university.INSTNM}`,
-          majorArea: prog.majorArea || 'General'
-        }));
-      }
-      
-      console.log(`✅ Found ${courses.length} courses for ${university.INSTNM}`);
-      
-      setUniversityCourses(prev => ({
-        ...prev,
-        [uniId]: courses
-      }));
-      
-    } catch (error) {
-      console.error(`Error fetching courses for ${university.INSTNM}:`, error);
+// Fetch courses for a specific university
+const fetchUniversityCourses = async (university) => {
+  try {
+    const uniId = university.UNITID || university._id;
+    
+    // Skip Kansas universities (they don't have courses)
+    if (university.INSTNM?.toLowerCase().includes('kansas')) {
+      return;
     }
-  };
+    
+    console.log(`🔍 Fetching courses for ${university.INSTNM || university.universityName}`);
+    
+    let courses = [];
+    
+    // 1. Check if programs are already in the university object (for custom universities like Princeton)
+    if (university.programs && Array.isArray(university.programs)) {
+      console.log(`📚 Found ${university.programs.length} programs in university.programs`);
+      courses = university.programs.map((prog, index) => {
+        // Handle different program structures
+        let title = '';
+        let level = '';
+        let studyMode = '';
+        let duration = '';
+        let majorArea = '';
+        
+        if (typeof prog === 'string') {
+          title = prog;
+          level = 'Undergraduate';
+          studyMode = 'On Campus';
+          duration = '3-4 years';
+        } else {
+          // Try to extract from object
+          title = prog.title || prog.program_name || prog.name || `Program ${index + 1}`;
+          level = prog.level || 'Undergraduate';
+          studyMode = prog.studyMode || 'On Campus';
+          duration = prog.duration || '3-4 years';
+          majorArea = prog.majorArea || 'General';
+        }
+        
+        return {
+          id: prog.id || prog._id || `prog-${uniId}-${index}`,
+          title: title,
+          program_name: title,
+          level: level,
+          studyMode: studyMode,
+          locations: prog.locations || [`${university.CITY || university.city || ''}, ${university.STABBR || university.state || ''}`],
+          duration: duration,
+          description: prog.description || `${title} program at ${university.INSTNM || university.universityName}`,
+          majorArea: majorArea
+        };
+      });
+    }
+    
+    // 2. Check GUS_DATA.programs_data (for imported universities)
+    else if (university.GUS_DATA?.programs_data) {
+      console.log(`📚 Found ${university.GUS_DATA.programs_data.length} programs in GUS_DATA.programs_data`);
+      courses = university.GUS_DATA.programs_data.map((prog, index) => ({
+        id: prog.id || `prog-${Date.now()}-${Math.random()}`,
+        title: prog.title || prog.program_name || 'Program',
+        program_name: prog.program_name || prog.title,
+        level: prog.level || university.GUS_DATA?.level || 'Undergraduate',
+        studyMode: prog.studyMode || 'On Campus',
+        locations: prog.locations || [`${university.CITY || ''}, ${university.STABBR || ''}`],
+        duration: prog.duration || '3-4 years',
+        description: prog.description || `${prog.title} program at ${university.INSTNM}`,
+        majorArea: prog.majorArea || 'General'
+      }));
+    }
+    
+    // 3. Check GUS_DATA.major_areas
+    else if (university.GUS_DATA?.major_areas) {
+      console.log(`📚 Found major areas in GUS_DATA.major_areas`);
+      university.GUS_DATA.major_areas.forEach(area => {
+        if (area.specific_programs) {
+          area.specific_programs.forEach(prog => {
+            courses.push({
+              id: `area-${area.major_area}-${prog.program_name.replace(/\s+/g, '-')}`,
+              title: prog.program_name,
+              program_name: prog.program_name,
+              level: university.GUS_DATA?.level || 'Undergraduate',
+              studyMode: 'On Campus',
+              locations: [`${university.CITY || ''}, ${university.STABBR || ''}`],
+              majorArea: area.major_area,
+              duration: '3-4 years',
+              description: `${prog.program_name} program in ${area.major_area} at ${university.INSTNM}`
+            });
+          });
+        }
+      });
+    }
+    
+    // 4. Check metadata.programs
+    else if (university.metadata?.programs) {
+      console.log(`📚 Found ${university.metadata.programs.length} programs in metadata.programs`);
+      courses = university.metadata.programs.map(prog => ({
+        id: prog.id || `prog-${Date.now()}-${Math.random()}`,
+        title: prog.title || prog.program_name || 'Program',
+        program_name: prog.program_name || prog.title,
+        level: prog.level || 'Undergraduate',
+        studyMode: prog.studyMode || 'On Campus',
+        locations: prog.locations || [`${university.CITY || ''}, ${university.STABBR || ''}`],
+        duration: prog.duration || '3-4 years',
+        description: prog.description || `${prog.title} program at ${university.INSTNM}`,
+        majorArea: prog.majorArea || 'General'
+      }));
+    }
+    
+    console.log(`✅ Found ${courses.length} courses for ${university.INSTNM || university.universityName}`);
+    console.log("Sample course:", courses[0]); // Debug log to see structure
+    
+    setUniversityCourses(prev => ({
+      ...prev,
+      [uniId]: courses
+    }));
+    
+  } catch (error) {
+    console.error(`Error fetching courses for ${university.INSTNM || university.universityName}:`, error);
+  }
+};
 
   // Filter courses based on search and filters
   const filterCourses = () => {

@@ -1,637 +1,546 @@
-import React, { useState, useEffect } from "react";
-import "./adminuser.css";
+import React, { useState } from "react";
+import "./Bachelors.css";
 
-const AdminUserManagement = () => {
-  const [loading, setLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [roleFilter, setRoleFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
-
-  const [userStats, setUserStats] = useState({
-    totalUsers: 0,
-    activeUsers: 0,
-    adminUsers: 0,
-    inactiveUsers: 0
+const BachelorsTemplate = () => {
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneCountryCode: "+1",
+    phone: "",
+    dateOfBirth: "",
+    currentLevel: "",
+    collegeName: "",
+    customCollege: "",
+    country: "",
+    customCountry: "",
+    state: "",
+    customState: "",
+    city: "",
+    zipCode: "",
+    address: "",
+    programInterest: "",
+    startTerm: "",
   });
 
-  const API_BASE_URL = "http://localhost:5000/api/admin/users";
+  const [errors, setErrors] = useState({});
+  const [showCustomCollege, setShowCustomCollege] = useState(false);
 
-  const getAdminHeaders = () => ({
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${localStorage.getItem("adminToken") || ""}`,
-  });
+  // 50+ Countries
+  const countries = [
+    "United States", "Canada", "United Kingdom", "Australia", "India", 
+    "Germany", "France", "Japan", "China", "Brazil", "Mexico", "Italy",
+    "Spain", "Netherlands", "Switzerland", "Sweden", "Norway", "Denmark",
+    "South Africa", "United Arab Emirates", "Singapore", "Malaysia",
+    "South Korea", "New Zealand", "Ireland", "Belgium", "Austria",
+    "Poland", "Portugal", "Greece", "Turkey", "Russia", "Argentina",
+    "Chile", "Colombia", "Peru", "Egypt", "Saudi Arabia", "Israel",
+    "Thailand", "Vietnam", "Philippines", "Indonesia", "Pakistan",
+    "Bangladesh", "Sri Lanka", "Nepal", "Other"
+  ];
 
-  useEffect(() => {
-    loadUsersData();
-  }, []);
+  // ALL 50 US States + Other
+  const usStates = [
+    "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
+    "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho",
+    "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana",
+    "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota",
+    "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada",
+    "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina",
+    "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania",
+    "Rhode Island", "South Carolina", "South Dakota", "Tennessee",
+    "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia",
+    "Wisconsin", "Wyoming", "Other"
+  ];
 
-  useEffect(() => {
-    filterUsers();
-  }, [searchQuery, roleFilter, statusFilter, users]);
+  const canadaProvinces = [
+    "Alberta", "British Columbia", "Manitoba", "New Brunswick",
+    "Newfoundland and Labrador", "Northwest Territories", "Nova Scotia",
+    "Nunavut", "Ontario", "Prince Edward Island", "Quebec", "Saskatchewan",
+    "Yukon", "Other"
+  ];
 
-  // ===== Load Users Data =====
-  const loadUsersData = async () => {
-    setLoading(true);
-    try {
-      const queryParams = new URLSearchParams();
-      if (searchQuery) queryParams.append("search", searchQuery);
-      if (roleFilter !== "all") queryParams.append("role", roleFilter);
-      if (statusFilter !== "all") queryParams.append("status", statusFilter);
+  // 70+ Universities + Other
+  const universities = [
+    "Harvard University", "Stanford University", "MIT", "University of California, Berkeley",
+    "Yale University", "Princeton University", "University of Pennsylvania",
+    "California Institute of Technology", "Duke University", "Johns Hopkins University",
+    "Northwestern University", "University of Michigan", "Columbia University",
+    "University of Chicago", "University of California, Los Angeles",
+    "Cornell University", "University of California, San Diego",
+    "University of Washington", "University of Texas at Austin",
+    "University of Wisconsin-Madison", "Brown University", 
+    "University of North Carolina at Chapel Hill", "University of Southern California",
+    "Boston University", "New York University", "University of Illinois at Urbana-Champaign",
+    "University of Minnesota", "Purdue University", "University of Florida",
+    "University of Maryland", "Pennsylvania State University", "University of Georgia",
+    "Ohio State University", "University of California, Davis",
+    "University of California, Santa Barbara", "University of Virginia",
+    "University of Colorado Boulder", "University of Massachusetts Amherst",
+    "Carnegie Mellon University", "University of California, Irvine",
+    "Georgia Institute of Technology", "University of California, Santa Cruz",
+    "Tufts University", "Northeastern University", "University of Rochester",
+    "Brandeis University", "Case Western Reserve University", "Rensselaer Polytechnic Institute",
+    "University of Miami", "Pepperdine University", "Other"
+  ];
 
-      const response = await fetch(`${API_BASE_URL}?${queryParams.toString()}`, {
-        headers: getAdminHeaders(),
-      });
+  // Phone Country Codes
+  const countryCodes = [
+    { code: "+1", country: "USA/Canada" },
+    { code: "+44", country: "UK" },
+    { code: "+91", country: "India" },
+    { code: "+61", country: "Australia" },
+    { code: "+49", country: "Germany" },
+    { code: "+33", country: "France" },
+    { code: "+81", country: "Japan" },
+    { code: "+86", country: "China" },
+    { code: "+55", country: "Brazil" },
+    { code: "+52", country: "Mexico" },
+    { code: "+39", country: "Italy" },
+    { code: "+34", country: "Spain" },
+    { code: "+31", country: "Netherlands" },
+    { code: "+971", country: "UAE" },
+    { code: "+82", country: "South Korea" },
+    { code: "+65", country: "Singapore" }
+  ];
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+  // 25+ Programs
+  const programs = [
+    "Computer Science", "Business Administration", "Engineering", "Psychology",
+    "Economics", "Biology", "Political Science", "English Literature",
+    "Mathematics", "Physics", "Chemistry", "Art History", "Architecture",
+    "Accounting", "Marketing", "Finance", "Nursing", "Education",
+    "Mechanical Engineering", "Electrical Engineering", "Civil Engineering",
+    "Biomedical Engineering", "Data Science", "Artificial Intelligence",
+    "Cybersecurity", "Graphic Design"
+  ];
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  const handlePhoneChange = (e) => {
+    const value = e.target.value;
+    // Allow only numbers for phone input
+    const filteredValue = value.replace(/[^0-9]/g, '');
+    setFormData(prev => ({ ...prev, phone: filteredValue }));
+    if (errors.phone) {
+      setErrors(prev => ({ ...prev, phone: "" }));
+    }
+  };
+
+  const handleCollegeChange = (e) => {
+    const value = e.target.value;
+    setFormData(prev => ({ ...prev, collegeName: value }));
+    setShowCustomCollege(value === "Other");
+    if (errors.collegeName) setErrors(prev => ({ ...prev, collegeName: "" }));
+  };
+
+  const handleStateChange = (e) => {
+    const value = e.target.value;
+    setFormData(prev => ({ ...prev, state: value }));
+    if (errors.state) setErrors(prev => ({ ...prev, state: "" }));
+  };
+
+  const handleRadioChange = (value) => {
+    setFormData(prev => ({ ...prev, currentLevel: value }));
+  };
+
+  const handleEducationLevelClick = (level) => {
+    handleRadioChange(level);
+    setTimeout(() => {
+      switch(level) {
+        case 'highschool': window.location.href = '/highschool'; break;
+        case 'undergraduate': window.location.href = '/undergraduate'; break;
+        case 'graduate': window.location.href = '/graduate'; break;
+        default: break;
       }
+    }, 100);
+  };
 
-      const data = await response.json();
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.firstName.trim()) newErrors.firstName = "First name is required";
+    if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
+    if (!formData.email.trim()) newErrors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Valid email is required";
+    if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
+    if (!formData.dateOfBirth) newErrors.dateOfBirth = "Date of birth is required";
+    if (!formData.currentLevel) newErrors.currentLevel = "Please select your education level";
+    
+    // College validation
+    if (!formData.collegeName) {
+      newErrors.collegeName = "College name is required";
+    } else if (formData.collegeName === "Other" && !formData.customCollege?.trim()) {
+      newErrors.collegeName = "Please enter your college name";
+    }
+    
+    if (!formData.country) newErrors.country = "Country is required";
+    
+    // State validation for ALL countries
+    if (!formData.state) {
+      newErrors.state = "State/Province is required";
+    } else if (formData.state === "Other" && !formData.customState?.trim()) {
+      newErrors.state = "Please enter your state/province";
+    }
+    
+    if (!formData.city?.trim()) newErrors.city = "City is required";
+    if (!formData.zipCode?.trim()) newErrors.zipCode = "ZIP/Postal code is required";
+    if (!formData.address?.trim()) newErrors.address = "Address is required";
+    if (!formData.programInterest) newErrors.programInterest = "Please select a program";
+    
+    return newErrors;
+  };
 
-      if (!data.success) {
-        console.error("API Error:", data.message);
-        setUsers([]);
-        setFilteredUsers([]);
-        setUserStats({ totalUsers: 0, activeUsers: 0, adminUsers: 0, inactiveUsers: 0 });
-        return;
-      }
-
-      // Transform users from API response
-      const transformedUsers = (data.users || data.data || []).map((user) => {
-        const name = (user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || "Unknown").trim();
-        const role = (user.role || "User").trim();
-        const status = user.status || "inactive";
-        
-        return {
-          id: user._id || user.id,
-          name,
-          email: user.email || "unknown@example.com",
-          role: role.charAt(0).toUpperCase() + role.slice(1),
-          status: status,
-          lastLogin: user.lastLogin || user.formattedLastLogin || "Never",
-          joinDate: user.joinDate || user.formattedJoinDate || 
-                   (user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"),
-          avatar: user.avatar || (name[0] ? name[0].toUpperCase() : "?"),
-          otpVerified: user.otpVerified || user.isVerified || false,
-          signupDate: user.createdAt || new Date().toISOString(),
-        };
-      });
-
-      setUsers(transformedUsers);
-
-      // Calculate stats - use data.stats if available, otherwise calculate locally
-      if (data.stats) {
-        setUserStats({
-          totalUsers: data.stats.totalUsers || transformedUsers.length,
-          activeUsers: data.stats.activeUsers || transformedUsers.filter((u) => u.status === "active").length,
-          adminUsers: data.stats.adminUsers || transformedUsers.filter((u) => u.role.toLowerCase() === "admin").length,
-          inactiveUsers: transformedUsers.filter((u) => u.status === "inactive").length,
-        });
-      } else {
-        const totalUsers = transformedUsers.length;
-        const activeUsers = transformedUsers.filter((u) => u.status === "active").length;
-        const adminUsers = transformedUsers.filter((u) => u.role.toLowerCase() === "admin").length;
-        const inactiveUsers = transformedUsers.filter((u) => u.status === "inactive").length;
-        
-        setUserStats({ totalUsers, activeUsers, adminUsers, inactiveUsers });
-      }
-
-    } catch (error) {
-      console.error("Error loading users:", error);
-      alert("Failed to fetch users. Check console for details.");
-    } finally {
-      setLoading(false);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const newErrors = validateForm();
+    if (Object.keys(newErrors).length === 0) {
+      console.log("Form submitted:", formData);
+      alert(`✅ Application submitted successfully!\nPhone: ${formData.phoneCountryCode} ${formData.phone}`);
+    } else {
+      setErrors(newErrors);
     }
   };
 
-  // ===== Filter Users =====
-  const filterUsers = () => {
-    let filtered = [...users];
-
-    if (searchQuery) {
-      filtered = filtered.filter(
-        (user) =>
-          (user.name || "")
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()) ||
-          (user.email || "")
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase())
-      );
-    }
-
-    if (roleFilter !== "all") {
-      filtered = filtered.filter(
-        (user) => (user.role || "").toLowerCase() === roleFilter.toLowerCase()
-      );
-    }
-
-    if (statusFilter !== "all") {
-      filtered = filtered.filter((user) => (user.status || "").toLowerCase() === statusFilter.toLowerCase());
-    }
-
-    setFilteredUsers(filtered);
+  const getStatesForCountry = () => {
+    if (formData.country === "United States") return usStates;
+    if (formData.country === "Canada") return canadaProvinces;
+    // For ALL other countries, show US states + Other option
+    return [...usStates, "Other"];
   };
-
-  // ===== Event Handlers =====
-  const handleSearch = (e) => setSearchQuery(e.target.value);
-  const handleRoleFilterChange = (e) => setRoleFilter(e.target.value);
-  const handleStatusFilterChange = (e) => setStatusFilter(e.target.value);
-
-  // ===== Approve User Function =====
-  const handleApproveUser = async (userId) => {
-    try {
-      // Use PATCH method instead of POST
-      const response = await fetch(`${API_BASE_URL}/${userId}/approve`, {
-        method: "PATCH", // CHANGED FROM POST TO PATCH
-        headers: getAdminHeaders(),
-        body: JSON.stringify({ 
-          approvedBy: localStorage.getItem("adminEmail") || "Admin",
-          approvedAt: new Date().toISOString()
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data && data.success) {
-        // Update user status locally
-        setUsers(users.map((user) => 
-          user.id === userId ? { ...user, status: "active" } : user
-        ));
-        
-        // Update stats if provided
-        if (data.stats) {
-          setUserStats(data.stats);
-        }
-        
-        // Show success message
-        alert("admin approved successfully! They can now access the dashboard.");
-      } else {
-        alert(data.message || "Failed to approve user");
-      }
-    } catch (error) {
-      console.error("Error approving user:", error);
-      alert("Failed to approve user. Check console for details.");
-    }
-  };
-
-  // ===== Reject User Function =====
-  const handleRejectUser = async (userId) => {
-    if (!window.confirm("Are you sure you want to reject this user? Their status will be set to 'suspended'.")) return;
-
-    try {
-      // Use the status endpoint instead of non-existent /reject endpoint
-      const response = await fetch(`${API_BASE_URL}/${userId}/status`, {
-        method: "PATCH",
-        headers: getAdminHeaders(),
-        body: JSON.stringify({ 
-          status: "suspended",
-          rejectedBy: localStorage.getItem("adminEmail") || "Admin",
-          rejectedAt: new Date().toISOString()
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data && data.success) {
-        // Update user status locally
-        setUsers(users.map((user) => 
-          user.id === userId ? { ...user, status: "suspended" } : user
-        ));
-        
-        // Update stats if provided
-        if (data.stats) {
-          setUserStats(data.stats);
-        }
-        
-        alert("User rejected (suspended) successfully!");
-      } else {
-        alert(data.message || "Failed to reject user");
-      }
-    } catch (error) {
-      console.error("Error rejecting user:", error);
-      alert("Failed to reject user. Check console for details.");
-    }
-  };
-
-  // ===== Activate/Deactivate User =====
-  const handleUpdateUser = async (userId, field, value) => {
-    try {
-      let endpoint = `${API_BASE_URL}/${userId}`;
-      let method = "PUT";
-      let bodyData = {};
-
-      if (field === "status") {
-        endpoint = `${API_BASE_URL}/${userId}/status`;
-        method = "PATCH";
-        bodyData = { status: value };
-      } else if (field === "role") {
-        endpoint = `${API_BASE_URL}/${userId}/role`;
-        method = "PATCH";
-        bodyData = { role: value.toLowerCase() };
-      } else {
-        bodyData = { [field]: value };
-      }
-
-      const response = await fetch(endpoint, {
-        method,
-        headers: getAdminHeaders(),
-        body: JSON.stringify(bodyData),
-      });
-
-      const data = await response.json();
-
-      if (data && data.success) {
-        // Update local state
-        setUsers(users.map((u) => (u.id === userId ? { ...u, [field]: value } : u)));
-        
-        // Update stats if provided
-        if (data.stats) {
-          setUserStats(data.stats);
-        }
-        
-        // Show success message
-        alert(`User ${field} updated successfully!`);
-      } else {
-        alert(data.message || "Failed to update user");
-      }
-    } catch (error) {
-      console.error("Error updating user:", error);
-      alert("Failed to update user. Check console for details.");
-    }
-  };
-
-  // ===== Delete User =====
-  const handleDeleteUser = async (userId) => {
-    if (!window.confirm("Are you sure you want to delete this user?")) return;
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/${userId}`, {
-        method: "DELETE",
-        headers: getAdminHeaders(),
-      });
-
-      const data = await response.json();
-
-      if (data && data.success) {
-        // Remove user from local state
-        setUsers(users.filter((u) => u.id !== userId));
-        
-        // Update stats if provided
-        if (data.stats) {
-          setUserStats(data.stats);
-        }
-        
-        alert("User deleted successfully!");
-      } else {
-        alert(data.message || "Failed to delete user");
-      }
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      alert("Failed to delete user. Check console for details.");
-    }
-  };
-
-  // ===== Add User =====
-  const handleAddUser = async () => {
-    const newUser = {
-      firstName: "New",
-      lastName: "User",
-      email: `newuser${users.length + 1}@example.com`,
-      password: "password123",
-      role: "user",
-      status: "active"
-    };
-
-    try {
-      const response = await fetch(API_BASE_URL, {
-        method: "POST",
-        headers: getAdminHeaders(),
-        body: JSON.stringify(newUser),
-      });
-
-      const data = await response.json();
-
-      if (data && data.success) {
-        // Transform and add new user to local state
-        const transformedUser = {
-          id: data.user?._id || data.user?.id || `temp-${Date.now()}`,
-          name: `${newUser.firstName} ${newUser.lastName}`,
-          email: newUser.email,
-          role: (newUser.role || "User").charAt(0).toUpperCase() + (newUser.role || "User").slice(1),
-          status: newUser.status || "active",
-          lastLogin: "Never",
-          joinDate: new Date().toLocaleDateString(),
-          avatar: newUser.firstName.charAt(0).toUpperCase(),
-        };
-
-        setUsers([...users, transformedUser]);
-        
-        // Update stats if provided
-        if (data.stats) {
-          setUserStats(data.stats);
-        }
-        
-        alert("User added successfully!");
-      } else {
-        alert(data.message || "Failed to add user");
-      }
-    } catch (error) {
-      console.error("Error adding user:", error);
-      alert("Failed to add user. Check console for details.");
-    }
-  };
-
-  // ===== Seed Users =====
-  const handleSeedUsers = async () => {
-    if (!window.confirm("This will create sample users. Are you sure?")) return;
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/seed`, {
-        method: "POST",
-        headers: getAdminHeaders(),
-      });
-
-      const data = await response.json();
-
-      if (data && data.success) {
-        alert(`${data.count || 'Sample'} users created successfully!`);
-        loadUsersData();
-      } else {
-        alert(data.message || "Failed to seed users");
-      }
-    } catch (error) {
-      console.error("Error seeding users:", error);
-      alert("Failed to seed users. Check console for details.");
-    }
-  };
-
-  // ===== Helpers =====
-  const getStatusBadgeClass = (status) => {
-    switch ((status || "").toLowerCase()) {
-      case "active":
-        return "status-active";
-      case "inactive":
-        return "status-inactive";
-      case "pending":
-        return "status-pending";
-      case "suspended":
-        return "status-suspended";
-      default:
-        return "status-inactive";
-    }
-  };
-
-  const getAvatarColor = (name) => {
-    const colors = ["#4d7cfe", "#36d389", "#9f7aea", "#e53e3e", "#f6ad55", "#68d391", "#ed64a6", "#667eea"];
-    return colors[(name || "U")[0].charCodeAt(0) % colors.length];
-  };
-
-  // ===== Get Status Display Text =====
-  const getStatusDisplay = (status) => {
-    return status.charAt(0).toUpperCase() + status.slice(1);
-  };
-
-  // ===== Check if user needs approval =====
-  const needsApproval = (user) => {
-    return user.status === "inactive" || user.status === "pending";
-  };
-
-  // ===== Render Loading =====
-  if (loading) {
-    return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Loading users...</p>
-      </div>
-    );
-  }
 
   return (
-    <div className="admin-users-container">
-      {/* Header Section */}
-      <div className="users-header">
-        <div className="header-left">
-          <h1>Users & Roles Management</h1>
-          <p>Manage user accounts and permissions</p>
-        </div>
-        <div className="header-buttons">
-          <button className="add-user-btn" onClick={handleAddUser}>
-            + Add User
-          </button>
-          <button className="seed-users-btn" onClick={handleSeedUsers}>
-            🔄 Seed Users
-          </button>
+    <div className="bachelors-template-container">
+      <div className="template-header">
+        <h2>Bachelor's Degree Application</h2>
+        <p>Please fill in your information to apply for undergraduate programs</p>
+        <div className="progress-bar">
+          <div className="progress-step completed"><span className="step-number">1</span><span className="step-label">Personal</span></div>
+          <div className="progress-step active"><span className="step-number">2</span><span className="step-label">Education</span></div>
+          <div className="progress-step"><span className="step-number">3</span><span className="step-label">Location</span></div>
+          <div className="progress-step"><span className="step-number">4</span><span className="step-label">Review</span></div>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="users-stats-grid">
-        <div className="user-stat-card total-users">
-          <div className="stat-content">
-            <h3>TOTAL USERS</h3>
-            <div className="stat-value">{userStats.totalUsers}</div>
+      <form onSubmit={handleSubmit} className="application-form">
+        {/* PERSONAL INFORMATION */}
+        <div className="form-section">
+          <h3 className="section-title">PERSONAL INFORMATION</h3>
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="firstName">First Name *</label>
+              <input 
+                type="text" 
+                id="firstName" 
+                name="firstName" 
+                value={formData.firstName} 
+                onChange={handleChange} 
+                placeholder="Enter your first name" 
+                className={errors.firstName ? "error" : ""} 
+              />
+              {errors.firstName && <span className="error-message">{errors.firstName}</span>}
+            </div>
+            <div className="form-group">
+              <label htmlFor="lastName">Last Name *</label>
+              <input 
+                type="text" 
+                id="lastName" 
+                name="lastName" 
+                value={formData.lastName} 
+                onChange={handleChange} 
+                placeholder="Enter your last name" 
+                className={errors.lastName ? "error" : ""} 
+              />
+              {errors.lastName && <span className="error-message">{errors.lastName}</span>}
+            </div>
           </div>
-        </div>
 
-        <div className="user-stat-card active-users">
-          <div className="stat-content">
-            <h3>ACTIVE USERS</h3>
-            <div className="stat-value">{userStats.activeUsers}</div>
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="email">Email Address *</label>
+              <input 
+                type="email" 
+                id="email" 
+                name="email" 
+                value={formData.email} 
+                onChange={handleChange} 
+                placeholder="your.email@example.com" 
+                className={errors.email ? "error" : ""} 
+              />
+              {errors.email && <span className="error-message">{errors.email}</span>}
+            </div>
+            
+            {/* FIXED PHONE FIELD - Country code dropdown + number input */}
+            <div className="form-group phone-group">
+              <label>Phone Number *</label>
+              <div className={`phone-input-wrapper ${errors.phone ? "error" : ""}`}>
+                <select 
+                  name="phoneCountryCode" 
+                  value={formData.phoneCountryCode} 
+                  onChange={handleChange} 
+                  className="phone-code-select"
+                >
+                  {countryCodes.map(({ code, country }) => (
+                    <option key={code} value={code}>{code} ({country})</option>
+                  ))}
+                </select>
+                <span className="phone-separator">-</span>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handlePhoneChange}
+                  placeholder="Enter phone number"
+                  className="phone-number-input"
+                  maxLength="15"
+                />
+              </div>
+              {errors.phone && <span className="error-message">{errors.phone}</span>}
+            </div>
           </div>
-        </div>
 
-        <div className="user-stat-card admin-users">
-          <div className="stat-content">
-            <h3>ADMIN USERS</h3>
-            <div className="stat-value">{userStats.adminUsers}</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Divider */}
-      <div className="divider"></div>
-
-      {/* User Management Section */}
-      <div className="user-management-section">
-        <div className="section-header">
-          <h2>User Management</h2>
-          <button className="refresh-btn" onClick={loadUsersData}>
-            🔄 Refresh
-          </button>
-        </div>
-
-        {/* Search and Filters */}
-        <div className="controls-container">
-          <div className="search-box">
-            <input
-              type="text"
-              placeholder="Search users..."
-              value={searchQuery}
-              onChange={handleSearch}
-              className="search-input"
+          <div className="form-group">
+            <label htmlFor="dateOfBirth">Date of Birth *</label>
+            <input 
+              type="date" 
+              id="dateOfBirth" 
+              name="dateOfBirth" 
+              value={formData.dateOfBirth} 
+              onChange={handleChange} 
+              className={errors.dateOfBirth ? "error" : ""} 
             />
-          </div>
-
-          <div className="filter-container">
-            <div className="filter-group">
-              <span className="filter-label">ROLE</span>
-              <select 
-                value={roleFilter} 
-                onChange={handleRoleFilterChange}
-                className="filter-select"
-              >
-                <option value="all">All Roles</option>
-                <option value="admin">Admin</option>
-                <option value="user">User</option>
-                <option value="moderator">Moderator</option>
-              </select>
-            </div>
-
-            <div className="filter-group">
-              <span className="filter-label">STATUS</span>
-              <select 
-                value={statusFilter} 
-                onChange={handleStatusFilterChange}
-                className="filter-select"
-              >
-                <option value="all">All Status</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-                <option value="pending">Pending</option>
-                <option value="suspended">Suspended</option>
-              </select>
-            </div>
-
-            <div className="results-count">
-              Showing {filteredUsers.length} of {users.length} users
-            </div>
+            {errors.dateOfBirth && <span className="error-message">{errors.dateOfBirth}</span>}
           </div>
         </div>
 
-        {/* Users Table */}
-        <div className="users-table-container">
-          <table className="users-table">
-            <thead>
-              <tr>
-                <th>USER</th>
-                <th>ROLE</th>
-                <th>STATUS</th>
-                <th>LAST LOGIN</th>
-                <th>JOIN DATE</th>
-                <th>ACTIONS</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredUsers.length > 0 ? (
-                filteredUsers.map((user) => (
-                  <tr key={user.id} className={user.status === "inactive" ? "user-inactive" : ""}>
-                    <td>
-                      <div className="user-info">
-                        <div 
-                          className="user-avatar"
-                          style={{ backgroundColor: getAvatarColor(user.name) }}
-                        >
-                          {user.avatar}
-                        </div>
-                        <div className="user-details">
-                          <div className="user-name">{user.name}</div>
-                          <div className="user-email">{user.email}</div>
-                          {user.status === "inactive" && !user.otpVerified && (
-                            <div className="user-note">Needs OTP verification</div>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <select 
-                        className="role-select"
-                        value={user.role.toLowerCase()}
-                        onChange={(e) => handleUpdateUser(user.id, 'role', e.target.value)}
-                      >
-                        <option value="user">User</option>
-                        <option value="admin">Admin</option>
-                        <option value="moderator">Moderator</option>
-                      </select>
-                    </td>
-                    <td>
-                      <span className={`status-badge ${getStatusBadgeClass(user.status)}`}>
-                        {getStatusDisplay(user.status)}
-                      </span>
-                    </td>
-                    <td className="last-login">{user.lastLogin}</td>
-                    <td className="join-date">{user.joinDate}</td>
-                    <td>
-                      <div className="action-buttons">
-                        {/* Show Approve button for inactive/pending users */}
-                        {needsApproval(user) ? (
-                          <>
-                            <button 
-                              className="btn-approve"
-                              onClick={() => handleApproveUser(user.id)}
-                              title="Approve user access"
-                            >
-                              ✓ Approve
-                            </button>
-                            <button 
-                              className="btn-reject"
-                              onClick={() => handleRejectUser(user.id)}
-                              title="Reject user access"
-                            >
-                              ✗ Reject
-                            </button>
-                            <button 
-                              className="btn-delete"
-                              onClick={() => handleDeleteUser(user.id)}
-                            >
-                              Delete
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <button 
-                              className="btn-activate"
-                              onClick={() => {
-                                const newStatus = user.status === 'active' ? 'inactive' : 'active';
-                                handleUpdateUser(user.id, 'status', newStatus);
-                              }}
-                            >
-                              {user.status === 'active' ? 'Deactivate' : 'Activate'}
-                            </button>
-                            <button 
-                              className="btn-delete"
-                              onClick={() => handleDeleteUser(user.id)}
-                            >
-                              Delete
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="6" className="no-users">
-                    No users found matching your criteria
-                  </td>
-                </tr>
+        {/* EDUCATION */}
+        <div className="form-section">
+          <h3 className="section-title">EDUCATION</h3>
+          <div className="form-group radio-group inline-radio">
+            <label>Current level of education *</label>
+            <div className="radio-options inline">
+              <label className={`radio-label inline-label ${formData.currentLevel === 'highschool' ? 'selected' : ''}`}>
+                <input 
+                  type="radio" 
+                  name="currentLevel" 
+                  value="highschool" 
+                  checked={formData.currentLevel === 'highschool'} 
+                  onChange={() => handleEducationLevelClick('highschool')} 
+                />
+                <span>Highschool</span>
+              </label>
+              <label className={`radio-label inline-label ${formData.currentLevel === 'undergraduate' ? 'selected' : ''}`}>
+                <input 
+                  type="radio" 
+                  name="currentLevel" 
+                  value="undergraduate" 
+                  checked={formData.currentLevel === 'undergraduate'} 
+                  onChange={() => handleEducationLevelClick('undergraduate')} 
+                />
+                <span>Undergraduate</span>
+              </label>
+              <label className={`radio-label inline-label ${formData.currentLevel === 'graduate' ? 'selected' : ''}`}>
+                <input 
+                  type="radio" 
+                  name="currentLevel" 
+                  value="graduate" 
+                  checked={formData.currentLevel === 'graduate'} 
+                  onChange={() => handleEducationLevelClick('graduate')} 
+                />
+                <span>Graduate</span>
+              </label>
+            </div>
+            {errors.currentLevel && <span className="error-message">{errors.currentLevel}</span>}
+          </div>
+
+          <div className="form-group">
+            <label>College / University Name *</label>
+            <div className="search-input-wrapper">
+              <select 
+                name="collegeName" 
+                value={formData.collegeName} 
+                onChange={handleCollegeChange} 
+                className={errors.collegeName ? "error" : ""}
+              >
+                <option value="">Select college/university</option>
+                {universities.map(univ => <option key={univ} value={univ}>{univ}</option>)}
+              </select>
+              <span className="search-icon">🔍</span>
+            </div>
+            {showCustomCollege && (
+              <div className="form-group custom-input">
+                <input 
+                  type="text" 
+                  name="customCollege" 
+                  value={formData.customCollege} 
+                  onChange={handleChange} 
+                  placeholder="Please enter college name manually" 
+                />
+              </div>
+            )}
+            {errors.collegeName && <span className="error-message">{errors.collegeName}</span>}
+          </div>
+        </div>
+
+        {/* LOCATION */}
+        <div className="form-section">
+          <h3 className="section-title">LOCATION</h3>
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="country">Country *</label>
+              <div className="select-wrapper">
+                <select 
+                  id="country" 
+                  name="country" 
+                  value={formData.country} 
+                  onChange={handleChange} 
+                  className={errors.country ? "error" : ""}
+                >
+                  <option value="">Select country</option>
+                  {countries.map(country => <option key={country} value={country}>{country}</option>)}
+                </select>
+                <span className="select-arrow">▼</span>
+              </div>
+              {errors.country && <span className="error-message">{errors.country}</span>}
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="state">State / Province *</label>
+              <div className="select-wrapper">
+                <select 
+                  id="state" 
+                  name="state" 
+                  value={formData.state} 
+                  onChange={handleStateChange} 
+                  className={errors.state ? "error" : ""}
+                  disabled={!formData.country}
+                >
+                  <option value="">Select state/province</option>
+                  {formData.country && getStatesForCountry().map(state => (
+                    <option key={state} value={state}>{state}</option>
+                  ))}
+                </select>
+                <span className="select-arrow">▼</span>
+              </div>
+              
+              {/* Show manual input field when "Other" is selected */}
+              {formData.state === "Other" && (
+                <div className="form-group custom-input">
+                  <input 
+                    type="text" 
+                    name="customState" 
+                    value={formData.customState} 
+                    onChange={handleChange} 
+                    placeholder="Please enter state/province manually" 
+                  />
+                </div>
               )}
-            </tbody>
-          </table>
-        </div>
+              {errors.state && <span className="error-message">{errors.state}</span>}
+            </div>
+          </div>
 
-        {/* Pagination */}
-        <div className="pagination-container">
-          <div className="pagination-info">
-            Page 1 of 1
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="city">City *</label>
+              <input 
+                type="text" 
+                id="city" 
+                name="city" 
+                value={formData.city} 
+                onChange={handleChange} 
+                placeholder="Enter your city" 
+                className={errors.city ? "error" : ""} 
+              />
+              {errors.city && <span className="error-message">{errors.city}</span>}
+            </div>
+            <div className="form-group">
+              <label htmlFor="zipCode">ZIP / Postal Code *</label>
+              <input 
+                type="text" 
+                id="zipCode" 
+                name="zipCode" 
+                value={formData.zipCode} 
+                onChange={handleChange} 
+                placeholder="e.g., 94105" 
+                className={errors.zipCode ? "error" : ""} 
+              />
+              {errors.zipCode && <span className="error-message">{errors.zipCode}</span>}
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="address">Address *</label>
+            <textarea 
+              id="address" 
+              name="address" 
+              value={formData.address} 
+              onChange={handleChange} 
+              rows="3" 
+              placeholder="Street address, Apt/Suite, City, State/Province" 
+              className={errors.address ? "error" : ""} 
+            />
+            {errors.address && <span className="error-message">{errors.address}</span>}
           </div>
         </div>
-      </div>
+
+        {/* PROGRAM INTEREST */}
+        <div className="form-section">
+          <h3 className="section-title">PROGRAM INTEREST</h3>
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="programInterest">Intended Program *</label>
+              <div className="select-wrapper">
+                <select 
+                  id="programInterest" 
+                  name="programInterest" 
+                  value={formData.programInterest} 
+                  onChange={handleChange} 
+                  className={errors.programInterest ? "error" : ""}
+                >
+                  <option value="">Select a program</option>
+                  {programs.map(program => <option key={program} value={program}>{program}</option>)}
+                </select>
+                <span className="select-arrow">▼</span>
+              </div>
+              {errors.programInterest && <span className="error-message">{errors.programInterest}</span>}
+            </div>
+            <div className="form-group">
+              <label htmlFor="startTerm">Preferred Start Term</label>
+              <div className="select-wrapper">
+                <select 
+                  id="startTerm" 
+                  name="startTerm" 
+                  value={formData.startTerm} 
+                  onChange={handleChange}
+                >
+                  <option value="">Select term</option>
+                  <option value="fall-2026">Fall 2026</option>
+                  <option value="spring-2027">Spring 2027</option>
+                  <option value="fall-2027">Fall 2027</option>
+                </select>
+                <span className="select-arrow">▼</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="form-actions">
+          <button type="button" className="btn-secondary">Save as Draft</button>
+          <button type="submit" className="btn-primary">Submit Application</button>
+        </div>
+
+        <p className="form-footer">
+          * Required fields. By submitting this application, you agree to our 
+          <a href="/terms"> Terms of Service</a> and <a href="/privacy">Privacy Policy</a>.
+        </p>
+      </form>
     </div>
   );
 };
 
-export default AdminUserManagement;
+export default BachelorsTemplate;
