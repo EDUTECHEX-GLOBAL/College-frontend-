@@ -1583,63 +1583,203 @@ const UniversityAdminTemplate = () => {
     </div>
   );
 
-  const renderPreview = () => (
-    <div className="preview-modal">
-      <div className="preview-content">
-        <div className="preview-header">
-          <h2>University Preview</h2>
-          <button onClick={() => setShowPreview(false)} className="close-btn">×</button>
+const renderPreview = () => (
+  <div
+    className="preview-modal-overlay"
+    onClick={() => setShowPreview(false)}
+  >
+    <div
+      className="preview-modal"
+      onClick={e => e.stopPropagation()}
+    >
+      {/* Header: ONLY × at top-right, no title */}
+      <div className="preview-modal-header" style={{ justifyContent: 'flex-end', padding: '16px 24px' }}>
+        <button
+          className="preview-close-btn"
+          onClick={() => setShowPreview(false)}
+        >
+          ×
+        </button>
+      </div>
+
+      {/* Body */}
+      <div className="preview-modal-body">
+        {/* University main info */}
+        <div className="preview-university-header">
+          <div className="preview-title-section">
+            <h1>{formData.universityName || "University Name"}</h1>
+            <span className="preview-badge">{formData.universityCode || "N/A"}</span>
+          </div>
+
+          <div className="preview-status">
+            {formData.isActive ? (
+              <span className="status-badge active">● Active</span>
+            ) : (
+              <span className="status-badge inactive">● Inactive</span>
+            )}
+            {formData.featured && <span className="featured-badge">Featured</span>}
+          </div>
         </div>
-        <div className="university-preview-card">
-          <h3>{formData.universityName || "University Name"}</h3>
-          <p className="uni-code">Code: {formData.universityCode}</p>
-          <p className="uni-location">{formData.city}, {formData.state}, {formData.country}</p>
-          <p className="uni-type">{formData.universityType}</p>
-          
-          <div className="preview-section">
-            <h4>Programs Offered ({formData.programs.length})</h4>
-            <div className="program-tags">
-              {formData.programs.slice(0, 8).map(prog => {
-                const programDetail = programCategories.find(p => p.name === prog) || { level: 'Bachelor', studyMode: 'On Campus' };
+
+        {/* University Details */}
+        <div className="preview-section">
+          <div className="preview-section-header">
+            <h3>University Details</h3>
+          </div>
+          <div className="preview-grid">
+            <div className="preview-item">
+              <span className="preview-label">Established Year</span>
+              <span className="preview-value">{formData.establishedYear || 'N/A'}</span>
+            </div>
+            <div className="preview-item">
+              <span className="preview-label">University Type</span>
+              <span className="preview-value">{formData.universityType || 'N/A'}</span>
+            </div>
+            <div className="preview-item full-width">
+              <span className="preview-label">Location</span>
+              <span className="preview-value">
+                {formData.address || 'N/A'}, {formData.city || 'N/A'}, {formData.state || 'N/A'}, {formData.country || 'N/A'} {formData.zipCode ? `(${formData.zipCode})` : ''}
+              </span>
+            </div>
+            <div className="preview-item">
+              <span className="preview-label">Website</span>
+              <span className="preview-value">
+                {formData.website ? (
+                  <a href={formData.website} target="_blank" rel="noopener noreferrer" className="preview-link">
+                    {formData.website}
+                  </a>
+                ) : 'N/A'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Programs */}
+        <div className="preview-section">
+          <div className="preview-section-header">
+            <h3>Programs Offered ({formData.programs.length})</h3>
+          </div>
+          {formData.programs.length > 0 ? (
+            <div className="program-tags-container">
+              {formData.programs.map((prog, index) => {
+                const detail = programCategories.find(p => p.name === prog) || {
+                  level: "Bachelor",
+                  studyMode: "On Campus"
+                };
                 return (
-                  <span key={prog} className="program-tag" style={{
-                    background: getLevelColor(programDetail.level),
-                    color: 'white'
-                  }}>
+                  <span key={index} className="program-tag">
                     {prog}
+                    <span className="program-tag-detail">
+                      {detail.level} • {detail.studyMode}
+                    </span>
                   </span>
                 );
               })}
-              {formData.programs.length > 8 && (
-                <span className="program-tag more">+{formData.programs.length - 8} more</span>
-              )}
+            </div>
+          ) : (
+            <p className="preview-empty">No programs selected yet</p>
+          )}
+        </div>
+
+        {/* Intakes */}
+        <div className="preview-section">
+          <div className="preview-section-header">
+            <h3>Available Intakes</h3>
+          </div>
+          <div className="intakes-container">
+            {formData.intakes.length > 0 ? (
+              formData.intakes.map((intake, idx) => (
+                <span key={idx} className="intake-tag">{intake}</span>
+              ))
+            ) : (
+              <p className="preview-empty">No intakes selected</p>
+            )}
+          </div>
+        </div>
+
+        {/* Tuition */}
+        <div className="preview-section">
+          <div className="preview-section-header">
+            <h3>Tuition Fees</h3>
+          </div>
+          <div className="preview-grid">
+            <div className="preview-item">
+              <span className="preview-label">In-State/Local:</span>
+              <span className="preview-value">${formData.tuitionFees.inState || 'N/A'}</span>
+            </div>
+            <div className="preview-item">
+              <span className="preview-label">Out-of-State/International:</span>
+              <span className="preview-value">
+                ${formData.tuitionFees.outOfState || formData.tuitionFees.international || 'N/A'}
+              </span>
             </div>
           </div>
+        </div>
 
-          <div className="preview-section">
-            <h4>Available Intakes</h4>
-            <div className="program-tags">
-              {formData.intakes.map(intake => (
-                <span key={intake} className="program-tag">{intake}</span>
-              ))}
+        {/* Contact */}
+        <div className="preview-section">
+          <div className="preview-section-header">
+            <h3>Contact Information</h3>
+          </div>
+          <div className="preview-grid">
+            <div className="preview-item">
+              <span className="preview-label">Admin Email:</span>
+              <span className="preview-value">{formData.adminEmail || 'N/A'}</span>
             </div>
-          </div>
-
-          <div className="preview-section">
-            <h4>Tuition Fees</h4>
-            <p>In-State/Local: ${formData.tuitionFees.inState || 'N/A'}</p>
-            <p>Out-of-State/International: ${formData.tuitionFees.outOfState || 'N/A'}</p>
-          </div>
-
-          <div className="preview-section">
-            <h4>Contact</h4>
-            <p>Email: {formData.admissionEmail}</p>
-            <p>Phone: {formData.admissionPhone}</p>
+            <div className="preview-item">
+              <span className="preview-label">Admin Phone:</span>
+              <span className="preview-value">{formData.adminPhone || 'N/A'}</span>
+            </div>
+            <div className="preview-item">
+              <span className="preview-label">Admission Email:</span>
+              <span className="preview-value">{formData.admissionEmail || 'N/A'}</span>
+            </div>
+            <div className="preview-item">
+              <span className="preview-label">Admission Phone:</span>
+              <span className="preview-value">{formData.admissionPhone || 'N/A'}</span>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Footer: Edit (left) + Create University (right) */}
+      <div className="preview-modal-footer">
+        {/* Edit button */}
+        <button
+          className="preview-edit-footer-btn"
+          onClick={() => {
+            setShowPreview(false);
+            setCurrentStep(1); // Jump back to step 1 (or change to 4 for programs)
+          }}
+        >
+          ✏️ Edit
+        </button>
+
+        {/* Create University - primary action */}
+        <button
+          className="preview-create-footer-btn"
+          onClick={() => {
+            handleSubmit({ preventDefault: () => {} }); // Triggers creation/save
+            setShowPreview(false);
+          }}
+          disabled={loading}
+        >
+          {loading ? (
+            <>
+              <span className="spinner-small"></span>
+              Creating...
+            </>
+          ) : (
+            <>
+              <span className="btn-icon">✓</span>
+               Confirm &Create University
+            </>
+          )}
+        </button>
+      </div>
     </div>
-  );
+  </div>
+);
 
   return (
     <div className="university-admin-container">

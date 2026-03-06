@@ -20,6 +20,7 @@ const University = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [sortBy, setSortBy] = useState('name');
   const [filterType, setFilterType] = useState('all');
+  const [programLevel, setProgramLevel] = useState('all');
   const [viewMode, setViewMode] = useState('grid');
   const [selectedProgram, setSelectedProgram] = useState(null);
   const [showProgramDetails, setShowProgramDetails] = useState(false);
@@ -117,8 +118,8 @@ const University = () => {
         return;
       }
 
-      // Search in both APIs
-      const [adminResponse, bachelorsResponse] = await Promise.all([
+      // Search in all three APIs: admin, bachelors, and masters
+      const [adminResponse, bachelorsResponse, mastersResponse] = await Promise.all([
         axios.get(`${API_URL}/api/admin/universities/search`, {
           params: { q: searchTerm },
           headers: {
@@ -127,6 +128,16 @@ const University = () => {
           }
         }).catch(err => ({ data: { success: false, data: [] } })),
         axios.get(`${API_URL}/api/bachelors/universities`, {
+          params: { 
+            search: searchTerm,
+            limit: 50 
+          },
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }).catch(err => ({ data: { success: false, data: [] } })),
+        axios.get(`${API_URL}/api/masters/universities`, {
           params: { 
             search: searchTerm,
             limit: 50 
@@ -181,6 +192,38 @@ const University = () => {
         combinedResults = [...combinedResults, ...transformedBachelors];
       }
 
+      if (mastersResponse.data.success) {
+        const transformedMasters = mastersResponse.data.data.map(uni => ({
+          ...uni,
+          INSTNM: uni.universityName,
+          UNITID: uni.universityCode,
+          CITY: uni.city,
+          STABBR: uni.state,
+          ADDR: uni.address,
+          ZIP: uni.zipCode,
+          WEBADDR: uni.website,
+          location: {
+            city: uni.city,
+            state: uni.state,
+            country: uni.country
+          },
+          programs: uni.programs || [],
+          programCount: uni.programs?.length || 0,
+          importedByAdmin: false,
+          lastUpdated: uni.updatedAt || uni.createdAt,
+          logo: uni.universityLogo,
+          contact: {
+            website: uni.website,
+            adminEmail: uni.adminEmail,
+            adminPhone: uni.adminPhone,
+            admissionEmail: uni.admissionEmail,
+            admissionPhone: uni.admissionPhone
+          },
+          source: 'masters'
+        }));
+        combinedResults = [...combinedResults, ...transformedMasters];
+      }
+
       setSearchResults(combinedResults);
     } catch (err) {
       console.error("Failed to search:", err);
@@ -191,7 +234,7 @@ const University = () => {
   };
 
   const fetchAllUniversities = async () => {
-    console.log("Fetching all universities from both APIs...");
+    console.log("Fetching all universities from all APIs...");
     setLoading(true);
     setError(null);
     
@@ -204,8 +247,8 @@ const University = () => {
         return;
       }
 
-      // Fetch from both APIs simultaneously
-      const [adminResponse, bachelorsResponse] = await Promise.all([
+      // Fetch from all three APIs simultaneously: admin, bachelors, and masters
+      const [adminResponse, bachelorsResponse, mastersResponse] = await Promise.all([
         axios.get(`${API_URL}/api/admin/universities`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -222,11 +265,23 @@ const University = () => {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
+        }).catch(err => ({ data: { success: false, data: [] } })),
+        axios.get(`${API_URL}/api/masters/universities`, {
+          params: {
+            limit: 100,
+            sortBy: 'createdAt',
+            sortOrder: 'desc'
+          },
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
         }).catch(err => ({ data: { success: false, data: [] } }))
       ]);
 
       console.log("Admin API Response:", adminResponse.data);
       console.log("Bachelors API Response:", bachelorsResponse.data);
+      console.log("Masters API Response:", mastersResponse.data);
       
       let combinedUniversities = [];
       
@@ -271,6 +326,39 @@ const University = () => {
           source: 'bachelors'
         }));
         combinedUniversities = [...combinedUniversities, ...bachelorsUniversities];
+      }
+
+      // Add masters universities (from your new Masters creation form)
+      if (mastersResponse.data.success) {
+        const mastersUniversities = mastersResponse.data.data.map(uni => ({
+          ...uni,
+          INSTNM: uni.universityName,
+          UNITID: uni.universityCode,
+          CITY: uni.city,
+          STABBR: uni.state,
+          ADDR: uni.address,
+          ZIP: uni.zipCode,
+          WEBADDR: uni.website,
+          location: {
+            city: uni.city,
+            state: uni.state,
+            country: uni.country
+          },
+          programs: uni.programs || [],
+          programCount: uni.programs?.length || 0,
+          importedByAdmin: false,
+          lastUpdated: uni.updatedAt || uni.createdAt,
+          logo: uni.universityLogo,
+          contact: {
+            website: uni.website,
+            adminEmail: uni.adminEmail,
+            adminPhone: uni.adminPhone,
+            admissionEmail: uni.admissionEmail,
+            admissionPhone: uni.admissionPhone
+          },
+          source: 'masters'
+        }));
+        combinedUniversities = [...combinedUniversities, ...mastersUniversities];
       }
 
       setUniversities(combinedUniversities);
@@ -387,6 +475,72 @@ const University = () => {
     return [];
   };
 
+  // NEW FUNCTION: Check if university has Bachelor's programs
+  const hasBachelorsPrograms = (university) => {
+    const programs = getPrograms(university);
+    if (programs.length === 0) return false;
+    
+    return programs.some(program => {
+      const level = typeof program === 'string' ? '' : (program.level || program.type || '').toLowerCase();
+      return level.includes('bachelor') || 
+             level.includes('undergraduate') || 
+             level.includes('ba') || 
+             level.includes('bs') ||
+             level.includes('b.sc') ||
+             level.includes('b.a');
+    });
+  };
+
+  // NEW FUNCTION: Check if university has Master's programs
+  const hasMastersPrograms = (university) => {
+    const programs = getPrograms(university);
+    if (programs.length === 0) return false;
+    
+    return programs.some(program => {
+      const level = typeof program === 'string' ? '' : (program.level || program.type || '').toLowerCase();
+      return level.includes('master') || 
+             level.includes('graduate') || 
+             level.includes('ma') || 
+             level.includes('ms') ||
+             level.includes('m.sc') ||
+             level.includes('m.a') ||
+             level.includes('mba');
+    });
+  };
+
+  // NEW FUNCTION: Get Bachelor's programs count
+  const getBachelorsCount = (university) => {
+    const programs = getPrograms(university);
+    if (programs.length === 0) return 0;
+    
+    return programs.filter(program => {
+      const level = typeof program === 'string' ? '' : (program.level || program.type || '').toLowerCase();
+      return level.includes('bachelor') || 
+             level.includes('undergraduate') || 
+             level.includes('ba') || 
+             level.includes('bs') ||
+             level.includes('b.sc') ||
+             level.includes('b.a');
+    }).length;
+  };
+
+  // NEW FUNCTION: Get Master's programs count
+  const getMastersCount = (university) => {
+    const programs = getPrograms(university);
+    if (programs.length === 0) return 0;
+    
+    return programs.filter(program => {
+      const level = typeof program === 'string' ? '' : (program.level || program.type || '').toLowerCase();
+      return level.includes('master') || 
+             level.includes('graduate') || 
+             level.includes('ma') || 
+             level.includes('ms') ||
+             level.includes('m.sc') ||
+             level.includes('m.a') ||
+             level.includes('mba');
+    }).length;
+  };
+
   const getLocationString = (university) => {
     const parts = [];
     if (university.city) parts.push(university.city);
@@ -489,6 +643,23 @@ const University = () => {
           console.error("Error fetching bachelors university details:", err);
         }
       } 
+      // If it's a masters university (custom created), fetch from masters API
+      else if (university.source === 'masters' && university._id) {
+        try {
+          const response = await axios.get(`${API_URL}/api/masters/universities/${university._id}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.data.success) {
+            details = response.data.data;
+          }
+        } catch (err) {
+          console.error("Error fetching masters university details:", err);
+        }
+      }
       // If it's an imported university, fetch from admin API
       else if (university.UNITID) {
         try {
@@ -548,6 +719,10 @@ const University = () => {
         return (getLocationString(a) || '').localeCompare(getLocationString(b) || '');
       } else if (sortBy === 'programs') {
         return getProgramCount(b) - getProgramCount(a);
+      } else if (sortBy === 'bachelors') {
+        return getBachelorsCount(b) - getBachelorsCount(a);
+      } else if (sortBy === 'masters') {
+        return getMastersCount(b) - getMastersCount(a);
       }
       return 0;
     });
@@ -555,22 +730,36 @@ const University = () => {
 
   const filterUniversities = (data) => {
     if (!data) return [];
-    if (filterType === 'all') return data;
+    
+    // First apply source filter
+    let filtered = data;
     if (filterType === 'hasPrograms') {
-      return data.filter(uni => hasPrograms(uni));
+      filtered = filtered.filter(uni => hasPrograms(uni));
+    } else if (filterType === 'imported') {
+      filtered = filtered.filter(uni => uni.source === 'admin');
+    } else if (filterType === 'custom') {
+      // Custom filter now includes both bachelors and masters
+      filtered = filtered.filter(uni => uni.source === 'bachelors' || uni.source === 'masters');
     }
-    if (filterType === 'imported') {
-      return data.filter(uni => uni.source === 'admin');
+    
+    // Then apply program level filter
+    if (programLevel === 'bachelors') {
+      filtered = filtered.filter(uni => hasBachelorsPrograms(uni));
+    } else if (programLevel === 'masters') {
+      filtered = filtered.filter(uni => hasMastersPrograms(uni));
     }
-    if (filterType === 'custom') {
-      return data.filter(uni => uni.source === 'bachelors');
-    }
-    return data;
+    
+    return filtered;
   };
 
   let displayData = searchTerm.trim() && searchResults.length > 0 ? searchResults : universities;
   displayData = filterUniversities(displayData);
   displayData = sortUniversities(displayData);
+
+  // Update stats display to include masters
+  const getCustomCount = () => {
+    return universities.filter(u => u.source === 'bachelors' || u.source === 'masters').length;
+  };
 
   return (
     <div className="university-container">
@@ -617,7 +806,7 @@ const University = () => {
               <h3>Universities</h3>
               <p className="stat-value">{universities.length}</p>
               <p className="stat-sub">
-                {universities.filter(u => u.source === 'admin').length} Imported • {universities.filter(u => u.source === 'bachelors').length} Custom
+                {universities.filter(u => u.source === 'admin').length} Imported • {getCustomCount()} Custom
               </p>
             </div>
           </div>
@@ -679,6 +868,28 @@ const University = () => {
         </div>
 
         <div className="action-right">
+          {/* Program Level Filter */}
+          <div className="program-level-filter">
+            <button
+              className={`level-btn ${programLevel === 'all' ? 'active' : ''}`}
+              onClick={() => setProgramLevel('all')}
+            >
+              All Programs
+            </button>
+            <button
+              className={`level-btn bachelor ${programLevel === 'bachelors' ? 'active' : ''}`}
+              onClick={() => setProgramLevel('bachelors')}
+            >
+              🎓 Bachelor's
+            </button>
+            <button
+              className={`level-btn master ${programLevel === 'masters' ? 'active' : ''}`}
+              onClick={() => setProgramLevel('masters')}
+            >
+              📘 Master's
+            </button>
+          </div>
+
           <select 
             className="sort-select"
             value={sortBy}
@@ -686,7 +897,9 @@ const University = () => {
           >
             <option value="name">Sort by Name</option>
             <option value="location">Sort by Location</option>
-            <option value="programs">Sort by Programs</option>
+            <option value="programs">Sort by Total Programs</option>
+            <option value="bachelors">Sort by Bachelor's Programs</option>
+            <option value="masters">Sort by Master's Programs</option>
           </select>
 
           <select 
@@ -716,6 +929,22 @@ const University = () => {
           </div>
         </div>
       </div>
+
+      {/* Active Filter Indicator */}
+      {programLevel !== 'all' && (
+        <div className="active-filter-indicator">
+          <span className="filter-label">Active Filter:</span>
+          <span className="filter-value">
+            {programLevel === 'bachelors' ? '🎓 Bachelor\'s Programs Only' : '📘 Master\'s Programs Only'}
+          </span>
+          <button 
+            className="clear-filter"
+            onClick={() => setProgramLevel('all')}
+          >
+            × Clear
+          </button>
+        </div>
+      )}
 
       {/* Alerts */}
       {importSuccess && (
@@ -775,7 +1004,11 @@ const University = () => {
         <div className="empty-state">
           <div className="empty-icon">🏛️</div>
           <h3>No universities found</h3>
-          <p>Click the "Import Universities" button to load data or create one in the Bachelors section.</p>
+          <p>
+            {programLevel !== 'all' 
+              ? `No universities with ${programLevel === 'bachelors' ? 'Bachelor\'s' : 'Master\'s'} programs found.` 
+              : 'Click the "Import Universities" button to load data or create one in the Bachelors or Masters section.'}
+          </p>
           <button 
             className="btn-import"
             onClick={importUniversities}
@@ -791,11 +1024,13 @@ const University = () => {
         <div className={`university-items ${viewMode}`}>
           {displayData.map((uni, index) => {
             const programCount = getProgramCount(uni);
+            const bachelorsCount = getBachelorsCount(uni);
+            const mastersCount = getMastersCount(uni);
             const location = getLocationString(uni);
             const uniCode = getUniversityCode(uni);
             const salary = getSalary(uni);
             const programs = getPrograms(uni);
-            const isCustom = uni.source === 'bachelors';
+            const isCustom = uni.source === 'bachelors' || uni.source === 'masters';
 
             return (
               <div key={uni._id || uni.UNITID || index} className="university-item">
@@ -832,13 +1067,24 @@ const University = () => {
                   )}
                   
                   {programCount > 0 && (
-                    <div className="item-program-badge">
-                      {programCount} {programCount === 1 ? 'Program' : 'Programs'}
+                    <div className="program-count-badges">
+                      {bachelorsCount > 0 && (
+                        <span className="program-count-badge bachelor">
+                          🎓 {bachelorsCount} Bachelor's
+                        </span>
+                      )}
+                      {mastersCount > 0 && (
+                        <span className="program-count-badge master">
+                          📘 {mastersCount} Master's
+                        </span>
+                      )}
                     </div>
                   )}
                   
-                  {isCustom ? (
-                    <span className="item-badge custom">✨ Custom</span>
+                  {uni.source === 'bachelors' ? (
+                    <span className="item-badge custom">✨ Bachelor's</span>
+                  ) : uni.source === 'masters' ? (
+                    <span className="item-badge custom">📘 Master's</span>
                   ) : (
                     <span className="item-badge imported">📥 Imported</span>
                   )}
@@ -928,7 +1174,9 @@ const University = () => {
                       <p className="modal-location">{getLocationString(selectedUniversity)}</p>
                       {selectedUniversity.source && (
                         <span className={`source-badge ${selectedUniversity.source}`}>
-                          {selectedUniversity.source === 'bachelors' ? '✨ Custom Created' : '📥 Imported'}
+                          {selectedUniversity.source === 'bachelors' ? '✨ Bachelor\'s University' : 
+                           selectedUniversity.source === 'masters' ? '📘 Master\'s University' : 
+                           '📥 Imported'}
                         </span>
                       )}
                     </div>
