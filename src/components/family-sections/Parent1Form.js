@@ -1,0 +1,344 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import Select from 'react-select';
+import './Parent1Form.css';
+
+const API_URL = process.env.REACT_APP_API_BASE_URL;
+
+const Parent1Form = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    parentType: '',
+    isLiving: '',
+    prefix: '',
+    firstName: '',
+    middleInitial: '',
+    lastName: '',
+    formerLastName: '',
+    suffix: '',
+    occupation: '',
+    educationLevel: ''
+  });
+  const [loading, setLoading] = useState(false);
+
+  // Options for dropdowns
+  const prefixOptions = [
+    { value: 'mr', label: 'Mr.' },
+    { value: 'ms', label: 'Ms.' },
+    { value: 'mrs', label: 'Mrs.' },
+    { value: 'dr', label: 'Dr.' }
+  ];
+
+  const suffixOptions = [
+    { value: 'jr', label: 'Jr.' },
+    { value: 'sr', label: 'Sr.' },
+    { value: 'ii', label: 'II' },
+    { value: 'iii', label: 'III' }
+  ];
+
+  const occupationOptions = [
+    { value: 'architect', label: 'Architect' },
+    { value: 'doctor', label: 'Doctor' },
+    { value: 'engineer', label: 'Engineer' },
+    { value: 'teacher', label: 'Teacher' },
+    { value: 'business_owner', label: 'Business Owner' },
+    { value: 'retired', label: 'Retired' },
+    { value: 'deceased', label: 'Deceased' },
+    { value: 'other', label: 'Other' }
+  ];
+
+  const educationLevelOptions = [
+    { value: 'high_school', label: 'High School' },
+    { value: 'some_college', label: 'Some College' },
+    { value: 'associates', label: "Associate's Degree" },
+    { value: 'bachelors', label: "Bachelor's Degree" },
+    { value: 'masters', label: "Master's Degree" },
+    { value: 'doctorate', label: 'Doctorate' },
+    { value: 'professional', label: 'Professional Degree' }
+  ];
+
+  useEffect(() => {
+    fetchParent1Data();
+  }, []);
+
+  const fetchParent1Data = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_URL}/api/students/family-dashb`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.data.success && response.data.familyData.parent1) {
+        setFormData(response.data.familyData.parent1);
+      }
+    } catch (error) {
+      console.error('Error fetching parent 1 data:', error);
+    }
+  };
+
+  const handleSelectChange = (field, selectedOption) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: selectedOption ? selectedOption.value : ''
+    }));
+  };
+
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API_URL}/api/students/family-dashb/parent1`, formData, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      navigate('/firstyear/dashboard/family/parent2');
+    } catch (error) {
+      console.error('Error saving parent 1 data:', error);
+      alert('Error saving parent 1 data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get selected values for react-select
+  const getSelectedPrefix = () => {
+    return prefixOptions.find(option => option.value === formData.prefix);
+  };
+
+  const getSelectedSuffix = () => {
+    return suffixOptions.find(option => option.value === formData.suffix);
+  };
+
+  const getSelectedOccupation = () => {
+    return occupationOptions.find(option => option.value === formData.occupation);
+  };
+
+  const getSelectedEducationLevel = () => {
+    return educationLevelOptions.find(option => option.value === formData.educationLevel);
+  };
+
+  return (
+    <div className="family-form-container">
+      <div className="form-header">
+        <h2 className="form-title">Parent 1</h2>
+        <div className="progress-indicator">In Progress</div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="family-form parent1-form">
+        {/* Parent Type */}
+        <div className="form-field">
+          <label className="form-label required">
+            Parent 1 type*
+          </label>
+          <div className="radio-group vertical">
+            <label className="radio-label">
+              <input
+                type="radio"
+                name="parentType"
+                value="mother"
+                checked={formData.parentType === 'mother'}
+                onChange={(e) => handleInputChange('parentType', e.target.value)}
+                required
+              />
+              Mother
+            </label>
+            <label className="radio-label">
+              <input
+                type="radio"
+                name="parentType"
+                value="father"
+                checked={formData.parentType === 'father'}
+                onChange={(e) => handleInputChange('parentType', e.target.value)}
+              />
+              Father
+            </label>
+            <label className="radio-label">
+              <input
+                type="radio"
+                name="parentType"
+                value="limited_info"
+                checked={formData.parentType === 'limited_info'}
+                onChange={(e) => handleInputChange('parentType', e.target.value)}
+              />
+              I have limited information about this parent
+            </label>
+          </div>
+          <button 
+            type="button" 
+            className="clear-answer"
+            onClick={() => handleInputChange('parentType', '')}
+          >
+            Clear answer
+          </button>
+        </div>
+
+        {/* Is Living */}
+        <div className="form-field">
+          <label className="form-label">
+            Is parent 1 living?
+          </label>
+          <div className="radio-group">
+            <label className="radio-label">
+              <input
+                type="radio"
+                name="isLiving"
+                value="yes"
+                checked={formData.isLiving === 'yes'}
+                onChange={(e) => handleInputChange('isLiving', e.target.value)}
+              />
+              Yes
+            </label>
+            <label className="radio-label">
+              <input
+                type="radio"
+                name="isLiving"
+                value="no"
+                checked={formData.isLiving === 'no'}
+                onChange={(e) => handleInputChange('isLiving', e.target.value)}
+              />
+              No
+            </label>
+          </div>
+          <button 
+            type="button" 
+            className="clear-answer"
+            onClick={() => handleInputChange('isLiving', '')}
+          >
+            Clear answer
+          </button>
+        </div>
+
+        {/* Personal Information */}
+        <div className="form-row">
+          <div className="form-field">
+            <label className="form-label">Prefix</label>
+            <Select
+              className="react-select-container"
+              classNamePrefix="react-select"
+              value={getSelectedPrefix()}
+              onChange={(option) => handleSelectChange('prefix', option)}
+              options={prefixOptions}
+              placeholder="Choose an option"
+              isSearchable={false}
+              isClearable={true}
+            />
+          </div>
+
+          <div className="form-field">
+            <label className="form-label">First/Given name</label>
+            <input
+              type="text"
+              className="form-input"
+              value={formData.firstName}
+              onChange={(e) => handleInputChange('firstName', e.target.value)}
+              placeholder="Enter first name"
+            />
+          </div>
+
+          <div className="form-field">
+            <label className="form-label">Middle initial</label>
+            <input
+              type="text"
+              className="form-input"
+              maxLength="1"
+              value={formData.middleInitial}
+              onChange={(e) => handleInputChange('middleInitial', e.target.value.toUpperCase())}
+              placeholder="M"
+            />
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-field">
+            <label className="form-label">Last/Family/Surname</label>
+            <input
+              type="text"
+              className="form-input"
+              value={formData.lastName}
+              onChange={(e) => handleInputChange('lastName', e.target.value)}
+              placeholder="Enter last name"
+            />
+          </div>
+
+          <div className="form-field">
+            <label className="form-label">Former last/family/surname (if any)</label>
+            <input
+              type="text"
+              className="form-input"
+              value={formData.formerLastName}
+              onChange={(e) => handleInputChange('formerLastName', e.target.value)}
+              placeholder="Enter former last name"
+            />
+          </div>
+
+          <div className="form-field">
+            <label className="form-label">Suffix</label>
+            <Select
+              className="react-select-container"
+              classNamePrefix="react-select"
+              value={getSelectedSuffix()}
+              onChange={(option) => handleSelectChange('suffix', option)}
+              options={suffixOptions}
+              placeholder="Choose an option"
+              isSearchable={false}
+              isClearable={true}
+            />
+          </div>
+        </div>
+
+        {/* Occupation and Education */}
+        <div className="form-row">
+          <div className="form-field">
+            <label className="form-label">Occupation (former occupation, if retired or deceased)</label>
+            <Select
+              className="react-select-container"
+              classNamePrefix="react-select"
+              value={getSelectedOccupation()}
+              onChange={(option) => handleSelectChange('occupation', option)}
+              options={occupationOptions}
+              placeholder="Choose an option"
+              isSearchable={false}
+              isClearable={true}
+            />
+          </div>
+
+          <div className="form-field">
+            <label className="form-label">Highest education level</label>
+            <Select
+              className="react-select-container"
+              classNamePrefix="react-select"
+              value={getSelectedEducationLevel()}
+              onChange={(option) => handleSelectChange('educationLevel', option)}
+              options={educationLevelOptions}
+              placeholder="Choose an option"
+              isSearchable={false}
+              isClearable={true}
+            />
+          </div>
+        </div>
+
+        <div className="form-actions">
+          <button 
+            type="submit" 
+            className="continue-button"
+            disabled={loading}
+          >
+            {loading ? 'Saving...' : 'Continue'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default Parent1Form;

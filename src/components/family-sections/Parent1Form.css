@@ -1,0 +1,105 @@
+/* Parent 1 Form Specific Styles */
+.parent1-form .form-field {
+  margin-bottom: 28px;
+}
+
+.parent1-form .radio-group.vertical {
+  gap: 8px;
+}
+
+/* Personal information section */
+.parent1form-personal-info-section {
+  background: #f8fafc;
+  padding: 24px;
+  border-radius: 8px;
+  margin: 24px 0;
+  border: 1px solid #e2e8f0;
+}
+
+.personal-info-section .form-row {
+  margin-bottom: 0;
+}
+
+/* Name fields */
+.name-fields {
+  display: grid;
+  grid-template-columns: 120px 1fr 80px;
+  gap: 12px;
+}
+
+.name-fields .form-field:nth-child(1) {
+  grid-column: 1;
+}
+
+.name-fields .form-field:nth-child(2) {
+  grid-column: 2;
+}
+
+.name-fields .form-field:nth-child(3) {
+  grid-column: 3;
+}
+
+/* Occupation and education section */
+.occupation-education-section {
+  background: #f8fafc;
+  padding: 24px;
+  border-radius: 8px;
+  margin: 24px 0;
+  border: 1px solid #e2e8f0;
+}
+
+/* Limited information notice */
+.limited-info-notice {
+  background: #fffaf0;
+  border: 1px solid #fed7d7;
+  border-radius: 6px;
+  padding: 16px;
+  margin: 16px 0;
+}
+
+.limited-info-notice p {
+  margin: 0;
+  color: #c53030;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Deceased parent styles */
+.deceased-parent-notice {
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 16px;
+  margin: 16px 0;
+}
+
+.deceased-parent-notice p {
+  margin: 0;
+  color: #718096;
+  font-size: 14px;
+  font-style: italic;
+}
+
+/* Form field groups */
+.form-field-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* Responsive adjustments for Parent form */
+@media (max-width: 768px) {
+  .personal-info-section,
+  .occupation-education-section {
+    padding: 16px;
+  }
+  
+  .name-fields {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .form-field-group {
+    grid-template-columns: 1fr;
+  }
+}

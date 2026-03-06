@@ -1,0 +1,707 @@
+.activities-container {
+  min-height: 100vh;
+  background: #f8f9fa;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+.activities-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.activities-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.activities-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.progress-status {
+  background: #fff3cd;
+  color: #856404;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.activities-card {
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 30px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.activities-card h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 20px 0;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.activities-description {
+  margin-bottom: 30px;
+}
+
+.activities-description p {
+  color: #495057;
+  margin-bottom: 15px;
+  line-height: 1.5;
+}
+
+.activities-description ul {
+  color: #495057;
+  padding-left: 20px;
+  margin: 0;
+}
+
+.activities-description li {
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.activities-description a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.activities-description a:hover {
+  text-decoration: underline;
+}
+
+.activities-question {
+  margin-bottom: 25px;
+}
+
+.activities-question label {
+  display: block;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+
+.answer-options {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.answer-btn {
+  padding: 10px 25px;
+  border: 2px solid #6c757d;
+  background: white;
+  color: #495057;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.answer-btn:hover {
+  border-color: #495057;
+  background: #f8f9fa;
+}
+
+.answer-btn.selected {
+  background: #007bff;
+  border-color: #007bff;
+  color: white;
+}
+
+.answer-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.clear-answer {
+  background: none;
+  border: 1px solid #6c757d;
+  color: #6c757d;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clear-answer:hover {
+  background: #f8f9fa;
+  border-color: #495057;
+  color: #495057;
+}
+
+.clear-answer:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.continue-section {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #dee2e6;
+  text-align: right;
+}
+
+.continue-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.continue-btn:hover {
+  background: #0056b3;
+}
+
+.continue-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Activities Form Styles */
+.activities-instructions {
+  background: #e7f3ff;
+  border: 1px solid #b3d9ff;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 25px;
+}
+
+.activities-instructions p {
+  color: #0066cc;
+  margin: 0;
+  font-weight: 500;
+}
+
+.activity-form {
+  margin-bottom: 30px;
+  padding: 25px;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  background: #fdfdfd;
+  position: relative;
+}
+
+.activity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.activity-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.remove-activity {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.remove-activity:hover {
+  background: #c82333;
+}
+
+.activitiessection-form-group {
+  margin-bottom: 25px;
+  position: relative;
+}
+
+.activitiessection-form-group label {
+  display: block;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+/* Enhanced Dropdown Styles */
+.form-group select {
+  width: 100%;
+  padding: 12px 40px 12px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  font-family: inherit;
+  background: white;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236c757d' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  cursor: pointer;
+}
+
+.form-group select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+/* Custom dropdown container to ensure proper z-index */
+.form-group select {
+  position: relative;
+  z-index: 1;
+}
+
+/* Ensure dropdown appears above other content */
+.form-group select:focus {
+  z-index: 1000;
+}
+
+/* Style the dropdown options */
+.form-group select option {
+  padding: 12px;
+  font-size: 14px;
+  border-bottom: 1px solid #f0f0f0;
+  background: white;
+  color: #1a1a1a;
+}
+
+.form-group select option:hover {
+  background: #007bff;
+  color: white;
+}
+
+.form-group select option:checked {
+  background: #007bff;
+  color: white;
+}
+
+/* Regular input and textarea styles */
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  font-family: inherit;
+  background: white;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+  font-family: inherit;
+  line-height: 1.4;
+}
+
+.char-count {
+  text-align: right;
+  font-size: 12px;
+  color: #6c757d;
+  margin-top: 6px;
+}
+
+/* Simple checkbox and radio styles */
+.simple-checkbox-group,
+.simple-radio-group {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.simple-checkbox-group label,
+.simple-radio-group label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-weight: normal;
+  margin: 0;
+}
+
+.simple-checkbox-group input[type="checkbox"],
+.simple-radio-group input[type="radio"] {
+  margin: 0;
+}
+
+/* Form Row Layout */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.form-row .form-group {
+  margin-bottom: 0;
+}
+
+.add-activity-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  margin-bottom: 25px;
+  border: 1px dashed #dee2e6;
+}
+
+.activities-remaining {
+  color: #6c757d;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.add-activity-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.add-activity-btn:hover {
+  background: #218838;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #e9ecef;
+  margin: 30px 0;
+}
+
+/* Enhanced Dropdown Fixes for Different Browsers */
+@supports (-webkit-appearance: none) or (-moz-appearance: none) {
+  .form-group select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+}
+
+/* Ensure dropdown has proper stacking context */
+.activities-card {
+  isolation: isolate;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .activities-container {
+    padding: 15px;
+  }
+
+  .activities-card {
+    padding: 20px;
+  }
+
+  .activities-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .answer-options {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .add-activity-section {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+
+  .simple-checkbox-group,
+  .simple-radio-group {
+    gap: 15px;
+  }
+
+  .activity-form {
+    padding: 20px;
+  }
+  
+  /* Mobile dropdown improvements */
+  .form-group select {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
+
+@media (max-width: 480px) {
+  .activities-card {
+    padding: 15px;
+  }
+
+  .activity-form {
+    padding: 15px;
+  }
+
+  .activitiessection-form-group {
+    margin-bottom: 20px;
+  }
+
+  .activities-header h1 {
+    font-size: 20px;
+  }
+
+  .activities-card h2 {
+    font-size: 18px;
+  }
+
+  .simple-checkbox-group,
+  .simple-radio-group {
+    gap: 12px;
+  }
+}
+
+/* Additional fixes for dropdown positioning */
+.activitiessection-form-group {
+  z-index: auto;
+}
+
+.form-group:focus-within {
+  z-index: 10;
+}
+
+/* Ensure dropdown doesn't get cut off */
+.activities-content {
+  position: relative;
+}
+
+/* Modern dropdown enhancements */
+.form-group select {
+  border: 1px solid #d1d5db;
+  background-color: white;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.form-group select:hover {
+  border-color: #9ca3af;
+}
+
+.form-group select:active {
+  border-color: #007bff;
+  transform: translateY(0);
+}
+
+/* React Select Overrides */
+.react-select-container {
+  position: relative;
+  z-index: 1000;
+}
+
+.react-select__control {
+  min-height: 44px !important;
+  border: 1px solid #ced4da !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  font-family: inherit !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-select__control--is-focused {
+  border-color: #007bff !important;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1) !important;
+}
+
+.react-select__menu {
+  z-index: 9999 !important;
+  border-radius: 6px !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  border: 1px solid #e5e7eb !important;
+  margin-top: 2px !important;
+}
+
+.react-select__option {
+  font-size: 14px !important;
+  padding: 10px 12px !important;
+}
+
+.react-select__option--is-focused {
+  background-color: #f8f9fa !important;
+  color: #1a1a1a !important;
+}
+
+.react-select__option--is-selected {
+  background-color: #007bff !important;
+  color: white !important;
+}
+
+.react-select__placeholder {
+  color: #6c757d !important;
+}
+
+.react-select__single-value {
+  color: #1a1a1a !important;
+}
+
+/* Ensure dropdown always opens below and doesn't get cut off */
+.react-select__menu-portal {
+  z-index: 9999 !important;
+}
+
+/* Fix for mobile devices */
+@media (max-width: 768px) {
+  .react-select__menu {
+    position: fixed !important;
+    top: auto !important;
+    bottom: auto !important;
+    left: 20px !important;
+    right: 20px !important;
+    width: auto !important;
+  }
+}
+
+.back-dashboard-btn {
+  background: transparent;
+  color: #2C5AA0;
+  border: 1px solid #2C5AA0;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.back-dashboard-btn:hover {
+  background: rgba(44, 90, 160, 0.08);
+  border-color: #1E3D6F;
+  color: #1E3D6F;
+  transform: translateY(-1px);
+}
+
+.back-dashboard-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.back-dashboard-btn:active {
+  transform: translateY(0);
+}
+
+/* Modified Activities Header Layout */
+.activities-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #dee2e6;
+  position: relative;
+}
+
+.header-left-container {
+  flex: 1;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.header-center {
+  flex: 2;
+  display: flex;
+  justify-content: center;
+}
+
+.header-right {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Ensure the existing h1 styling is preserved */
+.activities-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+  text-align: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .activities-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: stretch;
+  }
+  
+  .header-left-container,
+  .header-center,
+  .header-right {
+    justify-content: center;
+    width: 100%;
+  }
+  
+  .back-dashboard-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .activities-header h1 {
+    font-size: 20px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .back-dashboard-btn {
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+  
+  .activities-header h1 {
+    font-size: 18px;
+  }
+}

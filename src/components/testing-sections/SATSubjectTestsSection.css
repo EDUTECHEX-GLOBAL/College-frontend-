@@ -1,0 +1,405 @@
+/* src/components/testing-sections/SATSubjectTestsSection.css */
+.sat-subject-tests-section {
+  background: white;
+  margin: 16px 24px;
+  border-radius: 6px;
+  border: 1px solid #e1e5e9;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.sat-subject-tests-section .section-header {
+  border-bottom: 1px solid #e8ecef;
+}
+
+.sat-subject-tests-section h2 {
+  background: #f8f9fa;
+  margin: 0;
+  padding: 20px 24px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a202c;
+  border-bottom: 1px solid #e8ecef;
+}
+
+.sat-subject-tests-section .section-status {
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  border-bottom: 1px solid #e1e5e9;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sat-subject-tests-section .section-status.in-progress {
+  background: #f0f7ff;
+  color: #2C5AA0;
+}
+
+.sat-subject-tests-section .section-status.complete {
+  background: #f0fff4;
+  color: #38a169;
+}
+
+.sat-subject-tests-section .status-indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.sat-subject-tests-section .section-status.in-progress .status-indicator {
+  background: #2C5AA0;
+}
+
+.sat-subject-tests-section .section-status.complete .status-indicator {
+  background: #38a169;
+}
+
+.sat-subject-tests-section .form-content {
+  padding: 24px;
+  max-width: 100%;
+}
+
+.sat-subject-tests-section .form-group {
+  margin-bottom: 24px;
+}
+
+.sat-subject-tests-section .question-text {
+  font-size: 14px;
+  color: #374151;
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+/* Number of Tests Select */
+.select-group {
+  margin-bottom: 8px;
+}
+
+.number-select {
+  width: 120px;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+  background: white;
+  color: #374151;
+  cursor: pointer;
+}
+
+.number-select:focus {
+  outline: none;
+  border-color: #2C5AA0;
+  box-shadow: 0 0 0 2px rgba(44, 90, 160, 0.1);
+}
+
+.number-select.error {
+  border-color: #e53e3e;
+}
+
+/* Tests Container */
+.tests-container {
+  margin-top: 24px;
+  border-top: 1px solid #f1f3f4;
+  padding-top: 24px;
+}
+
+.test-entry {
+  background: #fafbfc;
+  border: 1px solid #e8ecef;
+  border-radius: 6px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.test-entry:last-child {
+  margin-bottom: 0;
+}
+
+.test-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e8ecef;
+}
+
+/* Date Selection */
+.date-selection {
+  margin-bottom: 8px;
+}
+
+.month-year-selection {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.month-select-container,
+.year-select-container {
+  position: relative;
+}
+
+.month-select {
+  width: 120px;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+  background: white;
+  color: #374151;
+  cursor: pointer;
+}
+
+.month-select:focus {
+  outline: none;
+  border-color: #2C5AA0;
+  box-shadow: 0 0 0 2px rgba(44, 90, 160, 0.1);
+}
+
+.month-select.error {
+  border-color: #e53e3e;
+}
+
+.year-display {
+  width: 100px;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+  background: white;
+  color: #374151;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.year-display:hover {
+  border-color: #9ca3af;
+}
+
+.year-display.error {
+  border-color: #e53e3e;
+}
+
+.dropdown-arrow {
+  font-size: 10px;
+  color: #6b7280;
+}
+
+/* Year Grid */
+.year-grid-container {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  margin-top: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.year-grid-header {
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 1px solid #e8ecef;
+  background: #f8f9fa;
+}
+
+.year-grid {
+  padding: 12px;
+}
+
+.year-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.year-row:last-child {
+  margin-bottom: 0;
+}
+
+.year-option {
+  padding: 8px 4px;
+  text-align: center;
+  font-size: 13px;
+  color: #374151;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.year-option:hover {
+  background: #f3f4f6;
+  color: #2C5AA0;
+}
+
+.year-option.selected {
+  background: #2C5AA0;
+  color: white;
+}
+
+/* Date Format Hint */
+.date-format-hint {
+  font-size: 12px;
+  color: #6b7280;
+  font-style: italic;
+  margin-bottom: 8px;
+}
+
+.selected-date {
+  font-size: 13px;
+  color: #059669;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+/* Subject and Score Selects */
+.subject-select,
+.score-select {
+  width: 100%;
+  max-width: 300px;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+  background: white;
+  color: #374151;
+  cursor: pointer;
+}
+
+.subject-select:focus,
+.score-select:focus {
+  outline: none;
+  border-color: #2C5AA0;
+  box-shadow: 0 0 0 2px rgba(44, 90, 160, 0.1);
+}
+
+.subject-select.error {
+  border-color: #e53e3e;
+}
+
+/* Error Messages */
+.error-message {
+  font-size: 12px;
+  color: #e53e3e;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .sat-subject-tests-section {
+    margin: 12px 16px;
+  }
+  
+  .sat-subject-tests-section .form-content {
+    padding: 20px;
+  }
+  
+  .sat-subject-tests-section h2 {
+    padding: 16px 20px;
+    font-size: 18px;
+  }
+  
+  .sat-subject-tests-section .section-status {
+    padding: 10px 20px;
+  }
+  
+  .test-entry {
+    padding: 16px;
+  }
+  
+  .month-year-selection {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .month-select,
+  .year-display {
+    width: 100%;
+  }
+  
+  .year-grid-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90vw;
+    max-width: 300px;
+    max-height: 60vh;
+  }
+  
+  .year-row {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .subject-select,
+  .score-select {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .sat-subject-tests-section {
+    margin: 8px 12px;
+  }
+  
+  .sat-subject-tests-section .form-content {
+    padding: 16px;
+  }
+  
+  .sat-subject-tests-section h2 {
+    padding: 14px 16px;
+  }
+  
+  .sat-subject-tests-section .section-status {
+    padding: 8px 16px;
+  }
+  
+  .test-entry {
+    padding: 12px;
+  }
+  
+  .year-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Animation for year grid */
+@keyframes sat-subject-tests-sectionfadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.year-grid-container {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Focus states for accessibility */
+.month-select:focus,
+.year-display:focus,
+.subject-select:focus,
+.score-select:focus {
+  outline: 2px solid #2C5AA0;
+  outline-offset: 2px;
+}

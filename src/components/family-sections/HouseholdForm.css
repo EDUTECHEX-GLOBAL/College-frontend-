@@ -1,0 +1,268 @@
+/* Household Form Container */
+.family-form-container {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+/* Form Header */
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 32px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.form-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0;
+}
+
+.household-progress-indicator {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2C5AA0;
+  background: #e8f0fe;
+  padding: 6px 12px;
+  border-radius: 20px;
+}
+
+/* Form Content */
+.family-form {
+  padding: 32px;
+}
+
+/* Form Fields */
+.form-field {
+  margin-bottom: 28px;
+}
+
+.form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.form-label.required::after {
+  content: " *";
+  color: #e53e3e;
+}
+
+/* React Select Styles */
+.react-select-container {
+  width: 100%;
+}
+
+.react-select__control {
+  border: 2px solid #e2e8f0 !important;
+  border-radius: 6px !important;
+  min-height: 44px !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease !important;
+  background: white !important;
+  cursor: pointer !important;
+}
+
+.react-select__control:hover {
+  border-color: #cbd5e0 !important;
+}
+
+.react-select__control--is-focused {
+  border-color: #2C5AA0 !important;
+  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1) !important;
+}
+
+.react-select__value-container {
+  padding: 4px 12px !important;
+}
+
+.react-select__single-value {
+  color: #1a202c !important;
+  font-size: 14px !important;
+  font-weight: 500;
+}
+
+.react-select__placeholder {
+  color: #a0aec0 !important;
+  font-size: 14px !important;
+}
+
+.react-select__indicator-separator {
+  background-color: #e2e8f0 !important;
+}
+
+.react-select__dropdown-indicator {
+  color: #718096 !important;
+  padding: 6px !important;
+}
+
+.react-select__dropdown-indicator:hover {
+  color: #2C5AA0 !important;
+}
+
+.react-select__menu {
+  border-radius: 6px !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+  margin-top: 4px !important;
+  z-index: 1000 !important;
+}
+
+.react-select__option {
+  padding: 10px 12px !important;
+  font-size: 14px !important;
+  color: #2d3748 !important;
+  cursor: pointer !important;
+  transition: background-color 0.2s ease;
+}
+
+.react-select__option--is-focused {
+  background-color: #f7fafc !important;
+  color: #2C5AA0 !important;
+}
+
+.react-select__option--is-selected {
+  background-color: #2C5AA0 !important;
+  color: white !important;
+}
+
+/* Radio Groups */
+.radio-group {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 8px;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #4a5568;
+  cursor: pointer;
+  padding: 8px 0;
+}
+
+.radio-label input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #2C5AA0;
+  cursor: pointer;
+}
+
+.clear-answer {
+  background: none;
+  border: none;
+  color: #718096;
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 8px;
+  transition: color 0.2s ease;
+}
+
+.clear-answer:hover {
+  color: #2C5AA0;
+}
+
+/* Form Inputs */
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  background: white;
+  font-family: inherit;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #2C5AA0;
+  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+}
+
+/* Form Actions */
+.householdform-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.continue-button {
+  background: linear-gradient(135deg, #2C5AA0, #1E3D6F);
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(44, 90, 160, 0.2);
+}
+
+.continue-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(44, 90, 160, 0.3);
+}
+
+.continue-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .family-form {
+    padding: 24px;
+  }
+  
+  .form-header {
+    padding: 20px 24px;
+  }
+  
+  .radio-group {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .householdform-form-actions {
+    justify-content: stretch;
+  }
+  
+  .continue-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .family-form {
+    padding: 20px;
+  }
+  
+  .form-header {
+    padding: 16px 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .form-title {
+    font-size: 18px;
+  }
+}

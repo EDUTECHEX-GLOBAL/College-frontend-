@@ -1,0 +1,1391 @@
+/* src/components/UserProfile.css */
+
+/* Main Container */
+.profile-wrapper {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+/* Loading Screen */
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: white;
+}
+
+.loading-spinner-large {
+  width: 60px;
+  height: 60px;
+  border: 4px solid #f3f3f3;
+  border-top-color: #FF6B6B;
+  border-right-color: #4ECDC4;
+  border-bottom-color: #45B7D1;
+  border-left-color: #96CEB4;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Header Styles */
+.userprofile-profile-header {
+  background: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 0 0 20px 20px;
+}
+
+/* Profile Image in Header */
+.profile-image-wrapper {
+  flex-shrink: 0;
+  width: 70px;
+}
+
+.profile-image-container {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.profile-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-image-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.placeholder-initials {
+  text-transform: uppercase;
+}
+
+.image-upload-label {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 18px;
+  height: 18px;
+  background: #4ECDC4;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 2px solid white;
+  transition: all 0.3s ease;
+}
+
+.image-upload-label:hover {
+  transform: scale(1.1);
+  background: #45B7D1;
+}
+
+.image-upload-input {
+  display: none;
+}
+
+.upload-icon {
+  color: white;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+/* Header Title Section */
+.header-title-section {
+  flex: 1;
+  text-align: center;
+}
+
+.header-title {
+  font-size: 1.5rem;
+  margin: 0;
+  color: white;
+  font-weight: 600;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.header-email {
+  margin: 0.25rem 0 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+}
+
+.header-cancel-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid white;
+  color: white;
+  padding: 0.4rem 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.header-cancel-btn:hover {
+  background: white;
+  color: #FF6B6B;
+}
+
+/* Main Content */
+.userprofile-profile-content {
+  max-width: 700px;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+}
+
+/* Error Message */
+.error-message {
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+  color: #721c24;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-left: 4px solid #dc3545;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.1);
+}
+
+.error-icon {
+  font-size: 1rem;
+}
+
+.retry-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.3rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  margin-left: auto;
+}
+
+.retry-btn:hover {
+  background: #c82333;
+}
+
+/* Progress Steps - Horizontal */
+.userprofile-progress-container {
+  margin-bottom: 2rem;
+  background: white;
+  padding: 1.2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(78, 205, 196, 0.3);
+}
+
+.progress-steps-horizontal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.step-horizontal {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.step-number-horizontal {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #e9ecef;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.step-horizontal.active .step-number-horizontal {
+  background: #FF6B6B;
+  color: white;
+}
+
+.step-horizontal.completed .step-number-horizontal {
+  background: #4ECDC4;
+  color: white;
+}
+
+.step-horizontal.active .step-label-horizontal {
+  color: #FF6B6B;
+  font-weight: 500;
+}
+
+.step-horizontal.completed .step-label-horizontal {
+  color: #4ECDC4;
+}
+
+/* Form Cards */
+.form-card {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  animation: fadeIn 0.3s ease;
+  border: 1px solid rgba(78, 205, 196, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.form-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #FF6B6B, #4ECDC4, #45B7D1, #96CEB4);
+}
+
+/* userprofile.css */
+
+/* ✅ Scoped animation to avoid conflicts */
+@keyframes userProfileFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ✅ Apply animation ONLY once */
+.userprofile-fade-in {
+  animation: userProfileFadeIn 0.35s ease-out both;
+}
+
+.card-header {
+  margin-bottom: 1.5rem;
+}
+
+.card-header h2 {
+  font-size: 1.5rem;
+  margin: 0 0 0.25rem;
+  background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 600;
+}
+
+.card-header p {
+  color: #6c757d;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Form Fields */
+.form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.form-row label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #495057;
+}
+
+.form-row input,
+.form-row select {
+  padding: 0.7rem;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.form-row input:focus,
+.form-row select:focus {
+  outline: none;
+  border-color: #FF6B6B;
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+}
+
+.form-row input.error,
+.form-row select.error {
+  border-color: #dc3545;
+  background: #fff8f8;
+}
+
+.form-row input.disabled-input {
+  background: #f8f9fa;
+  cursor: not-allowed;
+  color: #6c757d;
+}
+
+.email-field {
+  position: relative;
+}
+
+.email-note {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.7rem;
+  background: linear-gradient(135deg, #96CEB4, #4ECDC4);
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 5px rgba(150, 206, 180, 0.3);
+}
+
+/* Validation Error */
+.validation-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #dc3545;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: #fff8f8;
+  border-radius: 4px;
+}
+
+/* Eligibility Badge */
+.eligibility-badge {
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(78, 205, 196, 0.1));
+  color: #4ECDC4;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin: 1rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-left: 3px solid #4ECDC4;
+  border-right: 3px solid #FF6B6B;
+  font-size: 0.9rem;
+}
+
+.badge-icon {
+  font-size: 1rem;
+  color: #FF6B6B;
+}
+
+/* Form Actions */
+.userprofile-form-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e9ecef;
+}
+
+.back-btn {
+  padding: 0.7rem 1.5rem;
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  color: #6c757d;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+  background: #f8f9fa;
+  border-color: #adb5bd;
+}
+
+.continue-btn,
+.userprofile-submit-btn {
+  padding: 0.7rem 2rem;
+  background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+}
+
+.continue-btn:hover:not(:disabled),
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+  background: linear-gradient(135deg, #4ECDC4, #FF6B6B);
+}
+
+.continue-btn:disabled,
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.userprofile-submit-btn {
+  background: linear-gradient(135deg, #96CEB4, #4ECDC4);
+  box-shadow: 0 4px 15px rgba(150, 206, 180, 0.3);
+}
+
+/* Step 3 - University Selection */
+.program-indicator {
+  background: linear-gradient(135deg, rgba(69, 183, 209, 0.1), rgba(78, 205, 196, 0.1));
+  color: #45B7D1;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+  border-left: 3px solid #45B7D1;
+  border-right: 3px solid #4ECDC4;
+}
+
+.university-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+.search-wrapper {
+  flex: 1;
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #adb5bd;
+  font-size: 0.9rem;
+  z-index: 1;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.7rem 0.7rem 0.7rem 2.2rem;
+  border: 1px solid #e9ecef;
+  border-radius: 30px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #FF6B6B;
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+}
+
+.selection-counter {
+  background: linear-gradient(135deg, #FF6B6B, #4ECDC4, #45B7D1, #96CEB4);
+  background-size: 300% 100%;
+  animation: gradientMove 3s ease infinite;
+  color: white;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  box-shadow: 0 4px 10px rgba(255, 107, 107, 0.2);
+}
+
+.counter-number {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-right: 0.2rem;
+}
+
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Loading State */
+.loading-state {
+  text-align: center;
+  padding: 2rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.loading-spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #e9ecef;
+  border-top-color: #FF6B6B;
+  border-right-color: #4ECDC4;
+  border-bottom-color: #45B7D1;
+  border-left-color: #96CEB4;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 0.5rem;
+}
+
+.retry-small-btn {
+  background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+  color: white;
+  border: none;
+  padding: 0.3rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+/* Universities Grid */
+.universities-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  max-height: 500px;
+  overflow-y: auto;
+  padding: 0.5rem;
+  margin: 1rem 0;
+}
+
+.university-card-wrapper {
+  position: relative;
+  margin-bottom: 0.5rem;
+}
+
+.university-card {
+  background: white;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.university-card:hover {
+  transform: translateY(-2px);
+  border-color: #FF6B6B;
+  box-shadow: 0 8px 16px rgba(255, 107, 107, 0.1);
+}
+
+.university-card.selected {
+  border-color: #4ECDC4;
+  background: linear-gradient(135deg, #f8fffe 0%, #f0fdfa 100%);
+  border-width: 2px;
+}
+
+.university-card.kansas {
+  border-left: 4px solid #FF6B6B;
+}
+
+.university-card.selected::before {
+  content: '';
+  position: absolute;
+  left: -2px;
+  top: -2px;
+  bottom: -2px;
+  width: 4px;
+  background: linear-gradient(135deg, #96CEB4, #4ECDC4);
+  border-radius: 12px 0 0 12px;
+}
+
+.university-logo {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #FF6B6B, #4ECDC4, #45B7D1, #96CEB4);
+  background-size: 300% 300%;
+  animation: gradientShift 5s ease infinite;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 1rem;
+  flex-shrink: 0;
+  box-shadow: 0 4px 8px rgba(255, 107, 107, 0.2);
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.university-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.university-details h4 {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+  color: #1a2639;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.university-details p {
+  margin: 0 0 0.3rem;
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+.program-badge {
+  background: linear-gradient(135deg, #e9ecef, #dee2e6);
+  color: #495057;
+  padding: 0.2rem 0.5rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  display: inline-block;
+  border-left: 2px solid #4ECDC4;
+}
+
+.kansas-badge {
+  background: linear-gradient(135deg, #FF6B6B, #FF8E8E);
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  display: inline-block;
+  box-shadow: 0 2px 5px rgba(255, 107, 107, 0.3);
+}
+
+.verified-badge {
+  background: linear-gradient(135deg, #96CEB4, #4ECDC4);
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  margin-left: 0.3rem;
+  display: inline-block;
+  box-shadow: 0 2px 5px rgba(150, 206, 180, 0.3);
+}
+
+.check-mark {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 22px;
+  height: 22px;
+  background: linear-gradient(135deg, #96CEB4, #4ECDC4);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.8rem;
+  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(150, 206, 180, 0.3);
+  animation: popIn 0.3s ease;
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0);
+  }
+  80% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Selected Courses Preview */
+.selected-courses-preview {
+  background: #f8f9fa;
+  border-radius: 0 0 12px 12px;
+  padding: 0.8rem 1rem;
+  margin-top: -0.5rem;
+  border: 1px solid #e9ecef;
+  border-top: none;
+  font-size: 0.85rem;
+}
+
+.selected-courses-preview.warning {
+  background: #fff3e0;
+  border-color: #ffb74d;
+}
+
+.preview-label {
+  font-weight: 600;
+  color: #495057;
+  margin-right: 0.5rem;
+}
+
+.preview-courses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+}
+
+.preview-course-tag {
+  background: linear-gradient(135deg, #4ECDC4, #45B7D1);
+  color: white;
+  padding: 0.2rem 0.6rem;
+  border-radius: 16px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(69, 183, 209, 0.2);
+}
+
+.edit-courses-btn {
+  background: none;
+  border: 1px solid #4ECDC4;
+  color: #4ECDC4;
+  padding: 0.2rem 0.8rem;
+  border-radius: 16px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 0.3rem;
+}
+
+.edit-courses-btn:hover {
+  background: #4ECDC4;
+  color: white;
+}
+
+.kansas-note {
+  background: #fff3e0;
+  border-radius: 0 0 12px 12px;
+  padding: 0.5rem 1rem;
+  margin-top: -0.5rem;
+  border: 1px solid #ffb74d;
+  border-top: none;
+  font-size: 0.8rem;
+  color: #e65100;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* No Results */
+.no-results {
+  text-align: center;
+  padding: 2rem;
+  color: #6c757d;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 2px dashed #FF6B6B;
+}
+
+.no-results p {
+  margin-bottom: 0.5rem;
+  color: #FF6B6B;
+}
+
+/* Step 4 - Review Section */
+.review-section {
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  position: relative;
+  overflow: hidden;
+}
+
+.review-section::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #FF6B6B, #4ECDC4, #45B7D1, #96CEB4);
+}
+
+.review-section h3 {
+  margin: 0 0 1rem;
+  background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.review-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.8rem;
+}
+
+.review-grid p {
+  margin: 0;
+  padding: 0.5rem;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  border-left: 3px solid #4ECDC4;
+  font-size: 0.9rem;
+  color: #495057;
+}
+
+.review-grid strong {
+  color: #FF6B6B;
+  font-weight: 600;
+  margin-right: 0.3rem;
+}
+
+.universities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.review-university-item {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid #e9ecef;
+  border-left: 3px solid #FF6B6B;
+  border-right: 3px solid #4ECDC4;
+}
+
+.review-university-name {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  color: #1a2639;
+}
+
+.kansas-tag {
+  background: #FF6B6B;
+  color: white;
+  padding: 0.1rem 0.5rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  margin-left: 0.5rem;
+  display: inline-block;
+}
+
+.review-courses-list {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed #e9ecef;
+}
+
+.courses-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #4ECDC4;
+  margin: 0 0 0.3rem 0;
+}
+
+.review-courses-list ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.review-courses-list li {
+  font-size: 0.85rem;
+  color: #495057;
+  margin-bottom: 0.2rem;
+}
+
+.course-level {
+  color: #FF6B6B;
+  font-size: 0.8rem;
+}
+
+.course-mode {
+  color: #4ECDC4;
+  font-size: 0.8rem;
+}
+
+.warning-text {
+  color: #FF6B6B;
+  font-size: 0.85rem;
+  margin: 0.5rem 0 0 0;
+  font-weight: 500;
+}
+
+/* Bottom Progress */
+.bottom-progress {
+  margin-top: 2rem;
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(78, 205, 196, 0.3);
+}
+
+/* Course Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-content.course-modal {
+  max-width: 700px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e9ecef;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  background: white;
+  border-radius: 16px 16px 0 0;
+  z-index: 10;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 600;
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.modal-close-btn:hover {
+  background: #f8f9fa;
+  color: #FF6B6B;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.course-selection-info {
+  color: #6c757d;
+  font-size: 0.9rem;
+  margin: 0 0 1rem 0;
+}
+
+.selected-count {
+  background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+  color: white;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: inline-block;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 10px rgba(255, 107, 107, 0.2);
+}
+
+.courses-loading {
+  text-align: center;
+  padding: 2rem;
+  color: #6c757d;
+}
+
+.spinner-small {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #e9ecef;
+  border-top-color: #FF6B6B;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin: 0 auto 0.5rem;
+}
+
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.course-card {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 10px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.course-card:hover {
+  transform: translateY(-2px);
+  border-color: #4ECDC4;
+  box-shadow: 0 8px 16px rgba(78, 205, 196, 0.1);
+}
+
+.course-card.selected {
+  border-color: #4ECDC4;
+  background: linear-gradient(135deg, #f8fffe 0%, #f0fdfa 100%);
+  border-width: 2px;
+}
+
+.course-card.selected::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #4ECDC4, #45B7D1);
+  border-radius: 10px 10px 0 0;
+}
+
+.course-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1a2639;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.4;
+}
+
+.course-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-bottom: 0.3rem;
+}
+
+.course-level-badge,
+.course-mode-badge {
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.course-duration {
+  font-size: 0.7rem;
+  color: #6c757d;
+  display: block;
+  margin: 0.3rem 0;
+}
+
+.course-major {
+  font-size: 0.7rem;
+  color: #4ECDC4;
+  font-weight: 500;
+  display: block;
+}
+
+.course-selected-check {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: #4ECDC4;
+  color: white;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 600;
+}
+
+.no-courses {
+  text-align: center;
+  padding: 2rem;
+  color: #6c757d;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px dashed #ced4da;
+}
+
+.modal-footer {
+  padding: 1.5rem;
+  border-top: 1px solid #e9ecef;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  position: sticky;
+  bottom: 0;
+  background: white;
+  border-radius: 0 0 16px 16px;
+}
+
+.cancel-btn {
+  padding: 0.5rem 1.5rem;
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  color: #6c757d;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancel-btn:hover {
+  background: #f8f9fa;
+  border-color: #adb5bd;
+}
+
+.save-btn {
+  padding: 0.5rem 1.5rem;
+  background: linear-gradient(135deg, #4ECDC4, #45B7D1);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 10px rgba(69, 183, 209, 0.2);
+}
+
+.save-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(69, 183, 209, 0.3);
+}
+
+.save-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .header-container {
+    padding: 1rem;
+  }
+
+  .header-title {
+    font-size: 1.2rem;
+  }
+
+  .header-email {
+    font-size: 0.8rem;
+  }
+
+  .userprofile-profile-content {
+
+    padding: 0 1rem;
+    margin: 1rem auto;
+  }
+
+  .progress-steps-horizontal {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .step-horizontal {
+    flex: 1;
+    min-width: 70px;
+    justify-content: center;
+  }
+
+  .form-card {
+    padding: 1.5rem;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .back-btn,
+  .continue-btn,
+  .submit-btn {
+    width: 100%;
+  }
+
+  .university-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .selection-counter {
+    text-align: center;
+  }
+
+  .review-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .courses-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+  }
+
+  .cancel-btn,
+  .save-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-container {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+
+  .profile-image-wrapper {
+    width: 60px;
+    margin: 0 auto;
+  }
+
+  .profile-image-container {
+    width: 50px;
+    height: 50px;
+  }
+
+  .header-title-section {
+    margin: 0;
+  }
+
+  .header-cancel-btn {
+    width: 100%;
+  }
+
+  .card-header h2 {
+    font-size: 1.3rem;
+  }
+
+  .step-horizontal {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.2rem;
+  }
+
+  .step-label-horizontal {
+    font-size: 0.7rem;
+  }
+
+  .university-card {
+    padding: 0.6rem;
+  }
+
+  .university-logo {
+    width: 40px;
+    height: 40px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Scrollbar Styling */
+.universities-grid::-webkit-scrollbar,
+.courses-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.universities-grid::-webkit-scrollbar-track,
+.courses-grid::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.universities-grid::-webkit-scrollbar-thumb,
+.courses-grid::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #FF6B6B, #4ECDC4, #45B7D1, #96CEB4);
+  border-radius: 10px;
+}
+
+.universities-grid::-webkit-scrollbar-thumb:hover,
+.courses-grid::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #96CEB4, #45B7D1, #4ECDC4, #FF6B6B);
+}

@@ -1,0 +1,159 @@
+/* Writing Section Styles */
+.writing-section {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.writing-header {
+  background: white;
+  padding: 0;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.writing-header .header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 32px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.writing-header .welcome-section {
+  flex: 1;
+}
+
+.writing-header .welcome-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0 0 8px 0;
+}
+
+.writing-header .welcome-subtitle {
+  font-size: 16px;
+  color: #718096;
+  margin: 0;
+}
+
+.writing-container {
+  display: flex;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 40px;
+  gap: 32px;
+}
+
+/* Writing Sidebar */
+.writing-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+}
+
+.writing-nav-section {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.nav-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 16px 0;
+}
+
+.writing-nav-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.writing-nav-item {
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+  margin: 2px 0;
+}
+
+.writing-nav-item:hover {
+  background: #f7fafc;
+  border-left-color: #e2e8f0;
+}
+
+.writing-nav-item.active {
+  background: rgba(44, 90, 160, 0.08);
+  border-left-color: #2C5AA0;
+}
+
+.writing-nav-item.active .writing-nav-text {
+  color: #2C5AA0;
+  font-weight: 600;
+}
+
+.writing-nav-content {
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.writing-nav-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #4a5568;
+  transition: color 0.3s ease;
+}
+
+/* Writing Main Content */
+.writing-main-content {
+  flex: 1;
+  min-height: 600px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .writing-container {
+    flex-direction: column;
+    padding: 20px;
+  }
+  
+  .writing-sidebar {
+    width: 100%;
+  }
+}
+
+/* Back to Dashboard Button - EXACT style from screenshot */
+.content-back-button {
+  margin-bottom: 24px;
+}
+
+.back-to-dashboard-content-btn {
+  background: #2C5AA0;
+  color: white;
+  border: 1px solid #2C5AA0;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.back-to-dashboard-content-btn:hover {
+  background: #1E3D6F;
+  border-color: #1E3D6F;
+}
+
+.back-to-dashboard-content-btn:active {
+  transform: translateY(1px);
+}

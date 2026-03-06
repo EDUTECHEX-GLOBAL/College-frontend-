@@ -1,0 +1,209 @@
+/* ContactDetailsSection.css - Dedicated styles for Contact Details section */
+.contact-details-section {
+  background: white;
+  margin: 20px 40px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+}
+
+.contact-details-section h2 {
+  background: #f8f9fa;
+  margin: 0;
+  padding: 20px 24px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a202c;
+  border-bottom: 1px solid #e5e7eb;
+  border-radius: 8px 8px 0 0;
+}
+
+.contact-details-section .section-status {
+  background: #f0f7ff;
+  padding: 12px 24px;
+  font-size: 14px;
+  color: #2C5AA0;
+  font-weight: 500;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.contact-details-section .section-status::before {
+  content: "●";
+  color: #2C5AA0;
+  font-size: 16px;
+}
+
+.contact-details-section .form-content {
+  padding: 24px;
+  max-width: 100%;
+}
+
+.contact-details-section .form-group {
+  margin-bottom: 24px;
+}
+
+.contact-details-section .form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #374151;
+  font-size: 14px;
+}
+
+.contact-details-section .form-group label.required::after {
+  content: " *";
+  color: #dc2626;
+}
+
+.contact-details-section .form-group input,
+.contact-details-section .form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  background: white;
+  box-sizing: border-box;
+}
+
+.contact-details-section .form-group input:focus,
+.contact-details-section .form-group select:focus {
+  outline: none;
+  border-color: #2C5AA0;
+  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+}
+
+.contact-details-section .radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.contact-details-section .radio-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: normal;
+  cursor: pointer;
+  margin-bottom: 0;
+}
+
+.contact-details-section .radio-group input[type="radio"] {
+  width: auto;
+  margin: 0;
+}
+
+/* Phone Input Styles */
+.contact-details-section .phone-input {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.contact-details-section .country-code {
+  width: 180px;
+  flex-shrink: 0;
+}
+
+.contact-details-section .phone-number {
+  flex: 1;
+}
+
+.contact-details-section .helper-text {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 6px;
+  font-style: italic;
+}
+
+/* Responsive Design for Contact Details Section */
+@media (max-width: 1199px) and (min-width: 768px) {
+  .contact-details-section {
+    margin: 20px 30px;
+  }
+}
+
+@media (max-width: 767px) {
+  .contact-details-section {
+    margin: 15px 20px;
+    border-radius: 6px;
+  }
+  
+  .contact-details-section .form-content {
+    padding: 20px;
+  }
+  
+  .contact-details-section h2 {
+    padding: 16px 20px;
+    font-size: 18px;
+  }
+  
+  .contact-details-section .section-status {
+    padding: 10px 20px;
+  }
+  
+  .contact-details-section .phone-input {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+  
+  .contact-details-section .country-code {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .contact-details-section {
+    margin: 10px 15px;
+  }
+  
+  .contact-details-section .form-content {
+    padding: 16px;
+  }
+  
+  .contact-details-section .radio-group {
+    gap: 8px;
+  }
+  
+  .contact-details-section .phone-input {
+    gap: 8px;
+  }
+}
+/* ContactDetails.css additions */
+.phone-input-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.country-code-dropdown {
+  flex: 0 0 100px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.phone-number-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.phone-type-dropdown {
+  flex: 0 0 100px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}

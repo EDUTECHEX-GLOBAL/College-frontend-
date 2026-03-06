@@ -1,0 +1,766 @@
+/* =========================================
+   Academics Application Form - Common App Professional Style
+   ========================================= */
+
+.academics-container {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+  color: #1a1a1a;
+}
+
+/* =============================
+   Header - Common App Style
+   ============================= */
+
+.academics-header {
+  background: white;
+  border-bottom: 1px solid #d1d5db;
+  padding: 0;
+}
+
+.academics-header-nav {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px 24px 0 24px;
+}
+
+.academics-back-button {
+  background: none;
+  border: none;
+  color: #2563eb;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 0;
+  cursor: pointer;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.academics-back-button:hover {
+  color: #1d4ed8;
+}
+
+.academics-header-info {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 24px 32px 24px;
+}
+
+.academics-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+}
+
+.academics-status {
+  margin-bottom: 12px;
+}
+
+.status-indicator {
+  color: #2563eb;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-indicator::before {
+  content: '●';
+  color: #2563eb;
+  font-size: 12px;
+}
+
+.academics-description {
+  font-size: 16px;
+  color: #6b7280;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* =============================
+   Main Content - Professional Layout
+   ============================= */
+
+.academics-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+/* =============================
+   Progress Bar - Common App Style
+   ============================= */
+
+.academics-progress {
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.academics-progress-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.academics-progress-bar {
+  flex: 1;
+  height: 8px;
+  background-color: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.academics-progress-fill {
+  height: 100%;
+  background: #2563eb;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* =============================
+   Form Content Section
+   ============================= */
+
+.academics-form-section {
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative; /* Create containing block for dropdowns */
+}
+
+.academics-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  padding: 24px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* =============================
+   Question Cards - Professional Style
+   ============================= */
+
+.academics-question-card {
+  padding: 24px;
+  border-bottom: 1px solid #e5e7eb;
+  background: white;
+  position: relative; /* Create stacking context */
+  z-index: auto;
+}
+
+.academics-question-card:last-child {
+  border-bottom: none;
+}
+
+.academics-question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.academics-question-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.academics-question-required {
+  color: #dc2626;
+  font-size: 14px;
+  font-weight: 500;
+  margin-left: 12px;
+  white-space: nowrap;
+}
+
+.academics-question-description {
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+/* =============================
+   Form Controls - Common App Style
+   ============================= */
+
+.academics-form-select {
+  width: 100%;
+  max-width: 500px;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  background: white;
+  color: #111827;
+  transition: all 0.2s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 8px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+}
+
+.academics-form-select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.academics-form-select:hover {
+  border-color: #9ca3af;
+}
+
+.academics-form-select:disabled {
+  background-color: #f9fafb;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* =============================
+   Radio Groups - Professional Style
+   ============================= */
+
+.academics-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.academics-radio-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 8px 0;
+}
+
+.academics-radio-input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #2563eb;
+}
+
+.academics-radio-label {
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+/* =============================
+   Info Cards - Common App Style
+   ============================= */
+
+.academics-info-card {
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  border-radius: 6px;
+  padding: 20px;
+  margin: 16px 24px;
+  position: relative; /* Create stacking context */
+  z-index: 1; /* Ensure it stays above other content */
+}
+
+.academics-info-title {
+  font-weight: 600;
+  color: #1e40af;
+  margin: 0 0 12px 0;
+  font-size: 16px;
+}
+
+.academics-info-content {
+  color: #1e40af;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* =============================
+   Clear Answer Button
+   ============================= */
+
+.clear-answer-button {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-top: 8px;
+  text-decoration: underline;
+}
+
+.clear-answer-button:hover {
+  color: #374151;
+}
+
+.clear-answer-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* =============================
+   Field Notes
+   ============================= */
+
+.academics-field-note {
+  color: #6b7280;
+  font-size: 13px;
+  font-style: italic;
+  margin: 8px 0;
+}
+
+/* =============================
+   Action Buttons - Common App Style
+   ============================= */
+
+.academics-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+  padding: 24px;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  justify-content: flex-end;
+}
+
+.academics-primary-button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+  height: 40px;
+}
+
+.academics-primary-button:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.academics-primary-button:active {
+  transform: translateY(0);
+}
+
+.academics-primary-button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.academics-secondary-button {
+  background: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+  height: 40px;
+}
+
+.academics-secondary-button:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+  color: #111827;
+}
+
+.academics-secondary-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* =============================
+   Loading State
+   ============================= */
+
+.academics-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.academics-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #f3f4f6;
+  border-top: 3px solid #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* =============================
+   Links
+   ============================= */
+
+.academics-question-description a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.academics-question-description a:hover {
+  text-decoration: underline;
+}
+
+/* =============================
+   Responsive Design
+   ============================= */
+
+@media (max-width: 768px) {
+  .academics-header-nav,
+  .academics-header-info {
+    padding: 20px 16px;
+  }
+
+  .academics-content {
+    padding: 24px 16px;
+  }
+
+  .academics-question-card {
+    padding: 20px 16px;
+  }
+
+  .academics-section-title {
+    padding: 20px 16px;
+    font-size: 16px;
+  }
+
+  .academics-info-card {
+    margin: 16px;
+    padding: 16px;
+  }
+
+  .academics-question-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .academics-question-required {
+    margin-left: 0;
+  }
+
+  .academics-actions {
+    flex-direction: column-reverse;
+    padding: 20px 16px;
+  }
+
+  .academics-primary-button,
+  .academics-secondary-button {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .academics-progress {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .academics-progress-bar {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .academics-content {
+    padding: 16px;
+  }
+
+  .academics-title {
+    font-size: 24px;
+  }
+
+  .academics-form-select {
+    max-width: 100%;
+  }
+}
+
+/* =============================
+   Focus States for Accessibility
+   ============================= */
+
+.academics-radio-input:focus,
+.academics-form-select:focus,
+.academics-primary-button:focus,
+.academics-secondary-button:focus,
+.clear-answer-button:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* =============================
+   Enhanced Visual Improvements
+   ============================= */
+
+.academics-question-card {
+  transition: background-color 0.2s ease;
+}
+
+.academics-question-card:hover {
+  background: #fafafa;
+}
+
+.academics-form-select option {
+  padding: 8px;
+  font-size: 14px;
+}
+
+/* =============================
+   Button Group Alignment
+   ============================= */
+
+.academics-actions {
+  border-radius: 0 0 8px 8px;
+}
+
+/* =============================
+   Improved Typography
+   ============================= */
+
+.academics-question-title {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.academics-radio-label {
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* =============================
+   Professional Spacing
+   ============================= */
+
+.academics-form-section {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.academics-progress {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* =============================
+   Required Asterisk - Red
+   ============================= */
+
+.academics-question-title .required-asterisk {
+  color: #dc2626;
+  margin-left: 2px;
+  font-weight: 600;
+}
+
+/* Hide the old required badge */
+.academics-question-required {
+  display: none;
+}
+
+/* =============================
+   React-Select Custom Styles - FIXED
+   ============================= */
+
+.react-select-container {
+  max-width: 500px;
+  margin-bottom: 8px;
+  position: relative; /* Create positioning context */
+}
+
+.react-select__control {
+  min-height: 42px !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-select__control--is-focused {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+}
+
+.react-select__control:hover {
+  border-color: #9ca3af !important;
+}
+
+.react-select__control--is-focused:hover {
+  border-color: #2563eb !important;
+}
+
+.react-select__placeholder {
+  color: #6b7280 !important;
+  font-size: 14px !important;
+}
+
+.react-select__single-value {
+  color: #111827 !important;
+  font-size: 14px !important;
+}
+
+.react-select__input {
+  color: #111827 !important;
+  font-size: 14px !important;
+}
+
+/* FIXED: Reduced z-index and added constraints */
+.react-select__menu {
+  border-radius: 6px !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  margin-top: 4px !important;
+  z-index: 100 !important; /* Reduced from 9999 to prevent overlap */
+  max-height: 250px !important; /* Limit height to prevent covering too much content */
+  overflow-y: auto !important;
+  position: absolute !important;
+  width: 100% !important;
+}
+
+.react-select__menu-list {
+  padding: 4px !important;
+  max-height: 242px !important; /* Slightly less than menu height to account for borders */
+}
+
+.react-select__option {
+  font-size: 14px !important;
+  padding: 10px 12px !important;
+  cursor: pointer !important;
+}
+
+.react-select__option--is-selected {
+  background-color: #2563eb !important;
+  color: white !important;
+}
+
+.react-select__option--is-focused {
+  background-color: #f3f4f6 !important;
+}
+
+.react-select__option:active {
+  background-color: #dbeafe !important;
+}
+
+.react-select__dropdown-indicator {
+  color: #6b7280 !important;
+  padding: 8px !important;
+  transition: transform 0.2s ease !important;
+}
+
+.react-select__dropdown-indicator:hover {
+  color: #2563eb !important;
+}
+
+.react-select__indicator-separator {
+  display: none !important;
+}
+
+.react-select__clear-indicator {
+  color: #6b7280 !important;
+  padding: 8px !important;
+  cursor: pointer !important;
+}
+
+.react-select__clear-indicator:hover {
+  color: #dc2626 !important;
+}
+
+/* =============================
+   Disabled State
+   ============================= */
+
+.react-select__control--is-disabled {
+  background-color: #f9fafb !important;
+  cursor: not-allowed !important;
+}
+
+.react-select__control--is-disabled .react-select__dropdown-indicator {
+  color: #9ca3af !important;
+}
+
+/* =============================
+   Responsive Styles
+   ============================= */
+
+@media (max-width: 768px) {
+  .react-select-container {
+    max-width: 100% !important;
+  }
+  
+  .react-select__menu {
+    position: fixed !important; /* Use fixed positioning on mobile for better control */
+    z-index: 1000 !important; /* Higher z-index for mobile to prevent keyboard overlap */
+    max-height: 200px !important;
+    width: calc(100vw - 32px) !important; /* Account for padding */
+    left: 16px !important;
+    right: 16px !important;
+  }
+}
+
+/* =============================
+   Dropdown Container Enhancement
+   ============================= */
+
+/* Ensure dropdowns don't overflow the form section */
+.academics-form-section {
+  isolation: isolate; /* Create new stacking context */
+}
+
+/* =============================
+   Special handling for the last question before info cards
+   ============================= */
+
+/* Add more spacing before info cards to prevent dropdown overlap */
+.academics-question-card + .academics-info-card {
+  margin-top: 24px; /* Extra spacing */
+}
+
+/* Ensure clear answer button doesn't affect layout */
+.clear-answer-button {
+  display: inline-block;
+  margin-top: 12px;
+}

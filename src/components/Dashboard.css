@@ -1,0 +1,1218 @@
+/* Dashboard Container */
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #1a202c;
+  line-height: 1.6;
+}
+
+/* Loading State */
+.dashboard-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid #2C5AA0;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Sidebar */
+.dashboard-sidebar {
+  width: 300px;
+  background: white;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  overflow-y: auto;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.08);
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  padding: 0;
+}
+
+.brand-section {
+  padding: 24px;
+  border-bottom: 1px solid #e2e8f0;
+  background: linear-gradient(135deg, #2C5AA0, #1E3D6F);
+}
+
+.brand-logo {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: -0.5px;
+}
+
+.user-profile-card {
+  padding: 24px;
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.user-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #2C5AA0, #1E3D6F);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px rgba(44, 90, 160, 0.2);
+}
+
+.user-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0 0 6px 0;
+  line-height: 1.3;
+}
+
+.user-email {
+  font-size: 14px;
+  color: #718096;
+  margin: 0 0 4px 0;
+  line-height: 1.4;
+}
+
+.user-id {
+  font-size: 13px;
+  color: #a0aec0;
+  margin: 0;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+/* Navigation */
+.sidebar-navigation {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0;
+}
+
+.nav-section {
+  padding: 24px 0 0 0;
+}
+
+.nav-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 24px 16px 24px;
+}
+
+.nav-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-item {
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+  margin: 2px 0;
+}
+
+.nav-item:hover {
+  background: #f7fafc;
+  border-left-color: #e2e8f0;
+}
+
+.nav-item.active {
+  background: #edf2f7;
+  border-left-color: #2C5AA0;
+}
+
+.nav-item.active .nav-text {
+  color: #2C5AA0;
+  font-weight: 600;
+}
+
+.nav-content {
+  padding: 14px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #4a5568;
+  transition: color 0.3s ease;
+}
+
+.nav-progress {
+  font-size: 12px;
+  font-weight: 600;
+  color: #718096;
+  background: #e2e8f0;
+  padding: 4px 8px;
+  border-radius: 12px;
+  min-width: 36px;
+  text-align: center;
+  display: inline-block !important; /* FIX: Added this line */
+}
+
+.nav-item.active .nav-progress {
+  background: #2C5AA0;
+  color: white;
+}
+
+.nav-footer {
+  padding: 16px 0 24px 0;
+  border-top: 1px solid #e2e8f0;
+  margin-top: auto;
+}
+
+.nav-item.sign-out {
+  border-left: none;
+}
+
+.nav-item.sign-out:hover {
+  background: #fed7d7;
+  color: #c53030;
+}
+
+.nav-item.sign-out:hover .nav-text {
+  color: #c53030;
+}
+
+/* Main Content */
+.dashboard-main {
+  flex: 1;
+  margin-left: 300px;
+  background: transparent;
+  min-height: 100vh;
+}
+
+.main-header {
+  background: white;
+  padding: 0;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  min-height: 140px;
+}
+
+.header-content {
+  display: flex;
+  justify-content: center; /* FIX: Changed from space-between to center */
+  align-items: center;
+  padding: 32px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.welcome-section {
+  flex: 1;
+  text-align: center; /* FIX: Added text alignment */
+}
+
+.welcome-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.5px;
+}
+
+.welcome-subtitle {
+  font-size: 16px;
+  color: #718096;
+  margin: 0;
+  font-weight: 400;
+}
+
+.help-button {
+  display: none !important; /* FIX: Ensure it's hidden */
+}
+
+.help-icon {
+  width: 20px;
+  height: 20px;
+  background: #2C5AA0;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Main Content */
+.main-content {
+  padding: 32px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Content Sections */
+.content-section {
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.content-section:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.dashboard-section-header {
+  margin-bottom: 24px;
+}
+
+.section-title-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.dashboard-progress-indicator, .college-count {
+  font-size: 14px;
+  font-weight: 600;
+  color: #718096;
+  background: #f7fafc;
+  padding: 6px 12px;
+  border-radius: 6px;
+}
+
+.progress-bar-container {
+  width: 100%;
+}
+
+.dashboard-progress-bar {
+  width: 100%;
+  height: 6px;
+  background-color: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2C5AA0, #1E3D6F);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+/* Application Sections Grid */
+.application-sections-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.application-section-card {
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.application-section-card:hover {
+  background: white;
+  border-color: #2C5AA0;
+  box-shadow: 0 4px 12px rgba(44, 90, 160, 0.1);
+  transform: translateY(-2px);
+}
+
+.section-header-mini {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.section-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0;
+}
+
+.section-progress {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2C5AA0;
+  background: #e8f0fe;
+  padding: 4px 8px;
+  border-radius: 12px;
+}
+
+.section-progress-bar {
+  width: 100%;
+  height: 4px;
+  background-color: #e2e8f0;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.section-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2C5AA0, #1E3D6F);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+.section-action-button {
+  width: 100%;
+  background: white;
+  color: #2C5AA0;
+  border: 1px solid #2C5AA0;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.section-action-button:hover {
+  background: #2C5AA0;
+  color: white;
+  transform: translateY(-1px);
+}
+
+/* Colleges Section */
+.colleges-content {
+  text-align: center;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+}
+
+.empty-state-icon {
+  margin-bottom: 24px;
+}
+
+.icon-background {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #f7fafc, #e2e8f0);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  margin-bottom: 16px;
+}
+
+.empty-state-content {
+  max-width: 400px;
+}
+
+.empty-state-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0 0 12px 0;
+}
+
+.empty-state-description {
+  font-size: 15px;
+  color: #718096;
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}
+
+.primary-action-button {
+  background: linear-gradient(135deg, #2C5AA0, #1E3D6F);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(44, 90, 160, 0.2);
+}
+
+.primary-action-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(44, 90, 160, 0.3);
+}
+
+/* Help & Support Section */
+.search-container {
+  margin-bottom: 32px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  background: white;
+  margin-bottom: 8px;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #2C5AA0;
+  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+}
+
+.search-hint {
+  font-size: 13px;
+  color: #a0aec0;
+  font-style: italic;
+}
+
+.faq-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #4a5568;
+  margin: 0 0 20px 0;
+}
+
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.faq-card {
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.faq-card:hover {
+  background: white;
+  border-color: #2C5AA0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.faq-content {
+  flex: 1;
+}
+
+.faq-question {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+}
+
+.faq-answer {
+  font-size: 14px;
+  color: #718096;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.faq-action-button {
+  background: transparent;
+  color: #2C5AA0;
+  border: 1px solid #2C5AA0;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.faq-action-button:hover {
+  background: #2C5AA0;
+  color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .dashboard-sidebar {
+    width: 280px;
+  }
+  
+  .dashboard-main {
+    margin-left: 280px;
+  }
+  
+  .application-sections-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+  
+  .dashboard-main {
+    margin-left: 0;
+  }
+  
+  .main-content {
+    padding: 20px;
+  }
+  
+  .header-content {
+    padding: 24px 20px;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+  }
+  
+  .application-sections-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .content-section {
+    padding: 24px 20px;
+  }
+  
+  .welcome-title {
+    font-size: 24px;
+  }
+  
+  .section-title {
+    font-size: 18px;
+  }
+  
+  .faq-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .faq-action-button {
+    align-self: flex-start;
+    margin-top: 12px;
+  }
+}
+
+/* Profile Form Integration Styles */
+.dashboard-profile-container {
+  padding: 0;
+}
+
+.dashboard-profile-header {
+  background: white;
+  padding: 32px 40px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dashboard-profile-header h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a202c;
+}
+
+.dashboard-progress-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.progress-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #4a5568;
+  min-width: 80px;
+}
+
+.dashboard-profile-content {
+  padding: 32px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Ensure the main content area scrolls properly */
+.dashboard-main {
+  overflow-y: auto;
+  max-height: 100vh;
+}
+
+/* Add to Dashboard.css - After all existing styles */
+
+/* Completed state for section buttons */
+.section-action-button.completed {
+  background: #10b981;
+  color: white;
+  border-color: #10b981;
+}
+
+.section-action-button.completed:hover {
+  background: #059669;
+  border-color: #059669;
+  transform: translateY(-1px);
+}
+
+/* Enhanced progress indicators */
+.dashboard-progress-indicator {
+  font-size: 14px;
+  font-weight: 600;
+  color: #718096;
+  background: #f7fafc;
+  padding: 6px 12px;
+  border-radius: 6px;
+}
+
+.college-count {
+  font-size: 14px;
+  font-weight: 600;
+  color: #718096;
+  background: #f7fafc;
+  padding: 6px 12px;
+  border-radius: 6px;
+}
+
+.section-progress {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2C5AA0;
+  background: #e8f0fe;
+  padding: 4px 8px;
+  border-radius: 12px;
+}
+
+/* Improved progress bars */
+.dashboard-progress-bar {
+  width: 100%;
+  height: 6px;
+  background-color: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2C5AA0, #1E3D6F);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.section-progress-bar {
+  width: 100%;
+  height: 4px;
+  background-color: #e2e8f0;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.section-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2C5AA0, #1E3D6F);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+/* Expandable Navigation Sections */
+.nav-section-expandable {
+  padding: 0;
+  cursor: pointer;
+}
+
+.nav-header {
+  padding: 14px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.3s ease;
+  border-left: 4px solid transparent;
+}
+
+.nav-header:hover {
+  background: #f7fafc;
+  border-left-color: #e2e8f0;
+}
+
+.nav-header.expanded {
+  background: #edf2f7;
+  border-left-color: #2C5AA0;
+}
+
+.nav-header.expanded .nav-text {
+  color: #2C5AA0;
+  font-weight: 600;
+}
+
+.expand-icon {
+  font-size: 12px;
+  color: #718096;
+  transition: transform 0.3s ease;
+}
+
+.nav-submenu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  background: #f8f9fa;
+}
+
+.nav-subitem {
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+}
+
+.nav-subitem:hover {
+  background: #f1f5f9;
+  border-left-color: #e2e8f0;
+}
+
+.nav-subitem.active {
+  background: #e8f0fe;
+  border-left-color: #2C5AA0;
+}
+
+.nav-subitem.active .nav-text {
+  color: #2C5AA0;
+  font-weight: 600;
+}
+
+.nav-subitem .nav-content {
+  padding: 12px 24px 12px 40px; /* Indent sub-items */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-subitem .nav-progress {
+  font-size: 11px;
+  font-weight: 600;
+  color: #718096;
+  background: #e2e8f0;
+  padding: 3px 6px;
+  border-radius: 10px;
+  min-width: 32px;
+  text-align: center;
+  display: inline-block !important; /* FIX: Added this line */
+}
+
+.nav-subitem.active .nav-progress {
+  background: #2C5AA0;
+  color: white;
+}
+
+/* My Colleges Expandable Styles */
+.nav-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-college-item {
+  padding: 0;
+}
+
+.nav-college-header {
+  padding: 12px 24px 12px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border-left: 4px solid transparent;
+}
+
+.nav-college-header:hover {
+  background: #f7fafc;
+  border-left-color: #e2e8f0;
+}
+
+.nav-college-header.active {
+  background: #edf2f7;
+  border-left-color: #2C5AA0;
+}
+
+.nav-college-header.active .nav-text {
+  color: #2C5AA0;
+  font-weight: 600;
+}
+
+.nav-college-submenu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  background: #f8f9fa;
+}
+
+.nav-college-subitem {
+  padding: 0;
+}
+
+.nav-college-subitem .nav-content {
+  padding: 10px 24px 10px 56px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+}
+
+.nav-college-subitem .nav-content:hover {
+  background: #f1f5f9;
+  border-left-color: #e2e8f0;
+}
+
+.nav-college-subheader {
+  padding: 8px 24px 8px 56px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4a5568;
+  background: #e2e8f0;
+  border-left: 4px solid transparent;
+}
+
+.nav-application-submenu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  background: #f1f5f9;
+}
+
+.nav-application-subitem .nav-content {
+  padding: 8px 24px 8px 72px;
+  font-size: 13px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-application-subitem .nav-content:hover {
+  background: #e2e8f0;
+}
+
+.nav-college-subitem .nav-progress,
+.nav-application-subitem .nav-progress {
+  font-size: 11px;
+  font-weight: 600;
+  color: #718096;
+  background: #e2e8f0;
+  padding: 2px 6px;
+  border-radius: 8px;
+  min-width: 28px;
+  text-align: center;
+  display: inline-block !important; /* FIX: Added this line */
+}
+
+/* =========================================
+   LIGHT GLASSY ACTIVE STATE STYLES
+   ========================================= */
+
+/* Active state for all navigation levels - Light Glassy Effect */
+.nav-item.active,
+.nav-subitem.active,
+.nav-college-subitem.active,
+.nav-application-subitem.active {
+  background: rgba(44, 90, 160, 0.08) !important;
+  backdrop-filter: blur(10px);
+}
+
+.nav-item.active .nav-content,
+.nav-subitem.active .nav-content,
+.nav-college-subitem.active .nav-content,
+.nav-application-subitem.active .nav-content {
+  background: rgba(44, 90, 160, 0.08) !important;
+  color: #2C5AA0 !important;
+  backdrop-filter: blur(10px);
+  border-left: 3px solid #2C5AA0;
+}
+
+.nav-item.active .nav-text,
+.nav-subitem.active .nav-text,
+.nav-college-subitem.active .nav-text,
+.nav-application-subitem.active .nav-text {
+  color: #2C5AA0 !important;
+  font-weight: 600 !important;
+}
+
+/* College header active state - Light Glassy */
+.nav-college-header.active {
+  background: rgba(44, 90, 160, 0.08) !important;
+  border-left: 3px solid #2C5AA0 !important;
+  backdrop-filter: blur(10px);
+}
+
+.nav-college-header.active .nav-text {
+  color: #2C5AA0 !important;
+  font-weight: 600 !important;
+}
+
+.nav-college-header.active .expand-icon {
+  color: #2C5AA0 !important;
+}
+
+/* Make sure active states override hover states */
+.nav-content.active:hover {
+  background: rgba(44, 90, 160, 0.12) !important;
+  color: #2C5AA0 !important;
+}
+
+.nav-content.active:hover .nav-text {
+  color: #2C5AA0 !important;
+}
+
+/* Ensure active states are visible and override everything */
+.nav-application-subitem.active .nav-content,
+.nav-college-subitem.active .nav-content {
+  background: rgba(44, 90, 160, 0.08) !important;
+  color: #2C5AA0 !important;
+  backdrop-filter: blur(10px);
+}
+
+/* FIX: Progress indicators should be visible - REMOVED the display: none rules */
+/* .nav-progress {
+  display: none;
+}
+
+.nav-header-right .nav-progress {
+  display: none;
+} */
+
+/* Glassy effect for the entire sidebar */
+.dashboard-sidebar {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+}
+
+/* Enhanced glassy effect for user profile */
+.user-profile-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(15px);
+}
+
+/* Glassy effect for navigation sections */
+.nav-section {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+}
+
+/* Ensure Activities page shows the logo */
+.dashboard-container .dashboard-sidebar {
+  display: flex !important;
+}
+
+.brand-section {
+  display: block !important;
+  visibility: visible !important;
+}
+
+/* Make sure Activities page doesn't hide the sidebar */
+.activities-container ~ .dashboard-sidebar,
+.responsibilities-container ~ .dashboard-sidebar {
+  display: flex !important;
+}
+
+/* =========================================
+   CENTERED HEADER WITH NO HELP BUTTON
+   ========================================= */
+
+.header-content {
+  display: flex;
+  justify-content: center; /* FIX: Changed from space-between to center */
+  align-items: center;
+  padding: 32px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Hide the header actions (Need Help button) */
+.header-actions {
+  display: none !important;
+}
+
+/* New centered welcome section */
+.welcome-section-centered {
+  text-align: center;
+  width: 100%;
+  display: block; /* FIX: Ensure it's visible */
+}
+
+.welcome-name {
+  font-size: 30px;
+  font-weight: 700;
+  color: #1e3d6f;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+/* Adjust the subtitle */
+.welcome-subtitle {
+  font-size: 16px;
+  color: #718096;
+  margin: 0;
+  font-weight: 400;
+  letter-spacing: 0.3px;
+}
+
+/* Hide the old welcome section if it exists */
+.welcome-section {
+  display: none;
+}
+
+/* Make sure the main-header has proper height */
+.main-header {
+  background: white;
+  padding: 0;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  min-height: 140px;
+}
+
+/* Ensure the help button is hidden in all cases */
+.help-button {
+  display: none !important;
+}
+
+/* =========================================
+   RESPONSIVE ADJUSTMENTS
+   ========================================= */
+
+@media (max-width: 768px) {
+  .header-content {
+    padding: 20px;
+    min-height: 100px;
+  }
+  
+  .welcome-name {
+    font-size: 28px;
+  }
+  
+  .welcome-subtitle {
+    font-size: 15px;
+  }
+  
+  .main-header {
+    min-height: 120px;
+  }
+}
+
+@media (max-width: 480px) {
+  .welcome-name {
+    font-size: 24px;
+  }
+  
+  .welcome-subtitle {
+    font-size: 14px;
+  }
+  
+  .main-header {
+    min-height: 100px;
+  }
+}
+
+/* FIX: Added these rules to ensure progress indicators work correctly */
+.nav-header-right .nav-progress {
+  display: inline-block !important;
+  font-size: 11px;
+  font-weight: 600;
+  color: #718096;
+  background: #e2e8f0;
+  padding: 2px 6px;
+  border-radius: 8px;
+  min-width: 28px;
+  text-align: center;
+}
+
+/* Ensure progress indicators are visible in all states */
+.nav-progress,
+.nav-subitem .nav-progress,
+.nav-college-subitem .nav-progress,
+.nav-application-subitem .nav-progress,
+.nav-header-right .nav-progress {
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Ensure the welcome name is properly displayed */
+.welcome-name {
+  color: #1e3d6f !important;
+  font-size: 30px !important;
+  font-weight: 700 !important;
+}
+
+/* Fix the header content alignment */
+.header-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}

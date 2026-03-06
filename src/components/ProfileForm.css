@@ -1,0 +1,332 @@
+/* ProfileForm.css - Layout Only (No conflicting styles) */
+.profileform-profile-container {
+  display: flex;
+  min-height: 100vh;
+  background: #f8f9fa;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Header Layout */
+.profileform-profile-header {
+  background: white;
+  padding: 16px 40px;
+  border-bottom: 1px solid #d1d5db;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  height: 70px;
+}
+
+.back-button {
+  position: absolute;
+  left: 40px;
+  background: #2C5AA0;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s ease;
+}
+
+.back-button:hover {
+  background: #1E3D6F;
+}
+
+.profileform-profile-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0;
+  text-align: center;
+}
+
+.profileform-progress-section {
+  position: absolute;
+  right: 40px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.progress-bar {
+  width: 150px;
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #2C5AA0;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #4b5563;
+  min-width: 80px;
+}
+
+/* Main Content Area */
+.profileform-profile-content {
+  flex: 1;
+  margin-top: 70px;
+  padding: 0;
+  background: #f8f9fa;
+  min-height: calc(100vh - 70px);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Alert messages */
+.alert {
+  margin: 20px 40px 0;
+  padding: 12px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  border: 1px solid;
+}
+
+.alert-success {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #166534;
+}
+
+.alert-error {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #dc2626;
+}
+
+/* Form Actions (Save buttons) */
+.profileform-form-actions {
+  background: white;
+  padding: 20px 24px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 40px 20px;
+  border-radius: 0 0 8px 8px;
+}
+
+.primary-button {
+  background: #2C5AA0;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.primary-button:hover {
+  background: #1E3D6F;
+}
+
+.primary-button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.secondary-button {
+  background: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.secondary-button:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+/* Loading State */
+.profile-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: #f8f9fa;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e5e7eb;
+  border-top: 3px solid #2C5AA0;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ========== RESPONSIVE DESIGN ========== */
+
+/* Tablets (768px - 1023px) */
+@media (max-width: 1023px) and (min-width: 768px) {
+ .profileform-profile-header {
+    padding: 16px 30px;
+  }
+  
+  .back-button {
+    left: 30px;
+  }
+  
+  .profileform-progress-section {
+    right: 30px;
+  }
+  
+  .alert {
+    margin: 20px 30px 0;
+  }
+  
+  .profileform-form-actions {
+    margin: 0 30px 20px;
+  }
+}
+
+/* Mobile Devices (767px and below) */
+@media (max-width: 767px) {
+ .profileform-profile-header {
+    position: relative;
+    height: auto;
+    padding: 16px 20px;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .back-button {
+    position: static;
+    align-self: flex-start;
+    order: 1;
+  }
+  
+  .profileform-profile-heade h1 {
+    order: 2;
+    font-size: 20px;
+  }
+  
+  .profileform-progress-section {
+    position: static;
+    order: 3;
+    justify-content: center;
+    width: 100%;
+  }
+  
+  .profileform-profile-content {
+    margin-top: 0;
+  }
+  
+  .alert {
+    margin: 15px 20px 0;
+  }
+  
+  .profileform-form-actions {
+    margin: 0 20px 20px;
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+  
+  .profileform-form-actions button {
+    width: 100%;
+  }
+}
+
+/* Small Mobile Devices (480px and below) */
+@media (max-width: 480px) {
+  .profileform-profile-header {
+    padding: 12px 15px;
+  }
+  
+  .profileform-profile-heade h1 {
+    font-size: 18px;
+  }
+  
+  .back-button {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+  
+  .progress-bar {
+    width: 120px;
+  }
+  
+  .progress-text {
+    font-size: 13px;
+    min-width: 70px;
+  }
+  
+  .alert {
+    margin: 10px 15px 0;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+  
+  .profileform-form-actions {
+    margin: 0 15px 15px;
+    padding: 16px;
+  }
+  
+  .primary-button,
+  .secondary-button {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+}
+
+/* Very Small Mobile Devices (320px and below) */
+@media (max-width: 320px) {
+  .profileform-profile-header h1 {
+    font-size: 16px;
+  }
+  
+  .back-button {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  
+  .progress-bar {
+    width: 100px;
+  }
+  
+ .profileform-form-actions {
+    margin: 0 10px 10px;
+    padding: 12px;
+  }
+  
+  .primary-button,
+  .secondary-button {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}

@@ -1,0 +1,311 @@
+/* LanguageSection.css - Dedicated styles for Language section */
+.language-section-component {
+  background: white;
+  margin: 20px 40px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+}
+
+.language-section-component h2 {
+  background: #f8f9fa;
+  margin: 0;
+  padding: 20px 24px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a202c;
+  border-bottom: 1px solid #e5e7eb;
+  border-radius: 8px 8px 0 0;
+}
+
+.language-section-component .section-status {
+  background: #f0f7ff;
+  padding: 12px 24px;
+  font-size: 14px;
+  color: #2C5AA0;
+  font-weight: 500;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.language-section-component .section-status::before {
+  content: "●";
+  color: #2C5AA0;
+  font-size: 16px;
+}
+
+.language-section-component .form-content {
+  padding: 24px;
+  max-width: 100%;
+}
+
+.language-section-component .form-group {
+  margin-bottom: 24px;
+}
+
+.language-section-component .form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #374151;
+  font-size: 14px;
+}
+
+.language-section-component .form-group label.required::after {
+  content: " *";
+  color: #dc2626;
+}
+
+.language-section-component .form-group select,
+.language-section-component .form-group input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  background: white;
+  box-sizing: border-box;
+}
+
+.language-section-component .form-group select:focus,
+.language-section-component .form-group input:focus {
+  outline: none;
+  border-color: #2C5AA0;
+  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+}
+
+.language-section-component .form-group input::placeholder {
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+/* Individual Language Section Styles */
+.language-section-component .language-section {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  border: 1px solid #e5e7eb;
+  position: relative;
+}
+
+.language-section-component .language-section:last-of-type {
+  margin-bottom: 0;
+}
+
+/* Checkbox Group Styles */
+.language-section-component .checkbox-group.horizontal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.language-section-component .checkbox-group.horizontal label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: normal;
+  cursor: pointer;
+  margin-bottom: 0;
+  padding: 4px 0;
+  font-size: 13px;
+}
+
+.language-section-component .checkbox-group.horizontal input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+}
+
+/* Button Styles */
+.language-section-component .add-button {
+  background: transparent;
+  color: #2C5AA0;
+  border: 1px dashed #2C5AA0;
+  padding: 10px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+.language-section-component .add-button:hover {
+  background: #f0f7ff;
+  border-style: solid;
+}
+
+.language-section-component .remove-button {
+  background: transparent;
+  color: #dc2626;
+  border: 1px solid #dc2626;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+  margin-top: 12px;
+}
+
+.language-section-component .remove-button:hover {
+  background: #fef2f2;
+}
+
+/* Responsive Design for Language Section */
+@media (max-width: 1199px) and (min-width: 768px) {
+  .language-section-component {
+    margin: 20px 30px;
+  }
+}
+
+@media (max-width: 767px) {
+  .language-section-component {
+    margin: 15px 20px;
+    border-radius: 6px;
+  }
+  
+  .language-section-component .form-content {
+    padding: 20px;
+  }
+  
+  .language-section-component h2 {
+    padding: 16px 20px;
+    font-size: 18px;
+  }
+  
+  .language-section-component .section-status {
+    padding: 10px 20px;
+  }
+  
+  .language-section-component .language-section {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  
+  .language-section-component .checkbox-group.horizontal {
+    gap: 12px;
+  }
+  
+  .language-section-component .checkbox-group.horizontal label {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .language-section-component {
+    margin: 10px 15px;
+  }
+  
+  .language-section-component .form-content {
+    padding: 16px;
+  }
+  
+  .language-section-component .language-section {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  
+  .language-section-component .checkbox-group.horizontal {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .language-section-component .add-button {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  
+  .language-section-component .remove-button {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+}
+/* Existing styles... keep your current ones and ADD these: */
+
+.language-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.language-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.language-input:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
+.language-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  transition: background-color 0.15s;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.dropdown-item:hover {
+  background-color: #f5f5f5;
+}
+
+.dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.dropdown-item.disabled {
+  color: #999;
+  cursor: not-allowed;
+  background-color: #fafafa;
+}
+
+.dropdown-item.disabled:hover {
+  background-color: #fafafa;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .language-dropdown {
+    max-height: 150px;
+  }
+
+  .checkbox-group.horizontal {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .checkbox-group.horizontal label {
+    min-width: calc(50% - 6px);
+  }
+}

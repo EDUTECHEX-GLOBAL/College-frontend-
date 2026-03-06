@@ -1,0 +1,856 @@
+/* ProcessAdminDashboard.css */
+
+.process-admin-dashboard {
+  display: flex;
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+
+/* Loading */
+.process-admin-dashboard .loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.process-admin-dashboard .loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Sidebar - EXACTLY LIKE REFERENCE */
+.process-admin-dashboard .sidebar {
+  width: 250px;
+  background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%);
+  color: white;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.process-admin-dashboard .sidebar.closed {
+  width: 70px;
+}
+
+.process-admin-dashboard .sidebar-header {
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.process-admin-dashboard .sidebar-header h2 {
+  font-size: 1.2rem;
+  white-space: nowrap;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.process-admin-dashboard .sidebar-toggle {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 8px;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s;
+}
+
+.process-admin-dashboard .sidebar-toggle:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.process-admin-dashboard .sidebar-menu {
+  list-style: none;
+  padding: 20px 0;
+  flex: 1;
+}
+
+.process-admin-dashboard .sidebar-menu li {
+  padding: 15px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: all 0.3s;
+  white-space: nowrap;
+  margin: 5px 10px;
+  border-radius: 8px;
+}
+
+.process-admin-dashboard .sidebar-menu li:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(5px);
+}
+
+.process-admin-dashboard .sidebar-menu li.active {
+  background: linear-gradient(90deg, #4a90e2 0%, #5fa3ff 100%);
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+  border-left: 4px solid #ffffff;
+}
+
+.process-admin-dashboard .menu-icon {
+  font-size: 1.2rem;
+  min-width: 24px;
+}
+
+.process-admin-dashboard .sidebar-footer {
+  padding: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.process-admin-dashboard .logout-btn-sidebar {
+  width: 100%;
+  background: linear-gradient(90deg, #ff6b6b 0%, #ff8e8e 100%);
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
+}
+
+.process-admin-dashboard .logout-btn-sidebar:hover {
+  background: linear-gradient(90deg, #ff5252 0%, #ff7b7b 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 107, 107, 0.3);
+}
+
+.sidebar.closed .logout-btn-sidebar span:last-child {
+  display: none;
+}
+
+/* Main Content */
+.process-admin-dashboard .main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #f5f7fa;
+}
+
+/* Navbar */
+.process-admin-dashboard .navbar {
+  background: white;
+  padding: 15px 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid #eef2f7;
+}
+
+.process-admin-dashboard .navbar-left h1 {
+  font-size: 1.5rem;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.process-admin-dashboard .navbar-center {
+  flex: 1;
+  max-width: 400px;
+  margin: 0 30px;
+}
+
+.process-admin-dashboard .search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.process-admin-dashboard .search-input {
+  width: 100%;
+  padding: 12px 45px 12px 15px;
+  border: 1px solid #e1e8ed;
+  border-radius: 25px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.3s;
+  background: #f8fafc;
+  color: #2c3e50;
+}
+
+.process-admin-dashboard .search-input:focus {
+  border-color: #4a90e2;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
+.process-admin-dashboard .search-btn {
+  position: absolute;
+  right: 15px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #667eea;
+  font-size: 1rem;
+  transition: color 0.3s;
+}
+
+.process-admin-dashboard .search-btn:hover {
+  color: #4a73e8;
+}
+
+.process-admin-dashboard .navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.process-admin-dashboard .admin-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 15px;
+  background: #f8fafc;
+  border-radius: 25px;
+  border: 1px solid #e1e8ed;
+}
+
+.process-admin-dashboard .profile-icon {
+  font-size: 1.2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.process-admin-dashboard .profile-name {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.process-admin-dashboard .refresh-btn {
+  background: linear-gradient(90deg, #3498db 0%, #36d1dc 100%);
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+.process-admin-dashboard .refresh-btn:hover {
+  background: linear-gradient(90deg, #2980b9 0%, #2ab7d9 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(52, 152, 219, 0.3);
+}
+
+/* Content Area */
+.process-admin-dashboard .content-area {
+  flex: 1;
+  padding: 30px;
+  overflow-y: auto;
+  background: #f5f7fa;
+}
+
+/* Dashboard Content */
+.process-admin-dashboard .dashboard-content-area {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.process-admin-dashboard .welcome-section {
+  margin-bottom: 30px;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-left: 4px solid #4a90e2;
+}
+
+.process-admin-dashboard .welcome-section h2 {
+  font-size: 2rem;
+  color: #2c3e50;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.process-admin-dashboard .welcome-section p {
+  color: #7f8c8d;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* Stats Grid */
+.process-admin-dashboard .stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 25px;
+  margin-bottom: 40px;
+}
+
+.process-admin-dashboard .stat-card {
+  background: white;
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
+  display: flex;
+  gap: 20px;
+  transition: all 0.3s ease;
+  border: 1px solid #f0f4f8;
+  position: relative;
+  overflow: hidden;
+}
+
+.process-admin-dashboard .stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(74, 144, 226, 0.15);
+}
+
+.process-admin-dashboard .stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #3498db 0%, #2ecc71 100%);
+  border-radius: 15px 15px 0 0;
+}
+
+.process-admin-dashboard .stat-icon {
+  width: 70px;
+  height: 70px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  color: #1976d2;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.process-admin-dashboard .stat-content {
+  flex: 1;
+}
+
+.process-admin-dashboard .stat-content h3 {
+  font-size: 0.85rem;
+  color: #7f8c8d;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.process-admin-dashboard .stat-value {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 8px;
+  line-height: 1;
+}
+
+.process-admin-dashboard .stat-subvalue {
+  font-size: 0.9rem;
+  color: #95a5a6;
+  line-height: 1.4;
+}
+
+/* Chart Placeholder */
+.process-admin-dashboard .chart-placeholder {
+  background: white;
+  border-radius: 15px;
+  padding: 60px;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
+  border: 1px solid #f0f4f8;
+  color: #95a5a6;
+}
+
+.process-admin-dashboard .placeholder-section {
+  background: white;
+  border-radius: 15px;
+  padding: 60px;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
+  border: 1px solid #f0f4f8;
+}
+
+.process-admin-dashboard .placeholder-section i {
+  font-size: 3rem;
+  color: #bdc3c7;
+  margin-bottom: 20px;
+}
+
+.process-admin-dashboard .placeholder-section h3 {
+  font-size: 1.5rem;
+  color: #2c3e50;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.process-admin-dashboard .placeholder-section p {
+  color: #95a5a6;
+}
+
+/* Footer */
+.process-admin-dashboard .dashboard-footer {
+  background: white;
+  padding: 25px 30px;
+  text-align: center;
+  border-top: 1px solid #eef2f7;
+  color: #95a5a6;
+  font-size: 0.9rem;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .process-admin-dashboard {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    padding: 10px;
+    height: auto;
+  }
+  
+  .sidebar.closed {
+    height: 70px;
+  }
+  
+  .sidebar-header {
+    flex-direction: row;
+    gap: 10px;
+    padding: 15px;
+  }
+  
+  .sidebar-menu {
+    display: flex;
+    padding: 0;
+    justify-content: center;
+    overflow-x: auto;
+  }
+  
+  .sidebar-menu li {
+    padding: 10px 15px;
+    white-space: nowrap;
+  }
+  
+  .navbar {
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px;
+  }
+  
+  .navbar-center {
+    width: 100%;
+    margin: 0;
+  }
+  
+  .content-area {
+    padding: 20px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* Kansus University parent menu item */
+.kansus-parent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.kansus-parent span {
+  flex: 1;
+}
+
+.kansus-parent .dropdown-arrow {
+  flex: 0;
+  margin-right: 10px;
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.kansus-parent.expanded {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Sub-menu styling */
+.sub-menu {
+  list-style: none;
+  padding-left: 20px;
+  margin: 5px 0;
+}
+
+.sub-menu li {
+  padding: 10px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: all 0.3s;
+  border-radius: 8px;
+  margin: 5px 10px;
+}
+
+.sub-menu li:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(5px);
+}
+
+.sub-menu li.active {
+  background: linear-gradient(90deg, #4a90e2 0%, #5fa3ff 100%);
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+  border-left: 4px solid #ffffff;
+}
+
+.sub-menu .sub-icon {
+  font-size: 1rem;
+  margin-left: 10px;
+}
+
+/* When sidebar is closed, hide sub-menu */
+.sidebar.closed .sub-menu {
+  display: none;
+}
+/* Download PDF button */
+.process-admin-dashboard .download-pdf-btn {
+  padding: 10px 20px;
+  background: linear-gradient(90deg, #27ae60 0%, #2ecc71 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s;
+}
+
+.process-admin-dashboard .download-pdf-btn:hover {
+  background: linear-gradient(90deg, #229954 0%, #27ae60 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(46, 204, 113, 0.3);
+}
+
+.process-admin-dashboard .download-pdf-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Email button styling */
+.process-admin-dashboard .email-doc-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.3s;
+  background: linear-gradient(90deg, #3498db 0%, #2980b9 100%);
+  color: white;
+}
+
+.process-admin-dashboard .email-doc-btn:hover {
+  background: linear-gradient(90deg, #2980b9 0%, #1f6a9a 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(52, 152, 219, 0.2);
+}
+
+.process-admin-dashboard .email-doc-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Modal actions container */
+.process-admin-dashboard .modal-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #eef2f7;
+}
+/* Add these styles to your processAdminDashboard.css file */
+
+/* Application ID Badge */
+.application-id-badge {
+  background: linear-gradient(135deg, #0033a0 0%, #002b8a 100%);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  display: inline-block;
+  box-shadow: 0 2px 5px rgba(0, 51, 160, 0.3);
+}
+
+/* Days Badge */
+.days-badge {
+  font-size: 0.7rem;
+  color: #666;
+  margin-top: 4px;
+}
+
+/* Priority High Indicator */
+.priority-high {
+  margin-left: 5px;
+  color: #ff5722;
+  font-size: 1.2rem;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+/* Application Details Modal */
+.application-details-modal {
+  background: white;
+  border-radius: 15px;
+  width: 800px;
+  max-width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+/* Details Sections */
+.details-section {
+  margin-bottom: 25px;
+  padding: 15px 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+}
+
+.details-section h4 {
+  margin: 0 0 15px 0;
+  color: #0033a0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-bottom: 2px solid #e0e7ff;
+  padding-bottom: 8px;
+}
+
+/* Info Grid */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.info-row {
+  display: flex;
+  flex-direction: column;
+}
+
+.info-row.full-width {
+  grid-column: 1 / -1;
+}
+
+.info-label {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.info-value {
+  font-size: 1rem;
+  color: #333;
+  font-weight: 500;
+}
+
+/* Status Update Controls */
+.status-update-controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.status-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 25px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: white;
+}
+
+.status-btn.submitted {
+  background: #2196f3;
+}
+
+.status-btn.under-review {
+  background: #ff9800;
+}
+
+.status-btn.accepted {
+  background: #4caf50;
+}
+
+.status-btn.rejected {
+  background: #f44336;
+}
+
+.status-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.status-btn:active {
+  transform: translateY(0);
+}
+
+/* Documents Summary */
+.processadmindashboard-documents-summary {
+  display: flex;
+  gap: 20px;
+  padding: 10px;
+  background: white;
+  border-radius: 8px;
+}
+
+.processadmin-document-category {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 10px;
+  background: #e3f2fd;
+  border-radius: 20px;
+}
+
+.category-label {
+  font-size: 0.9rem;
+  color: #1976d2;
+}
+
+.category-count {
+  background: #1976d2;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Stats Grid Enhancement */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 20px rgba(0, 51, 160, 0.1);
+}
+
+.stat-icon {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #0033a0 0%, #002b8a 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.8rem;
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-content h3 {
+  margin: 0 0 5px 0;
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #333;
+  line-height: 1.2;
+}
+
+/* Refresh Button Small */
+.refresh-btn-small {
+  background: #0033a0;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 15px;
+  transition: all 0.3s ease;
+}
+
+.refresh-btn-small:hover {
+  background: #002b8a;
+  transform: scale(1.05);
+}

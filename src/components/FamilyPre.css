@@ -1,0 +1,189 @@
+/* src/components/FamilyPreview.css */
+
+.family-preview-container {
+  background: white;
+  border-radius: 8px;
+  padding: 32px;
+  margin: 20px 40px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.family-preview-header {
+  margin-bottom: 32px;
+  text-align: center;
+  padding-bottom: 24px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.family-preview-header h2 {
+  font-size: 28px;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0 0 8px 0;
+}
+
+.family-preview-header p {
+  color: #6b7280;
+  font-size: 15px;
+  margin: 0;
+}
+
+.family-preview-section {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.family-preview-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.family-preview-section-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+}
+
+.family-edit-btn {
+  background: #2C5AA0;
+  color: white;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.2s ease;
+}
+
+.family-edit-btn:hover {
+  background: #1E3D6F;
+}
+
+.family-preview-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.family-preview-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 8px 0;
+}
+
+.family-preview-label {
+  font-weight: 500;
+  color: #374151;
+  font-size: 14px;
+  min-width: 180px;
+}
+
+.family-preview-value {
+  color: #6b7280;
+  font-size: 14px;
+  text-align: right;
+  flex: 1;
+}
+
+.family-preview-subitem {
+  padding: 8px 12px;
+  background: white;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #374151;
+}
+
+.family-preview-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 2px solid #e5e7eb;
+}
+
+.family-back-btn,
+.family-submit-btn {
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.family-back-btn {
+  background: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.family-back-btn:hover:not(:disabled) {
+  background: #f3f4f6;
+}
+
+.family-submit-btn {
+  background: #16a34a;
+  color: white;
+  flex: 1;
+}
+
+.family-submit-btn:hover:not(:disabled) {
+  background: #15803d;
+}
+
+.family-back-btn:disabled,
+.family-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .family-preview-container {
+    margin: 15px 20px;
+    padding: 24px;
+  }
+
+  .family-preview-item {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .family-preview-label {
+    min-width: auto;
+  }
+
+  .family-preview-value {
+    text-align: left;
+  }
+
+  .family-preview-actions {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .family-preview-container {
+    margin: 10px 15px;
+    padding: 20px;
+  }
+
+  .family-preview-header h2 {
+    font-size: 24px;
+  }
+
+  .family-preview-section {
+    padding: 16px;
+  }
+}

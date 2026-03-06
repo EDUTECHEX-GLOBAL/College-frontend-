@@ -1,0 +1,490 @@
+/* =========================================
+   FirstContacts Form - Common App Professional Style
+   ========================================= */
+
+.firstcontacts-container {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+  color: #1a1a1a;
+}
+
+/* =============================
+   Header - Common App Style
+   ============================= */
+
+.firstcontacts-header {
+  background: white;
+  border-bottom: 1px solid #d1d5db;
+  padding: 0;
+}
+
+.firstcontacts-header-nav {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px 24px 0 24px;
+}
+
+.firstcontacts-back-button {
+  background: none;
+  border: none;
+  color: #2563eb;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 0;
+  cursor: pointer;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.firstcontacts-back-button:hover {
+  color: #1d4ed8;
+}
+
+.firstcontacts-header-info {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 24px 32px 24px;
+}
+
+.firstcontacts-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+}
+
+.firstcontacts-description {
+  font-size: 16px;
+  color: #6b7280;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* =============================
+   Main Content - Professional Layout
+   ============================= */
+
+.firstcontacts-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+/* =============================
+   Progress Bar - Common App Style
+   ============================= */
+
+.firstcontacts-progress {
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.firstcontacts-progress-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.firstcontacts-progress-bar {
+  flex: 1;
+  height: 8px;
+  background-color: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.firstcontacts-progress-fill {
+  height: 100%;
+  background: #2563eb;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* =============================
+   Form Content Section
+   ============================= */
+
+.firstcontacts-form-section {
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.firstcontacts-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  padding: 24px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* =============================
+   Question Cards - Professional Style
+   ============================= */
+
+.firstcontacts-question-card {
+  padding: 24px;
+  border-bottom: 1px solid #e5e7eb;
+  background: white;
+}
+
+.firstcontacts-question-card:last-child {
+  border-bottom: none;
+}
+
+.firstcontacts-question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.firstcontacts-question-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.firstcontacts-question-required {
+  color: #dc2626;
+  font-size: 14px;
+  font-weight: 500;
+  margin-left: 12px;
+  white-space: nowrap;
+}
+
+/* =============================
+   Radio Groups - Professional Style
+   ============================= */
+
+.firstcontacts-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.firstcontacts-radio-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 8px 0;
+}
+
+.firstcontacts-radio-input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #2563eb;
+}
+
+.firstcontacts-radio-label {
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+/* =============================
+   Input Groups for Social Media Handles
+   ============================= */
+
+.firstcontacts-input-group {
+  margin: 16px 0;
+  padding-left: 28px;
+}
+
+.firstcontacts-input-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.firstcontacts-text-input {
+  width: 100%;
+  max-width: 400px;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  background: white;
+  color: #111827;
+  transition: all 0.2s ease;
+}
+
+.firstcontacts-text-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.firstcontacts-text-input:hover {
+  border-color: #9ca3af;
+}
+
+.firstcontacts-text-input::placeholder {
+  color: #9ca3af;
+}
+
+/* =============================
+   Clear Answer Button
+   ============================= */
+
+.firstcontacts-clear-answer-button {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-top: 8px;
+  text-decoration: underline;
+}
+
+.firstcontacts-clear-answer-button:hover {
+  color: #374151;
+}
+
+/* =============================
+   Action Buttons - Common App Style
+   ============================= */
+
+.firstcontacts-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+  padding: 24px;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  justify-content: flex-end;
+}
+
+.firstcontacts-primary-button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+  height: 40px;
+}
+
+.firstcontacts-primary-button:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.firstcontacts-primary-button:active {
+  transform: translateY(0);
+}
+
+.firstcontacts-secondary-button {
+  background: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+  height: 40px;
+}
+
+.firstcontacts-secondary-button:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+  color: #111827;
+}
+
+/* =============================
+   Loading State
+   ============================= */
+
+.firstcontacts-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.firstcontacts-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #f3f4f6;
+  border-top: 3px solid #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* =============================
+   Responsive Design
+   ============================= */
+
+@media (max-width: 768px) {
+  .firstcontacts-header-nav,
+  .firstcontacts-header-info {
+    padding: 20px 16px;
+  }
+
+  .firstcontacts-content {
+    padding: 24px 16px;
+  }
+
+  .firstcontacts-question-card {
+    padding: 20px 16px;
+  }
+
+  .firstcontacts-section-title {
+    padding: 20px 16px;
+    font-size: 16px;
+  }
+
+  .firstcontacts-question-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .firstcontacts-question-required {
+    margin-left: 0;
+  }
+
+  .firstcontacts-actions {
+    flex-direction: column-reverse;
+    padding: 20px 16px;
+  }
+
+  .firstcontacts-primary-button,
+  .firstcontacts-secondary-button {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .firstcontacts-progress {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .firstcontacts-progress-bar {
+    width: 100%;
+  }
+
+  .firstcontacts-input-group {
+    padding-left: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .firstcontacts-content {
+    padding: 16px;
+  }
+
+  .firstcontacts-title {
+    font-size: 24px;
+  }
+
+  .firstcontacts-text-input {
+    max-width: 100%;
+  }
+}
+
+/* =============================
+   Focus States for Accessibility
+   ============================= */
+
+.firstcontacts-radio-input:focus,
+.firstcontacts-text-input:focus,
+.firstcontacts-primary-button:focus,
+.firstcontacts-secondary-button:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* =============================
+   Enhanced Visual Improvements
+   ============================= */
+
+.firstcontacts-question-card {
+  transition: background-color 0.2s ease;
+}
+
+.firstcontacts-question-card:hover {
+  background: #fafafa;
+}
+
+/* =============================
+   Button Group Alignment
+   ============================= */
+
+.firstcontacts-actions {
+  border-radius: 0 0 8px 8px;
+}
+
+/* =============================
+   Improved Typography
+   ============================= */
+
+.firstcontacts-question-title {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.firstcontacts-radio-label {
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* =============================
+   Professional Spacing
+   ============================= */
+
+.firstcontacts-form-section {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.firstcontacts-progress {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
