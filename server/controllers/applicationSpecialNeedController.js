@@ -236,3 +236,39 @@ export const verifySpecialNeeds = async (req, res) => {
     });
   }
 };
+/* =====================================================
+   ADMIN / PROCESS-ADMIN — GET ALL SPECIAL NEEDS
+===================================================== */
+export const getAllSpecialNeeds = async (req, res) => {
+  try {
+    const { page = 1, limit = 20, hasSpecialNeeds, status } = req.query;
+
+    const query = {};
+    if (hasSpecialNeeds !== undefined) query.hasSpecialNeeds = hasSpecialNeeds;
+    if (status !== undefined) query.status = status;
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const data = await ApplicationSpecialNeed.find(query)
+      .populate("studentId", "email firstName lastName")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const total = await ApplicationSpecialNeed.countDocuments(query);
+
+    res.status(200).json({
+      success: true,
+      data,
+      pagination: {
+        total,
+        page: parseInt(page),
+        pages: Math.ceil(total / parseInt(limit)),
+        limit: parseInt(limit),
+      },
+    });
+  } catch (error) {
+    console.error("❌ Get All Special Needs Error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};

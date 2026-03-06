@@ -5,31 +5,41 @@ import {
     uploadCertificate,
     deleteCertificate,
     getCompletionStatus,
-    deleteEQHE
+    deleteEQHE,
+    getAllEQHE,  // ← add this export to applicationLanguageController.js
 } from '../controllers/applicationLanguageController.js';
-import auth from '../middleware/authMiddleware.js'; // Your auth middleware
+import auth from '../middleware/authMiddleware.js';
+import { protectProcessAdmin } from '../middleware/processAdminAuth.js';
 
 const router = express.Router();
 
-// Apply authentication middleware to all routes
+/* =====================================================
+   ADMIN ROUTES (before auth middleware)
+===================================================== */
+
+/**
+ * @route   GET /api/application/language/admin/all
+ * @desc    Get all EQHE records for admin dashboard
+ * @access  Private/Admin
+ */
+router.get('/admin/all', auth, getAllEQHE);
+
+/**
+ * @route   GET /api/application/language/process-admin/all
+ * @desc    Get all EQHE records for process admin dashboard
+ * @access  Private/ProcessAdmin
+ */
+router.get('/process-admin/all', protectProcessAdmin, getAllEQHE);
+
+/* =====================================================
+   STUDENT ROUTES
+===================================================== */
 router.use(auth);
 
 /**
  * @route   POST /api/application/language/student/:studentId/eqhe
  * @desc    Create or update entrance qualification data
  * @access  Private
- * @body    {
- *              eqheDate: Date,
- *              eqheCity: String,
- *              eqheCountry: String (required),
- *              eqheOriginalTitle: String (required),
- *              hasAnotherEQHE: Boolean,
- *              anotherEqheDate: Date,
- *              anotherEqheCity: String,
- *              anotherEqheCountry: String,
- *              anotherEqheOriginalTitle: String
- *          }
- * @returns {Object} Success message and saved data
  */
 router.post('/student/:studentId/eqhe', createOrUpdateEQHE);
 
@@ -37,7 +47,6 @@ router.post('/student/:studentId/eqhe', createOrUpdateEQHE);
  * @route   GET /api/application/language/student/:studentId/eqhe
  * @desc    Get entrance qualification data by student ID
  * @access  Private
- * @returns {Object} Entrance qualification data with file URLs
  */
 router.get('/student/:studentId/eqhe', getEQHEByStudentId);
 
@@ -45,20 +54,13 @@ router.get('/student/:studentId/eqhe', getEQHEByStudentId);
  * @route   POST /api/application/language/student/:studentId/eqhe/certificate
  * @desc    Upload EQHE certificate
  * @access  Private
- * @body    FormData with:
- *              - eqheCertificate: File (PDF only, max 10MB)
- *              - certificateType: String ('eqheCertificate' or 'anotherEqheCertificate')
- *              - studentId: String
- * @returns {Object} Upload success message and file details
  */
 router.post('/student/:studentId/eqhe/certificate', uploadCertificate);
 
 /**
  * @route   DELETE /api/application/language/student/:studentId/eqhe/certificate/:certificateType
- * @desc    Delete specific certificate (eqheCertificate or anotherEqheCertificate)
+ * @desc    Delete specific certificate
  * @access  Private
- * @params  certificateType: String ('eqheCertificate' or 'anotherEqheCertificate')
- * @returns {Object} Success message
  */
 router.delete('/student/:studentId/eqhe/certificate/:certificateType', deleteCertificate);
 
@@ -66,7 +68,6 @@ router.delete('/student/:studentId/eqhe/certificate/:certificateType', deleteCer
  * @route   GET /api/application/language/student/:studentId/eqhe/status
  * @desc    Get completion status of entrance qualification section
  * @access  Private
- * @returns {Object} Completion percentage and status
  */
 router.get('/student/:studentId/eqhe/status', getCompletionStatus);
 
@@ -74,7 +75,6 @@ router.get('/student/:studentId/eqhe/status', getCompletionStatus);
  * @route   DELETE /api/application/language/student/:studentId/eqhe
  * @desc    Delete all entrance qualification data including files
  * @access  Private
- * @returns {Object} Success message
  */
 router.delete('/student/:studentId/eqhe', deleteEQHE);
 

@@ -461,3 +461,45 @@ export const deleteEQHE = async (req, res) => {
         });
     }
 };
+/**
+ * ADMIN / PROCESS-ADMIN — GET ALL EQHE RECORDS
+ * @route GET /api/application/language/admin/all
+ * @route GET /api/application/language/process-admin/all
+ * @access Private/Admin | Private/ProcessAdmin
+ */
+export const getAllEQHE = async (req, res) => {
+    try {
+        const { page = 1, limit = 20, isCompleted } = req.query;
+
+        const query = {};
+        if (isCompleted !== undefined) query.isCompleted = isCompleted === "true";
+
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        const data = await ApplicationLanguage.find(query)
+            .populate("studentId", "email firstName lastName")
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
+
+        const total = await ApplicationLanguage.countDocuments(query);
+
+        res.status(200).json({
+            success: true,
+            data,
+            pagination: {
+                total,
+                page:  parseInt(page),
+                pages: Math.ceil(total / parseInt(limit)),
+                limit: parseInt(limit),
+            },
+        });
+    } catch (error) {
+        console.error("❌ Error fetching all EQHE records:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch all entrance qualification records",
+            error: error.message,
+        });
+    }
+};

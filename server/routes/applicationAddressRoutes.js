@@ -8,12 +8,12 @@ import {
   getAllAddressInfo,
 } from "../controllers/applicationAddressController.js";
 import { createUploader, ensureDirectoryExists } from "../middleware/uploadMiddleware.js";
+import { protectProcessAdmin } from "../middleware/processAdminAuth.js";
 
 const router = express.Router();
 
 /* =====================================================
    ENSURE NATIONAL ID UPLOAD FOLDER EXISTS
-   This ensures the folder exists before any upload
 ===================================================== */
 ensureDirectoryExists("nationalId");
 
@@ -22,7 +22,17 @@ ensureDirectoryExists("nationalId");
    - Max size: 10MB
    - Accepts: PNG, JPG, JPEG, PDF
 ===================================================== */
-const nationalIdUpload = createUploader("nationalId", 10); // 10MB max
+const nationalIdUpload = createUploader("nationalId", 10);
+
+/* =====================================================
+   ADMIN ROUTES (before authMiddleware)
+===================================================== */
+
+// GET all addresses (regular admin)
+router.get("/admin/all", authMiddleware, getAllAddressInfo);
+
+// GET all addresses (process admin)
+router.get("/process-admin/all", protectProcessAdmin, getAllAddressInfo);
 
 /* =====================================================
    PROTECTED ROUTES
@@ -43,19 +53,12 @@ router.post("/", saveAddressInfo);
 // POST upload National ID
 router.post(
   "/upload/nationalId",
-  nationalIdUpload.single("file"), // Multer handles file validation & upload
+  nationalIdUpload.single("file"),
   uploadNationalId
 );
 
 // DELETE remove National ID
 router.delete("/files/nationalId", removeNationalId);
-
-/* =====================================================
-   ADMIN ROUTES
-===================================================== */
-
-// GET all addresses (admin only)
-router.get("/admin/all", getAllAddressInfo);
 
 /* =====================================================
    EXPORT ROUTER

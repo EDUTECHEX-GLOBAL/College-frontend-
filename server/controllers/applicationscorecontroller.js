@@ -184,3 +184,44 @@ export const deleteApplicationScore = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+/* =====================================================
+   ADMIN / PROCESS-ADMIN — GET ALL SCORES
+===================================================== */
+export const getAllApplicationScores = async (req, res) => {
+  try {
+    const { page = 1, limit = 20 } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const scores = await ApplicationScore.find()
+      .populate("studentId", "email firstName lastName")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const total = await ApplicationScore.countDocuments();
+
+    // Return each score in the frontend-friendly shape
+    const data = scores.map((score) => {
+      const { gradeSubjects, subjectMarks } = parseGradePayload(score);
+      return {
+        ...score.toObject(),
+        gradeSubjects,
+        subjectMarks,
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      data,
+      pagination: {
+        total,
+        page: parseInt(page),
+        pages: Math.ceil(total / parseInt(limit)),
+        limit: parseInt(limit),
+      },
+    });
+  } catch (error) {
+    console.error("❌ Get All Scores Error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};

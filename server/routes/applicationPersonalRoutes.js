@@ -1,5 +1,3 @@
-// server/routes/applicationPersonalRoutes.js
-
 import express from "express";
 import {
   getPersonalInfo,
@@ -13,6 +11,7 @@ import {
 } from "../controllers/applicationPersonalController.js";
 
 import authMiddleware from "../middleware/authMiddleware.js";
+import { protectProcessAdmin } from "../middleware/processAdminAuth.js";
 import {
   passportUpload,
   photographUpload,
@@ -21,7 +20,20 @@ import {
 const router = express.Router();
 
 /* =====================================================
-   ALL ROUTES REQUIRE AUTH
+   ADMIN ROUTES (before authMiddleware)
+===================================================== */
+
+// GET all personal info (regular admin)
+router.get("/admin/all", authMiddleware, getAllPersonalInfo);
+
+// GET all personal info (process admin)
+router.get("/process-admin/all", protectProcessAdmin, getAllPersonalInfo);
+
+// PUT verify personal info (regular admin)
+router.put("/admin/verify/:userId", authMiddleware, verifyPersonalInfo);
+
+/* =====================================================
+   ALL ROUTES BELOW REQUIRE AUTH
 ===================================================== */
 router.use(authMiddleware);
 
@@ -33,8 +45,7 @@ router.post("/", savePersonalInfo);
 router.get("/files/check", checkFilesExist);
 
 /* =====================================================
-   DYNAMIC FILE UPLOAD ROUTE (FIXED VERSION)
-   Frontend: /upload/passport OR /upload/photograph
+   DYNAMIC FILE UPLOAD ROUTE
 ===================================================== */
 router.post(
   "/upload/:fileType",
@@ -66,12 +77,6 @@ router.delete("/files/:fileType", removeFile);
    GET FILE
 ===================================================== */
 router.get("/files/:fileKey", getFile);
-
-/* =====================================================
-   ADMIN ROUTES
-===================================================== */
-router.put("/admin/verify/:userId", verifyPersonalInfo);
-router.get("/admin/all", getAllPersonalInfo);
 
 /* =====================================================
    EXPORT

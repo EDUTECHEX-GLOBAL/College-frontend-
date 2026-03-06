@@ -1,12 +1,13 @@
-// routes/applicationEducationRoutes.js
 import express from "express";
 import authMiddleware from "../middleware/authMiddleware.js";
+import { protectProcessAdmin } from "../middleware/processAdminAuth.js";
 
 import {
   getEducationInfo,
   saveEducationInfo,
   uploadTranscript,
   removeTranscript,
+  getAllEducationInfo,
 } from "../controllers/applicationEducationController.js";
 
 import {
@@ -19,7 +20,6 @@ const router = express.Router();
 
 /* =====================================================
    ENSURE EDUCATION UPLOAD DIRECTORY EXISTS
-   (MUST match uploadMiddleware.js folder name)
 ===================================================== */
 ensureDirectoryExists("education");
 
@@ -31,8 +31,7 @@ ensureDirectoryExists("education");
 const transcriptUpload = createUploader("education", 5);
 
 /* =====================================================
-   OPTIONAL DEBUG LOGGER (SAFE)
-   Can be removed in production
+   OPTIONAL DEBUG LOGGER
 ===================================================== */
 const logUploadRequest = (req, res, next) => {
   console.log("📁 Transcript upload request");
@@ -42,21 +41,26 @@ const logUploadRequest = (req, res, next) => {
 };
 
 /* =====================================================
+   ADMIN ROUTES (before authMiddleware)
+===================================================== */
+
+// GET all education records (regular admin)
+router.get("/admin/all", authMiddleware, getAllEducationInfo);
+
+// GET all education records (process admin)
+router.get("/process-admin/all", protectProcessAdmin, getAllEducationInfo);
+
+/* =====================================================
    AUTHENTICATION MIDDLEWARE
 ===================================================== */
 router.use(authMiddleware);
 
 /* =====================================================
-   GET EDUCATION INFO (CURRENT USER)
+   USER ROUTES
 ===================================================== */
+
 router.get("/", getEducationInfo);
 
-/* =====================================================
-   UPLOAD TRANSCRIPT
-   IMPORTANT:
-   - Must be BEFORE POST "/"
-   - Field name MUST be "file"
-===================================================== */
 router.post(
   "/upload/transcript",
   logUploadRequest,
@@ -65,21 +69,14 @@ router.post(
   uploadTranscript
 );
 
-/* =====================================================
-   SAVE OR UPDATE EDUCATION
-===================================================== */
 router.post("/", saveEducationInfo);
 
-/* =====================================================
-   REMOVE TRANSCRIPT
-===================================================== */
 router.delete("/remove/transcript", removeTranscript);
 
 /* =====================================================
    CENTRALIZED ERROR HANDLER (MULTER + VALIDATION)
 ===================================================== */
 router.use((err, req, res, next) => {
-  // Multer-specific errors
   if (err && err.name === "MulterError") {
     console.error("❌ Multer Error:", err);
 
@@ -96,7 +93,6 @@ router.use((err, req, res, next) => {
     });
   }
 
-  // Validation / file filter errors
   if (err && err.message) {
     return res.status(400).json({
       success: false,

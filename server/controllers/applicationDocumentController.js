@@ -97,10 +97,13 @@ const buildEmptyDocuments = () => {
 };
 
 /* =====================================================
-   HELPER — check if user is admin
+   HELPER — check if requester is admin or process admin
+   Supports both authMiddleware (req.user) and
+   protectProcessAdmin (req.processAdmin) patterns
 ===================================================== */
 const isAdmin = (req) =>
-  req.user && (req.user.role === "admin" || req.user.role === "superadmin");
+  (req.user && (req.user.role === "admin" || req.user.role === "superadmin")) ||
+  !!req.processAdmin;
 
 /* =====================================================
    GET DOCUMENTS INFO

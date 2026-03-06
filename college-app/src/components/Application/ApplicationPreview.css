@@ -10,7 +10,7 @@
 }
 
 /* Section Header */
-.section-header {
+.applicationpreview-section-header {
     display: flex;
     align-items: center;
     gap: 12px;
