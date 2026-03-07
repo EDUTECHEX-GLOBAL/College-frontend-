@@ -1,13 +1,20 @@
 // api/axiosInstance.js
-import axios from 'axios';
+// api/axiosInstance.js
+import axios from "axios";
 
-// Create the Axios instance
+// ✅ Safe base URL handling
+const BASE_URL =
+  process.env.REACT_APP_API_BASE_URL ||
+  "https://college-backend-render-1.onrender.com";
+
+console.log("🌐 Axios Base URL:", BASE_URL);
+
 const axiosInstance = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000', // ✅ Added fallback
-  timeout: 15000, // ✅ Increased timeout for testing data (was 10000)
+  baseURL: BASE_URL,
+  timeout: 15000,
   headers: {
-    Accept: 'application/json',
-    'Content-Type': 'application/json', // ✅ Added Content-Type
+    Accept: "application/json",
+    "Content-Type": "application/json",
   },
 });
 
