@@ -10,34 +10,39 @@ import {
   deleteProfile,
   getAllProfiles,
   getProfilesByProgram,
-  getProfileStats
+  getProfileStats,
+  bulkUpdateProfiles,
+  getProfileWithCourses,
+  submitUniversityRequest
 } from '../controllers/userprofilecontroller.js';
 
 const router = express.Router();
 
-// PUBLIC TEST ROUTE - NO AUTH REQUIRED
+// ── PUBLIC TEST ROUTE — no auth required ────────────────────────────────────
 router.get('/test', (req, res) => {
   console.log('✅ Test endpoint hit');
   res.json({
     success: true,
     message: '✅ User profile routes are working',
     timestamp: new Date().toISOString(),
-    headers: req.headers,
     endpoints: {
-      createProfile: 'POST /api/user/profile',
-      getProfile: 'GET /api/user/profile',
-      checkStatus: 'GET /api/user/profile/status',
-      updateImage: 'PATCH /api/user/profile/image',
-      deleteProfile: 'DELETE /api/user/profile',
-      getByEmail: 'GET /api/user/profile/email/:email',
-      adminProfiles: 'GET /api/user/admin/profiles',
-      adminProgram: 'GET /api/user/admin/profiles/program/:program',
-      stats: 'GET /api/user/admin/stats'
+      createProfile:        'POST   /api/user/profile',
+      getProfile:           'GET    /api/user/profile',
+      getProfileWithCourses:'GET    /api/user/profile/courses',
+      checkStatus:          'GET    /api/user/profile/status',
+      updateImage:          'PATCH  /api/user/profile/image',
+      deleteProfile:        'DELETE /api/user/profile',
+      getByEmail:           'GET    /api/user/profile/email/:email',
+      adminProfiles:        'GET    /api/user/admin/profiles',
+      adminProgram:         'GET    /api/user/admin/profiles/program/:program',
+      adminBulkUpdate:      'PUT    /api/user/admin/profiles/bulk',
+      stats:                'GET    /api/user/admin/stats',
+      universityRequest:    'POST   /api/user/university/request'
     }
   });
 });
 
-// Debug route to check auth - requires token
+// ── DEBUG AUTH ROUTE ─────────────────────────────────────────────────────────
 router.get('/debug-auth', authenticateToken, (req, res) => {
   console.log('🔐 Debug Auth - User ID:', req.userId);
   res.json({
@@ -48,17 +53,22 @@ router.get('/debug-auth', authenticateToken, (req, res) => {
   });
 });
 
-// All profile routes require authentication
-router.post('/profile', authenticateToken, createOrUpdateProfile);
-router.get('/profile', authenticateToken, getProfile);
-router.get('/profile/status', authenticateToken, checkProfileStatus);
-router.patch('/profile/image', authenticateToken, updateProfileImage);
-router.delete('/profile', authenticateToken, deleteProfile);
+// ── USER PROFILE ROUTES (require authentication) ─────────────────────────────
+router.post('/profile',             authenticateToken, createOrUpdateProfile);
+router.get('/profile',              authenticateToken, getProfile);
+router.get('/profile/courses',      authenticateToken, getProfileWithCourses);
+router.get('/profile/status',       authenticateToken, checkProfileStatus);
+router.patch('/profile/image',      authenticateToken, updateProfileImage);
+router.delete('/profile',           authenticateToken, deleteProfile);
 router.get('/profile/email/:email', authenticateToken, getProfileByEmail);
 
-// Admin routes
-router.get('/admin/profiles', authenticateToken, getAllProfiles);
-router.get('/admin/profiles/program/:program', authenticateToken, getProfilesByProgram);
-router.get('/admin/stats', authenticateToken, getProfileStats);
+// ── UNIVERSITY REQUEST ROUTE ──────────────────────────────────────────────────
+router.post('/university/request',  authenticateToken, submitUniversityRequest);
+
+// ── ADMIN ROUTES (require authentication) ────────────────────────────────────
+router.get('/admin/profiles',                       authenticateToken, getAllProfiles);
+router.get('/admin/profiles/program/:program',      authenticateToken, getProfilesByProgram);
+router.put('/admin/profiles/bulk',                  authenticateToken, bulkUpdateProfiles);
+router.get('/admin/stats',                          authenticateToken, getProfileStats);
 
 export default router;

@@ -1,10 +1,9 @@
-// server/routes/applicationPreviewRoutes.js
-
 import express from 'express';
 import {
   getApplicationPreview,
   submitApplication,
   saveAgreedToTerms,
+  resendConfirmationEmail
 } from '../controllers/applicationPreviewController.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 
@@ -12,13 +11,16 @@ const router = express.Router();
 
 router.use(authMiddleware);
 
-// GET  /api/application/preview         → full preview with all sections
+// GET preview
 router.get('/', getApplicationPreview);
 
-// PATCH /api/application/preview/terms  → save terms checkbox live
+// Save terms
 router.patch('/terms', saveAgreedToTerms);
 
-// POST /api/application/preview/submit  → final submit
+// Submit application
 router.post('/submit', submitApplication);
+
+// Resend confirmation email
+router.post('/resend-email', resendConfirmationEmail);
 
 export default router;

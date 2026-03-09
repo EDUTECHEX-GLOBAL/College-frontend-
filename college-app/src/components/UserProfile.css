@@ -1,13 +1,13 @@
 /* src/components/UserProfile.css */
 
-/* Main Container */
+/* ─── Main Container ─────────────────────────────────────────────────────── */
 .profile-wrapper {
   min-height: 100vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
 }
 
-/* Loading Screen */
+/* ─── Loading Screen ─────────────────────────────────────────────────────── */
 .loading-screen {
   display: flex;
   flex-direction: column;
@@ -31,11 +31,11 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
+  0%   { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
-/* Header Styles */
+/* ─── Header ─────────────────────────────────────────────────────────────── */
 .userprofile-profile-header {
   background: white;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
@@ -162,14 +162,14 @@
   color: #FF6B6B;
 }
 
-/* Main Content */
+/* ─── Main Content ───────────────────────────────────────────────────────── */
 .userprofile-profile-content {
   max-width: 700px;
   margin: 2rem auto;
   padding: 0 1.5rem;
 }
 
-/* Error Message */
+/* ─── Error Message ──────────────────────────────────────────────────────── */
 .error-message {
   background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
   color: #721c24;
@@ -203,7 +203,7 @@
   background: #c82333;
 }
 
-/* Progress Steps - Horizontal */
+/* ─── Progress Steps ─────────────────────────────────────────────────────── */
 .userprofile-progress-container {
   margin-bottom: 2rem;
   background: white;
@@ -259,7 +259,7 @@
   color: #4ECDC4;
 }
 
-/* Form Cards */
+/* ─── Form Cards ─────────────────────────────────────────────────────────── */
 .form-card {
   background: white;
   border-radius: 12px;
@@ -281,21 +281,11 @@
   background: linear-gradient(90deg, #FF6B6B, #4ECDC4, #45B7D1, #96CEB4);
 }
 
-/* userprofile.css */
-
-/* ✅ Scoped animation to avoid conflicts */
 @keyframes userProfileFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ✅ Apply animation ONLY once */
 .userprofile-fade-in {
   animation: userProfileFadeIn 0.35s ease-out both;
 }
@@ -319,7 +309,7 @@
   margin: 0;
 }
 
-/* Form Fields */
+/* ─── Form Fields ────────────────────────────────────────────────────────── */
 .form-fields {
   display: flex;
   flex-direction: column;
@@ -385,7 +375,14 @@
   box-shadow: 0 2px 5px rgba(150, 206, 180, 0.3);
 }
 
-/* Validation Error */
+/* ─── Field Validation Error ─────────────────────────────────────────────── */
+.field-error {
+  color: #dc3545;
+  font-size: 0.8rem;
+  margin-top: 0.2rem;
+  animation: slideIn 0.3s ease;
+}
+
 .validation-error {
   display: flex;
   align-items: center;
@@ -398,7 +395,7 @@
   border-radius: 4px;
 }
 
-/* Eligibility Badge */
+/* ─── Eligibility Badge ──────────────────────────────────────────────────── */
 .eligibility-badge {
   background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(78, 205, 196, 0.1));
   color: #4ECDC4;
@@ -418,8 +415,8 @@
   color: #FF6B6B;
 }
 
-/* Form Actions */
-.userprofile-form-actions {
+/* ─── Form Actions ───────────────────────────────────────────────────────── */
+.form-actions {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
@@ -445,7 +442,7 @@
 }
 
 .continue-btn,
-.userprofile-submit-btn {
+.submit-btn {
   padding: 0.7rem 2rem;
   background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
   border: none;
@@ -471,12 +468,7 @@
   cursor: not-allowed;
 }
 
-.userprofile-submit-btn {
-  background: linear-gradient(135deg, #96CEB4, #4ECDC4);
-  box-shadow: 0 4px 15px rgba(150, 206, 180, 0.3);
-}
-
-/* Step 3 - University Selection */
+/* ─── Step 3 — University Selection ─────────────────────────────────────── */
 .program-indicator {
   background: linear-gradient(135deg, rgba(69, 183, 209, 0.1), rgba(78, 205, 196, 0.1));
   color: #45B7D1;
@@ -546,12 +538,12 @@
 }
 
 @keyframes gradientMove {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
 
-/* Loading State */
+/* ─── Loading State ──────────────────────────────────────────────────────── */
 .loading-state {
   text-align: center;
   padding: 2rem;
@@ -583,7 +575,7 @@
   margin-top: 0.5rem;
 }
 
-/* Universities Grid */
+/* ─── Universities Grid ──────────────────────────────────────────────────── */
 .universities-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -658,8 +650,8 @@
 }
 
 @keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
 
@@ -737,18 +729,12 @@
 }
 
 @keyframes popIn {
-  0% {
-    transform: scale(0);
-  }
-  80% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1);
-  }
+  0%   { transform: scale(0); }
+  80%  { transform: scale(1.1); }
+  100% { transform: scale(1); }
 }
 
-/* Selected Courses Preview */
+/* ─── Selected Courses Preview ───────────────────────────────────────────── */
 .selected-courses-preview {
   background: #f8f9fa;
   border-radius: 0 0 12px 12px;
@@ -818,7 +804,7 @@
   font-weight: 500;
 }
 
-/* No Results */
+/* ─── No Results ─────────────────────────────────────────────────────────── */
 .no-results {
   text-align: center;
   padding: 2rem;
@@ -833,7 +819,74 @@
   color: #FF6B6B;
 }
 
-/* Step 4 - Review Section */
+/* ─── NEW: Request University Banner ─────────────────────────────────────── */
+.request-university-banner {
+  margin: 1.5rem 0 0.5rem;
+  border: 2px dashed #c7d2fe;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f0f4ff 0%, #faf5ff 100%);
+  padding: 1.25rem 1.5rem;
+  transition: border-color 0.2s ease;
+}
+
+.request-university-banner:hover {
+  border-color: #818cf8;
+}
+
+.request-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.request-banner-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.request-banner-text {
+  flex: 1;
+  min-width: 180px;
+}
+
+.request-banner-text strong {
+  display: block;
+  color: #3730a3;
+  font-size: 1rem;
+  margin-bottom: 0.2rem;
+}
+
+.request-banner-text p {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.request-university-btn {
+  padding: 0.65rem 1.25rem;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.35);
+}
+
+.request-university-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(102, 126, 234, 0.45);
+}
+
+.request-university-btn:active {
+  transform: translateY(0);
+}
+
+/* ─── Step 4 — Review Section ────────────────────────────────────────────── */
 .review-section {
   margin-bottom: 1.5rem;
   padding: 1.5rem;
@@ -961,7 +1014,7 @@
   font-weight: 500;
 }
 
-/* Bottom Progress */
+/* ─── Bottom Progress ────────────────────────────────────────────────────── */
 .bottom-progress {
   margin-top: 2rem;
   background: white;
@@ -971,7 +1024,62 @@
   border: 1px solid rgba(78, 205, 196, 0.3);
 }
 
-/* Course Modal */
+/* ─── Success Animation Overlay ──────────────────────────────────────────── */
+.success-animation-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.3s ease;
+}
+
+.success-animation {
+  width: 100px;
+  height: 100px;
+}
+
+.checkmark-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2, #FF6B6B, #4ECDC4);
+  animation: rotate 0.5s ease-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkmark {
+  width: 50px;
+  height: 30px;
+  border-left: 5px solid white;
+  border-bottom: 5px solid white;
+  transform: rotate(-45deg) translate(5px, -5px);
+  animation: draw 0.3s ease-out 0.3s both;
+}
+
+@keyframes rotate {
+  from { transform: scale(0) rotate(0deg); }
+  to   { transform: scale(1) rotate(360deg); }
+}
+
+@keyframes draw {
+  from { width: 0; height: 0; opacity: 0; }
+  to   { width: 50px; height: 30px; opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ─── Modal Overlay ──────────────────────────────────────────────────────── */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -1000,14 +1108,8 @@
 }
 
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .modal-header {
@@ -1057,6 +1159,19 @@
   padding: 1.5rem;
 }
 
+.modal-footer {
+  padding: 1.5rem;
+  border-top: 1px solid #e9ecef;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  position: sticky;
+  bottom: 0;
+  background: white;
+  border-radius: 0 0 16px 16px;
+}
+
+/* ─── Course Modal Internals ─────────────────────────────────────────────── */
 .course-selection-info {
   color: #6c757d;
   font-size: 0.9rem;
@@ -1091,6 +1206,125 @@
   margin: 0 auto 0.5rem;
 }
 
+/* ─── Course Search ───────────────────────────────────────────────────────── */
+.course-search-section {
+  margin-bottom: 1.5rem;
+}
+
+.course-search-wrapper {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.course-search-input {
+  width: 100%;
+  padding: 0.75rem 2.5rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.course-search-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.clear-search-btn {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.2rem 0.5rem;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.clear-search-btn:hover {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.active-filters {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+}
+
+.filter-label {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.filter-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  background: #e3f2fd;
+  border-radius: 16px;
+  font-size: 0.85rem;
+  color: #1976d2;
+}
+
+.filter-tag button {
+  background: none;
+  border: none;
+  color: #1976d2;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0 0.25rem;
+  border-radius: 50%;
+}
+
+.filter-tag button:hover {
+  background: rgba(25, 118, 210, 0.1);
+}
+
+.clear-all-filters {
+  background: none;
+  border: none;
+  color: #667eea;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  text-decoration: underline;
+}
+
+.clear-all-filters:hover {
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.clear-filters-btn {
+  padding: 0.5rem 1rem;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: all 0.2s ease;
+}
+
+.clear-filters-btn:hover {
+  background: #5a67d8;
+  transform: translateY(-2px);
+}
+
+/* ─── Course Cards ───────────────────────────────────────────────────────── */
 .courses-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -1193,18 +1427,7 @@
   border: 1px dashed #ced4da;
 }
 
-.modal-footer {
-  padding: 1.5rem;
-  border-top: 1px solid #e9ecef;
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  position: sticky;
-  bottom: 0;
-  background: white;
-  border-radius: 0 0 16px 16px;
-}
-
+/* ─── Modal Buttons ──────────────────────────────────────────────────────── */
 .cancel-btn {
   padding: 0.5rem 1.5rem;
   background: white;
@@ -1245,7 +1468,153 @@
   cursor: not-allowed;
 }
 
-/* Responsive Design */
+/* ─── NEW: Request University Modal ──────────────────────────────────────── */
+.modal-content.request-university-modal {
+  max-width: 480px;
+  width: 95%;
+  border-radius: 16px;
+  background: white;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: slideUp 0.3s ease;
+}
+
+.request-modal-desc {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin-bottom: 1.25rem;
+  padding: 0.75rem 1rem;
+  background: #f9fafb;
+  border-radius: 8px;
+  border-left: 3px solid #667eea;
+}
+
+.required-star {
+  color: #ef4444;
+  margin-left: 2px;
+}
+
+.optional-label {
+  color: #9ca3af;
+  font-size: 0.8rem;
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+.request-info-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  padding: 0.75rem 1rem;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+}
+
+.request-info-note span {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.request-info-note p {
+  color: #92400e;
+  font-size: 0.85rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.request-submit-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  color: #b91c1c;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+/* Request Success State */
+.request-success-state {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+}
+
+.request-success-icon {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+  animation: bounceIn 0.5s ease;
+}
+
+.request-success-state h4 {
+  font-size: 1.4rem;
+  color: #065f46;
+  margin-bottom: 0.75rem;
+}
+
+.request-success-state p {
+  color: #374151;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+}
+
+.request-success-note {
+  color: #9ca3af;
+  font-size: 0.8rem;
+  font-style: italic;
+}
+
+@keyframes bounceIn {
+  0%   { transform: scale(0.3); opacity: 0; }
+  50%  { transform: scale(1.1); }
+  70%  { transform: scale(0.9); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ─── Button Loading Spinner ─────────────────────────────────────────────── */
+.btn-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+/* ─── Scrollbar Styling ──────────────────────────────────────────────────── */
+.universities-grid::-webkit-scrollbar,
+.courses-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.universities-grid::-webkit-scrollbar-track,
+.courses-grid::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.universities-grid::-webkit-scrollbar-thumb,
+.courses-grid::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #FF6B6B, #4ECDC4, #45B7D1, #96CEB4);
+  border-radius: 10px;
+}
+
+.universities-grid::-webkit-scrollbar-thumb:hover,
+.courses-grid::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #96CEB4, #45B7D1, #4ECDC4, #FF6B6B);
+}
+
+/* ─── Responsive — 768px ─────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .header-container {
     padding: 1rem;
@@ -1260,7 +1629,6 @@
   }
 
   .userprofile-profile-content {
-
     padding: 0 1rem;
     margin: 1rem auto;
   }
@@ -1315,8 +1683,21 @@
   .save-btn {
     width: 100%;
   }
+
+  /* Request banner stacks on mobile */
+  .request-banner-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .request-university-btn {
+    width: 100%;
+    text-align: center;
+  }
 }
 
+/* ─── Responsive — 480px ─────────────────────────────────────────────────── */
 @media (max-width: 480px) {
   .header-container {
     flex-direction: column;
@@ -1365,27 +1746,165 @@
     height: 40px;
     font-size: 0.9rem;
   }
+
+  .modal-content.request-university-modal {
+    width: 100%;
+    border-radius: 12px;
+  }
 }
 
-/* Scrollbar Styling */
-.universities-grid::-webkit-scrollbar,
-.courses-grid::-webkit-scrollbar {
-  width: 6px;
+/* ─── Course Tag Input (Request University Modal) ────────────────────────── */
+.course-tag-input-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.75rem;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  min-height: 48px;
+  background: #fff;
+  cursor: text;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.universities-grid::-webkit-scrollbar-track,
-.courses-grid::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
+.course-tag-input-wrapper:focus-within {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
 }
 
-.universities-grid::-webkit-scrollbar-thumb,
-.courses-grid::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #FF6B6B, #4ECDC4, #45B7D1, #96CEB4);
-  border-radius: 10px;
+.course-tag-input-wrapper.error-border {
+  border-color: #dc3545;
 }
 
-.universities-grid::-webkit-scrollbar-thumb:hover,
-.courses-grid::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #96CEB4, #45B7D1, #4ECDC4, #FF6B6B);
+/* Individual confirmed tag */
+.course-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.65rem;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
+  animation: tagPop 0.2s ease;
+}
+
+@keyframes tagPop {
+  from { transform: scale(0.7); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+.course-tag-remove {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 0.1rem;
+  border-radius: 50%;
+  transition: color 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.course-tag-remove:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Invisible text input that grows inside the tag box */
+.course-tag-input {
+  flex: 1;
+  min-width: 160px;
+  border: none;
+  outline: none;
+  font-size: 0.9rem;
+  color: #333;
+  background: transparent;
+  padding: 0.1rem 0;
+}
+
+.course-tag-input::placeholder {
+  color: #b0b0b0;
+}
+
+/* Small hint text below the tag box */
+.course-tag-hint {
+  display: block;
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-top: 0.3rem;
+}
+
+/* Autocomplete dropdown */
+.course-suggestions-dropdown {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 200;
+  overflow: hidden;
+  animation: dropIn 0.15s ease;
+}
+
+@keyframes dropIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.course-suggestion-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.6rem 1rem;
+  background: none;
+  border: none;
+  font-size: 0.88rem;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.course-suggestion-item:hover {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(118, 75, 162, 0.08));
+  color: #667eea;
+}
+
+/* Success state: show submitted courses */
+.request-success-courses {
+  margin: 1rem 0 0.5rem;
+  text-align: center;
+}
+
+.success-courses-label {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+}
+
+.success-course-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.success-course-tag {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
 }

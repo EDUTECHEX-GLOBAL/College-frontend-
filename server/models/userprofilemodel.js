@@ -12,35 +12,41 @@ const selectedCourseSchema = new mongoose.Schema({
     required: true
   },
   program_name: {
-    type: String
+    type: String,
+    default: ''
   },
   level: {
     type: String,
-    enum: ['Bachelor', 'Master', 'PhD', 'Undergraduate', 'Graduate', 'Diploma', 'Certificate'],
-    default: 'Undergraduate'
+    // No strict enum — frontend can send varied level strings from university data
+    default: ''
   },
   studyMode: {
     type: String,
-    enum: ['On Campus', 'Online', 'Hybrid', 'Distance Learning'],
-    default: 'On Campus'
+    // No strict enum — frontend can send varied study mode strings
+    default: ''
   },
   duration: {
-    type: String
+    type: String,
+    default: ''
   },
   locations: [{
     type: String
   }],
   majorArea: {
-    type: String
+    type: String,
+    default: ''
   },
   description: {
-    type: String
+    type: String,
+    default: ''
   },
   credits: {
-    type: Number
+    type: Number,
+    default: null
   },
   fees: {
-    type: String
+    type: String,
+    default: ''
   }
 }, { _id: false });
 
@@ -51,7 +57,8 @@ const selectedUniversitySchema = new mongoose.Schema({
     required: true
   },
   unitid: {
-    type: Number
+    type: Number,
+    default: null
   },
   name: {
     type: String,
@@ -59,13 +66,15 @@ const selectedUniversitySchema = new mongoose.Schema({
   },
   location: {
     type: String,
-    required: true
+    default: 'Location not specified'
   },
   city: {
-    type: String
+    type: String,
+    default: ''
   },
   state: {
-    type: String
+    type: String,
+    default: ''
   },
   country: {
     type: String,
@@ -75,24 +84,23 @@ const selectedUniversitySchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  // Selected courses for this university
+  // Selected courses for this university (max 2)
   selectedCourses: {
     type: [selectedCourseSchema],
     validate: {
       validator: function(courses) {
-        // Kansas universities can have 0 courses, others max 2
-        if (this.isKansas) return courses.length <= 2;
         return courses.length <= 2;
       },
       message: 'Maximum 2 courses can be selected per university'
     },
     default: []
   },
-  // Store the full university data for reference
+  // Store the full university data for reference (optional)
   fullData: {
-    type: mongoose.Schema.Types.Mixed
+    type: mongoose.Schema.Types.Mixed,
+    default: null
   }
-});
+}, { _id: false });
 
 const basicInfoSchema = new mongoose.Schema({
   fullName: {
@@ -130,7 +138,7 @@ const basicInfoSchema = new mongoose.Schema({
     required: true,
     trim: true
   }
-});
+}, { _id: false });
 
 const educationSchema = new mongoose.Schema({
   qualification: {
@@ -158,7 +166,7 @@ const educationSchema = new mongoose.Schema({
     required: true,
     trim: true
   }
-});
+}, { _id: false });
 
 const userProfileSchema = new mongoose.Schema({
   userId: {
@@ -186,18 +194,13 @@ const userProfileSchema = new mongoose.Schema({
   },
   selectedUniversities: {
     type: [selectedUniversitySchema],
-    validate: {
-      validator: function(unis) {
-        return unis.length >= 3 && unis.length <= 5;
-      },
-      message: 'Please select between 3 and 5 universities'
-    },
+    // Validation is handled in the controller for better error messages
     default: []
   },
   // For backward compatibility
   selectedCourses: {
     type: Map,
-    of: [selectedCourseSchema],
+    of: mongoose.Schema.Types.Mixed,
     default: {}
   },
   profileCompleted: {
@@ -216,24 +219,33 @@ const userProfileSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Update lastUpdated on save
+// Update lastUpdated on every save
 userProfileSchema.pre('save', function(next) {
   this.lastUpdated = Date.now();
   next();
 });
 
-// Validate that non-Kansas universities have at least one course
+// Validate universities and courses before save
 userProfileSchema.pre('save', function(next) {
-  for (const uni of this.selectedUniversities) {
+  const unis = this.selectedUniversities || [];
+
+  if (unis.length < 3 || unis.length > 5) {
+    return next(new Error(`Please select between 3 and 5 universities (currently ${unis.length})`));
+  }
+
+  for (const uni of unis) {
     if (!uni.isKansas && (!uni.selectedCourses || uni.selectedCourses.length === 0)) {
-      next(new Error(`Please select at least one course for ${uni.name}`));
-      return;
+      return next(new Error(`Please select at least one course for ${uni.name}`));
+    }
+    if (uni.selectedCourses && uni.selectedCourses.length > 2) {
+      return next(new Error(`Maximum 2 courses can be selected for ${uni.name}`));
     }
   }
+
   next();
 });
 
-// Index for faster queries
+// Indexes for faster queries
 userProfileSchema.index({ userId: 1 });
 userProfileSchema.index({ 'basicInfo.email': 1 });
 userProfileSchema.index({ eligibleProgram: 1 });

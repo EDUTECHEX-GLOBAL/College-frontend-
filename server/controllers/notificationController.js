@@ -26,6 +26,30 @@ export const createNewUserNotification = async (user) => {
 };
 
 /**
+ * 🔔 Create notification for admin (used on university request)
+ */
+export const createUniversityRequestNotification = async ({ userId, universityName, country, courses }) => {
+  try {
+    if (!userId) return false;
+
+    await Notification.create({
+      type: "UNIVERSITY_REQUEST",
+      title: "New University Request",
+      message: `A student has requested to add "${universityName}" (${country}). Interested courses: ${courses.join(", ")}`,
+      userId,
+      targetRole: "admin",
+      isRead: false,
+    });
+
+    console.log(`🔔 University request notification created for admin: ${universityName}`);
+    return true;
+  } catch (error) {
+    console.error("❌ University request notification failed:", error);
+    return false;
+  }
+};
+
+/**
  * ✅ Admin: Fetch notifications (all, with unread count)
  */
 export const getAdminNotifications = async (req, res) => {

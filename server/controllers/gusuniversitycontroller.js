@@ -10,7 +10,7 @@ import ApplicationScore       from '../models/ApplicationScore.js';
 import ApplicationSpecialNeed from '../models/ApplicationSpecialNeed.js';
 
 /* =====================================================
-   HELPER — safe date formatter → "YYYY-MM-DD"
+   HELPER — safe date formatter
 ===================================================== */
 const fmtDate = (d) => {
   if (!d) return '';
@@ -20,7 +20,6 @@ const fmtDate = (d) => {
 
 /* =====================================================
    HELPER — convert string → ObjectId safely
-   Returns null when the value is not a valid ObjectId
 ===================================================== */
 const toObjectId = (id) => {
   if (!id) return null;
@@ -30,27 +29,126 @@ const toObjectId = (id) => {
 };
 
 /* =====================================================
-   GET ALL GUS UNIVERSITY APPLICATIONS
-   GET /api/application/process-admin/gus-university/applications
+   HELPER — build lookup map
+===================================================== */
+const buildMap = (records, idField) => {
+  const map = {};
+  records.forEach((r) => {
+    const raw = r[idField];
+    if (raw) map[raw.toString()] = r;
+  });
+  return map;
+};
 
-   Data flow:
-     ApplicationLanguage.studentId  (String)  ← root source
-       → PersonalInfo._id   (ObjectId — MUST convert String → ObjectId)
-       → Account._id        (ObjectId — MUST convert String → ObjectId)
-       → ApplicationDocument.userId
-       → ApplicationEducation.userId
-       → ApplicationScore.studentId
-       → ApplicationSpecialNeed.studentId
+/* =====================================================
+   HELPER — resolve a single document field.
+   Returns { uploaded: bool, status: string }
+===================================================== */
+const resolveDoc = (fieldObj, fallback = false) => {
+  const hasFile = !!(fieldObj?.fileName && fieldObj.fileName !== '');
+  if (!hasFile && !fallback) return { uploaded: false, status: 'not_uploaded' };
+  if (!hasFile && fallback)  return { uploaded: true,  status: 'pending' };
+  return {
+    uploaded: true,
+    status: fieldObj.documentStatus || 'pending',
+  };
+};
+
+/* =====================================================
+   KEY FIX — map ACTUAL DB field names to the display
+   labels used in GusUniversity.jsx
+
+   Your real ApplicationDocument schema uses:
+     cv, photo, eqhe, finalEqhe, bachelorTranscript,
+     bachelorCertificate, germanCertificate,
+     englishCertificate, noObjection, deRegistration,
+     portfolio, other
+
+   The frontend expects:
+     cv, photo, passport, transcript, diploma,
+     cert9th, cert10th, cert11th, cert12th,
+     testScores, languageProficiency, recommendationLetter
+===================================================== */
+const mapDocuments = (docRec, personal) => {
+  const empty = {
+    cvUploaded: false,         cvStatus: 'not_uploaded',
+    photoUploaded: false,      photoStatus: 'not_uploaded',
+    passportUploaded: false,   passportStatus: 'not_uploaded',
+    transcriptUploaded: false, transcriptStatus: 'not_uploaded',
+    diplomaUploaded: false,    diplomaStatus: 'not_uploaded',
+    cert9thUploaded: false,    cert9thStatus: 'not_uploaded',
+    cert10thUploaded: false,   cert10thStatus: 'not_uploaded',
+    cert11thUploaded: false,   cert11thStatus: 'not_uploaded',
+    cert12thUploaded: false,   cert12thStatus: 'not_uploaded',
+    testScoresUploaded: false,
+    langProfUploaded: false,
+    recLetterUploaded: false,
+    portfolioLink: '',
+    docsCompletionPct: 0,
+    docsCompleted: false,
+  };
+
+  if (!docRec) return empty;
+
+  // Resolve each actual DB field
+  const cv          = resolveDoc(docRec.cv);
+  const photo       = resolveDoc(docRec.photo,              !!(personal?.photographFileName));
+  // eqhe         → used as Passport/ID in this schema
+  const passport    = resolveDoc(docRec.eqhe,               !!(personal?.passportFileName));
+  // finalEqhe    → used as Transcript
+  const transcript  = resolveDoc(docRec.finalEqhe);
+  // bachelorTranscript → Diploma
+  const diploma     = resolveDoc(docRec.bachelorTranscript);
+  // bachelorCertificate → 12th Grade Cert
+  const cert12      = resolveDoc(docRec.bachelorCertificate);
+  // germanCertificate → 11th Grade Cert
+  const cert11      = resolveDoc(docRec.germanCertificate);
+  // deRegistration → 10th Grade Cert
+  const cert10      = resolveDoc(docRec.deRegistration);
+  // No direct mapping for 9th grade in this schema
+  const cert9       = { uploaded: false, status: 'not_uploaded' };
+  // englishCertificate → Test Scores
+  const testScores  = resolveDoc(docRec.englishCertificate);
+  // englishCertificate → Language Proficiency (same doc, dual purpose)
+  const langProf    = resolveDoc(docRec.englishCertificate);
+  // noObjection → Recommendation Letter
+  const recLetter   = resolveDoc(docRec.noObjection);
+
+  // Calculate real completion from actual uploaded fields
+  const uploadedCount = [cv, photo, passport, transcript, diploma, cert12, cert11, cert10]
+    .filter(d => d.uploaded).length;
+  const docsCompletionPct = docRec.completionPercentage
+    || Math.round((uploadedCount / 8) * 100);
+
+  return {
+    cvUploaded:         cv.uploaded,        cvStatus:         cv.status,
+    photoUploaded:      photo.uploaded,     photoStatus:      photo.status,
+    passportUploaded:   passport.uploaded,  passportStatus:   passport.status,
+    transcriptUploaded: transcript.uploaded,transcriptStatus: transcript.status,
+    diplomaUploaded:    diploma.uploaded,   diplomaStatus:    diploma.status,
+    cert9thUploaded:    cert9.uploaded,     cert9thStatus:    cert9.status,
+    cert10thUploaded:   cert10.uploaded,    cert10thStatus:   cert10.status,
+    cert11thUploaded:   cert11.uploaded,    cert11thStatus:   cert11.status,
+    cert12thUploaded:   cert12.uploaded,    cert12thStatus:   cert12.status,
+    testScoresUploaded: testScores.uploaded,
+    langProfUploaded:   langProf.uploaded,
+    recLetterUploaded:  recLetter.uploaded,
+    portfolioLink:      docRec.portfolioLink || '',
+    docsCompletionPct,
+    docsCompleted:      docRec.isCompleted || false,
+  };
+};
+
+/* =====================================================
+   GET ALL GUS UNIVERSITY APPLICATIONS
 ===================================================== */
 export const getGusUniversityApplications = async (req, res) => {
   try {
     const { page = 1, limit = 50, status, search } = req.query;
-
     const pageNum  = parseInt(page);
     const limitNum = parseInt(limit);
     const skip     = (pageNum - 1) * limitNum;
 
-    // ── 1. Fetch paginated language records ──────────────────────
     const [languageRecords, total] = await Promise.all([
       ApplicationLanguage.find()
         .sort({ createdAt: -1 })
@@ -68,17 +166,9 @@ export const getGusUniversityApplications = async (req, res) => {
       });
     }
 
-    // ── 2. Build ObjectId array — KEY FIX ────────────────────────
-    // ApplicationLanguage.studentId is stored as a String.
-    // MongoDB $in silently fails comparing String[] vs ObjectId _id.
-    // We MUST convert to ObjectId before querying PersonalInfo / Account.
     const studentIdStrings = languageRecords.map((r) => r.studentId).filter(Boolean);
+    const studentObjectIds = studentIdStrings.map(toObjectId).filter(Boolean);
 
-    const studentObjectIds = studentIdStrings
-      .map(toObjectId)
-      .filter(Boolean);   // drop any malformed ids
-
-    // ── 3. Parallel fetch all 6 collections ─────────────────────
     const [
       personalRecords,
       accountRecords,
@@ -90,10 +180,10 @@ export const getGusUniversityApplications = async (req, res) => {
       PersonalInfo.find({ _id: { $in: studentObjectIds } })
         .select(
           'firstName lastName title email mobile gender dateOfBirth ' +
-          'placeOfBirth countryOfBirth citizenship passportNumber '  +
-          'passportIssueDate passportExpiryDate issuingCountry '      +
-          'isEUCitizen needVisa documentType correspondenceLanguage '  +
-          'applicationStatus isVerified landline countryOfResidence '  +
+          'placeOfBirth countryOfBirth citizenship passportNumber '   +
+          'passportIssueDate passportExpiryDate issuingCountry '       +
+          'isEUCitizen needVisa documentType correspondenceLanguage '   +
+          'applicationStatus isVerified landline countryOfResidence '   +
           'passportFileName photographFileName'
         )
         .lean(),
@@ -102,22 +192,20 @@ export const getGusUniversityApplications = async (req, res) => {
         .select('firstName lastName email phone birthDate joinDate lastLogin status role')
         .lean(),
 
-      ApplicationDocument.find({ userId: { $in: studentObjectIds } })
-        .select(
-          'userId isCompleted completionPercentage portfolioLink ' +
-          'cv photo passport transcript diploma '                   +
-          'cert9th cert10th cert11th cert12th '                     +
-          'testScores languageProficiency recommendationLetter'
-        )
-        .lean(),
+      // Query with BOTH ObjectId and String — handles mixed storage types
+      ApplicationDocument.find({
+        $or: [
+          { userId: { $in: studentObjectIds } },
+          { userId: { $in: studentIdStrings  } },
+        ],
+      }).lean(),
 
       ApplicationEducation.find({ userId: { $in: studentObjectIds } })
         .select('userId wasEnrolled isCurrentlyEnrolled isCompleted completionPercentage educationEntries')
         .lean(),
 
       ApplicationScore.find({ studentId: { $in: studentObjectIds } })
-        .select('studentId satTotal satMath satReading ielts toefl pte duolingo act ' +
-                'grade9 grade10 grade11 grade12')
+        .select('studentId satTotal satMath satReading ielts toefl pte duolingo act')
         .lean(),
 
       ApplicationSpecialNeed.find({ studentId: { $in: studentObjectIds } })
@@ -125,121 +213,55 @@ export const getGusUniversityApplications = async (req, res) => {
         .lean(),
     ]);
 
-    // ── 4. Build lookup maps  id-string → record ─────────────────
-    const personalMap  = {};
-    const accountMap   = {};
-    const documentMap  = {};
-    const educationMap = {};
-    const scoreMap     = {};
-    const specialMap   = {};
+    const personalMap  = buildMap(personalRecords,    '_id');
+    const accountMap   = buildMap(accountRecords,     '_id');
+    const documentMap  = buildMap(documentRecords,    'userId');
+    const educationMap = buildMap(educationRecords,   'userId');
+    const scoreMap     = buildMap(scoreRecords,       'studentId');
+    const specialMap   = buildMap(specialNeedRecords, 'studentId');
 
-    personalRecords   .forEach((r) => { personalMap  [r._id.toString()]       = r; });
-    accountRecords    .forEach((r) => { accountMap   [r._id.toString()]       = r; });
-    documentRecords   .forEach((r) => { documentMap  [r.userId.toString()]    = r; });
-    educationRecords  .forEach((r) => { educationMap [r.userId.toString()]    = r; });
-    scoreRecords      .forEach((r) => { scoreMap     [r.studentId.toString()] = r; });
-    specialNeedRecords.forEach((r) => { specialMap   [r.studentId.toString()] = r; });
-
-    // ── 5. Assemble response objects ─────────────────────────────
     const data = languageRecords.map((lang) => {
       const sid      = lang.studentId?.toString() || '';
-      const personal = personalMap  [sid] || {};
-      const account  = accountMap   [sid] || {};
-      const docRec   = documentMap  [sid] || {};
-      const eduRec   = educationMap [sid] || {};
-      const scoreRec = scoreMap     [sid] || {};
-      const snRec    = specialMap   [sid] || {};
+      const personal = personalMap [sid] || {};
+      const account  = accountMap  [sid] || {};
+      const docRec   = documentMap [sid] || null;
+      const eduRec   = educationMap[sid] || {};
+      const scoreRec = scoreMap    [sid] || {};
+      const snRec    = specialMap  [sid] || {};
 
       const firstName = personal.firstName || account.firstName || '';
       const lastName  = personal.lastName  || account.lastName  || '';
-      const fullName  = [firstName, lastName].filter(Boolean).join(' ') || 'Unknown';
-      const phone     = personal.mobile || account.phone || '';
-      const email     = personal.email  || account.email || '';
 
-      // Documents summary
-      const documents = {
-        cvUploaded:          !!docRec.cv?.fileName,
-        cvStatus:            docRec.cv?.documentStatus            || 'not_uploaded',
-        photoUploaded:       !!docRec.photo?.fileName,
-        photoStatus:         docRec.photo?.documentStatus         || 'not_uploaded',
-        passportUploaded:    !!docRec.passport?.fileName          || !!personal.passportFileName,
-        passportStatus:      docRec.passport?.documentStatus      || 'not_uploaded',
-        transcriptUploaded:  !!docRec.transcript?.fileName,
-        transcriptStatus:    docRec.transcript?.documentStatus    || 'not_uploaded',
-        diplomaUploaded:     !!docRec.diploma?.fileName,
-        diplomaStatus:       docRec.diploma?.documentStatus       || 'not_uploaded',
-        cert9thUploaded:     !!docRec.cert9th?.fileName,
-        cert9thStatus:       docRec.cert9th?.documentStatus       || 'not_uploaded',
-        cert10thUploaded:    !!docRec.cert10th?.fileName,
-        cert10thStatus:      docRec.cert10th?.documentStatus      || 'not_uploaded',
-        cert11thUploaded:    !!docRec.cert11th?.fileName,
-        cert11thStatus:      docRec.cert11th?.documentStatus      || 'not_uploaded',
-        cert12thUploaded:    !!docRec.cert12th?.fileName,
-        cert12thStatus:      docRec.cert12th?.documentStatus      || 'not_uploaded',
-        testScoresUploaded:  !!docRec.testScores?.fileName,
-        langProfUploaded:    !!docRec.languageProficiency?.fileName,
-        recLetterUploaded:   !!docRec.recommendationLetter?.fileName,
-        portfolioLink:       docRec.portfolioLink                 || '',
-        docsCompletionPct:   docRec.completionPercentage          || 0,
-        docsCompleted:       docRec.isCompleted                   || false,
-      };
+      // ★ This is the core fix — map actual DB fields correctly
+      const documents = mapDocuments(docRec, personal);
 
-      // Education summary
       const firstEntry = eduRec.educationEntries?.[0] || {};
-      const education = {
-        wasEnrolled:         eduRec.wasEnrolled         ?? null,
-        isCurrentlyEnrolled: eduRec.isCurrentlyEnrolled ?? null,
-        eduCompleted:        eduRec.isCompleted         || false,
-        eduCompletionPct:    eduRec.completionPercentage || 0,
-        institutionName:     firstEntry.institutionName  || '',
-        degree:              firstEntry.degree           || '',
-        specialisation:      firstEntry.specialisation   || '',
-        country:             firstEntry.countryOfInitialRegistration || '',
-        entryType:           firstEntry.entryType        || '',
-        standardStudyPeriod: firstEntry.standardStudyPeriod || '',
-        transcriptUploaded:  !!firstEntry.transcriptFileName,
-      };
 
-      // Scores summary
-      const scores = {
-        satTotal:   scoreRec.satTotal   || '',
-        satMath:    scoreRec.satMath    || '',
-        satReading: scoreRec.satReading || '',
-        ielts:      scoreRec.ielts      || '',
-        toefl:      scoreRec.toefl      || '',
-        pte:        scoreRec.pte        || '',
-        duolingo:   scoreRec.duolingo   || '',
-        act:        scoreRec.act        || '',
-      };
-
-      // Special needs summary
-      const specialNeeds = {
-        hasSpecialNeeds:      snRec.hasSpecialNeeds      || 'no',
-        specialNeeds:         snRec.specialNeeds         || [],
-        requiredArrangements: snRec.requiredArrangements || [],
-        snStatus:             snRec.status               || '',
-      };
+      const computedCompletion =
+        documents.docsCompletionPct ||
+        lang.completionPercentage   ||
+        0;
 
       return {
         _id:           lang._id,
         applicationId: lang.applicationId || '',
         studentId:     sid,
-        studentName:    fullName,
-        title:          personal.title          || '',
-        email,
-        phone,
-        gender:         personal.gender         || '',
-        dateOfBirth:    fmtDate(personal.dateOfBirth),
-        placeOfBirth:   personal.placeOfBirth   || '',
-        countryOfBirth: personal.countryOfBirth || '',
+        studentName:   [firstName, lastName].filter(Boolean).join(' ') || 'Unknown',
+        title:         personal.title || '',
+        email:         personal.email  || account.email || '',
+        phone:         personal.mobile || account.phone || '',
+        gender:        personal.gender || '',
+        dateOfBirth:   fmtDate(personal.dateOfBirth),
+        placeOfBirth:  personal.placeOfBirth   || '',
+        countryOfBirth:personal.countryOfBirth || '',
         citizenship:        personal.citizenship        || '',
         passportNumber:     personal.passportNumber     || '',
         passportIssueDate:  fmtDate(personal.passportIssueDate),
         passportExpiryDate: fmtDate(personal.passportExpiryDate),
-        issuingCountry:     personal.issuingCountry     || '',
-        documentType:       personal.documentType       || '',
-        passportUploaded:   !!personal.passportFileName   || !!docRec.passport?.fileName,
-        photographUploaded: !!personal.photographFileName || !!docRec.photo?.fileName,
+        issuingCountry:     personal.issuingCountry || '',
+        documentType:       personal.documentType   || '',
+        passportUploaded:   documents.passportUploaded,
+        photographUploaded: documents.photoUploaded,
         isEUCitizen: personal.isEUCitizen ?? null,
         needVisa:    personal.needVisa    || '',
         landline:               personal.landline               || '',
@@ -258,12 +280,38 @@ export const getGusUniversityApplications = async (req, res) => {
         anotherEqheDate:                fmtDate(lang.anotherEqheDate),
         anotherEqheCity:                lang.anotherEqheCity                || '',
         anotherEqheCertificateFileName: lang.anotherEqheCertificateFileName || '',
-        completionPercentage: lang.completionPercentage || 0,
-        isCompleted:          lang.isCompleted          || false,
+        completionPercentage: computedCompletion,
+        isCompleted:          lang.isCompleted || false,
         documents,
-        education,
-        scores,
-        specialNeeds,
+        education: {
+          wasEnrolled:         eduRec.wasEnrolled         ?? null,
+          isCurrentlyEnrolled: eduRec.isCurrentlyEnrolled ?? null,
+          eduCompleted:        eduRec.isCompleted         || false,
+          eduCompletionPct:    eduRec.completionPercentage || 0,
+          institutionName:     firstEntry.institutionName  || '',
+          degree:              firstEntry.degree           || '',
+          specialisation:      firstEntry.specialisation   || '',
+          country:             firstEntry.countryOfInitialRegistration || '',
+          entryType:           firstEntry.entryType        || '',
+          standardStudyPeriod: firstEntry.standardStudyPeriod || '',
+          transcriptUploaded:  !!firstEntry.transcriptFileName,
+        },
+        scores: {
+          satTotal:   scoreRec.satTotal   || '',
+          satMath:    scoreRec.satMath    || '',
+          satReading: scoreRec.satReading || '',
+          ielts:      scoreRec.ielts      || '',
+          toefl:      scoreRec.toefl      || '',
+          pte:        scoreRec.pte        || '',
+          duolingo:   scoreRec.duolingo   || '',
+          act:        scoreRec.act        || '',
+        },
+        specialNeeds: {
+          hasSpecialNeeds:      snRec.hasSpecialNeeds      || 'no',
+          specialNeeds:         snRec.specialNeeds         || [],
+          requiredArrangements: snRec.requiredArrangements || [],
+          snStatus:             snRec.status               || '',
+        },
         accountStatus: account.status || '',
         role:          account.role   || '',
         joinDate:      fmtDate(account.joinDate),
@@ -273,7 +321,6 @@ export const getGusUniversityApplications = async (req, res) => {
       };
     });
 
-    // ── 6. Optional in-memory filters ────────────────────────────
     let filtered = data;
 
     if (status && status !== 'all') {
@@ -289,10 +336,10 @@ export const getGusUniversityApplications = async (req, res) => {
     if (search) {
       const q = search.toLowerCase();
       filtered = filtered.filter((app) =>
-        app.studentName?.toLowerCase().includes(q)    ||
-        app.email?.toLowerCase().includes(q)          ||
-        String(app.studentId).includes(q)             ||
-        app.applicationId?.toLowerCase().includes(q)  ||
+        app.studentName?.toLowerCase().includes(q)   ||
+        app.email?.toLowerCase().includes(q)         ||
+        String(app.studentId).includes(q)            ||
+        app.applicationId?.toLowerCase().includes(q) ||
         app.passportNumber?.toLowerCase().includes(q)
       );
     }
@@ -320,13 +367,10 @@ export const getGusUniversityApplications = async (req, res) => {
 
 /* =====================================================
    GET SINGLE APPLICATION DETAIL
-   GET /api/application/process-admin/gus-university/applications/:studentId
 ===================================================== */
 export const getGusUniversityApplicationById = async (req, res) => {
   try {
     const { studentId } = req.params;
-
-    // KEY FIX: validate + convert before any query
     const objectId = toObjectId(studentId);
     if (!objectId) {
       return res.status(400).json({ success: false, message: 'Invalid studentId format.' });
@@ -338,10 +382,18 @@ export const getGusUniversityApplicationById = async (req, res) => {
       Account.findById(objectId)
         .select('firstName lastName email phone birthDate joinDate lastLogin status role')
         .lean(),
-      ApplicationDocument.findOne({ userId: objectId }).lean(),
-      ApplicationEducation.findOne({ userId: objectId }).lean(),
-      ApplicationScore.findOne({ studentId: objectId }).lean(),
-      ApplicationSpecialNeed.findOne({ studentId: objectId }).lean(),
+      ApplicationDocument.findOne({
+        $or: [{ userId: objectId }, { userId: studentId }],
+      }).lean(),
+      ApplicationEducation.findOne({
+        $or: [{ userId: objectId }, { userId: studentId }],
+      }).lean(),
+      ApplicationScore.findOne({
+        $or: [{ studentId: objectId }, { studentId: studentId }],
+      }).lean(),
+      ApplicationSpecialNeed.findOne({
+        $or: [{ studentId: objectId }, { studentId: studentId }],
+      }).lean(),
     ]);
 
     if (!lang) {
@@ -355,28 +407,35 @@ export const getGusUniversityApplicationById = async (req, res) => {
     const lastName   = personal?.lastName  || account?.lastName  || '';
     const firstEntry = eduRec?.educationEntries?.[0] || {};
 
+    const documents = mapDocuments(docRec, personal);
+
+    const computedCompletion =
+      documents.docsCompletionPct ||
+      lang.completionPercentage   ||
+      0;
+
     return res.status(200).json({
       success: true,
       data: {
         _id:           lang._id,
         applicationId: lang.applicationId || '',
         studentId,
-        studentName:    [firstName, lastName].filter(Boolean).join(' ') || 'Unknown',
-        title:          personal?.title          || '',
-        email:          personal?.email          || account?.email || '',
-        phone:          personal?.mobile         || account?.phone || '',
-        gender:         personal?.gender         || '',
-        dateOfBirth:    fmtDate(personal?.dateOfBirth),
-        placeOfBirth:   personal?.placeOfBirth   || '',
-        countryOfBirth: personal?.countryOfBirth || '',
+        studentName:   [firstName, lastName].filter(Boolean).join(' ') || 'Unknown',
+        title:         personal?.title || '',
+        email:         personal?.email  || account?.email || '',
+        phone:         personal?.mobile || account?.phone || '',
+        gender:        personal?.gender || '',
+        dateOfBirth:   fmtDate(personal?.dateOfBirth),
+        placeOfBirth:  personal?.placeOfBirth   || '',
+        countryOfBirth:personal?.countryOfBirth || '',
         citizenship:        personal?.citizenship        || '',
         passportNumber:     personal?.passportNumber     || '',
         passportIssueDate:  fmtDate(personal?.passportIssueDate),
         passportExpiryDate: fmtDate(personal?.passportExpiryDate),
-        issuingCountry:     personal?.issuingCountry     || '',
-        documentType:       personal?.documentType       || '',
-        passportUploaded:   !!personal?.passportFileName   || !!docRec?.passport?.fileName,
-        photographUploaded: !!personal?.photographFileName || !!docRec?.photo?.fileName,
+        issuingCountry:     personal?.issuingCountry || '',
+        documentType:       personal?.documentType   || '',
+        passportUploaded:   documents.passportUploaded,
+        photographUploaded: documents.photoUploaded,
         isEUCitizen: personal?.isEUCitizen ?? null,
         needVisa:    personal?.needVisa    || '',
         landline:               personal?.landline               || '',
@@ -395,34 +454,9 @@ export const getGusUniversityApplicationById = async (req, res) => {
         anotherEqheDate:                fmtDate(lang.anotherEqheDate),
         anotherEqheCity:                lang.anotherEqheCity                || '',
         anotherEqheCertificateFileName: lang.anotherEqheCertificateFileName || '',
-        completionPercentage: lang.completionPercentage || 0,
-        isCompleted:          lang.isCompleted          || false,
-        documents: docRec ? {
-          cvUploaded:         !!docRec.cv?.fileName,
-          cvStatus:           docRec.cv?.documentStatus          || 'not_uploaded',
-          photoUploaded:      !!docRec.photo?.fileName,
-          photoStatus:        docRec.photo?.documentStatus        || 'not_uploaded',
-          passportUploaded:   !!docRec.passport?.fileName,
-          passportStatus:     docRec.passport?.documentStatus     || 'not_uploaded',
-          transcriptUploaded: !!docRec.transcript?.fileName,
-          transcriptStatus:   docRec.transcript?.documentStatus   || 'not_uploaded',
-          diplomaUploaded:    !!docRec.diploma?.fileName,
-          diplomaStatus:      docRec.diploma?.documentStatus      || 'not_uploaded',
-          cert9thUploaded:    !!docRec.cert9th?.fileName,
-          cert9thStatus:      docRec.cert9th?.documentStatus      || 'not_uploaded',
-          cert10thUploaded:   !!docRec.cert10th?.fileName,
-          cert10thStatus:     docRec.cert10th?.documentStatus     || 'not_uploaded',
-          cert11thUploaded:   !!docRec.cert11th?.fileName,
-          cert11thStatus:     docRec.cert11th?.documentStatus     || 'not_uploaded',
-          cert12thUploaded:   !!docRec.cert12th?.fileName,
-          cert12thStatus:     docRec.cert12th?.documentStatus     || 'not_uploaded',
-          testScoresUploaded: !!docRec.testScores?.fileName,
-          langProfUploaded:   !!docRec.languageProficiency?.fileName,
-          recLetterUploaded:  !!docRec.recommendationLetter?.fileName,
-          portfolioLink:      docRec.portfolioLink                || '',
-          docsCompletionPct:  docRec.completionPercentage         || 0,
-          docsCompleted:      docRec.isCompleted                  || false,
-        } : null,
+        completionPercentage: computedCompletion,
+        isCompleted:          lang.isCompleted || false,
+        documents,
         education: eduRec ? {
           wasEnrolled:         eduRec.wasEnrolled         ?? null,
           isCurrentlyEnrolled: eduRec.isCurrentlyEnrolled ?? null,
@@ -446,10 +480,6 @@ export const getGusUniversityApplicationById = async (req, res) => {
           pte:        scoreRec.pte        || '',
           duolingo:   scoreRec.duolingo   || '',
           act:        scoreRec.act        || '',
-          grade9:     scoreRec.grade9     || {},
-          grade10:    scoreRec.grade10    || {},
-          grade11:    scoreRec.grade11    || {},
-          grade12:    scoreRec.grade12    || {},
         } : null,
         specialNeeds: snRec ? {
           hasSpecialNeeds:      snRec.hasSpecialNeeds      || 'no',
@@ -478,7 +508,6 @@ export const getGusUniversityApplicationById = async (req, res) => {
 
 /* =====================================================
    GET STATS SUMMARY
-   GET /api/application/process-admin/gus-university/stats
 ===================================================== */
 export const getGusUniversityStats = async (req, res) => {
   try {
