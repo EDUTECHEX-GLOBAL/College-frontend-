@@ -14,40 +14,40 @@ const FamilySection = ({ onComplete }) => {
   const location = useLocation();
   const [familyData, setFamilyData] = useState(null);
   const [loading, setLoading] = useState(true);
-useEffect(() => {
-  const fetchFamilyData = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
 
-      const response = await axios.get(`${API_URL}/api/students/family-dashb`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+  useEffect(() => {
+    const fetchFamilyData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
 
-      if (response.data.success) {
-        const data = response.data.familyData;
-        setFamilyData(data);
+        const response = await axios.get(`${API_URL}/api/students/family-dashb`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
 
-        if (data.overallProgress >= 100) {
-          localStorage.setItem('familySectionComplete', 'true');
-          if (onComplete) {
-            onComplete(true);
+        if (response.data.success) {
+          const data = response.data.familyData;
+          setFamilyData(data);
+
+          if (data.overallProgress >= 100) {
+            localStorage.setItem('familySectionComplete', 'true');
+            if (onComplete) {
+              onComplete(true);
+            }
           }
         }
+      } catch (error) {
+        console.error('Error fetching family data:', error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error fetching family data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  fetchFamilyData();
-}, []); // <-- remove onComplete from dependency array
-
+    fetchFamilyData();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleBackToDashboard = () => {
     const path = location.pathname;
@@ -71,7 +71,7 @@ useEffect(() => {
 
   return (
     <div className="family-section-container">
-      {/* Fixed Header - Properly aligned */}
+      {/* Fixed Header */}
       <div className="family-header-section">
         <div className="family-header-content">
           <button
@@ -95,7 +95,6 @@ useEffect(() => {
             <Route path="/household" element={<HouseholdForm />} />
             <Route path="/parent1" element={<Parent1Form />} />
             <Route path="/parent2" element={<Parent2Form />} />
-            {/* Sibling form can actively mark completion when it POSTs successfully */}
             <Route path="/sibling" element={<SiblingForm onComplete={onComplete} />} />
           </Routes>
         </div>

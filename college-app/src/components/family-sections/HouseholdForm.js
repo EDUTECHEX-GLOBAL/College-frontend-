@@ -16,7 +16,6 @@ const HouseholdForm = () => {
   });
   const [loading, setLoading] = useState(false);
 
-  // Options for dropdowns
   const maritalStatusOptions = [
     { value: 'married', label: 'Married' },
     { value: 'separated', label: 'Separated' },
@@ -93,14 +92,11 @@ const HouseholdForm = () => {
     }
   };
 
-  // Get selected values for react-select
-  const getSelectedMaritalStatus = () => {
-    return maritalStatusOptions.find(option => option.value === formData.parentsMaritalStatus);
-  };
+  const getSelectedMaritalStatus = () =>
+    maritalStatusOptions.find(option => option.value === formData.parentsMaritalStatus);
 
-  const getSelectedPermanentHome = () => {
-    return permanentHomeOptions.find(option => option.value === formData.permanentHomeWith);
-  };
+  const getSelectedPermanentHome = () =>
+    permanentHomeOptions.find(option => option.value === formData.permanentHomeWith);
 
   return (
     <div className="family-form-container">
@@ -171,8 +167,8 @@ const HouseholdForm = () => {
               No
             </label>
           </div>
-          <button 
-            type="button" 
+          <button
+            type="button"
             className="clear-answer"
             onClick={() => handleInputChange('hasChildren', '')}
           >
@@ -194,13 +190,14 @@ const HouseholdForm = () => {
               value={formData.childrenCount}
               onChange={(e) => handleInputChange('childrenCount', e.target.value)}
               required
+              inputMode="numeric"
             />
           </div>
         )}
 
         <div className="form-actions">
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="continue-button"
             disabled={loading}
           >

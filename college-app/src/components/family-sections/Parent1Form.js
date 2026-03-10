@@ -22,7 +22,6 @@ const Parent1Form = () => {
   });
   const [loading, setLoading] = useState(false);
 
-  // Options for dropdowns
   const prefixOptions = [
     { value: 'mr', label: 'Mr.' },
     { value: 'ms', label: 'Ms.' },
@@ -110,22 +109,10 @@ const Parent1Form = () => {
     }
   };
 
-  // Get selected values for react-select
-  const getSelectedPrefix = () => {
-    return prefixOptions.find(option => option.value === formData.prefix);
-  };
-
-  const getSelectedSuffix = () => {
-    return suffixOptions.find(option => option.value === formData.suffix);
-  };
-
-  const getSelectedOccupation = () => {
-    return occupationOptions.find(option => option.value === formData.occupation);
-  };
-
-  const getSelectedEducationLevel = () => {
-    return educationLevelOptions.find(option => option.value === formData.educationLevel);
-  };
+  const getSelectedPrefix = () => prefixOptions.find(o => o.value === formData.prefix);
+  const getSelectedSuffix = () => suffixOptions.find(o => o.value === formData.suffix);
+  const getSelectedOccupation = () => occupationOptions.find(o => o.value === formData.occupation);
+  const getSelectedEducationLevel = () => educationLevelOptions.find(o => o.value === formData.educationLevel);
 
   return (
     <div className="family-form-container">
@@ -135,46 +122,31 @@ const Parent1Form = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="family-form parent1-form">
+
         {/* Parent Type */}
         <div className="form-field">
-          <label className="form-label required">
-            Parent 1 type*
-          </label>
+          <label className="form-label required">Parent 1 type*</label>
           <div className="radio-group vertical">
-            <label className="radio-label">
-              <input
-                type="radio"
-                name="parentType"
-                value="mother"
-                checked={formData.parentType === 'mother'}
-                onChange={(e) => handleInputChange('parentType', e.target.value)}
-                required
-              />
-              Mother
-            </label>
-            <label className="radio-label">
-              <input
-                type="radio"
-                name="parentType"
-                value="father"
-                checked={formData.parentType === 'father'}
-                onChange={(e) => handleInputChange('parentType', e.target.value)}
-              />
-              Father
-            </label>
-            <label className="radio-label">
-              <input
-                type="radio"
-                name="parentType"
-                value="limited_info"
-                checked={formData.parentType === 'limited_info'}
-                onChange={(e) => handleInputChange('parentType', e.target.value)}
-              />
-              I have limited information about this parent
-            </label>
+            {[
+              { value: 'mother', label: 'Mother' },
+              { value: 'father', label: 'Father' },
+              { value: 'limited_info', label: 'I have limited information about this parent' }
+            ].map(({ value, label }) => (
+              <label className="radio-label" key={value}>
+                <input
+                  type="radio"
+                  name="parentType"
+                  value={value}
+                  checked={formData.parentType === value}
+                  onChange={(e) => handleInputChange('parentType', e.target.value)}
+                  required={value === 'mother'}
+                />
+                {label}
+              </label>
+            ))}
           </div>
-          <button 
-            type="button" 
+          <button
+            type="button"
             className="clear-answer"
             onClick={() => handleInputChange('parentType', '')}
           >
@@ -184,33 +156,23 @@ const Parent1Form = () => {
 
         {/* Is Living */}
         <div className="form-field">
-          <label className="form-label">
-            Is parent 1 living?
-          </label>
+          <label className="form-label">Is parent 1 living?</label>
           <div className="radio-group">
-            <label className="radio-label">
-              <input
-                type="radio"
-                name="isLiving"
-                value="yes"
-                checked={formData.isLiving === 'yes'}
-                onChange={(e) => handleInputChange('isLiving', e.target.value)}
-              />
-              Yes
-            </label>
-            <label className="radio-label">
-              <input
-                type="radio"
-                name="isLiving"
-                value="no"
-                checked={formData.isLiving === 'no'}
-                onChange={(e) => handleInputChange('isLiving', e.target.value)}
-              />
-              No
-            </label>
+            {['yes', 'no'].map(val => (
+              <label className="radio-label" key={val}>
+                <input
+                  type="radio"
+                  name="isLiving"
+                  value={val}
+                  checked={formData.isLiving === val}
+                  onChange={(e) => handleInputChange('isLiving', e.target.value)}
+                />
+                {val.charAt(0).toUpperCase() + val.slice(1)}
+              </label>
+            ))}
           </div>
-          <button 
-            type="button" 
+          <button
+            type="button"
             className="clear-answer"
             onClick={() => handleInputChange('isLiving', '')}
           >
@@ -218,8 +180,8 @@ const Parent1Form = () => {
           </button>
         </div>
 
-        {/* Personal Information */}
-        <div className="form-row">
+        {/* Row 1: Prefix / First name / Middle initial */}
+        <div className="form-row name-fields">
           <div className="form-field">
             <label className="form-label">Prefix</label>
             <Select
@@ -228,12 +190,11 @@ const Parent1Form = () => {
               value={getSelectedPrefix()}
               onChange={(option) => handleSelectChange('prefix', option)}
               options={prefixOptions}
-              placeholder="Choose an option"
+              placeholder="Choose"
               isSearchable={false}
-              isClearable={true}
+              isClearable
             />
           </div>
-
           <div className="form-field">
             <label className="form-label">First/Given name</label>
             <input
@@ -242,9 +203,9 @@ const Parent1Form = () => {
               value={formData.firstName}
               onChange={(e) => handleInputChange('firstName', e.target.value)}
               placeholder="Enter first name"
+              autoComplete="given-name"
             />
           </div>
-
           <div className="form-field">
             <label className="form-label">Middle initial</label>
             <input
@@ -258,7 +219,8 @@ const Parent1Form = () => {
           </div>
         </div>
 
-        <div className="form-row">
+        {/* Row 2: Last name / Former last name / Suffix */}
+        <div className="form-row name-fields">
           <div className="form-field">
             <label className="form-label">Last/Family/Surname</label>
             <input
@@ -267,11 +229,11 @@ const Parent1Form = () => {
               value={formData.lastName}
               onChange={(e) => handleInputChange('lastName', e.target.value)}
               placeholder="Enter last name"
+              autoComplete="family-name"
             />
           </div>
-
           <div className="form-field">
-            <label className="form-label">Former last/family/surname (if any)</label>
+            <label className="form-label">Former last name (if any)</label>
             <input
               type="text"
               className="form-input"
@@ -280,7 +242,6 @@ const Parent1Form = () => {
               placeholder="Enter former last name"
             />
           </div>
-
           <div className="form-field">
             <label className="form-label">Suffix</label>
             <Select
@@ -289,17 +250,17 @@ const Parent1Form = () => {
               value={getSelectedSuffix()}
               onChange={(option) => handleSelectChange('suffix', option)}
               options={suffixOptions}
-              placeholder="Choose an option"
+              placeholder="Choose"
               isSearchable={false}
-              isClearable={true}
+              isClearable
             />
           </div>
         </div>
 
-        {/* Occupation and Education */}
-        <div className="form-row">
+        {/* Row 3: Occupation / Education */}
+        <div className="form-row form-field-group">
           <div className="form-field">
-            <label className="form-label">Occupation (former occupation, if retired or deceased)</label>
+            <label className="form-label">Occupation (former, if retired/deceased)</label>
             <Select
               className="react-select-container"
               classNamePrefix="react-select"
@@ -308,10 +269,9 @@ const Parent1Form = () => {
               options={occupationOptions}
               placeholder="Choose an option"
               isSearchable={false}
-              isClearable={true}
+              isClearable
             />
           </div>
-
           <div className="form-field">
             <label className="form-label">Highest education level</label>
             <Select
@@ -322,14 +282,14 @@ const Parent1Form = () => {
               options={educationLevelOptions}
               placeholder="Choose an option"
               isSearchable={false}
-              isClearable={true}
+              isClearable
             />
           </div>
         </div>
 
         <div className="form-actions">
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="continue-button"
             disabled={loading}
           >

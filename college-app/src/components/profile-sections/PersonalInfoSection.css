@@ -1,5 +1,7 @@
-/* PersonalInfoSection.css - Dedicated styles for Personal Information section */
-.personalinfosection-personal-info-section {
+/* PersonalInfoSection.css */
+
+/* FIX: was `.personalinfosection-personal-info-section` — JS uses `.personal-info-section` */
+.personal-info-section {
   background: white;
   margin: 20px 40px;
   border-radius: 8px;
@@ -110,37 +112,103 @@
   margin: 0;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .personalinfosection-personal-info-section {
-    margin: 15px 20px;
+/* ── Tablet (≤ 1023px) ── */
+@media (max-width: 1023px) {
+  .personal-info-section {
+    margin: 20px 30px;
   }
-  
-  .personal-info-section .form-grid {
-    grid-template-columns: 1fr;
-    gap: 15px;
-  }
-  
   .personal-info-section .form-content {
     padding: 20px;
   }
 }
 
-@media (max-width: 480px) {
-  .personalinfosection-personal-info-section {
-    margin: 10px 15px;
+/* ── Mobile (≤ 767px) ── */
+@media (max-width: 767px) {
+  .personal-info-section {
+    margin: 15px 16px;
+    border-radius: 6px;
   }
-  
-  .personal-info-section .form-content {
-    padding: 16px;
-  }
-  
   .personal-info-section h2 {
-    padding: 16px 20px;
+    padding: 16px 18px;
     font-size: 18px;
   }
-  
   .personal-info-section .section-status {
-    padding: 10px 20px;
+    padding: 10px 18px;
+    font-size: 13px;
+  }
+  .personal-info-section .form-content {
+    padding: 18px;
+  }
+  .personal-info-section .form-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+    margin-bottom: 0;
+  }
+  .personal-info-section .form-group {
+    margin-bottom: 16px;
+  }
+}
+
+/* ── Small mobile (≤ 480px) ── */
+@media (max-width: 480px) {
+  .personal-info-section {
+    margin: 10px 12px;
+  }
+  .personal-info-section h2 {
+    padding: 14px 16px;
+    font-size: 17px;
+  }
+  .personal-info-section .section-status {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+  .personal-info-section .form-content {
+    padding: 14px;
+  }
+  .personal-info-section .form-group input,
+  .personal-info-section .form-group select {
+    padding: 9px 10px;
+    font-size: 13px;
+  }
+  .personal-info-section .form-group label {
+    font-size: 13px;
+  }
+  .personal-info-section .radio-group {
+    gap: 10px;
+  }
+  .personal-info-section .radio-group label {
+    font-size: 13px;
+  }
+}
+
+/* ── Very small (≤ 320px) ── */
+@media (max-width: 320px) {
+  .personal-info-section {
+    margin: 8px 8px;
+  }
+  .personal-info-section h2 {
+    font-size: 15px;
+    padding: 12px 12px;
+  }
+  .personal-info-section .section-status {
+    padding: 7px 12px;
+    font-size: 11px;
+  }
+  .personal-info-section .form-content {
+    padding: 12px;
+  }
+  .personal-info-section .form-group {
+    margin-bottom: 12px;
+  }
+  .personal-info-section .form-group input,
+  .personal-info-section .form-group select {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+  .personal-info-section .form-group label {
+    font-size: 12px;
+  }
+  .personal-info-section .radio-group label {
+    font-size: 12px;
   }
 }

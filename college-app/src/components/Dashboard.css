@@ -1,3 +1,7 @@
+/* ============================================================
+   Dashboard.css — FULLY UPDATED WITH MOBILE COMPATIBILITY
+   ============================================================ */
+
 /* Dashboard Container */
 .dashboard-container {
   display: flex;
@@ -29,14 +33,24 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
+  0%   { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
-/* Sidebar */
+/* ============================================================
+   MOBILE TOP BAR — hidden on desktop, shown on mobile
+   ============================================================ */
+.mobile-topbar {
+  display: none;
+}
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
 .dashboard-sidebar {
   width: 300px;
-  background: white;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
   height: 100vh;
   position: fixed;
   left: 0;
@@ -46,6 +60,18 @@
   border-right: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
+  z-index: 100;
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Close button — hidden on desktop */
+.sidebar-close-btn {
+  display: none;
+}
+
+/* Overlay — hidden on desktop */
+.sidebar-overlay {
+  display: none;
 }
 
 .sidebar-header {
@@ -56,6 +82,8 @@
   padding: 24px;
   border-bottom: 1px solid #e2e8f0;
   background: linear-gradient(135deg, #2C5AA0, #1E3D6F);
+  display: block !important;
+  visibility: visible !important;
 }
 
 .brand-logo {
@@ -68,7 +96,8 @@
 
 .user-profile-card {
   padding: 24px;
-  background: white;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(15px);
   border-bottom: 1px solid #e2e8f0;
 }
 
@@ -110,7 +139,9 @@
   letter-spacing: 0.5px;
 }
 
-/* Navigation */
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
 .sidebar-navigation {
   flex: 1;
   display: flex;
@@ -121,6 +152,8 @@
 
 .nav-section {
   padding: 24px 0 0 0;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
 }
 
 .nav-section-title {
@@ -152,13 +185,21 @@
 }
 
 .nav-item.active {
-  background: #edf2f7;
+  background: rgba(44, 90, 160, 0.08) !important;
+  backdrop-filter: blur(10px);
   border-left-color: #2C5AA0;
 }
 
 .nav-item.active .nav-text {
-  color: #2C5AA0;
-  font-weight: 600;
+  color: #2C5AA0 !important;
+  font-weight: 600 !important;
+}
+
+.nav-item.active .nav-content {
+  background: rgba(44, 90, 160, 0.08) !important;
+  color: #2C5AA0 !important;
+  backdrop-filter: blur(10px);
+  border-left: 3px solid #2C5AA0;
 }
 
 .nav-content {
@@ -184,7 +225,9 @@
   border-radius: 12px;
   min-width: 36px;
   text-align: center;
-  display: inline-block !important; /* FIX: Added this line */
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .nav-item.active .nav-progress {
@@ -211,12 +254,16 @@
   color: #c53030;
 }
 
-/* Main Content */
+/* ============================================================
+   MAIN CONTENT
+   ============================================================ */
 .dashboard-main {
   flex: 1;
   margin-left: 300px;
   background: transparent;
   min-height: 100vh;
+  overflow-y: auto;
+  max-height: 100vh;
 }
 
 .main-header {
@@ -231,17 +278,46 @@
 
 .header-content {
   display: flex;
-  justify-content: center; /* FIX: Changed from space-between to center */
+  justify-content: center;
   align-items: center;
   padding: 32px 40px;
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
+  text-align: center;
 }
 
+/* Hide old welcome section & header actions */
 .welcome-section {
-  flex: 1;
-  text-align: center; /* FIX: Added text alignment */
+  display: none;
+}
+
+.header-actions {
+  display: none !important;
+}
+
+.help-button {
+  display: none !important;
+}
+
+.help-icon {
+  display: none;
+}
+
+/* Centered welcome section */
+.welcome-section-centered {
+  text-align: center;
+  width: 100%;
+  display: block;
+}
+
+.welcome-name {
+  font-size: 30px !important;
+  font-weight: 700 !important;
+  color: #1e3d6f !important;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
 }
 
 .welcome-title {
@@ -257,23 +333,7 @@
   color: #718096;
   margin: 0;
   font-weight: 400;
-}
-
-.help-button {
-  display: none !important; /* FIX: Ensure it's hidden */
-}
-
-.help-icon {
-  width: 20px;
-  height: 20px;
-  background: #2C5AA0;
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 700;
+  letter-spacing: 0.3px;
 }
 
 /* Main Content */
@@ -301,8 +361,13 @@
   transform: translateY(-2px);
 }
 
-.dashboard-section-header {
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .section-title-group {
@@ -310,6 +375,9 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
 }
 
 .section-title {
@@ -320,7 +388,9 @@
   letter-spacing: -0.3px;
 }
 
-.dashboard-progress-indicator, .college-count {
+.progress-indicator,
+.dashboard-progress-indicator,
+.college-count {
   font-size: 14px;
   font-weight: 600;
   color: #718096;
@@ -333,6 +403,7 @@
   width: 100%;
 }
 
+.progress-bar,
 .dashboard-progress-bar {
   width: 100%;
   height: 6px;
@@ -348,7 +419,9 @@
   transition: width 0.5s ease;
 }
 
-/* Application Sections Grid */
+/* ============================================================
+   APPLICATION SECTIONS GRID
+   ============================================================ */
 .application-sections-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -429,7 +502,21 @@
   transform: translateY(-1px);
 }
 
-/* Colleges Section */
+.section-action-button.completed {
+  background: #10b981;
+  color: white;
+  border-color: #10b981;
+}
+
+.section-action-button.completed:hover {
+  background: #059669;
+  border-color: #059669;
+  transform: translateY(-1px);
+}
+
+/* ============================================================
+   COLLEGES SECTION
+   ============================================================ */
 .colleges-content {
   text-align: center;
 }
@@ -493,7 +580,179 @@
   box-shadow: 0 6px 20px rgba(44, 90, 160, 0.3);
 }
 
-/* Help & Support Section */
+/* College list items */
+.college-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.college-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  gap: 12px;
+}
+
+.college-name-link {
+  cursor: pointer;
+  color: #2C5AA0;
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+}
+
+.college-name-link:hover {
+  text-decoration: underline;
+}
+
+.college-location-small {
+  font-size: 13px;
+  color: #718096;
+  margin: 0 0 6px 0;
+}
+
+.view-details-button {
+  background: white;
+  color: #2C5AA0;
+  border: 1px solid #2C5AA0;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.view-details-button:hover {
+  background: #2C5AA0;
+  color: white;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #e2e8f0;
+  color: #4a5568;
+}
+
+.status-badge-small {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #e2e8f0;
+  color: #4a5568;
+}
+
+/* College preview list */
+.college-preview-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.college-preview-item {
+  padding: 14px 16px;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.college-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0 0 4px 0;
+}
+
+.college-location {
+  font-size: 13px;
+  color: #718096;
+  margin: 0 0 6px 0;
+}
+
+.view-all-colleges-button {
+  background: transparent;
+  color: #2C5AA0;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 0;
+  text-align: left;
+}
+
+/* ============================================================
+   QUICK ACCESS
+   ============================================================ */
+.quick-access-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.quick-access-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.quick-access-card:hover {
+  background: white;
+  border-color: #2C5AA0;
+  box-shadow: 0 4px 12px rgba(44, 90, 160, 0.1);
+  transform: translateY(-2px);
+}
+
+.quick-access-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.quick-access-content {
+  flex: 1;
+}
+
+.quick-access-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0 0 4px 0;
+}
+
+.quick-access-description {
+  font-size: 13px;
+  color: #718096;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.quick-access-arrow {
+  font-size: 18px;
+  color: #2C5AA0;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   HELP & SUPPORT
+   ============================================================ */
 .search-container {
   margin-bottom: 32px;
 }
@@ -507,6 +766,7 @@
   transition: all 0.3s ease;
   background: white;
   margin-bottom: 8px;
+  box-sizing: border-box;
 }
 
 .search-input:focus {
@@ -582,6 +842,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .faq-action-button:hover {
@@ -589,194 +850,9 @@
   color: white;
 }
 
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .dashboard-sidebar {
-    width: 280px;
-  }
-  
-  .dashboard-main {
-    margin-left: 280px;
-  }
-  
-  .application-sections-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .dashboard-sidebar {
-    width: 100%;
-    height: auto;
-    position: relative;
-  }
-  
-  .dashboard-main {
-    margin-left: 0;
-  }
-  
-  .main-content {
-    padding: 20px;
-  }
-  
-  .header-content {
-    padding: 24px 20px;
-    flex-direction: column;
-    gap: 16px;
-    align-items: center;
-  }
-  
-  .application-sections-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 480px) {
-  .content-section {
-    padding: 24px 20px;
-  }
-  
-  .welcome-title {
-    font-size: 24px;
-  }
-  
-  .section-title {
-    font-size: 18px;
-  }
-  
-  .faq-card {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .faq-action-button {
-    align-self: flex-start;
-    margin-top: 12px;
-  }
-}
-
-/* Profile Form Integration Styles */
-.dashboard-profile-container {
-  padding: 0;
-}
-
-.dashboard-profile-header {
-  background: white;
-  padding: 32px 40px;
-  border-bottom: 1px solid #e2e8f0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.dashboard-profile-header h1 {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 700;
-  color: #1a202c;
-}
-
-.dashboard-progress-section {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.progress-text {
-  font-size: 14px;
-  font-weight: 600;
-  color: #4a5568;
-  min-width: 80px;
-}
-
-.dashboard-profile-content {
-  padding: 32px 40px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-/* Ensure the main content area scrolls properly */
-.dashboard-main {
-  overflow-y: auto;
-  max-height: 100vh;
-}
-
-/* Add to Dashboard.css - After all existing styles */
-
-/* Completed state for section buttons */
-.section-action-button.completed {
-  background: #10b981;
-  color: white;
-  border-color: #10b981;
-}
-
-.section-action-button.completed:hover {
-  background: #059669;
-  border-color: #059669;
-  transform: translateY(-1px);
-}
-
-/* Enhanced progress indicators */
-.dashboard-progress-indicator {
-  font-size: 14px;
-  font-weight: 600;
-  color: #718096;
-  background: #f7fafc;
-  padding: 6px 12px;
-  border-radius: 6px;
-}
-
-.college-count {
-  font-size: 14px;
-  font-weight: 600;
-  color: #718096;
-  background: #f7fafc;
-  padding: 6px 12px;
-  border-radius: 6px;
-}
-
-.section-progress {
-  font-size: 12px;
-  font-weight: 600;
-  color: #2C5AA0;
-  background: #e8f0fe;
-  padding: 4px 8px;
-  border-radius: 12px;
-}
-
-/* Improved progress bars */
-.dashboard-progress-bar {
-  width: 100%;
-  height: 6px;
-  background-color: #e2e8f0;
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #2C5AA0, #1E3D6F);
-  border-radius: 3px;
-  transition: width 0.5s ease;
-}
-
-.section-progress-bar {
-  width: 100%;
-  height: 4px;
-  background-color: #e2e8f0;
-  border-radius: 2px;
-  overflow: hidden;
-  margin-bottom: 16px;
-}
-
-.section-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #2C5AA0, #1E3D6F);
-  border-radius: 2px;
-  transition: width 0.5s ease;
-}
-
-/* Expandable Navigation Sections */
+/* ============================================================
+   EXPANDABLE NAVIGATION
+   ============================================================ */
 .nav-section-expandable {
   padding: 0;
   cursor: pointer;
@@ -832,23 +908,32 @@
 }
 
 .nav-subitem.active {
-  background: #e8f0fe;
+  background: rgba(44, 90, 160, 0.08) !important;
+  backdrop-filter: blur(10px);
   border-left-color: #2C5AA0;
 }
 
 .nav-subitem.active .nav-text {
-  color: #2C5AA0;
-  font-weight: 600;
+  color: #2C5AA0 !important;
+  font-weight: 600 !important;
+}
+
+.nav-subitem.active .nav-content {
+  background: rgba(44, 90, 160, 0.08) !important;
+  color: #2C5AA0 !important;
+  backdrop-filter: blur(10px);
+  border-left: 3px solid #2C5AA0;
 }
 
 .nav-subitem .nav-content {
-  padding: 12px 24px 12px 40px; /* Indent sub-items */
+  padding: 12px 24px 12px 40px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.nav-subitem .nav-progress {
+.nav-subitem .nav-progress,
+.nav-progress-tiny {
   font-size: 11px;
   font-weight: 600;
   color: #718096;
@@ -857,7 +942,9 @@
   border-radius: 10px;
   min-width: 32px;
   text-align: center;
-  display: inline-block !important; /* FIX: Added this line */
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .nav-subitem.active .nav-progress {
@@ -865,13 +952,29 @@
   color: white;
 }
 
-/* My Colleges Expandable Styles */
 .nav-header-right {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
+.nav-progress-small {
+  font-size: 11px;
+  font-weight: 600;
+  color: #718096;
+  background: #e2e8f0;
+  padding: 2px 6px;
+  border-radius: 8px;
+  min-width: 28px;
+  text-align: center;
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* ============================================================
+   COLLEGE SIDEBAR ITEMS
+   ============================================================ */
 .nav-college-item {
   padding: 0;
 }
@@ -892,13 +995,18 @@
 }
 
 .nav-college-header.active {
-  background: #edf2f7;
-  border-left-color: #2C5AA0;
+  background: rgba(44, 90, 160, 0.08) !important;
+  border-left: 3px solid #2C5AA0 !important;
+  backdrop-filter: blur(10px);
 }
 
 .nav-college-header.active .nav-text {
-  color: #2C5AA0;
-  font-weight: 600;
+  color: #2C5AA0 !important;
+  font-weight: 600 !important;
+}
+
+.nav-college-header.active .expand-icon {
+  color: #2C5AA0 !important;
 }
 
 .nav-college-submenu {
@@ -925,6 +1033,13 @@
 .nav-college-subitem .nav-content:hover {
   background: #f1f5f9;
   border-left-color: #e2e8f0;
+}
+
+.nav-college-subitem.active .nav-content,
+.nav-application-subitem.active .nav-content {
+  background: rgba(44, 90, 160, 0.08) !important;
+  color: #2C5AA0 !important;
+  backdrop-filter: blur(10px);
 }
 
 .nav-college-subheader {
@@ -965,57 +1080,11 @@
   border-radius: 8px;
   min-width: 28px;
   text-align: center;
-  display: inline-block !important; /* FIX: Added this line */
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
-/* =========================================
-   LIGHT GLASSY ACTIVE STATE STYLES
-   ========================================= */
-
-/* Active state for all navigation levels - Light Glassy Effect */
-.nav-item.active,
-.nav-subitem.active,
-.nav-college-subitem.active,
-.nav-application-subitem.active {
-  background: rgba(44, 90, 160, 0.08) !important;
-  backdrop-filter: blur(10px);
-}
-
-.nav-item.active .nav-content,
-.nav-subitem.active .nav-content,
-.nav-college-subitem.active .nav-content,
-.nav-application-subitem.active .nav-content {
-  background: rgba(44, 90, 160, 0.08) !important;
-  color: #2C5AA0 !important;
-  backdrop-filter: blur(10px);
-  border-left: 3px solid #2C5AA0;
-}
-
-.nav-item.active .nav-text,
-.nav-subitem.active .nav-text,
-.nav-college-subitem.active .nav-text,
-.nav-application-subitem.active .nav-text {
-  color: #2C5AA0 !important;
-  font-weight: 600 !important;
-}
-
-/* College header active state - Light Glassy */
-.nav-college-header.active {
-  background: rgba(44, 90, 160, 0.08) !important;
-  border-left: 3px solid #2C5AA0 !important;
-  backdrop-filter: blur(10px);
-}
-
-.nav-college-header.active .nav-text {
-  color: #2C5AA0 !important;
-  font-weight: 600 !important;
-}
-
-.nav-college-header.active .expand-icon {
-  color: #2C5AA0 !important;
-}
-
-/* Make sure active states override hover states */
 .nav-content.active:hover {
   background: rgba(44, 90, 160, 0.12) !important;
   color: #2C5AA0 !important;
@@ -1025,194 +1094,421 @@
   color: #2C5AA0 !important;
 }
 
-/* Ensure active states are visible and override everything */
-.nav-application-subitem.active .nav-content,
-.nav-college-subitem.active .nav-content {
-  background: rgba(44, 90, 160, 0.08) !important;
-  color: #2C5AA0 !important;
-  backdrop-filter: blur(10px);
+/* Profile Form Integration */
+.dashboard-profile-container {
+  padding: 0;
 }
 
-/* FIX: Progress indicators should be visible - REMOVED the display: none rules */
-/* .nav-progress {
-  display: none;
+.dashboard-profile-header {
+  background: white;
+  padding: 32px 40px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.nav-header-right .nav-progress {
-  display: none;
-} */
-
-/* Glassy effect for the entire sidebar */
-.dashboard-sidebar {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
+.dashboard-profile-header h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a202c;
 }
 
-/* Enhanced glassy effect for user profile */
-.user-profile-card {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(15px);
+.dashboard-progress-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
-/* Glassy effect for navigation sections */
-.nav-section {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
+.progress-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #4a5568;
+  min-width: 80px;
 }
 
-/* Ensure Activities page shows the logo */
+.dashboard-profile-content {
+  padding: 32px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Ensure Activities page shows sidebar */
 .dashboard-container .dashboard-sidebar {
   display: flex !important;
 }
 
-.brand-section {
-  display: block !important;
-  visibility: visible !important;
-}
-
-/* Make sure Activities page doesn't hide the sidebar */
 .activities-container ~ .dashboard-sidebar,
 .responsibilities-container ~ .dashboard-sidebar {
   display: flex !important;
 }
 
-/* =========================================
-   CENTERED HEADER WITH NO HELP BUTTON
-   ========================================= */
-
-.header-content {
-  display: flex;
-  justify-content: center; /* FIX: Changed from space-between to center */
-  align-items: center;
-  padding: 32px 40px;
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-/* Hide the header actions (Need Help button) */
-.header-actions {
-  display: none !important;
-}
-
-/* New centered welcome section */
-.welcome-section-centered {
-  text-align: center;
-  width: 100%;
-  display: block; /* FIX: Ensure it's visible */
-}
-
-.welcome-name {
-  font-size: 30px;
-  font-weight: 700;
-  color: #1e3d6f;
-  margin: 0 0 8px 0;
-  letter-spacing: -0.5px;
-  line-height: 1.2;
-}
-
-/* Adjust the subtitle */
-.welcome-subtitle {
-  font-size: 16px;
+/* Progress summary */
+.progress-summary p {
+  font-size: 14px;
   color: #718096;
+  margin: 0 0 8px 0;
+}
+
+/* Nav hints */
+.nav-hint,
+.nav-hint-small {
+  font-size: 13px;
+  color: #a0aec0;
+  font-style: italic;
+}
+
+.nav-count,
+.nav-count-small {
+  font-size: 11px;
+  font-weight: 700;
+  background: #2C5AA0;
+  color: white;
+  padding: 2px 7px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+  display: inline-block;
+}
+
+/* ============================================================
+   MOBILE TOP BAR STYLES (defined here, shown via media query)
+   ============================================================ */
+.mobile-brand-logo {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e3a5f;
   margin: 0;
-  font-weight: 400;
-  letter-spacing: 0.3px;
 }
 
-/* Hide the old welcome section if it exists */
-.welcome-section {
-  display: none;
-}
-
-/* Make sure the main-header has proper height */
-.main-header {
-  background: white;
-  padding: 0;
-  border-bottom: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+.mobile-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2C5AA0, #1E3D6F);
+  color: #fff;
   display: flex;
   align-items: center;
-  min-height: 140px;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
 }
 
-/* Ensure the help button is hidden in all cases */
-.help-button {
-  display: none !important;
+.mobile-menu-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: background 0.15s;
 }
 
-/* =========================================
-   RESPONSIVE ADJUSTMENTS
-   ========================================= */
+.mobile-menu-btn:hover {
+  background: #f3f4f6;
+}
 
-@media (max-width: 768px) {
-  .header-content {
-    padding: 20px;
+.hamburger-icon {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 22px;
+}
+
+.hamburger-icon span {
+  display: block;
+  height: 2px;
+  background: #374151;
+  border-radius: 2px;
+}
+
+/* ============================================================
+   BREAKPOINT: tablets (≤ 1024px)
+   ============================================================ */
+@media (max-width: 1024px) {
+  /* Show mobile top bar */
+  .mobile-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 0 16px;
+    height: 56px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    flex-shrink: 0;
+  }
+
+  /* Dashboard container stacks vertically */
+  .dashboard-container {
+    flex-direction: column;
+  }
+
+  /* Sidebar: slide-in drawer */
+  .dashboard-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 300px;
+    max-width: 85vw;
+    z-index: 300;
+    transform: translateX(-100%);
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Open state */
+  .dashboard-sidebar.sidebar-open {
+    transform: translateX(0);
+  }
+
+  /* Overlay */
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 299;
+    animation: overlayFadeIn 0.2s ease;
+  }
+
+  @keyframes overlayFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* Close button inside sidebar */
+  .sidebar-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #e5e7eb;
+    border-radius: 50%;
+    font-size: 0.85rem;
+    cursor: pointer;
+    color: #374151;
+    z-index: 10;
+    transition: background 0.15s;
+  }
+
+  .sidebar-close-btn:hover {
+    background: #e5e7eb;
+  }
+
+  /* Main content: full width, account for topbar */
+  .dashboard-main {
+    margin-left: 0;
+    width: 100%;
+    min-height: calc(100vh - 56px);
+    max-height: none;
+    overflow-y: auto;
+  }
+
+  /* Main header */
+  .main-header {
     min-height: 100px;
   }
-  
-  .welcome-name {
-    font-size: 28px;
-  }
-  
-  .welcome-subtitle {
-    font-size: 15px;
-  }
-  
-  .main-header {
-    min-height: 120px;
-  }
-}
 
-@media (max-width: 480px) {
-  .welcome-name {
-    font-size: 24px;
+  .header-content {
+    padding: 20px 20px;
   }
-  
+
+  .welcome-name {
+    font-size: 24px !important;
+  }
+
+  .welcome-title {
+    font-size: 22px;
+  }
+
   .welcome-subtitle {
     font-size: 14px;
   }
-  
-  .main-header {
-    min-height: 100px;
+
+  /* Main content padding */
+  .main-content {
+    padding: 20px 20px 32px;
+    gap: 16px;
+  }
+
+  /* Application sections: 2 columns on tablet */
+  .application-sections-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  /* Quick access: 1 column on tablet */
+  .quick-access-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  /* College list items: stack on tablet */
+  .college-list-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .view-details-button {
+    width: 100%;
+  }
+
+  /* FAQ cards: stack */
+  .faq-card {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .faq-action-button {
+    width: 100%;
+    text-align: center;
   }
 }
 
-/* FIX: Added these rules to ensure progress indicators work correctly */
-.nav-header-right .nav-progress {
-  display: inline-block !important;
-  font-size: 11px;
-  font-weight: 600;
-  color: #718096;
-  background: #e2e8f0;
-  padding: 2px 6px;
-  border-radius: 8px;
-  min-width: 28px;
-  text-align: center;
+/* ============================================================
+   BREAKPOINT: phones (≤ 640px)
+   ============================================================ */
+@media (max-width: 640px) {
+  .mobile-topbar {
+    height: 52px;
+    padding: 0 12px;
+  }
+
+  /* Application grid: 1 column on phones */
+  .application-sections-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .welcome-name {
+    font-size: 20px !important;
+  }
+
+  .welcome-title {
+    font-size: 18px;
+  }
+
+  .welcome-subtitle {
+    font-size: 13px;
+  }
+
+  .main-content {
+    padding: 12px 12px 24px;
+    gap: 12px;
+  }
+
+  .content-section {
+    padding: 16px 14px;
+    border-radius: 8px;
+  }
+
+  .section-title {
+    font-size: 17px;
+  }
+
+  /* Quick access arrow: hide on very small screens */
+  .quick-access-arrow {
+    display: none;
+  }
+
+  .quick-access-card {
+    padding: 14px 12px;
+  }
+
+  .quick-access-icon {
+    font-size: 22px;
+  }
+
+  .quick-access-title {
+    font-size: 14px;
+  }
+
+  .quick-access-description {
+    font-size: 12px;
+  }
+
+  /* Section action buttons: full width */
+  .section-action-button {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  /* Primary action button */
+  .primary-action-button {
+    width: 100%;
+    padding: 14px 20px;
+  }
+
+  /* FAQ */
+  .faq-question {
+    font-size: 14px;
+  }
+
+  .faq-answer {
+    font-size: 13px;
+  }
+
+  /* Search */
+  .search-input {
+    font-size: 14px;
+    padding: 12px 14px;
+  }
+
+  /* Loading screen */
+  .dashboard-loading {
+    padding: 40px 16px;
+    text-align: center;
+  }
+
+  /* College preview */
+  .college-preview-item {
+    padding: 10px 12px;
+  }
+
+  .college-name {
+    font-size: 14px;
+  }
+
+  .college-location {
+    font-size: 12px;
+  }
 }
 
-/* Ensure progress indicators are visible in all states */
-.nav-progress,
-.nav-subitem .nav-progress,
-.nav-college-subitem .nav-progress,
-.nav-application-subitem .nav-progress,
-.nav-header-right .nav-progress {
-  display: inline-block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
+/* ============================================================
+   BREAKPOINT: very small phones (≤ 380px)
+   ============================================================ */
+@media (max-width: 380px) {
+  .mobile-brand-logo {
+    font-size: 0.95rem;
+  }
 
-/* Ensure the welcome name is properly displayed */
-.welcome-name {
-  color: #1e3d6f !important;
-  font-size: 30px !important;
-  font-weight: 700 !important;
-}
+  .main-content {
+    padding: 10px 10px 20px;
+  }
 
-/* Fix the header content alignment */
-.header-content {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
+  .content-section {
+    padding: 14px 10px;
+  }
+
+  .application-section-card {
+    padding: 14px 12px;
+  }
+
+  .section-name {
+    font-size: 13px;
+  }
 }

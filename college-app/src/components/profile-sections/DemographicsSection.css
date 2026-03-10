@@ -1,4 +1,5 @@
-/* DemographicsSection.css - Dedicated styles for Demographics section */
+/* DemographicsSection.css */
+
 .demographics-section {
   background: white;
   margin: 20px 40px;
@@ -67,7 +68,7 @@
   color: #dc2626;
 }
 
-/* Radio Group Styles */
+/* ── Radio Group ── */
 .demographics-section .radio-group {
   display: flex;
   flex-direction: column;
@@ -89,7 +90,7 @@
   margin: 0;
 }
 
-/* Checkbox Group Styles */
+/* ── Checkbox Group ── */
 .demographics-section .checkbox-group {
   display: flex;
   flex-direction: column;
@@ -111,65 +112,101 @@
   margin: 0;
 }
 
-/* Responsive Design for Demographics Section */
-@media (max-width: 1199px) and (min-width: 768px) {
+/* ── Tablet (≤ 1023px) ── */
+@media (max-width: 1023px) {
   .demographics-section {
     margin: 20px 30px;
   }
 }
 
+/* ── Mobile (≤ 767px) ── */
 @media (max-width: 767px) {
   .demographics-section {
-    margin: 15px 20px;
+    margin: 15px 16px;
     border-radius: 6px;
   }
-  
-  .demographics-section .form-content {
-    padding: 20px;
-  }
-  
   .demographics-section h2 {
-    padding: 16px 20px;
+    padding: 16px 18px;
     font-size: 18px;
   }
-  
   .demographics-section .section-status {
-    padding: 10px 20px;
+    padding: 10px 18px;
   }
-  
+  .demographics-section .form-content {
+    padding: 18px;
+  }
   .demographics-section .form-group {
     margin-bottom: 24px;
     padding-bottom: 16px;
   }
-  
   .demographics-section .form-group label {
     margin-bottom: 10px;
     font-size: 13px;
   }
-  
   .demographics-section .radio-group,
   .demographics-section .checkbox-group {
     gap: 8px;
   }
 }
 
+/* ── Small mobile (≤ 480px) ── */
 @media (max-width: 480px) {
   .demographics-section {
-    margin: 10px 15px;
+    margin: 10px 12px;
   }
-  
+  .demographics-section h2 {
+    padding: 14px 14px;
+    font-size: 17px;
+  }
+  .demographics-section .section-status {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
   .demographics-section .form-content {
-    padding: 16px;
+    padding: 14px;
   }
-  
   .demographics-section .form-group {
     margin-bottom: 20px;
     padding-bottom: 12px;
   }
-  
   .demographics-section .radio-group label,
   .demographics-section .checkbox-group label {
     padding: 4px 0;
     font-size: 13px;
+  }
+}
+
+/* ── Very small (≤ 320px) ── */
+@media (max-width: 320px) {
+  .demographics-section {
+    margin: 8px 8px;
+  }
+  .demographics-section h2 {
+    font-size: 15px;
+    padding: 12px 12px;
+  }
+  .demographics-section .section-status {
+    padding: 7px 12px;
+    font-size: 11px;
+  }
+  .demographics-section .form-content {
+    padding: 12px;
+  }
+  .demographics-section .form-group {
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+  }
+  .demographics-section .form-group label {
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+  .demographics-section .radio-group label,
+  .demographics-section .checkbox-group label {
+    font-size: 12px;
+    padding: 3px 0;
+  }
+  .demographics-section .radio-group,
+  .demographics-section .checkbox-group {
+    gap: 6px;
   }
 }

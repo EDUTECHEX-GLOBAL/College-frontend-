@@ -14,7 +14,6 @@ const SiblingForm = () => {
   });
   const [loading, setLoading] = useState(false);
 
-  // Options for siblings count
   const siblingsCountOptions = [
     { value: '0', label: '0' },
     { value: '1', label: '1' },
@@ -29,7 +28,6 @@ const SiblingForm = () => {
     { value: '10', label: '10+' }
   ];
 
-  // Relationship options (you can adjust as needed)
   const relationshipOptions = [
     { value: 'brother', label: 'Brother' },
     { value: 'sister', label: 'Sister' },
@@ -54,7 +52,6 @@ const SiblingForm = () => {
       if (response.data.success && response.data.familyData.siblings) {
         const siblingsData = response.data.familyData.siblings;
 
-        // Ensure each sibling object has the new fields as well
         const normalizedList = (siblingsData.siblingsList || []).map((sibling) => ({
           firstName: sibling.firstName || '',
           lastName: sibling.lastName || '',
@@ -78,7 +75,6 @@ const SiblingForm = () => {
     const siblingsCount = selectedOption ? selectedOption.value : '';
     const countNum = parseInt(siblingsCount) || 0;
 
-    // Include new fields in default object
     const newSiblingsList = Array.from({ length: countNum }, (_, index) =>
       formData.siblingsList[index] || {
         firstName: '',
@@ -92,7 +88,7 @@ const SiblingForm = () => {
 
     setFormData(prev => ({
       ...prev,
-      siblingsCount: siblingsCount,
+      siblingsCount,
       siblingsList: newSiblingsList
     }));
   };
@@ -111,13 +107,11 @@ const SiblingForm = () => {
     setLoading(true);
 
     try {
-      // Prepare data for submission
       const submissionData = {
         siblingsCount: parseInt(formData.siblingsCount) || 0,
         siblingsList: formData.siblingsList
       };
 
-      // Validate required fields for siblings if count > 0
       if (submissionData.siblingsCount > 0) {
         const hasEmptyRequiredFields = submissionData.siblingsList.some(
           sibling => !sibling.firstName?.trim() || !sibling.lastName?.trim()
@@ -134,13 +128,10 @@ const SiblingForm = () => {
       const response = await axios.post(
         `${API_URL}/api/students/family-dashb/sibling`,
         submissionData,
-        {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }
+        { headers: { 'Authorization': `Bearer ${token}` } }
       );
 
       if (response.data.success) {
-        // Navigate back to dashboard
         navigate('/firstyear/dashboard');
       }
     } catch (error) {
@@ -155,10 +146,8 @@ const SiblingForm = () => {
     }
   };
 
-  // Get selected siblings count
-  const getSelectedSiblingsCount = () => {
-    return siblingsCountOptions.find(option => option.value === formData.siblingsCount);
-  };
+  const getSelectedSiblingsCount = () =>
+    siblingsCountOptions.find(option => option.value === formData.siblingsCount);
 
   const getSelectedRelationship = (sibling) =>
     relationshipOptions.find(opt => opt.value === (sibling.relationship || ''));
@@ -176,19 +165,21 @@ const SiblingForm = () => {
           <label className="form-label required">
             Please specify number of siblings you have*
           </label>
-          <Select
-            className="react-select-container"
-            classNamePrefix="react-select"
-            value={getSelectedSiblingsCount()}
-            onChange={handleSiblingsCountChange}
-            options={siblingsCountOptions}
-            placeholder="Choose an option"
-            isSearchable={false}
-            required
-          />
+          <div className="sibling-count-select">
+            <Select
+              className="react-select-container"
+              classNamePrefix="react-select"
+              value={getSelectedSiblingsCount()}
+              onChange={handleSiblingsCountChange}
+              options={siblingsCountOptions}
+              placeholder="Choose an option"
+              isSearchable={false}
+              required
+            />
+          </div>
         </div>
 
-        {/* Sibling Details Forms */}
+        {/* Sibling Details */}
         {formData.siblingsCount && formData.siblingsCount !== '0' && (
           <div className="siblings-details-section">
             <h3 className="siblings-section-title">Sibling Details</h3>
@@ -198,11 +189,10 @@ const SiblingForm = () => {
                 <h4 className="sibling-title">Sibling {index + 1}</h4>
 
                 <div className="sibling-form-fields">
+                  {/* Row 1: First name / Last name / Age */}
                   <div className="form-row">
                     <div className="form-field">
-                      <label className="form-label required">
-                        First/Given name*
-                      </label>
+                      <label className="form-label required">First/Given name*</label>
                       <input
                         type="text"
                         className="form-input"
@@ -210,13 +200,12 @@ const SiblingForm = () => {
                         onChange={(e) => handleSiblingChange(index, 'firstName', e.target.value)}
                         required
                         placeholder="Enter first name"
+                        autoComplete="off"
                       />
                     </div>
 
                     <div className="form-field">
-                      <label className="form-label required">
-                        Last/Family/Surname*
-                      </label>
+                      <label className="form-label required">Last/Family/Surname*</label>
                       <input
                         type="text"
                         className="form-input"
@@ -224,13 +213,12 @@ const SiblingForm = () => {
                         onChange={(e) => handleSiblingChange(index, 'lastName', e.target.value)}
                         required
                         placeholder="Enter last name"
+                        autoComplete="off"
                       />
                     </div>
 
                     <div className="form-field">
-                      <label className="form-label">
-                        Age
-                      </label>
+                      <label className="form-label">Age</label>
                       <input
                         type="number"
                         className="form-input"
@@ -239,15 +227,15 @@ const SiblingForm = () => {
                         value={sibling.age}
                         onChange={(e) => handleSiblingChange(index, 'age', e.target.value)}
                         placeholder="Enter age"
+                        inputMode="numeric"
                       />
                     </div>
                   </div>
 
+                  {/* Row 2: Relationship / College / Degree */}
                   <div className="form-row">
                     <div className="form-field">
-                      <label className="form-label required">
-                        Relationship*
-                      </label>
+                      <label className="form-label required">Relationship*</label>
                       <Select
                         className="react-select-container"
                         classNamePrefix="react-select"
@@ -258,37 +246,31 @@ const SiblingForm = () => {
                         options={relationshipOptions}
                         placeholder="Select relationship"
                         isSearchable={false}
-                        isClearable={true}
+                        isClearable
                       />
                     </div>
 
                     <div className="form-field">
-                      <label className="form-label">
-                        College Attended
-                      </label>
+                      <label className="form-label">College Attended</label>
                       <input
                         type="text"
                         className="form-input"
                         value={sibling.collegeAttended || ''}
-                        onChange={(e) =>
-                          handleSiblingChange(index, 'collegeAttended', e.target.value)
-                        }
+                        onChange={(e) => handleSiblingChange(index, 'collegeAttended', e.target.value)}
                         placeholder="Enter college attended"
+                        autoComplete="off"
                       />
                     </div>
 
                     <div className="form-field">
-                      <label className="form-label">
-                        Degree Earned
-                      </label>
+                      <label className="form-label">Degree Earned</label>
                       <input
                         type="text"
                         className="form-input"
                         value={sibling.degreeEarned || ''}
-                        onChange={(e) =>
-                          handleSiblingChange(index, 'degreeEarned', e.target.value)
-                        }
+                        onChange={(e) => handleSiblingChange(index, 'degreeEarned', e.target.value)}
                         placeholder="Enter degree earned"
+                        autoComplete="off"
                       />
                     </div>
                   </div>
@@ -298,7 +280,7 @@ const SiblingForm = () => {
           </div>
         )}
 
-        {/* Show message when 0 siblings selected */}
+        {/* 0 siblings message */}
         {formData.siblingsCount === '0' && (
           <div className="no-siblings-message">
             <p>You have indicated that you have no siblings.</p>

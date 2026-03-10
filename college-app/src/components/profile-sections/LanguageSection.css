@@ -1,4 +1,5 @@
-/* LanguageSection.css - Dedicated styles for Language section */
+/* LanguageSection.css */
+
 .language-section-component {
   background: white;
   margin: 20px 40px;
@@ -83,7 +84,7 @@
   font-size: 13px;
 }
 
-/* Individual Language Section Styles */
+/* ── Individual language card ── */
 .language-section-component .language-section {
   background: #f8f9fa;
   padding: 20px;
@@ -97,7 +98,7 @@
   margin-bottom: 0;
 }
 
-/* Checkbox Group Styles */
+/* ── Checkbox Group (horizontal) ── */
 .language-section-component .checkbox-group.horizontal {
   display: flex;
   flex-wrap: wrap;
@@ -121,7 +122,7 @@
   margin: 0;
 }
 
-/* Button Styles */
+/* ── Buttons ── */
 .language-section-component .add-button {
   background: transparent;
   color: #2C5AA0;
@@ -159,77 +160,7 @@
   background: #fef2f2;
 }
 
-/* Responsive Design for Language Section */
-@media (max-width: 1199px) and (min-width: 768px) {
-  .language-section-component {
-    margin: 20px 30px;
-  }
-}
-
-@media (max-width: 767px) {
-  .language-section-component {
-    margin: 15px 20px;
-    border-radius: 6px;
-  }
-  
-  .language-section-component .form-content {
-    padding: 20px;
-  }
-  
-  .language-section-component h2 {
-    padding: 16px 20px;
-    font-size: 18px;
-  }
-  
-  .language-section-component .section-status {
-    padding: 10px 20px;
-  }
-  
-  .language-section-component .language-section {
-    padding: 16px;
-    margin-bottom: 16px;
-  }
-  
-  .language-section-component .checkbox-group.horizontal {
-    gap: 12px;
-  }
-  
-  .language-section-component .checkbox-group.horizontal label {
-    font-size: 12px;
-  }
-}
-
-@media (max-width: 480px) {
-  .language-section-component {
-    margin: 10px 15px;
-  }
-  
-  .language-section-component .form-content {
-    padding: 16px;
-  }
-  
-  .language-section-component .language-section {
-    padding: 12px;
-    margin-bottom: 12px;
-  }
-  
-  .language-section-component .checkbox-group.horizontal {
-    flex-direction: column;
-    gap: 8px;
-  }
-  
-  .language-section-component .add-button {
-    padding: 8px 12px;
-    font-size: 13px;
-  }
-  
-  .language-section-component .remove-button {
-    padding: 4px 8px;
-    font-size: 11px;
-  }
-}
-/* Existing styles... keep your current ones and ADD these: */
-
+/* ── Language autocomplete input ── */
 .language-input-wrapper {
   position: relative;
   width: 100%;
@@ -237,19 +168,21 @@
 
 .language-input {
   width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
   font-size: 14px;
   font-family: inherit;
   box-sizing: border-box;
   transition: border-color 0.2s;
+  background: white;
 }
 
+/* FIX: was #4a90e2 (off-brand blue) — aligned to brand color */
 .language-input:focus {
   outline: none;
-  border-color: #4a90e2;
-  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+  border-color: #2C5AA0;
+  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
 }
 
 .language-dropdown {
@@ -258,7 +191,7 @@
   left: 0;
   right: 0;
   background: white;
-  border: 1px solid #ddd;
+  border: 1px solid #d1d5db;
   border-top: none;
   border-radius: 0 0 6px 6px;
   max-height: 200px;
@@ -277,7 +210,7 @@
 }
 
 .dropdown-item:hover {
-  background-color: #f5f5f5;
+  background-color: #f0f7ff;
 }
 
 .dropdown-item:last-child {
@@ -285,7 +218,7 @@
 }
 
 .dropdown-item.disabled {
-  color: #999;
+  color: #9ca3af;
   cursor: not-allowed;
   background-color: #fafafa;
 }
@@ -294,18 +227,146 @@
   background-color: #fafafa;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .language-dropdown {
-    max-height: 150px;
+/* ── Tablet (≤ 1023px) ── */
+@media (max-width: 1023px) {
+  .language-section-component {
+    margin: 20px 30px;
   }
+}
 
-  .checkbox-group.horizontal {
+/* ── Mobile (≤ 767px) ── */
+@media (max-width: 767px) {
+  .language-section-component {
+    margin: 15px 16px;
+    border-radius: 6px;
+  }
+  .language-section-component h2 {
+    padding: 16px 18px;
+    font-size: 18px;
+  }
+  .language-section-component .section-status {
+    padding: 10px 18px;
+  }
+  .language-section-component .form-content {
+    padding: 18px;
+  }
+  .language-section-component .language-section {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  /* FIX: was unscoped bare `.checkbox-group.horizontal` — now properly scoped */
+  .language-section-component .checkbox-group.horizontal {
     flex-wrap: wrap;
     gap: 12px;
   }
-
-  .checkbox-group.horizontal label {
+  .language-section-component .checkbox-group.horizontal label {
+    font-size: 12px;
     min-width: calc(50% - 6px);
+  }
+  .language-dropdown {
+    max-height: 160px;
+  }
+}
+
+/* ── Small mobile (≤ 480px) ── */
+@media (max-width: 480px) {
+  .language-section-component {
+    margin: 10px 12px;
+  }
+  .language-section-component h2 {
+    padding: 14px 14px;
+    font-size: 17px;
+  }
+  .language-section-component .section-status {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+  .language-section-component .form-content {
+    padding: 14px;
+  }
+  .language-section-component .language-section {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  .language-section-component .form-group label {
+    font-size: 13px;
+  }
+  .language-section-component .form-group select,
+  .language-section-component .form-group input,
+  .language-input {
+    font-size: 13px;
+    padding: 9px 10px;
+  }
+  .language-section-component .checkbox-group.horizontal {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .language-section-component .checkbox-group.horizontal label {
+    min-width: unset;
+    font-size: 13px;
+  }
+  .language-section-component .add-button {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  .language-section-component .remove-button {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+  .language-dropdown {
+    max-height: 140px;
+  }
+  .dropdown-item {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+}
+
+/* ── Very small (≤ 320px) ── */
+@media (max-width: 320px) {
+  .language-section-component {
+    margin: 8px 8px;
+  }
+  .language-section-component h2 {
+    font-size: 15px;
+    padding: 12px 12px;
+  }
+  .language-section-component .section-status {
+    padding: 7px 12px;
+    font-size: 11px;
+  }
+  .language-section-component .form-content {
+    padding: 12px;
+  }
+  .language-section-component .language-section {
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+  .language-section-component .form-group {
+    margin-bottom: 14px;
+  }
+  .language-section-component .form-group label {
+    font-size: 12px;
+  }
+  .language-section-component .form-group select,
+  .language-section-component .form-group input,
+  .language-input {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+  .language-section-component .checkbox-group.horizontal label {
+    font-size: 12px;
+  }
+  .language-section-component .add-button {
+    padding: 7px 10px;
+    font-size: 12px;
+  }
+  .language-section-component .remove-button {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+  .dropdown-item {
+    padding: 7px 10px;
+    font-size: 12px;
   }
 }

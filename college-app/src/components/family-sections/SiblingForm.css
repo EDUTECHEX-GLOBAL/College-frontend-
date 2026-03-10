@@ -7,8 +7,6 @@
   max-width: 200px;
 }
 
-
-
 .count-text {
   font-size: 24px;
   font-weight: 700;
@@ -37,6 +35,12 @@
   border-radius: 8px;
   padding: 24px;
   margin-bottom: 20px;
+  animation: slideInUp 0.3s ease-out;
+  transition: border-color 0.3s ease;
+}
+
+.sibling-form-card:hover {
+  border-color: #cbd5e0;
 }
 
 .sibling-title {
@@ -69,37 +73,24 @@
   font-weight: 500;
 }
 
-/* Sibling form fields layout */
+/* Sibling form fields layout — 3 columns on desktop */
 .sibling-form-fields .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 16px;
-  margin-bottom: 0;
+  margin-bottom: 16px;
 }
 
-/* Responsive adjustments for Sibling form */
-@media (max-width: 768px) {
-  .sibling-form-fields .form-row {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-  
-  .sibling-form-card {
-    padding: 16px;
-  }
-  
-  .sibling-count-select {
-    max-width: 100%;
-  }
-  
-  .count-text {
-    font-size: 20px;
-  }
+/* Required field indicator */
+.form-label.required::after {
+  content: " *";
+  color: #e53e3e;
 }
 
-/* Animation for sibling forms */
-.sibling-form-card {
-  animation: slideInUp 0.3s ease-out;
+/* Focus states */
+.sibling-form-fields .form-input:focus {
+  border-color: #2C5AA0;
+  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
 }
 
 @keyframes slideInUp {
@@ -113,20 +104,55 @@
   }
 }
 
-/* Required field indicator */
-.form-label.required::after {
-  content: " *";
-  color: #e53e3e;
+/* ─── Responsive: Tablet ─────────────────────────────────── */
+@media (max-width: 768px) {
+  .sibling-form-fields .form-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .sibling-form-card {
+    padding: 16px;
+  }
+
+  .sibling-count-select {
+    max-width: 100%;
+  }
+
+  .count-text {
+    font-size: 20px;
+  }
+
+  .siblings-section-title {
+    font-size: 16px;
+  }
 }
 
-/* Form input focus states */
-.sibling-form-fields .form-input:focus {
-  border-color: #2C5AA0;
-  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
-}
+/* ─── Responsive: Mobile Portrait ────────────────────────── */
+@media (max-width: 480px) {
+  .sibling-form-fields .form-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
 
-/* Sibling card hover effect */
-.sibling-form-card:hover {
-  border-color: #cbd5e0;
-  transition: border-color 0.3s ease;
+  .sibling-form-card {
+    padding: 14px 12px;
+    margin-bottom: 16px;
+  }
+
+  .sibling-title {
+    font-size: 15px;
+  }
+
+  .sibling-form .form-field {
+    margin-bottom: 20px;
+  }
+
+  .no-siblings-message {
+    padding: 16px;
+  }
+
+  .no-siblings-message p {
+    font-size: 14px;
+  }
 }

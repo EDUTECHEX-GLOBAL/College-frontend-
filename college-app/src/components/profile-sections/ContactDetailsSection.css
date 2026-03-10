@@ -1,4 +1,5 @@
-/* ContactDetailsSection.css - Dedicated styles for Contact Details section */
+/* ContactDetailsSection.css */
+
 .contact-details-section {
   background: white;
   margin: 20px 40px;
@@ -99,7 +100,7 @@
   margin: 0;
 }
 
-/* Phone Input Styles */
+/* ── Preferred Phone Input ── */
 .contact-details-section .phone-input {
   display: flex;
   gap: 12px;
@@ -123,61 +124,7 @@
   font-style: italic;
 }
 
-/* Responsive Design for Contact Details Section */
-@media (max-width: 1199px) and (min-width: 768px) {
-  .contact-details-section {
-    margin: 20px 30px;
-  }
-}
-
-@media (max-width: 767px) {
-  .contact-details-section {
-    margin: 15px 20px;
-    border-radius: 6px;
-  }
-  
-  .contact-details-section .form-content {
-    padding: 20px;
-  }
-  
-  .contact-details-section h2 {
-    padding: 16px 20px;
-    font-size: 18px;
-  }
-  
-  .contact-details-section .section-status {
-    padding: 10px 20px;
-  }
-  
-  .contact-details-section .phone-input {
-    flex-direction: column;
-    gap: 10px;
-    align-items: stretch;
-  }
-  
-  .contact-details-section .country-code {
-    width: 100%;
-  }
-}
-
-@media (max-width: 480px) {
-  .contact-details-section {
-    margin: 10px 15px;
-  }
-  
-  .contact-details-section .form-content {
-    padding: 16px;
-  }
-  
-  .contact-details-section .radio-group {
-    gap: 8px;
-  }
-  
-  .contact-details-section .phone-input {
-    gap: 8px;
-  }
-}
-/* ContactDetails.css additions */
+/* ── Alternate Phone Row ── */
 .phone-input-row {
   display: flex;
   gap: 10px;
@@ -187,23 +134,170 @@
 .country-code-dropdown {
   flex: 0 0 100px;
   padding: 8px 12px;
-  border: 1px solid #ddd;
+  border: 1px solid #d1d5db;
   border-radius: 4px;
   font-size: 14px;
+  background: white;
+  box-sizing: border-box;
 }
 
 .phone-number-input {
   flex: 1;
   padding: 8px 12px;
-  border: 1px solid #ddd;
+  border: 1px solid #d1d5db;
   border-radius: 4px;
   font-size: 14px;
+  box-sizing: border-box;
 }
 
 .phone-type-dropdown {
   flex: 0 0 100px;
   padding: 8px 12px;
-  border: 1px solid #ddd;
+  border: 1px solid #d1d5db;
   border-radius: 4px;
   font-size: 14px;
+  background: white;
+  box-sizing: border-box;
+}
+
+.country-code-dropdown:focus,
+.phone-number-input:focus,
+.phone-type-dropdown:focus {
+  outline: none;
+  border-color: #2C5AA0;
+  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+}
+
+/* ── Tablet (≤ 1023px) ── */
+@media (max-width: 1023px) {
+  .contact-details-section {
+    margin: 20px 30px;
+  }
+}
+
+/* ── Mobile (≤ 767px) ── */
+@media (max-width: 767px) {
+  .contact-details-section {
+    margin: 15px 16px;
+    border-radius: 6px;
+  }
+  .contact-details-section .form-content {
+    padding: 18px;
+  }
+  .contact-details-section h2 {
+    padding: 16px 18px;
+    font-size: 18px;
+  }
+  .contact-details-section .section-status {
+    padding: 10px 18px;
+  }
+
+  /* Preferred phone — stack country code above number */
+  .contact-details-section .phone-input {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+  .contact-details-section .country-code {
+    width: 100%;
+  }
+
+  /* Alternate phone — stack all three fields vertically */
+  .phone-input-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .country-code-dropdown,
+  .phone-type-dropdown {
+    flex: none;
+    width: 100%;
+  }
+  .phone-number-input {
+    width: 100%;
+  }
+}
+
+/* ── Small mobile (≤ 480px) ── */
+@media (max-width: 480px) {
+  .contact-details-section {
+    margin: 10px 12px;
+  }
+  .contact-details-section .form-content {
+    padding: 14px;
+  }
+  .contact-details-section h2 {
+    padding: 14px 14px;
+    font-size: 17px;
+  }
+  .contact-details-section .section-status {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+  .contact-details-section .form-group {
+    margin-bottom: 18px;
+  }
+  .contact-details-section .form-group label {
+    font-size: 13px;
+  }
+  .contact-details-section .form-group input,
+  .contact-details-section .form-group select {
+    font-size: 13px;
+    padding: 9px 10px;
+  }
+  .contact-details-section .radio-group {
+    gap: 8px;
+  }
+  .contact-details-section .radio-group label {
+    font-size: 13px;
+  }
+  .contact-details-section .phone-input {
+    gap: 8px;
+  }
+  .country-code-dropdown,
+  .phone-number-input,
+  .phone-type-dropdown {
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+  .contact-details-section .helper-text {
+    font-size: 11px;
+  }
+}
+
+/* ── Very small (≤ 320px) ── */
+@media (max-width: 320px) {
+  .contact-details-section {
+    margin: 8px 8px;
+  }
+  .contact-details-section .form-content {
+    padding: 12px;
+  }
+  .contact-details-section h2 {
+    font-size: 15px;
+    padding: 12px 12px;
+  }
+  .contact-details-section .section-status {
+    padding: 7px 12px;
+    font-size: 11px;
+  }
+  .contact-details-section .form-group {
+    margin-bottom: 14px;
+  }
+  .contact-details-section .form-group label {
+    font-size: 12px;
+  }
+  .contact-details-section .form-group input,
+  .contact-details-section .form-group select {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+  .contact-details-section .radio-group label {
+    font-size: 12px;
+  }
+  .country-code-dropdown,
+  .phone-number-input,
+  .phone-type-dropdown {
+    font-size: 12px;
+    padding: 7px 8px;
+  }
 }

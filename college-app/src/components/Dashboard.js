@@ -11,7 +11,7 @@ import ResponsibilitiesSection from './activities-sections/ResponsibilitiesSecti
 import CollegeSearch from "./CollegeSearch";
 import CollegeDetails from "./CollegeDetails";
 import CollegeSubsection from "./CollegeSubsection";
-import Documents from './mycollege-sections/Documents'; 
+import Documents from './mycollege-sections/Documents';
 import General from './mycollege-sections/General';
 import Academics from './mycollege-sections/Academics';
 import HighSchoolCurriculum from './mycollege-sections/HighSchoolCurriculum';
@@ -46,7 +46,7 @@ const Dashboard = () => {
   const isFirstYear = location.pathname.includes('/firstyear/');
   const basePath = isFirstYear ? '/firstyear/dashboard' : '/transfer/dashboard';
 
-  // Function to refresh user data - wrapped in useCallback
+  // Function to refresh user data
   const refreshUserData = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
@@ -61,8 +61,7 @@ const Dashboard = () => {
 
       if (response.data.success && response.data.account) {
         const user = response.data.account;
-        
-        // Load application progress from localStorage
+
         const gusApplicationData = localStorage.getItem('gusApplicationData');
         let appProgress = 0;
         if (gusApplicationData) {
@@ -73,8 +72,7 @@ const Dashboard = () => {
             console.error('Error parsing gusApplicationData:', e);
           }
         }
-        
-        // Load selected course data (if any - keeping for compatibility)
+
         const selectedCourse = localStorage.getItem('selectedCourseForApplication');
         if (selectedCourse) {
           try {
@@ -84,7 +82,7 @@ const Dashboard = () => {
             console.error('Error parsing selected course:', error);
           }
         }
-        
+
         const formattedUserData = {
           name: `${user.firstName} ${user.lastName}`,
           email: user.email,
@@ -103,32 +101,30 @@ const Dashboard = () => {
           },
           ...user
         };
-        
+
         setUserData(formattedUserData);
         setApplicationProgress(appProgress);
         localStorage.setItem('userData', JSON.stringify(formattedUserData));
-        console.log('✅ User data refreshed. Application progress:', appProgress, '%');
       }
     } catch (error) {
       console.error('Error refreshing user data:', error);
     }
   }, []);
 
-  // Calculate application progress from localStorage data - UPDATED with Special Needs and Test Scores
+  // Calculate application progress from localStorage data
   const calculateLocalApplicationProgress = (appData) => {
     if (!appData) return 0;
-    
+
     let completedFields = 0;
     let totalFields = 0;
-    
+
     const isFieldFilled = (fieldValue) => {
       if (fieldValue === null || fieldValue === undefined) return false;
       if (typeof fieldValue === 'string') return fieldValue.trim() !== '';
       if (typeof fieldValue === 'boolean') return true;
       if (typeof fieldValue === 'number') return true;
       if (typeof fieldValue === 'object') {
-        // Check if it's a scores object with at least one value
-        if (fieldValue.grade9 || fieldValue.grade10 || fieldValue.grade11 || fieldValue.grade12 || 
+        if (fieldValue.grade9 || fieldValue.grade10 || fieldValue.grade11 || fieldValue.grade12 ||
             fieldValue.satTotal || fieldValue.act || fieldValue.toefl || fieldValue.ielts) {
           return true;
         }
@@ -136,23 +132,22 @@ const Dashboard = () => {
       }
       return !!fieldValue;
     };
-    
+
     // Personal Information
-    const personalFields = ['firstName', 'lastName', 'dob', 'gender', 'nationality', 
+    const personalFields = ['firstName', 'lastName', 'dob', 'gender', 'nationality',
                            'countryOfResidence', 'email', 'mobile', 'passportFileName', 'photographFileName'];
     personalFields.forEach(field => {
       totalFields++;
       if (isFieldFilled(appData[field])) completedFields++;
     });
-    
+
     // Address
-    const addressFields = ['currentAddress', 'city', 'state', 'country', 
-                          'postalCode', 'nationalIdFileName'];
+    const addressFields = ['currentAddress', 'city', 'state', 'country', 'postalCode', 'nationalIdFileName'];
     addressFields.forEach(field => {
       totalFields++;
       if (isFieldFilled(appData[field])) completedFields++;
     });
-    
+
     // Entrance Qualification
     const eqheFields = ['eqheDate', 'eqheCity', 'eqheCountry', 'eqheOriginalTitle', 'hasAnotherEQHE',
                         'anotherEqheDate', 'anotherEqheCity', 'anotherEqheCountry', 'anotherEqheOriginalTitle',
@@ -161,50 +156,48 @@ const Dashboard = () => {
       totalFields++;
       if (isFieldFilled(appData[field])) completedFields++;
     });
-    
+
     // Special Needs
     const specialNeedsFields = ['hasSpecialNeeds'];
     specialNeedsFields.forEach(field => {
       totalFields++;
       if (isFieldFilled(appData[field])) completedFields++;
     });
-    
-    // If hasSpecialNeeds is 'yes', check if description is filled
     if (appData.hasSpecialNeeds === 'yes') {
       totalFields++;
       if (isFieldFilled(appData.specialNeedsDescription)) completedFields++;
     }
-    
+
     // Education
-    const educationFields = ['qualificationLevel', 'institutionName', 'boardUniversity', 
-                            'countryOfStudy', 'startYear', 'endYear', 'resultStatus', 
+    const educationFields = ['qualificationLevel', 'institutionName', 'boardUniversity',
+                            'countryOfStudy', 'startYear', 'endYear', 'resultStatus',
                             'gradingSystem', 'transcriptsFileName', 'degreeCertificateFileName'];
     educationFields.forEach(field => {
       totalFields++;
       if (isFieldFilled(appData[field])) completedFields++;
     });
-    
-    // Test Scores - New section
+
+    // Test Scores
     const scoresFields = ['scores'];
     scoresFields.forEach(field => {
       totalFields++;
       if (isFieldFilled(appData[field])) completedFields++;
     });
-    
+
     // Documents
-    const documentFields = ['sopFileName', 'lor1FileName', 'lor2FileName', 
+    const documentFields = ['sopFileName', 'lor1FileName', 'lor2FileName',
                            'portfolioFileName', 'researchProposalFileName'];
     documentFields.forEach(field => {
       totalFields++;
       if (isFieldFilled(appData[field])) completedFields++;
     });
-    
+
     const progress = Math.round((completedFields / totalFields) * 100);
     console.log(`📈 Local Application Progress: ${completedFields}/${totalFields} fields = ${progress}%`);
     return progress;
   };
 
-  // Function to fetch user's colleges - wrapped in useCallback
+  // Function to fetch user's colleges
   const fetchUserColleges = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
@@ -219,24 +212,21 @@ const Dashboard = () => {
 
       if (response.data.success) {
         setUserColleges(response.data.colleges);
-        console.log(`📋 Loaded ${response.data.colleges.length} colleges for user`);
       }
     } catch (error) {
       console.error('Error fetching user colleges:', error);
     }
   }, []);
 
-  // Function to refresh both user data and colleges - wrapped in useCallback
   const refreshAllData = useCallback(async () => {
     await refreshUserData();
     await fetchUserColleges();
   }, [refreshUserData, fetchUserColleges]);
 
-  // Handle family completion
   const handleFamilyComplete = useCallback((isComplete) => {
     setFamilyCompleted(isComplete);
     localStorage.setItem('familySectionComplete', isComplete ? 'true' : 'false');
-    
+
     if (userData) {
       setUserData(prev => ({
         ...prev,
@@ -248,30 +238,24 @@ const Dashboard = () => {
     }
   }, [userData]);
 
-  // Handle course selection from Courses page
   const handleCourseSelection = (courseData) => {
-    console.log('🎯 Course selected in Dashboard:', courseData);
     setSelectedCourseData(courseData);
     localStorage.setItem('selectedCourseForApplication', JSON.stringify(courseData));
-    
-    // Navigate to application overview
-    navigate(`${basePath}/application/overview`, { 
-      state: { fromCoursesPage: true, courseData: courseData } 
+    navigate(`${basePath}/application/overview`, {
+      state: { fromCoursesPage: true, courseData: courseData }
     });
   };
 
   // Update application progress when localStorage changes
   useEffect(() => {
     const handleApplicationUpdate = () => {
-      console.log('🔄 Application update event received in Dashboard');
-      
       const gusApplicationData = localStorage.getItem('gusApplicationData');
       if (gusApplicationData) {
         try {
           const appData = JSON.parse(gusApplicationData);
           const progress = calculateLocalApplicationProgress(appData);
           setApplicationProgress(progress);
-          
+
           if (userData) {
             setUserData(prev => ({
               ...prev,
@@ -280,7 +264,7 @@ const Dashboard = () => {
                 application: progress
               }
             }));
-            
+
             const updatedUserData = {
               ...userData,
               applicationProgress: {
@@ -297,10 +281,7 @@ const Dashboard = () => {
     };
 
     window.addEventListener('applicationUpdated', handleApplicationUpdate);
-    
-    return () => {
-      window.removeEventListener('applicationUpdated', handleApplicationUpdate);
-    };
+    return () => window.removeEventListener('applicationUpdated', handleApplicationUpdate);
   }, [userData]);
 
   useEffect(() => {
@@ -324,8 +305,7 @@ const Dashboard = () => {
           const user = response.data.account;
           const storedFamilyComplete = localStorage.getItem('familySectionComplete') === 'true';
           setFamilyCompleted(storedFamilyComplete);
-          
-          // Load application progress from localStorage
+
           const gusApplicationData = localStorage.getItem('gusApplicationData');
           let appProgress = 0;
           if (gusApplicationData) {
@@ -337,8 +317,7 @@ const Dashboard = () => {
               console.error('Error parsing gusApplicationData:', e);
             }
           }
-          
-          // Load selected course data
+
           const selectedCourse = localStorage.getItem('selectedCourseForApplication');
           if (selectedCourse) {
             try {
@@ -348,7 +327,7 @@ const Dashboard = () => {
               console.error('Error parsing selected course:', error);
             }
           }
-          
+
           const formattedUserData = {
             name: `${user.firstName} ${user.lastName}`,
             email: user.email,
@@ -368,10 +347,9 @@ const Dashboard = () => {
             testingData: user.testingData || { testsToReport: [] },
             ...user
           };
-          
+
           setUserData(formattedUserData);
           localStorage.setItem('userData', JSON.stringify(formattedUserData));
-          console.log('✅ Initial user data loaded. Application progress:', appProgress, '%');
         }
       } catch (error) {
         console.error('Error fetching user profile:', error);
@@ -382,7 +360,7 @@ const Dashboard = () => {
             setUserData(parsedData);
             const storedFamilyComplete = localStorage.getItem('familySectionComplete') === 'true';
             setFamilyCompleted(storedFamilyComplete);
-            
+
             const gusApplicationData = localStorage.getItem('gusApplicationData');
             if (gusApplicationData) {
               try {
@@ -393,7 +371,7 @@ const Dashboard = () => {
                 console.error('Error parsing gusApplicationData:', e);
               }
             }
-            
+
             const selectedCourse = localStorage.getItem('selectedCourseForApplication');
             if (selectedCourse) {
               try {
@@ -416,7 +394,6 @@ const Dashboard = () => {
     fetchUserColleges();
   }, [navigate, fetchUserColleges]);
 
-  // Refresh data when navigating to dashboard or college-related pages
   useEffect(() => {
     const path = location.pathname;
     if (path.includes('/dashboard') || path.includes('/colleges') || path.includes('/college-search')) {
@@ -424,40 +401,26 @@ const Dashboard = () => {
     }
   }, [location.pathname, refreshAllData]);
 
-  // Listen for college updates from other components
   useEffect(() => {
-    const handleCollegesUpdate = () => {
-      console.log('🔄 Received college update event, refreshing college list...');
-      fetchUserColleges();
-    };
-
+    const handleCollegesUpdate = () => fetchUserColleges();
     window.addEventListener('collegesUpdated', handleCollegesUpdate);
-    
-    return () => {
-      window.removeEventListener('collegesUpdated', handleCollegesUpdate);
-    };
+    return () => window.removeEventListener('collegesUpdated', handleCollegesUpdate);
   }, [fetchUserColleges]);
 
-  // Listen for family completion events
   useEffect(() => {
     const handleFamilyCompletion = (event) => {
       if (event.detail && event.detail.section === 'family') {
         handleFamilyComplete(event.detail.isComplete);
       }
     };
-
     window.addEventListener('familySectionComplete', handleFamilyCompletion);
-    
-    return () => {
-      window.removeEventListener('familySectionComplete', handleFamilyCompletion);
-    };
+    return () => window.removeEventListener('familySectionComplete', handleFamilyCompletion);
   }, [handleFamilyComplete]);
 
   // Update active section based on route
   useEffect(() => {
     const path = location.pathname;
-    console.log('📍 Current path:', path);
-    
+
     if (path.includes('/profile')) {
       setActiveMainSection('profile');
     } else if (path.includes('/colleges') && !path.includes('/education/colleges')) {
@@ -478,22 +441,18 @@ const Dashboard = () => {
       setActiveMainSection('courses');
     } else if (path.includes('/application')) {
       setActiveMainSection('application');
-      console.log('✅ Application section activated');
     } else {
       setActiveMainSection('dashboard');
     }
   }, [location.pathname]);
 
-  // Sidebar navigation
   const handleSectionChange = (section) => {
-    console.log('🔄 Section change requested:', section);
     switch (section) {
       case 'dashboard':
         navigate(`${basePath}`);
         break;
       case 'application':
         navigate(`${basePath}/application`);
-        console.log('🚀 Navigating to application');
         break;
       case 'colleges':
         navigate(`${basePath}/colleges`);
@@ -539,7 +498,6 @@ const Dashboard = () => {
           const parts = section.split('-');
           const collegeId = parts[1];
           const subsection = parts.slice(2).join('-');
-          console.log('🎯 Navigating to college subsection:', collegeId, subsection);
           navigate(`${basePath}/colleges/${collegeId}/${subsection}`);
         } else {
           navigate(`${basePath}`);
@@ -547,62 +505,60 @@ const Dashboard = () => {
     }
   };
 
-  // Calculate overall progress - Include application progress
-  const overallProgress = userData?.applicationProgress 
-    ? (Object.values(userData.applicationProgress).reduce((sum, progress) => sum + progress, 0)) / 
+  const overallProgress = userData?.applicationProgress
+    ? (Object.values(userData.applicationProgress).reduce((sum, progress) => sum + progress, 0)) /
       Math.max(1, Object.values(userData.applicationProgress).length)
     : 0;
 
-  const completedSections = userData?.applicationProgress 
-    ? Object.values(userData.applicationProgress).filter(progress => progress >= 100).length 
+  const completedSections = userData?.applicationProgress
+    ? Object.values(userData.applicationProgress).filter(progress => progress >= 100).length
     : 0;
 
-  const totalSections = userData?.applicationProgress 
-    ? Object.keys(userData.applicationProgress).length 
+  const totalSections = userData?.applicationProgress
+    ? Object.keys(userData.applicationProgress).length
     : 0;
 
-  // Application sections with progress - UPDATED for new flow with 7 steps
   const applicationSections = [
-    { 
-      name: "University Application", 
-      completed: applicationProgress >= 100, 
-      progress: applicationProgress || 0, 
+    {
+      name: "University Application",
+      completed: applicationProgress >= 100,
+      progress: applicationProgress || 0,
       path: `${basePath}/application/overview`
     },
-    { 
-      name: "Profile", 
-      completed: userData?.profileProgress >= 100, 
-      progress: userData?.profileProgress || 0, 
+    {
+      name: "Profile",
+      completed: userData?.profileProgress >= 100,
+      progress: userData?.profileProgress || 0,
       path: `${basePath}/profile/personal`
     },
-    { 
-      name: "Family", 
+    {
+      name: "Family",
       completed: familyCompleted || (userData?.applicationProgress?.family >= 100),
-      progress: familyCompleted ? 100 : (userData?.applicationProgress?.family || 0), 
+      progress: familyCompleted ? 100 : (userData?.applicationProgress?.family || 0),
       path: `${basePath}/family`
     },
-    { 
-      name: "Education", 
-      completed: userData?.applicationProgress?.education >= 100, 
-      progress: userData?.applicationProgress?.education || 0, 
+    {
+      name: "Education",
+      completed: userData?.applicationProgress?.education >= 100,
+      progress: userData?.applicationProgress?.education || 0,
       path: `${basePath}/education/current-school`
     },
-    { 
-      name: "Testing", 
-      completed: userData?.applicationProgress?.testing >= 100, 
-      progress: userData?.applicationProgress?.testing || 0, 
+    {
+      name: "Testing",
+      completed: userData?.applicationProgress?.testing >= 100,
+      progress: userData?.applicationProgress?.testing || 0,
       path: `${basePath}/testing/tests-taken`
     },
-    { 
-      name: "Activities", 
-      completed: userData?.applicationProgress?.activities >= 100, 
-      progress: userData?.applicationProgress?.activities || 0, 
+    {
+      name: "Activities",
+      completed: userData?.applicationProgress?.activities >= 100,
+      progress: userData?.applicationProgress?.activities || 0,
       path: `${basePath}/activities`
     },
-    { 
-      name: "Writing", 
-      completed: userData?.applicationProgress?.writing >= 100, 
-      progress: userData?.applicationProgress?.writing || 0, 
+    {
+      name: "Writing",
+      completed: userData?.applicationProgress?.writing >= 100,
+      progress: userData?.applicationProgress?.writing || 0,
       path: `${basePath}/writing/personal-essay`
     }
   ];
@@ -626,7 +582,6 @@ const Dashboard = () => {
   ];
 
   const handleSectionClick = (section) => {
-    console.log('Section clicked:', section.name, 'Progress:', section.progress);
     if (section && section.path) {
       navigate(section.path);
     } else {
@@ -634,17 +589,15 @@ const Dashboard = () => {
     }
   };
 
-  // Wrapper component for Application with course selection handler
   const ApplicationWrapper = () => (
-    <Application 
+    <Application
       onCourseSelect={handleCourseSelection}
       selectedCourseData={selectedCourseData}
     />
   );
 
-  // Wrapper component for Overview - UPDATED
   const OverviewWrapper = () => (
-    <Overview 
+    <Overview
       selectedCourseData={selectedCourseData}
       onStartApplication={() => navigate(`${basePath}/application/personal`)}
       onChangeCourse={() => {
@@ -655,7 +608,7 @@ const Dashboard = () => {
     />
   );
 
-  // CollegesSection Component
+  // ─── CollegesSection ───
   const CollegesSection = () => (
     <>
       <header className="main-header">
@@ -673,20 +626,18 @@ const Dashboard = () => {
             <h2 className="section-title">Your College List</h2>
             <div className="college-count">{userColleges.length} colleges</div>
           </div>
-          
+
           {userColleges.length === 0 ? (
             <div className="empty-state">
               <div className="empty-state-icon">
-                <div className="icon-background">
-                  🏫
-                </div>
+                <div className="icon-background">🏫</div>
               </div>
               <div className="empty-state-content">
                 <h3 className="empty-state-title">No colleges added yet</h3>
                 <p className="empty-state-description">
                   Start by searching for colleges to add to your list. You can manage your applications from the sidebar.
                 </p>
-                <button 
+                <button
                   className="primary-action-button"
                   onClick={() => navigate(`${basePath}/college-search`)}
                 >
@@ -700,7 +651,7 @@ const Dashboard = () => {
                 <div key={college.collegeId} className="college-list-item">
                   <div className="college-info">
                     <div className="college-text">
-                      <h4 
+                      <h4
                         className="college-name-link"
                         onClick={() => navigate(`${basePath}/colleges/${college.collegeId}`)}
                       >
@@ -716,7 +667,7 @@ const Dashboard = () => {
                       </div>
                     </div>
                   </div>
-                  <button 
+                  <button
                     className="view-details-button"
                     onClick={() => navigate(`${basePath}/colleges/${college.collegeId}`)}
                   >
@@ -741,7 +692,7 @@ const Dashboard = () => {
     </>
   );
 
-  // DashboardHome Component - UPDATED quick access text to show 7 steps
+  // ─── DashboardHome ───
   const DashboardHome = () => (
     <>
       <header className="main-header">
@@ -766,7 +717,7 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="application-sections-grid">
             {applicationSections.map((section, index) => (
               <div key={index} className="application-section-card">
@@ -777,12 +728,12 @@ const Dashboard = () => {
                   )}
                 </div>
                 <div className="section-progress-bar">
-                  <div 
-                    className="section-progress-fill" 
+                  <div
+                    className="section-progress-fill"
                     style={{ width: `${section.progress}%` }}
                   ></div>
                 </div>
-                <button 
+                <button
                   className={`section-action-button ${section.progress === 100 ? 'completed' : ''}`}
                   onClick={() => handleSectionClick(section)}
                 >
@@ -800,22 +751,20 @@ const Dashboard = () => {
               <div className="college-count">{userColleges.length} colleges</div>
             </div>
           </div>
-          
+
           <div className="colleges-content">
             {userColleges.length === 0 ? (
               <div className="empty-state">
                 <div className="empty-state-icon">
-                  <div className="icon-background">
-                    🏫
-                  </div>
+                  <div className="icon-background">🏫</div>
                 </div>
                 <div className="empty-state-content">
                   <h3 className="empty-state-title">Nothing here yet!</h3>
                   <p className="empty-state-description">
                     Add some colleges to your list to get started with your applications.
                   </p>
-                  <button 
-                    className="primary-action-button" 
+                  <button
+                    className="primary-action-button"
                     onClick={() => navigate(`${basePath}/college-search`)}
                   >
                     Add Colleges
@@ -834,7 +783,7 @@ const Dashboard = () => {
                   </div>
                 ))}
                 {userColleges.length > 3 && (
-                  <button 
+                  <button
                     className="view-all-colleges-button"
                     onClick={() => navigate(`${basePath}/colleges`)}
                   >
@@ -850,7 +799,7 @@ const Dashboard = () => {
           <div className="section-header">
             <h2 className="section-title">Quick Access</h2>
           </div>
-          
+
           <div className="quick-access-grid">
             <div className="quick-access-card" onClick={() => navigate(`${basePath}/application/overview`)}>
               <div className="quick-access-icon">📝</div>
@@ -862,7 +811,7 @@ const Dashboard = () => {
               </div>
               <div className="quick-access-arrow">→</div>
             </div>
-            
+
             <div className="quick-access-card" onClick={() => navigate(`${basePath}/college-search`)}>
               <div className="quick-access-icon">🔍</div>
               <div className="quick-access-content">
@@ -873,7 +822,7 @@ const Dashboard = () => {
               </div>
               <div className="quick-access-arrow">→</div>
             </div>
-            
+
             <div className="quick-access-card" onClick={() => navigate(`${basePath}/college-search`)}>
               <div className="quick-access-icon">🎓</div>
               <div className="quick-access-content">
@@ -891,11 +840,11 @@ const Dashboard = () => {
           <div className="section-header">
             <h2 className="section-title">Help & Support</h2>
           </div>
-          
+
           <div className="search-section">
             <div className="search-container">
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Search FAQs"
                 className="search-input"
                 value={searchQuery}
@@ -906,7 +855,7 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="faq-section">
             <h3 className="faq-section-title">Frequently Asked Questions</h3>
             <div className="faq-list">
@@ -939,8 +888,8 @@ const Dashboard = () => {
 
   return (
     <>
-      <DashboardLayout 
-        userData={userData} 
+      <DashboardLayout
+        userData={userData}
         activeMainSection={activeMainSection}
         onSectionChange={handleSectionChange}
         userColleges={userColleges}
@@ -954,9 +903,9 @@ const Dashboard = () => {
           <Route path="/colleges/:collegeId" element={<CollegeDetails />} />
           <Route path="/colleges/:collegeId/:subsection" element={<CollegeSubsection />} />
           <Route path="/profile/*" element={<ProfileForm />} />
-          <Route 
-            path="/family/*" 
-            element={<FamilySection onComplete={handleFamilyComplete} />} 
+          <Route
+            path="/family/*"
+            element={<FamilySection onComplete={handleFamilyComplete} />}
           />
           <Route path="/education/*" element={<EducationForm />} />
           <Route path="/testing/*" element={<TestingForm />} />
@@ -965,7 +914,7 @@ const Dashboard = () => {
           <Route path="/writing/*" element={<WritingSection />} />
           <Route path="/college-search" element={<CollegeSearch onCollegeUpdate={fetchUserColleges} />} />
           <Route path="/courses/:universityId" element={<Courses onCourseSelect={handleCourseSelection} />} />
-          
+
           <Route path="/colleges/:collegeId/general" element={<General />} />
           <Route path="/colleges/:collegeId/documents" element={<Documents />} />
           <Route path="/colleges/:collegeId/academics" element={<Academics />} />
@@ -978,7 +927,7 @@ const Dashboard = () => {
           <Route path="/colleges/:collegeId/review" element={<Review />} />
         </Routes>
       </DashboardLayout>
-      
+
       <ChatWidget />
     </>
   );

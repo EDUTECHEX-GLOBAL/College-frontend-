@@ -4,7 +4,15 @@
 }
 
 .parent2-form .radio-group.vertical {
-  gap: 8px;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Form row */
+.form-row {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
 /* No parent option styling */
@@ -26,17 +34,9 @@
   animation: fadeIn 0.3s ease-in;
 }
 
-/* parent2form.css */
-
-@keyframes parent2formfadeIn {
-  0% {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes fadeIn {
+  0% { opacity: 0; transform: translateY(4px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
 .fade-in-once {
@@ -52,27 +52,11 @@
   border: 1px solid #e2e8f0;
 }
 
-.personal-info-section .form-row {
-  margin-bottom: 0;
-}
-
 /* Name fields */
 .name-fields {
   display: grid;
   grid-template-columns: 120px 1fr 80px;
   gap: 12px;
-}
-
-.name-fields .form-field:nth-child(1) {
-  grid-column: 1;
-}
-
-.name-fields .form-field:nth-child(2) {
-  grid-column: 2;
-}
-
-.name-fields .form-field:nth-child(3) {
-  grid-column: 3;
 }
 
 /* Occupation and education section */
@@ -119,7 +103,7 @@
 /* Skip confirmation */
 .skip-confirmation {
   text-align: center;
-  padding: 32px;
+  padding: 32px 16px;
 }
 
 .skip-confirmation p {
@@ -128,30 +112,69 @@
   font-size: 16px;
 }
 
-/* Form field groups */
+/* No other parent message */
+.no-parent-message {
+  padding: 32px 16px;
+  text-align: center;
+}
+
+.no-parent-message p {
+  color: #718096;
+  margin-bottom: 20px;
+  font-size: 15px;
+}
+
+/* Two-column field group */
 .form-field-group {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
 
-/* Responsive adjustments for Parent 2 form */
+/* ─── Responsive: Tablet ─────────────────────────────────── */
 @media (max-width: 768px) {
-  .personal-info-section,
+  .parent2form-personal-info-section,
   .occupation-education-section {
     padding: 16px;
   }
-  
+
   .name-fields {
-    grid-template-columns: 1fr;
-    gap: 16px;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
   }
-  
+
   .form-field-group {
     grid-template-columns: 1fr;
   }
-  
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
   .no-parent-option {
     padding: 12px;
+  }
+}
+
+/* ─── Responsive: Mobile Portrait ────────────────────────── */
+@media (max-width: 480px) {
+  .parent2form-personal-info-section,
+  .occupation-education-section {
+    padding: 12px;
+    margin: 12px 0;
+  }
+
+  .name-fields {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .parent2-form .form-field {
+    margin-bottom: 20px;
+  }
+
+  .skip-confirmation,
+  .no-parent-message {
+    padding: 24px 12px;
   }
 }

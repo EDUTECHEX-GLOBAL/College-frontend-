@@ -1,10 +1,11 @@
-// src/components/DashboardLayout.js - FULLY UPDATED WITH SCORES INTEGRATION
+// src/components/DashboardLayout.js - FULLY UPDATED WITH MOBILE SUPPORT
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const DashboardLayout = ({ userData, children, activeMainSection, onSectionChange, userColleges = [] }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile sidebar toggle
   const [expandedSections, setExpandedSections] = useState({
     testing: false,
     colleges: false,
@@ -16,9 +17,26 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
   });
   const [forceUpdate, setForceUpdate] = useState(0);
 
+  // Close sidebar on route change (mobile)
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
+
+  // Prevent body scroll when sidebar is open on mobile
+  useEffect(() => {
+    if (sidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [sidebarOpen]);
+
   // Calculate completed sections for "My Common Application" in sidebar
   const calculateCommonAppProgress = () => {
-    if (!userData) return '0/8'; // Updated to 8 sections
+    if (!userData) return '0/8';
     
     const sections = [
       userData.applicationProgress?.application || 0,
@@ -30,7 +48,6 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
       userData.applicationProgress?.writing || 0
     ];
     
-    // Count sections with 100% completion
     const completed = sections.filter(progress => progress >= 100).length;
     const total = sections.length;
     
@@ -60,46 +77,22 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     const path = location.pathname;
     
     if (path.includes('/testing')) {
-      setExpandedSections(prev => ({
-        ...prev,
-        testing: true
-      }));
+      setExpandedSections(prev => ({ ...prev, testing: true }));
     }
-    
     if (path.includes('/colleges') && !path.includes('/college-search')) {
-      setExpandedSections(prev => ({
-        ...prev,
-        colleges: true
-      }));
+      setExpandedSections(prev => ({ ...prev, colleges: true }));
     }
-    
     if (path.includes('/writing')) {
-      setExpandedSections(prev => ({
-        ...prev,
-        writing: true
-      }));
+      setExpandedSections(prev => ({ ...prev, writing: true }));
     }
-    
     if (path.includes('/activities')) {
-      setExpandedSections(prev => ({
-        ...prev,
-        activities: true
-      }));
+      setExpandedSections(prev => ({ ...prev, activities: true }));
     }
-    
     if (path.includes('/courses')) {
-      setExpandedSections(prev => ({
-        ...prev,
-        courses: true
-      }));
+      setExpandedSections(prev => ({ ...prev, courses: true }));
     }
-
-    // Auto-expand application section
     if (path.includes('/application')) {
-      setExpandedSections(prev => ({
-        ...prev,
-        application: true
-      }));
+      setExpandedSections(prev => ({ ...prev, application: true }));
     }
   }, [location.pathname]);
 
@@ -123,63 +116,33 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     }
   }, [location.pathname]);
 
-  // Listen for storage changes to force re-render
+  // Listen for storage changes
   useEffect(() => {
-    const handleStorageChange = () => {
-      console.log('🔄 Storage changed, forcing sidebar re-render');
-      setForceUpdate(prev => prev + 1);
-    };
-
+    const handleStorageChange = () => setForceUpdate(prev => prev + 1);
     window.addEventListener('storage', handleStorageChange);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  // Listen for custom testing data updates
   useEffect(() => {
-    const handleTestingDataUpdate = () => {
-      console.log('🔄 Testing data updated, forcing re-render');
-      setForceUpdate(prev => prev + 1);
-    };
-
+    const handleTestingDataUpdate = () => setForceUpdate(prev => prev + 1);
     window.addEventListener('testingDataUpdated', handleTestingDataUpdate);
-    
-    return () => {
-      window.removeEventListener('testingDataUpdated', handleTestingDataUpdate);
-    };
+    return () => window.removeEventListener('testingDataUpdated', handleTestingDataUpdate);
   }, []);
 
-  // Listen for college form updates to show/hide international section
   useEffect(() => {
-    const handleCollegeFormUpdate = () => {
-      setForceUpdate(prev => prev + 1);
-    };
-
+    const handleCollegeFormUpdate = () => setForceUpdate(prev => prev + 1);
     window.addEventListener('collegeFormUpdated', handleCollegeFormUpdate);
-    return () => {
-      window.removeEventListener('collegeFormUpdated', handleCollegeFormUpdate);
-    };
+    return () => window.removeEventListener('collegeFormUpdated', handleCollegeFormUpdate);
   }, []);
 
-  // Listen for application updates
   useEffect(() => {
-    const handleApplicationUpdate = () => {
-      console.log('🔄 Application data updated, forcing re-render');
-      setForceUpdate(prev => prev + 1);
-    };
-
+    const handleApplicationUpdate = () => setForceUpdate(prev => prev + 1);
     window.addEventListener('applicationUpdated', handleApplicationUpdate);
-    
-    return () => {
-      window.removeEventListener('applicationUpdated', handleApplicationUpdate);
-    };
+    return () => window.removeEventListener('applicationUpdated', handleApplicationUpdate);
   }, []);
 
   const getStudentId = () => {
     if (!userData) return 'CAID Loading...';
-    
     const possibleIds = [
       userData.studentId,
       userData.caId,
@@ -187,16 +150,13 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
       userData.studentID,
       userData._id
     ];
-    
     const foundId = possibleIds.find(id => id && id !== '');
-    
     if (foundId) {
       if (foundId.length === 24) {
         return `CAID-${foundId.substring(0, 8).toUpperCase()}`;
       }
       return foundId;
     }
-    
     return 'CAID Loading...';
   };
 
@@ -226,28 +186,23 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     }));
   };
 
-  // Get selected tests from localStorage (real-time data)
   const getSelectedTests = () => {
     const storedUserData = localStorage.getItem('userData');
     if (storedUserData) {
       try {
         const parsedData = JSON.parse(storedUserData);
         const tests = parsedData.testingData?.testsToReport || [];
-        console.log('📋 Current tests in localStorage:', tests);
         return tests;
       } catch (error) {
         console.error('Error parsing stored user data:', error);
       }
     }
-    
     if (userData?.testingData?.testsToReport) {
       return userData.testingData.testsToReport;
     }
-    
     return [];
   };
 
-  // Get application progress from localStorage or userData
   const getApplicationProgress = () => {
     const storedUserData = localStorage.getItem('userData');
     if (storedUserData) {
@@ -258,11 +213,9 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
         console.error('Error parsing stored user data:', error);
       }
     }
-    
     return userData?.applicationProgress?.application || 0;
   };
 
-  // Calculate step-by-step application progress - UPDATED with Test Scores step
   const calculateApplicationStepProgress = (step) => {
     const gusAppData = JSON.parse(localStorage.getItem('gusApplicationData') || '{}');
     const isFieldFilled = (fieldValue) => {
@@ -271,8 +224,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
       if (typeof fieldValue === 'number') return true;
       if (Array.isArray(fieldValue)) return fieldValue.length > 0;
       if (typeof fieldValue === 'object') {
-        // Check if it's a scores object with at least one value
-        if (fieldValue.grade9 || fieldValue.grade10 || fieldValue.grade11 || fieldValue.grade12 || 
+        if (fieldValue.grade9 || fieldValue.grade10 || fieldValue.grade11 || fieldValue.grade12 ||
             fieldValue.satTotal || fieldValue.act || fieldValue.toefl || fieldValue.ielts) {
           return true;
         }
@@ -280,41 +232,35 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
       }
       return !!fieldValue;
     };
-    
+
     switch(step) {
       case 'personal':
-        const personalFields = ['firstName', 'lastName', 'gender', 'dob', 'nationality', 
+        const personalFields = ['firstName', 'lastName', 'gender', 'dob', 'nationality',
                                 'countryOfResidence', 'email', 'mobile'];
         const personalFilled = personalFields.filter(field => isFieldFilled(gusAppData[field])).length;
         return (personalFilled / personalFields.length) * 100;
-        
       case 'address':
         const addressFields = ['currentAddress', 'city', 'country', 'state', 'postalCode'];
         const addressFilled = addressFields.filter(field => isFieldFilled(gusAppData[field])).length;
         return (addressFilled / addressFields.length) * 100;
-        
       case 'entrance-qualification':
         const eqheFields = ['eqheDate', 'eqheCity', 'eqheCountry', 'eqheOriginalTitle', 'hasAnotherEQHE'];
         const eqheFilled = eqheFields.filter(field => isFieldFilled(gusAppData[field])).length;
         return (eqheFilled / eqheFields.length) * 100;
-        
       case 'special-needs':
         if (gusAppData.hasSpecialNeeds === 'no') return 100;
         if (gusAppData.hasSpecialNeeds === 'yes' && isFieldFilled(gusAppData.specialNeedsDescription)) return 100;
         return 0;
-        
       case 'education':
-        const educationFields = ['qualificationLevel', 'institutionName', 'boardUniversity', 
+        const educationFields = ['qualificationLevel', 'institutionName', 'boardUniversity',
                                 'countryOfStudy', 'startYear', 'endYear'];
         const educationFilled = educationFields.filter(field => isFieldFilled(gusAppData[field])).length;
         return (educationFilled / educationFields.length) * 100;
-        
-      case 'test-scores': // NEW STEP
+      case 'test-scores':
         const scores = gusAppData.scores || {};
-        const hasAnyScore = scores.grade9 || scores.grade10 || scores.grade11 || scores.grade12 || 
+        const hasAnyScore = scores.grade9 || scores.grade10 || scores.grade11 || scores.grade12 ||
                            scores.satTotal || scores.act || scores.toefl || scores.ielts;
         return hasAnyScore ? 100 : 0;
-        
       case 'documents':
         const documentFields = ['passport', 'transcripts', 'degreeCertificate', 'sop', 'lor1', 'lor2', 'eqheCertificate'];
         const documentFilled = documentFields.filter(field => {
@@ -322,16 +268,13 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
           return isFieldFilled(gusAppData[field]) || isFieldFilled(gusAppData[fieldName]);
         }).length;
         return (documentFilled / documentFields.length) * 100;
-        
       case 'preview':
         return gusAppData.agreedToTerms ? 100 : 0;
-        
       default:
         return 0;
     }
   };
 
-  // Get current application step
   const getCurrentApplicationStep = () => {
     const path = location.pathname;
     if (path.includes('/application/personal')) return 'personal';
@@ -339,18 +282,16 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     if (path.includes('/application/language')) return 'entrance-qualification';
     if (path.includes('/application/specialneeds')) return 'special-needs';
     if (path.includes('/application/firsteducation') || path.includes('/application/education')) return 'education';
-    if (path.includes('/application/scores')) return 'test-scores'; // NEW STEP
+    if (path.includes('/application/scores')) return 'test-scores';
     if (path.includes('/application/documents')) return 'documents';
     if (path.includes('/application/preview')) return 'preview';
     if (path.includes('/application/overview')) return 'overview';
     return '';
   };
 
-  // Determine student type and base path
   const studentType = location.pathname.includes('/transfer/') ? 'transfer' : 'firstyear';
   const basePath = `/${studentType}/dashboard`;
 
-  // Test types mapping - Match exactly with TestingForm.js
   const testTypes = [
     { id: 'act-tests', name: 'ACT Tests', route: `${basePath}/testing/act-tests` },
     { id: 'sat-tests', name: 'SAT Tests', route: `${basePath}/testing/sat-tests` },
@@ -364,48 +305,31 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     { id: 'duolingo-english-test', name: 'Duolingo English Test', route: `${basePath}/testing/duolingo-english-test` }
   ];
 
-  // Filter test types to show only selected ones
   const selectedTests = getSelectedTests();
-  const selectedTestTypes = selectedTests.length > 0 
+  const selectedTestTypes = selectedTests.length > 0
     ? testTypes.filter(test => selectedTests.includes(test.id))
     : [];
 
-  // Application progress
   const applicationProgress = getApplicationProgress();
   const currentAppStep = getCurrentApplicationStep();
-
-  // Debug: Log the selected tests
-  useEffect(() => {
-    console.log('🔄 DashboardLayout re-rendering, forceUpdate:', forceUpdate);
-    console.log('📋 Selected tests:', selectedTests);
-    console.log('📋 Selected test types:', selectedTestTypes);
-    console.log('📊 Common App Progress:', calculateCommonAppProgress());
-    console.log('📊 Application Progress:', applicationProgress);
-    console.log('📍 Current Application Step:', currentAppStep);
-  }, [forceUpdate, selectedTests, selectedTestTypes, applicationProgress, currentAppStep]);
 
   // CollegeSidebarItem Component
   const CollegeSidebarItem = ({ college, isExpanded, onToggle, onNavigate }) => {
     const [showInternational, setShowInternational] = useState(false);
 
-    // Check if international section should be shown
     useEffect(() => {
       const shouldShowInternational = localStorage.getItem(`college_${college.collegeId}_show_international`) === 'true';
       setShowInternational(shouldShowInternational);
     }, [college.collegeId]);
 
-    // Listen for updates to international section visibility
     useEffect(() => {
       const handleCollegeFormUpdate = (event) => {
         if (event.detail.collegeId === college.collegeId) {
           setShowInternational(event.detail.showInternational);
         }
       };
-
       window.addEventListener('collegeFormUpdated', handleCollegeFormUpdate);
-      return () => {
-        window.removeEventListener('collegeFormUpdated', handleCollegeFormUpdate);
-      };
+      return () => window.removeEventListener('collegeFormUpdated', handleCollegeFormUpdate);
     }, [college.collegeId]);
 
     const applicationSubsections = [
@@ -420,24 +344,20 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
       ...(showInternational ? [{ id: 'international', name: 'International Student Information' }] : []),
     ];
 
-    // Check if this college is active
     const isCollegeActive = location.pathname.includes(`/colleges/${college.collegeId}`);
 
     return (
       <li className="nav-college-item">
-        {/* College Header */}
-        <div 
+        <div
           className={`nav-college-header ${isCollegeActive ? 'active' : ''}`}
           onClick={onToggle}
         >
           <span className="nav-text">{college.name}</span>
           <span className="expand-icon">{isExpanded ? '▼' : '►'}</span>
         </div>
-        
-        {/* College Sub-sections */}
+
         {isExpanded && (
           <ul className="nav-college-submenu">
-            {/* APPLICATION Section */}
             <li className="nav-college-subitem">
               <div className="nav-college-subheader">
                 <span className="nav-text">APPLICATION</span>
@@ -445,14 +365,11 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
               <ul className="nav-application-submenu">
                 {applicationSubsections.map((subsection) => {
                   const isSubsectionActive = location.pathname === `${basePath}/colleges/${college.collegeId}/${subsection.id}`;
-                  
                   return (
                     <li key={subsection.id} className={`nav-application-subitem ${isSubsectionActive ? 'active' : ''}`}>
-                      <div 
+                      <div
                         className={`nav-content ${isSubsectionActive ? 'active' : ''}`}
-                        onClick={() => {
-                          onNavigate(`college-${college.collegeId}-${subsection.id}`);
-                        }}
+                        onClick={() => onNavigate(`college-${college.collegeId}-${subsection.id}`)}
                       >
                         <span className="nav-text">{subsection.name}</span>
                       </div>
@@ -461,14 +378,10 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
                 })}
               </ul>
             </li>
-
-            {/* Review Section */}
             <li className={`nav-college-subitem ${location.pathname === `${basePath}/colleges/${college.collegeId}/review` ? 'active' : ''}`}>
-              <div 
+              <div
                 className={`nav-content ${location.pathname === `${basePath}/colleges/${college.collegeId}/review` ? 'active' : ''}`}
-                onClick={() => {
-                  onNavigate(`college-${college.collegeId}-review`);
-                }}
+                onClick={() => onNavigate(`college-${college.collegeId}-review`)}
               >
                 <span className="nav-text">Review and submit application</span>
               </div>
@@ -479,16 +392,13 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     );
   };
 
-  // Handle college subsection navigation
   const handleCollegeSubsectionNavigate = (sectionId) => {
     const parts = sectionId.split('-');
     const collegeId = parts[1];
     const subsection = parts.slice(2).join('-');
-    
     navigate(`${basePath}/colleges/${collegeId}/${subsection}`);
   };
 
-  // Determine which sidebar to show based on active section
   const getSidebarContent = () => {
     if (activeMainSection === 'profile') {
       return (
@@ -669,12 +579,12 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
         'ielts': 'IELTS',
         'duolingo-english-test': 'Duolingo English Test'
       };
-      
+
       const sectionsToShow = [
         'tests-taken',
         ...selectedTests.filter(test => test !== 'tests-taken')
       ];
-      
+
       return (
         <div className="nav-section">
           <h4 className="nav-section-title">Testing</h4>
@@ -697,7 +607,6 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
       );
     }
 
-    // Courses Section
     if (activeMainSection === 'courses') {
       return (
         <div className="nav-section">
@@ -749,7 +658,6 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
       );
     }
 
-    // Application Section - UPDATED for 8-step application flow (added Test Scores)
     if (activeMainSection === 'application') {
       const applicationSteps = [
         { id: 'overview', name: 'Application Overview', route: `${basePath}/application/overview` },
@@ -758,7 +666,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
         { id: 'entrance-qualification', name: 'Entrance Qualification', route: `${basePath}/application/language` },
         { id: 'special-needs', name: 'Special Needs', route: `${basePath}/application/specialneeds` },
         { id: 'education', name: 'Education', route: `${basePath}/application/firsteducation` },
-        { id: 'test-scores', name: 'Test Scores', route: `${basePath}/application/scores` }, // NEW STEP
+        { id: 'test-scores', name: 'Test Scores', route: `${basePath}/application/scores` },
         { id: 'documents', name: 'Documents', route: `${basePath}/application/documents` },
         { id: 'preview', name: 'Preview & Submit', route: `${basePath}/application/preview` }
       ];
@@ -768,33 +676,27 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
           <h4 className="nav-section-title">University Application</h4>
           <ul className="nav-menu">
             <li className={`nav-item ${location.pathname.includes('/application/overview') ? 'active' : ''}`}>
-              <div 
-                className="nav-content" 
-                onClick={() => navigate(`${basePath}/application/overview`)}
-              >
+              <div className="nav-content" onClick={() => navigate(`${basePath}/application/overview`)}>
                 <span className="nav-text">Application Overview</span>
               </div>
             </li>
 
             {applicationSteps.slice(1).map((step) => {
               const stepProgress = calculateApplicationStepProgress(step.id);
-              const isActive = location.pathname === step.route || 
+              const isActive = location.pathname === step.route ||
                              (step.id === 'entrance-qualification' && location.pathname.includes('/application/language')) ||
                              (step.id === 'special-needs' && location.pathname.includes('/application/specialneeds')) ||
                              (step.id === 'test-scores' && location.pathname.includes('/application/scores'));
               return (
                 <li key={step.id} className={`nav-item ${isActive ? 'active' : ''}`}>
-                  <div 
-                    className="nav-content" 
-                    onClick={() => navigate(step.route)}
-                  >
+                  <div className="nav-content" onClick={() => navigate(step.route)}>
                     <span className="nav-text">{step.name}</span>
                     <div className="nav-progress">{Math.round(stepProgress)}%</div>
                   </div>
                 </li>
               );
             })}
-            
+
             <li className="nav-item">
               <div className="nav-content" onClick={() => {
                 alert('GUS University Application Portal\n\nComplete your application in 8 steps:\n\n1. Personal Information\n2. Address\n3. Entrance Qualification\n4. Special Needs\n5. Education\n6. Test Scores\n7. Documents\n8. Preview & Submit');
@@ -802,7 +704,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
                 <span className="nav-text">Application Guide</span>
               </div>
             </li>
-            
+
             <li className="nav-item">
               <div className="nav-content" onClick={() => {
                 const appData = localStorage.getItem('gusApplicationData');
@@ -826,7 +728,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
                 <div className="nav-progress">{applicationProgress}%</div>
               </div>
             </li>
-            
+
             <li className="nav-item">
               <div className="nav-content" onClick={() => {
                 const gusAppData = JSON.parse(localStorage.getItem('gusApplicationData') || '{}');
@@ -839,12 +741,8 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
                   { name: 'Statement of Purpose', key: 'sop', uploaded: !!gusAppData.sopFileName || !!gusAppData.sop },
                   { name: 'Letters of Recommendation', key: 'lor', uploaded: !!(gusAppData.lor1FileName || gusAppData.lor2FileName || gusAppData.lor1 || gusAppData.lor2) }
                 ];
-                
                 const uploadedCount = documents.filter(doc => doc.uploaded).length;
-                const checklist = documents.map(doc => 
-                  `${doc.uploaded ? '✓' : '○'} ${doc.name}`
-                ).join('\n');
-                
+                const checklist = documents.map(doc => `${doc.uploaded ? '✓' : '○'} ${doc.name}`).join('\n');
                 alert(`Document Checklist (${uploadedCount}/7 uploaded):\n\n${checklist}`);
               }}>
                 <span className="nav-text">Document Checklist</span>
@@ -855,7 +753,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
       );
     }
 
-    // Default dashboard sidebar with expandable sections
+    // Default dashboard sidebar
     return (
       <div className="nav-section">
         <h4 className="nav-section-title">Dashboard</h4>
@@ -867,9 +765,9 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
             </div>
           </li>
 
-          {/* Expandable Application Section - UPDATED with Test Scores */}
+          {/* Expandable Application Section */}
           <li className="nav-section-expandable">
-            <div 
+            <div
               className={`nav-header ${expandedSections.application ? 'expanded' : ''}`}
               onClick={() => toggleSection('application')}
             >
@@ -886,7 +784,6 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
                     <span className="nav-text">Application Overview</span>
                   </div>
                 </li>
-                
                 <li className={`nav-subitem ${location.pathname.includes('/application/personal') ? 'active' : ''}`}>
                   <div className="nav-content" onClick={() => navigate(`${basePath}/application/personal`)}>
                     <span className="nav-text">• Personal Information</span>
@@ -917,7 +814,6 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
                     <div className="nav-progress-tiny">{Math.round(calculateApplicationStepProgress('education'))}%</div>
                   </div>
                 </li>
-                {/* NEW Test Scores Step */}
                 <li className={`nav-subitem ${location.pathname.includes('/application/scores') ? 'active' : ''}`}>
                   <div className="nav-content" onClick={() => navigate(`${basePath}/application/scores`)}>
                     <span className="nav-text">• Test Scores</span>
@@ -930,7 +826,6 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
                     <div className="nav-progress-tiny">{Math.round(calculateApplicationStepProgress('documents'))}%</div>
                   </div>
                 </li>
-                
                 <li className="nav-subitem">
                   <div className="nav-content" onClick={() => {
                     alert('GUS University Application Portal\n\nComplete your application in 8 steps:\n\n1. Personal Information\n2. Address\n3. Entrance Qualification\n4. Special Needs\n5. Education\n6. Test Scores\n7. Documents\n8. Preview & Submit');
@@ -943,7 +838,6 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
                     const appData = localStorage.getItem('gusApplicationData');
                     if (appData) {
                       try {
-                        const parsedData = JSON.parse(appData);
                         const steps = ['personal', 'address', 'entrance-qualification', 'special-needs', 'education', 'test-scores', 'documents', 'preview'];
                         const completedSteps = steps.filter(step => {
                           const stepProgress = calculateApplicationStepProgress(step);
@@ -971,8 +865,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
                       { name: 'Statement of Purpose', key: 'sop' },
                       { name: 'Letters of Recommendation', key: 'lor' }
                     ];
-                    
-                    const uploadedDocs = requiredDocs.filter(doc => 
+                    const uploadedDocs = requiredDocs.filter(doc =>
                       gusAppData[doc.key] || gusAppData[doc.key + 'FileName']
                     ).length;
                     alert(`Document Checklist: ${uploadedDocs}/5 required documents uploaded\n\nRequired:\n- Passport/ID\n- Academic Transcripts\n- EQHE Certificate\n- Statement of Purpose\n- Letters of Recommendation`);
@@ -983,7 +876,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
               </ul>
             )}
           </li>
-          
+
           <li className={`nav-item ${activeMainSection === 'profile' ? 'active' : ''}`}>
             <div className="nav-content" onClick={() => onSectionChange('profile')}>
               <span className="nav-text">Profile</span>
@@ -992,7 +885,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
               </div>
             </div>
           </li>
-          
+
           <li className={`nav-item ${activeMainSection === 'family' ? 'active' : ''}`}>
             <div className="nav-content" onClick={() => onSectionChange('family')}>
               <span className="nav-text">Family</span>
@@ -1001,10 +894,10 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
               </div>
             </div>
           </li>
-          
+
           {/* Expandable My Colleges Section */}
           <li className="nav-section-expandable">
-            <div 
+            <div
               className={`nav-header ${expandedSections.colleges ? 'expanded' : ''}`}
               onClick={() => toggleSection('colleges')}
             >
@@ -1020,19 +913,16 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
                     <span className="nav-text">Overview</span>
                   </div>
                 </li>
-                
                 {userColleges.length > 0 ? (
-                  userColleges.map((college) => {
-                    return (
-                      <CollegeSidebarItem 
-                        key={college.collegeId}
-                        college={college}
-                        isExpanded={expandedSections.expandedColleges[college.collegeId]}
-                        onToggle={() => toggleCollege(college.collegeId)}
-                        onNavigate={handleCollegeSubsectionNavigate}
-                      />
-                    );
-                  })
+                  userColleges.map((college) => (
+                    <CollegeSidebarItem
+                      key={college.collegeId}
+                      college={college}
+                      isExpanded={expandedSections.expandedColleges[college.collegeId]}
+                      onToggle={() => toggleCollege(college.collegeId)}
+                      onNavigate={handleCollegeSubsectionNavigate}
+                    />
+                  ))
                 ) : (
                   <li className="nav-subitem">
                     <div className="nav-content">
@@ -1045,10 +935,10 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
               </ul>
             )}
           </li>
-          
+
           {/* Expandable Courses Section */}
           <li className="nav-section-expandable">
-            <div 
+            <div
               className={`nav-header ${expandedSections.courses ? 'expanded' : ''}`}
               onClick={() => toggleSection('courses')}
             >
@@ -1103,7 +993,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
               </ul>
             )}
           </li>
-          
+
           <li className={`nav-item ${activeMainSection === 'education' ? 'active' : ''}`}>
             <div className="nav-content" onClick={() => onSectionChange('education')}>
               <span className="nav-text">Education</span>
@@ -1112,10 +1002,10 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
               </div>
             </div>
           </li>
-          
+
           {/* Expandable Testing Section */}
           <li className="nav-section-expandable">
-            <div 
+            <div
               className={`nav-header ${expandedSections.testing ? 'expanded' : ''}`}
               onClick={() => toggleSection('testing')}
             >
@@ -1131,7 +1021,6 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
                     <span className="nav-text">Tests Taken</span>
                   </div>
                 </li>
-                
                 {selectedTestTypes.length > 0 ? (
                   selectedTestTypes.map((test) => (
                     <li key={test.id} className={`nav-subitem ${location.pathname.includes(test.id) ? 'active' : ''}`}>
@@ -1155,7 +1044,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
 
           {/* Expandable Activities Section */}
           <li className="nav-section-expandable">
-            <div 
+            <div
               className={`nav-header ${expandedSections.activities ? 'expanded' : ''}`}
               onClick={() => toggleSection('activities')}
             >
@@ -1182,7 +1071,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
 
           {/* Expandable Writing Section */}
           <li className="nav-section-expandable">
-            <div 
+            <div
               className={`nav-header ${expandedSections.writing ? 'expanded' : ''}`}
               onClick={() => toggleSection('writing')}
             >
@@ -1235,23 +1124,63 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
 
   return (
     <div className="dashboard-container">
-      {/* Sidebar */}
-      <div className="dashboard-sidebar">
+      {/* ─── Mobile Top Bar ─── */}
+      <div className="mobile-topbar">
+        <button
+          className="mobile-menu-btn"
+          onClick={() => setSidebarOpen(true)}
+          aria-label="Open navigation menu"
+        >
+          <span className="hamburger-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+        </button>
+        <h2 className="mobile-brand-logo">College App</h2>
+        <div className="mobile-avatar">
+          {userData?.firstName && userData?.lastName
+            ? `${userData.firstName[0]}${userData.lastName[0]}`.toUpperCase()
+            : 'AA'
+          }
+        </div>
+      </div>
+
+      {/* ─── Overlay (mobile) ─── */}
+      {sidebarOpen && (
+        <div
+          className="sidebar-overlay"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* ─── Sidebar ─── */}
+      <div className={`dashboard-sidebar ${sidebarOpen ? 'sidebar-open' : ''}`}>
+        {/* Close button (mobile only) */}
+        <button
+          className="sidebar-close-btn"
+          onClick={() => setSidebarOpen(false)}
+          aria-label="Close navigation menu"
+        >
+          ✕
+        </button>
+
         <div className="sidebar-header">
           <div className="brand-section">
             <h2 className="brand-logo">College App</h2>
           </div>
-          
+
           <div className="user-profile-card">
             <div className="user-avatar">
-              {userData?.firstName && userData?.lastName 
+              {userData?.firstName && userData?.lastName
                 ? `${userData.firstName[0]}${userData.lastName[0]}`.toUpperCase()
                 : 'AA'
               }
             </div>
             <div className="user-info">
               <h3 className="user-name">
-                {userData?.firstName && userData?.lastName 
+                {userData?.firstName && userData?.lastName
                   ? `${userData.firstName} ${userData.lastName}`
                   : 'Loading...'
                 }
@@ -1264,8 +1193,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
 
         <nav className="sidebar-navigation">
           {getSidebarContent()}
-          
-          {/* Fixed Sign Out Section */}
+
           <div className="nav-footer">
             <li className="nav-item sign-out" onClick={handleSignOut}>
               <div className="nav-content">
@@ -1276,7 +1204,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
         </nav>
       </div>
 
-      {/* Main Content */}
+      {/* ─── Main Content ─── */}
       <div className="dashboard-main">
         {children}
       </div>
