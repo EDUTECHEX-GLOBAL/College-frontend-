@@ -10,6 +10,71 @@ import ApplicationScore       from '../models/ApplicationScore.js';
 import ApplicationSpecialNeed from '../models/ApplicationSpecialNeed.js';
 
 /* =====================================================
+   S3 CONFIG
+===================================================== */
+const BUCKET_NAME = process.env.AWS_BUCKET_NAME;
+const AWS_REGION  = process.env.AWS_REGION;
+
+/* =====================================================
+   FOLDER MAP — maps field names to S3/local folder paths
+===================================================== */
+const DOC_FOLDER_MAP = {
+  cv:                   'documents/cv',
+  photo:                'documents/photo',
+  passport:             'documents/personal',
+  transcript:           'documents/academic',
+  diploma:              'documents/academic',
+  cert9th:              'documents/certificates',
+  cert10th:             'documents/certificates',
+  cert11th:             'documents/certificates',
+  cert12th:             'documents/certificates',
+  testScores:           'documents/optional',
+  languageProficiency:  'documents/optional',
+  recommendationLetter: 'documents/optional',
+};
+
+/* =====================================================
+   URL RESOLVER
+   ─────────────────────────────────────────────────────
+   ALL files are served via /api/files/ proxy endpoint.
+   Server fetches from S3 privately — bucket stays private.
+
+   Priority:
+   1. fileKey stored in DB  → /api/files/documents/cv/key
+   2. fileUrl (S3 URL)      → extract key → /api/files/key
+   3. fileName only (old)   → /api/files/folder/filename
+===================================================== */
+const resolveFileUrl = (fieldObj, folder = '') => {
+  if (!fieldObj?.fileName || fieldObj.fileName.trim() === '') return null;
+
+  const { fileUrl, fileKey, fileName } = fieldObj;
+
+  // 1. S3 key stored in DB — use proxy with key directly
+  if (fileKey) {
+    const key = fileKey.startsWith('/') ? fileKey.slice(1) : fileKey;
+    return `/api/files/${key}`;
+  }
+
+  // 2. Full S3 URL stored — extract the key part after .amazonaws.com/
+  if (fileUrl && fileUrl.startsWith('https://')) {
+    try {
+      const url = new URL(fileUrl);
+      const key = url.pathname.replace(/^\//, ''); // remove leading slash
+      return `/api/files/${key}`;
+    } catch {
+      // fall through
+    }
+  }
+
+  // 3. Old file — only fileName exists (pre-S3 migration, stored locally)
+  //    Try /api/files/ proxy first (works if migrated to S3)
+  //    Falls back to /uploads/ which serves from local disk
+  const cleanName = fileName.replace(/^\/+/, '');
+  if (folder) return `/api/files/${folder}/${cleanName}`;
+  return `/uploads/${cleanName}`;
+};
+
+/* =====================================================
    HELPER — safe date formatter
 ===================================================== */
 const fmtDate = (d) => {
@@ -41,48 +106,76 @@ const buildMap = (records, idField) => {
 };
 
 /* =====================================================
-   HELPER — resolve a single document field.
-   Returns { uploaded: bool, status: string }
+   HELPER — resolve a single document field
 ===================================================== */
-const resolveDoc = (fieldObj, fallback = false) => {
-  const hasFile = !!(fieldObj?.fileName && fieldObj.fileName !== '');
-  if (!hasFile && !fallback) return { uploaded: false, status: 'not_uploaded' };
-  if (!hasFile && fallback)  return { uploaded: true,  status: 'pending' };
+const resolveDoc = (fieldObj, folder = '') => {
+  const hasFile = !!(fieldObj?.fileName && fieldObj.fileName.trim() !== '');
+
+  if (!hasFile) {
+    return {
+      uploaded:     false,
+      status:       'not_uploaded',
+      fileName:     null,
+      fileKey:      null,
+      fileUrl:      null,
+      originalName: null,
+      fileType:     null,
+      fileSize:     null,
+      uploadedAt:   null,
+    };
+  }
+
   return {
-    uploaded: true,
-    status: fieldObj.documentStatus || 'pending',
+    uploaded:     true,
+    status:       fieldObj.documentStatus || 'pending',
+    fileName:     fieldObj.fileName       || null,
+    fileKey:      fieldObj.fileKey        || null,
+    fileUrl:      resolveFileUrl(fieldObj, folder),  // ✅ handles both old & new
+    originalName: fieldObj.originalName   || fieldObj.fileName || null,
+    fileType:     fieldObj.fileType       || null,
+    fileSize:     fieldObj.fileSize       || null,
+    uploadedAt:   fieldObj.uploadedAt     || null,
   };
 };
 
 /* =====================================================
-   KEY FIX — map ACTUAL DB field names to the display
-   labels used in GusUniversity.jsx
-
-   Your real ApplicationDocument schema uses:
-     cv, photo, eqhe, finalEqhe, bachelorTranscript,
-     bachelorCertificate, germanCertificate,
-     englishCertificate, noObjection, deRegistration,
-     portfolio, other
-
-   The frontend expects:
-     cv, photo, passport, transcript, diploma,
-     cert9th, cert10th, cert11th, cert12th,
-     testScores, languageProficiency, recommendationLetter
+   COMPLETION CALCULATOR
 ===================================================== */
-const mapDocuments = (docRec, personal) => {
+const REQUIRED_FIELDS = [
+  'cv', 'photo', 'passport', 'transcript', 'diploma',
+  'cert9th', 'cert10th', 'cert11th', 'cert12th',
+];
+
+const calcCompletionPct = (docRec) => {
+  if (!docRec) return 0;
+  let satisfied = 0;
+  REQUIRED_FIELDS.forEach((field) => {
+    const obj         = docRec[field];
+    const hasFile     = !!(obj?.fileName && obj.fileName.trim() !== '');
+    const expectedKey = `${field}_expectedDate`;
+    const hasExpected = !!(docRec[expectedKey] && docRec[expectedKey].trim() !== '');
+    if (hasFile || hasExpected) satisfied++;
+  });
+  return Math.round((satisfied / REQUIRED_FIELDS.length) * 100);
+};
+
+/* =====================================================
+   MAP DOCUMENTS
+===================================================== */
+const mapDocuments = (docRec) => {
   const empty = {
-    cvUploaded: false,         cvStatus: 'not_uploaded',
-    photoUploaded: false,      photoStatus: 'not_uploaded',
-    passportUploaded: false,   passportStatus: 'not_uploaded',
-    transcriptUploaded: false, transcriptStatus: 'not_uploaded',
-    diplomaUploaded: false,    diplomaStatus: 'not_uploaded',
-    cert9thUploaded: false,    cert9thStatus: 'not_uploaded',
-    cert10thUploaded: false,   cert10thStatus: 'not_uploaded',
-    cert11thUploaded: false,   cert11thStatus: 'not_uploaded',
-    cert12thUploaded: false,   cert12thStatus: 'not_uploaded',
-    testScoresUploaded: false,
-    langProfUploaded: false,
-    recLetterUploaded: false,
+    cvUploaded: false,         cvStatus: 'not_uploaded',         cvMeta: null,
+    photoUploaded: false,      photoStatus: 'not_uploaded',      photoMeta: null,
+    passportUploaded: false,   passportStatus: 'not_uploaded',   passportMeta: null,
+    transcriptUploaded: false, transcriptStatus: 'not_uploaded', transcriptMeta: null,
+    diplomaUploaded: false,    diplomaStatus: 'not_uploaded',    diplomaMeta: null,
+    cert9thUploaded: false,    cert9thStatus: 'not_uploaded',    cert9thMeta: null,  cert9thExpectedDate: null,
+    cert10thUploaded: false,   cert10thStatus: 'not_uploaded',   cert10thMeta: null, cert10thExpectedDate: null,
+    cert11thUploaded: false,   cert11thStatus: 'not_uploaded',   cert11thMeta: null, cert11thExpectedDate: null,
+    cert12thUploaded: false,   cert12thStatus: 'not_uploaded',   cert12thMeta: null, cert12thExpectedDate: null,
+    testScoresUploaded: false, testScoresMeta: null,
+    langProfUploaded: false,   langProfMeta: null,
+    recLetterUploaded: false,  recLetterMeta: null,
     portfolioLink: '',
     docsCompletionPct: 0,
     docsCompleted: false,
@@ -90,51 +183,48 @@ const mapDocuments = (docRec, personal) => {
 
   if (!docRec) return empty;
 
-  // Resolve each actual DB field
-  const cv          = resolveDoc(docRec.cv);
-  const photo       = resolveDoc(docRec.photo,              !!(personal?.photographFileName));
-  // eqhe         → used as Passport/ID in this schema
-  const passport    = resolveDoc(docRec.eqhe,               !!(personal?.passportFileName));
-  // finalEqhe    → used as Transcript
-  const transcript  = resolveDoc(docRec.finalEqhe);
-  // bachelorTranscript → Diploma
-  const diploma     = resolveDoc(docRec.bachelorTranscript);
-  // bachelorCertificate → 12th Grade Cert
-  const cert12      = resolveDoc(docRec.bachelorCertificate);
-  // germanCertificate → 11th Grade Cert
-  const cert11      = resolveDoc(docRec.germanCertificate);
-  // deRegistration → 10th Grade Cert
-  const cert10      = resolveDoc(docRec.deRegistration);
-  // No direct mapping for 9th grade in this schema
-  const cert9       = { uploaded: false, status: 'not_uploaded' };
-  // englishCertificate → Test Scores
-  const testScores  = resolveDoc(docRec.englishCertificate);
-  // englishCertificate → Language Proficiency (same doc, dual purpose)
-  const langProf    = resolveDoc(docRec.englishCertificate);
-  // noObjection → Recommendation Letter
-  const recLetter   = resolveDoc(docRec.noObjection);
+  const cv         = resolveDoc(docRec.cv,                   DOC_FOLDER_MAP.cv);
+  const photo      = resolveDoc(docRec.photo,                DOC_FOLDER_MAP.photo);
+  const passport   = resolveDoc(docRec.passport,             DOC_FOLDER_MAP.passport);
+  const transcript = resolveDoc(docRec.transcript,           DOC_FOLDER_MAP.transcript);
+  const diploma    = resolveDoc(docRec.diploma,              DOC_FOLDER_MAP.diploma);
+  const cert9th    = resolveDoc(docRec.cert9th,              DOC_FOLDER_MAP.cert9th);
+  const cert10th   = resolveDoc(docRec.cert10th,             DOC_FOLDER_MAP.cert10th);
+  const cert11th   = resolveDoc(docRec.cert11th,             DOC_FOLDER_MAP.cert11th);
+  const cert12th   = resolveDoc(docRec.cert12th,             DOC_FOLDER_MAP.cert12th);
+  const testScores = resolveDoc(docRec.testScores,           DOC_FOLDER_MAP.testScores);
+  const langProf   = resolveDoc(docRec.languageProficiency,  DOC_FOLDER_MAP.languageProficiency);
+  const recLetter  = resolveDoc(docRec.recommendationLetter, DOC_FOLDER_MAP.recommendationLetter);
 
-  // Calculate real completion from actual uploaded fields
-  const uploadedCount = [cv, photo, passport, transcript, diploma, cert12, cert11, cert10]
-    .filter(d => d.uploaded).length;
-  const docsCompletionPct = docRec.completionPercentage
-    || Math.round((uploadedCount / 8) * 100);
+  // Build meta object — fileUrl is now always a valid path
+  const meta = (r) => {
+    if (!r.uploaded) return null;
+    return {
+      fileName:     r.fileName,
+      fileKey:      r.fileKey,
+      originalName: r.originalName,
+      fileType:     r.fileType,
+      fileSize:     r.fileSize,
+      uploadedAt:   r.uploadedAt,
+      fileUrl:      r.fileUrl,   // ✅ S3 URL or /uploads/ path
+    };
+  };
 
   return {
-    cvUploaded:         cv.uploaded,        cvStatus:         cv.status,
-    photoUploaded:      photo.uploaded,     photoStatus:      photo.status,
-    passportUploaded:   passport.uploaded,  passportStatus:   passport.status,
-    transcriptUploaded: transcript.uploaded,transcriptStatus: transcript.status,
-    diplomaUploaded:    diploma.uploaded,   diplomaStatus:    diploma.status,
-    cert9thUploaded:    cert9.uploaded,     cert9thStatus:    cert9.status,
-    cert10thUploaded:   cert10.uploaded,    cert10thStatus:   cert10.status,
-    cert11thUploaded:   cert11.uploaded,    cert11thStatus:   cert11.status,
-    cert12thUploaded:   cert12.uploaded,    cert12thStatus:   cert12.status,
-    testScoresUploaded: testScores.uploaded,
-    langProfUploaded:   langProf.uploaded,
-    recLetterUploaded:  recLetter.uploaded,
+    cvUploaded:         cv.uploaded,         cvStatus:         cv.status,         cvMeta:         meta(cv),
+    photoUploaded:      photo.uploaded,      photoStatus:      photo.status,      photoMeta:      meta(photo),
+    passportUploaded:   passport.uploaded,   passportStatus:   passport.status,   passportMeta:   meta(passport),
+    transcriptUploaded: transcript.uploaded, transcriptStatus: transcript.status, transcriptMeta: meta(transcript),
+    diplomaUploaded:    diploma.uploaded,    diplomaStatus:    diploma.status,    diplomaMeta:    meta(diploma),
+    cert9thUploaded:    cert9th.uploaded,    cert9thStatus:    cert9th.status,    cert9thMeta:    meta(cert9th),    cert9thExpectedDate:  docRec.cert9th_expectedDate  || null,
+    cert10thUploaded:   cert10th.uploaded,   cert10thStatus:   cert10th.status,   cert10thMeta:   meta(cert10th),  cert10thExpectedDate: docRec.cert10th_expectedDate || null,
+    cert11thUploaded:   cert11th.uploaded,   cert11thStatus:   cert11th.status,   cert11thMeta:   meta(cert11th),  cert11thExpectedDate: docRec.cert11th_expectedDate || null,
+    cert12thUploaded:   cert12th.uploaded,   cert12thStatus:   cert12th.status,   cert12thMeta:   meta(cert12th),  cert12thExpectedDate: docRec.cert12th_expectedDate || null,
+    testScoresUploaded: testScores.uploaded, testScoresMeta:   meta(testScores),
+    langProfUploaded:   langProf.uploaded,   langProfMeta:     meta(langProf),
+    recLetterUploaded:  recLetter.uploaded,  recLetterMeta:    meta(recLetter),
     portfolioLink:      docRec.portfolioLink || '',
-    docsCompletionPct,
+    docsCompletionPct:  calcCompletionPct(docRec),
     docsCompleted:      docRec.isCompleted || false,
   };
 };
@@ -192,7 +282,6 @@ export const getGusUniversityApplications = async (req, res) => {
         .select('firstName lastName email phone birthDate joinDate lastLogin status role')
         .lean(),
 
-      // Query with BOTH ObjectId and String — handles mixed storage types
       ApplicationDocument.find({
         $or: [
           { userId: { $in: studentObjectIds } },
@@ -232,15 +321,8 @@ export const getGusUniversityApplications = async (req, res) => {
       const firstName = personal.firstName || account.firstName || '';
       const lastName  = personal.lastName  || account.lastName  || '';
 
-      // ★ This is the core fix — map actual DB fields correctly
-      const documents = mapDocuments(docRec, personal);
-
+      const documents  = mapDocuments(docRec);
       const firstEntry = eduRec.educationEntries?.[0] || {};
-
-      const computedCompletion =
-        documents.docsCompletionPct ||
-        lang.completionPercentage   ||
-        0;
 
       return {
         _id:           lang._id,
@@ -280,7 +362,7 @@ export const getGusUniversityApplications = async (req, res) => {
         anotherEqheDate:                fmtDate(lang.anotherEqheDate),
         anotherEqheCity:                lang.anotherEqheCity                || '',
         anotherEqheCertificateFileName: lang.anotherEqheCertificateFileName || '',
-        completionPercentage: computedCompletion,
+        completionPercentage: documents.docsCompletionPct,
         isCompleted:          lang.isCompleted || false,
         documents,
         education: {
@@ -406,13 +488,7 @@ export const getGusUniversityApplicationById = async (req, res) => {
     const firstName  = personal?.firstName || account?.firstName || '';
     const lastName   = personal?.lastName  || account?.lastName  || '';
     const firstEntry = eduRec?.educationEntries?.[0] || {};
-
-    const documents = mapDocuments(docRec, personal);
-
-    const computedCompletion =
-      documents.docsCompletionPct ||
-      lang.completionPercentage   ||
-      0;
+    const documents  = mapDocuments(docRec);
 
     return res.status(200).json({
       success: true,
@@ -454,7 +530,7 @@ export const getGusUniversityApplicationById = async (req, res) => {
         anotherEqheDate:                fmtDate(lang.anotherEqheDate),
         anotherEqheCity:                lang.anotherEqheCity                || '',
         anotherEqheCertificateFileName: lang.anotherEqheCertificateFileName || '',
-        completionPercentage: computedCompletion,
+        completionPercentage: documents.docsCompletionPct,
         isCompleted:          lang.isCompleted || false,
         documents,
         education: eduRec ? {

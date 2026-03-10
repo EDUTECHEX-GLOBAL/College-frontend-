@@ -15,35 +15,13 @@ import {
   verifyDocument,
   verifyAllDocuments,
 } from "../controllers/applicationDocumentController.js";
-import {
-  createUploader,
-  ensureDirectoryExists,
-} from "../middleware/uploadMiddleware.js";
+import { createUploader } from "../middleware/uploadMiddleware.js";
 import { protectProcessAdmin } from "../middleware/processAdminAuth.js";
 
 const router = express.Router();
 
-/* =====================================================
-   ENSURE ALL DOCUMENT UPLOAD FOLDERS EXIST ON STARTUP
-===================================================== */
-const documentFolders = [
-  "documents/cv",
-  "documents/photo",
-  "documents/personal",
-  "documents/academic",
-  "documents/certificates",
-  "documents/optional",
-  "documents/other",
-];
-
-documentFolders.forEach((folder) => {
-  ensureDirectoryExists(folder);
-  console.log(`✅ Document folder ready: ${folder}`);
-});
-
-/* =====================================================
-   MULTER UPLOADER
-===================================================== */
+// ✅ S3 uploader — files go to s3://ups-bucket-s3/documents/
+// No local folder creation needed
 const documentUpload = createUploader("documents", 10);
 
 /* =====================================================
@@ -54,6 +32,7 @@ router.get("/test", (req, res) => {
     success: true,
     message: "Application Documents API is working",
     timestamp: new Date().toISOString(),
+    storage: "AWS S3",
     availableEndpoints: {
       GET: [
         "/",
@@ -91,40 +70,10 @@ router.get("/test", (req, res) => {
 /* =====================================================
    ADMIN ROUTES (before authMiddleware)
 ===================================================== */
-
-/**
- * @route   GET /api/application/documents/admin/all
- * @desc    Get all users' documents (paginated, filterable)
- * @access  Private/Admin
- */
 router.get("/admin/all", authMiddleware, getAllDocuments);
-
-/**
- * @route   GET /api/application/documents/process-admin/all
- * @desc    Get all users' documents for process admin dashboard
- * @access  Private/ProcessAdmin
- */
 router.get("/process-admin/all", protectProcessAdmin, getAllDocuments);
-
-/**
- * @route   GET /api/application/documents/admin/user/:userId
- * @desc    Get one user's documents by userId
- * @access  Private/Admin
- */
 router.get("/admin/user/:userId", authMiddleware, getDocumentsByUserId);
-
-/**
- * @route   PUT /api/application/documents/admin/verify/:id
- * @desc    Approve or reject a specific document
- * @access  Private/Admin
- */
 router.put("/admin/verify/:id", authMiddleware, verifyDocument);
-
-/**
- * @route   PUT /api/application/documents/admin/verify-all/:id
- * @desc    Mark all documents as verified for a user
- * @access  Private/Admin
- */
 router.put("/admin/verify-all/:id", authMiddleware, verifyAllDocuments);
 
 /* =====================================================
@@ -135,7 +84,6 @@ router.use(authMiddleware);
 /* =====================================================
    USER ROUTES — Documents
 ===================================================== */
-
 router.get("/", getDocumentsInfo);
 router.get("/completion", checkDocumentsCompletion);
 router.get("/files/:documentType", getDocumentFile);
@@ -164,14 +112,12 @@ router.delete("/files/:documentType", removeDocument);
 /* =====================================================
    USER ROUTES — Certificate Expected Dates
 ===================================================== */
-
 router.post("/cert-expected-date", saveCertExpectedDate);
 router.delete("/cert-expected-date/:field", clearCertExpectedDate);
 
 /* =====================================================
    USER ROUTES — Misc
 ===================================================== */
-
 router.post("/portfolio-link", updatePortfolioLink);
 router.post("/status", updateDocumentsStatus);
 

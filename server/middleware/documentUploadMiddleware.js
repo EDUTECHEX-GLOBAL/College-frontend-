@@ -1,6 +1,8 @@
+// server/middleware/documentMiddleware.js
 import multer from "multer";
+import multerS3 from "multer-s3";
+import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import path from "path";
-import fs from "fs";
 import { fileURLToPath } from "url";
 
 // =====================================================
@@ -10,26 +12,30 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // =====================================================
-// UPLOAD DIRECTORY - PATH AGNOSTIC (WORKS EVERYWHERE)
+// S3 CLIENT SETUP
 // =====================================================
-// Use path relative to server directory - this works on any machine!
-const DOCUMENT_UPLOAD_DIR = path.join(__dirname, "..", "uploads", "documents");
+const s3 = new S3Client({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
+});
 
-// Create directory if it doesn't exist
-if (!fs.existsSync(DOCUMENT_UPLOAD_DIR)) {
-  fs.mkdirSync(DOCUMENT_UPLOAD_DIR, { recursive: true });
-  console.log("📂 Created document upload directory:", DOCUMENT_UPLOAD_DIR);
-} else {
-  console.log("📂 Using existing document upload directory:", DOCUMENT_UPLOAD_DIR);
-}
+const BUCKET_NAME = process.env.AWS_BUCKET_NAME;
 
 // =====================================================
-// MULTER STORAGE
+// S3 STORAGE CONFIG FOR DOCUMENTS
 // =====================================================
-const storage = multer.diskStorage({
-  destination: (_, __, cb) => cb(null, DOCUMENT_UPLOAD_DIR),
-
-  filename: (_, file, cb) => {
+const s3Storage = multerS3({
+  s3,
+  bucket: BUCKET_NAME,
+  // Server-side encryption for each uploaded file
+  serverSideEncryption: "AES256",
+  metadata: (req, file, cb) => {
+    cb(null, { fieldName: file.fieldname });
+  },
+  key: (req, file, cb) => {
     const timestamp = Date.now();
     const random = Math.round(Math.random() * 1e9);
     const ext = path.extname(file.originalname).toLowerCase();
@@ -39,7 +45,9 @@ const storage = multer.diskStorage({
       .replace(/[^a-zA-Z0-9_-]/g, "_")
       .substring(0, 40);
 
-    cb(null, `${timestamp}-${random}-${cleanName}${ext}`);
+    const s3Key = `documents/${timestamp}-${random}-${cleanName}${ext}`;
+    console.log("📁 S3 Document Key:", s3Key);
+    cb(null, s3Key);
   },
 });
 
@@ -48,12 +56,12 @@ const storage = multer.diskStorage({
 // =====================================================
 const fileFilter = (req, file, cb) => {
   const allowedMimeTypes = [
-    'application/pdf',
-    'image/jpeg',
-    'image/png',
-    'image/jpg',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    "application/pdf",
+    "image/jpeg",
+    "image/png",
+    "image/jpg",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   ];
 
   // ✅ MIME TYPE CHECK
@@ -63,9 +71,9 @@ const fileFilter = (req, file, cb) => {
   }
 
   // ✅ EXTENSION CHECK
-  const allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx'];
+  const allowedExtensions = [".pdf", ".jpg", ".jpeg", ".png", ".doc", ".docx"];
   const ext = path.extname(file.originalname).toLowerCase();
-  
+
   if (!allowedExtensions.includes(ext)) {
     req.fileValidationError = "Only .pdf, .jpg, .jpeg, .png, .doc, and .docx files are allowed";
     return cb(null, false);
@@ -75,10 +83,10 @@ const fileFilter = (req, file, cb) => {
 };
 
 // =====================================================
-// MULTER INSTANCE
+// MULTER INSTANCE WITH S3
 // =====================================================
 export const documentUpload = multer({
-  storage,
+  storage: s3Storage,
   fileFilter,
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB
@@ -86,30 +94,33 @@ export const documentUpload = multer({
 });
 
 // =====================================================
-// FILE URL HELPER - PATH AGNOSTIC
+// FILE URL HELPER - S3 URL
 // =====================================================
-export const getDocumentFileUrl = (filename) => {
-  // Always return relative URL - works everywhere!
-  return `/uploads/documents/${filename}`;
+export const getDocumentFileUrl = (s3Key) => {
+  // If full key provided, use it; else prefix with documents/
+  const key = s3Key.includes("/") ? s3Key : `documents/${s3Key}`;
+  return `https://${BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
 };
 
 // =====================================================
-// DELETE FILE - PATH AGNOSTIC
+// DELETE FILE FROM S3
 // =====================================================
-export const deleteDocumentFile = (filename) => {
-  if (!filename) return false;
+export const deleteDocumentFile = async (s3Key) => {
+  if (!s3Key) return false;
 
-  const filePath = path.join(DOCUMENT_UPLOAD_DIR, filename);
+  const key = s3Key.includes("/") ? s3Key : `documents/${s3Key}`;
 
   try {
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-      console.log("🗑️ Deleted document file:", filename);
-      return true;
-    }
-    return false;
+    await s3.send(
+      new DeleteObjectCommand({
+        Bucket: BUCKET_NAME,
+        Key: key,
+      })
+    );
+    console.log("🗑️ Deleted S3 document:", key);
+    return true;
   } catch (err) {
-    console.error("❌ Document file delete error:", err);
+    console.error("❌ S3 document delete error:", err);
     return false;
   }
 };
@@ -135,6 +146,14 @@ export const validateDocumentFileUpload = (req, res, next) => {
   next();
 };
 
+// =====================================================
+// DOCUMENT UPLOAD DIR (S3 path reference)
+// =====================================================
+export const DOCUMENT_UPLOAD_DIR = `s3://${BUCKET_NAME}/documents`;
+
+// =====================================================
+// DEFAULT EXPORT
+// =====================================================
 export default {
   documentUpload,
   getDocumentFileUrl,

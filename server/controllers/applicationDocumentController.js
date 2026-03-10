@@ -1,39 +1,28 @@
 import ApplicationDocument from "../models/applicationDocumentModel.js";
 import {
-  ensureDirectoryExists,
   deleteFileFromFolder,
   getDynamicFileUrl,
 } from "../middleware/uploadMiddleware.js";
 import path from "path";
-import fs from "fs";
 
 /* =====================================================
    CONSTANTS - must mirror the model
 ===================================================== */
-
-// All valid document field names (must match frontend documentTypes[].field)
 const VALID_DOCUMENT_TYPES = [
-  // Personal
   "cv", "photo", "passport",
-  // Academic
   "transcript", "diploma",
-  // Certificates
   "cert9th", "cert10th", "cert11th", "cert12th",
-  // Optional
   "testScores", "languageProficiency", "recommendationLetter",
 ];
 
-// Required document fields
 const REQUIRED_DOCUMENTS = [
   "cv", "photo", "passport",
   "transcript", "diploma",
   "cert9th", "cert10th", "cert11th", "cert12th",
 ];
 
-// Cert fields that support expected-date fallback
 const CERT_FIELDS = ["cert9th", "cert10th", "cert11th", "cert12th"];
 
-// Maps each field to its upload subfolder
 const documentFolderMap = {
   cv:                   "documents/cv",
   photo:                "documents/photo",
@@ -49,7 +38,6 @@ const documentFolderMap = {
   recommendationLetter: "documents/optional",
 };
 
-// Max file size per field in MB
 const MAX_FILE_SIZE_MB = {
   cv:                   5,
   photo:                5,
@@ -67,17 +55,12 @@ const MAX_FILE_SIZE_MB = {
 
 /* =====================================================
    HELPER — validate "YYYY-MM" format
-   The frontend Month/Year dropdowns produce values like "2025-06".
-   Full date strings ("2025-06-15") are intentionally rejected here
-   so the stored format stays consistent.
 ===================================================== */
 const isValidYearMonth = (value) => {
   if (!value || typeof value !== "string") return false;
-  // Must match exactly YYYY-MM
   if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(value)) return false;
   const year = parseInt(value.split("-")[0], 10);
   const currentYear = new Date().getFullYear();
-  // Year must be current year or up to 10 years ahead
   if (year < currentYear || year > currentYear + 10) return false;
   return true;
 };
@@ -87,19 +70,13 @@ const isValidYearMonth = (value) => {
 ===================================================== */
 const buildEmptyDocuments = () => {
   const empty = { portfolioLink: "", isCompleted: false };
-  VALID_DOCUMENT_TYPES.forEach((field) => {
-    empty[field] = null;
-  });
-  CERT_FIELDS.forEach((field) => {
-    empty[`${field}_expectedDate`] = "";
-  });
+  VALID_DOCUMENT_TYPES.forEach((field) => { empty[field] = null; });
+  CERT_FIELDS.forEach((field) => { empty[`${field}_expectedDate`] = ""; });
   return empty;
 };
 
 /* =====================================================
    HELPER — check if requester is admin or process admin
-   Supports both authMiddleware (req.user) and
-   protectProcessAdmin (req.processAdmin) patterns
 ===================================================== */
 const isAdmin = (req) =>
   (req.user && (req.user.role === "admin" || req.user.role === "superadmin")) ||
@@ -153,7 +130,7 @@ export const getDocumentsInfo = async (req, res) => {
 };
 
 /* =====================================================
-   UPLOAD DOCUMENT
+   UPLOAD DOCUMENT  ✅ UPDATED FOR S3
 ===================================================== */
 export const uploadDocument = async (req, res) => {
   try {
@@ -174,8 +151,12 @@ export const uploadDocument = async (req, res) => {
       return res.status(400).json({ success: false, message: "No file uploaded." });
     }
 
-    const folder = documentFolderMap[documentType] || "documents/other";
-    ensureDirectoryExists(folder);
+    // ✅ S3 file properties (replaces req.file.path / req.file.filename)
+    const s3Key      = req.file.key;        // e.g. "documents/cv/1234-567.pdf"
+    const s3Url      = req.file.location;   // e.g. "https://bucket.s3.region.amazonaws.com/..."
+    const fileSize   = req.file.size;
+    const mimetype   = req.file.mimetype;
+    const origName   = req.file.originalname;
 
     // Validate MIME type
     const allowedMimeTypes = [
@@ -184,8 +165,9 @@ export const uploadDocument = async (req, res) => {
       "application/msword",
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     ];
-    if (!allowedMimeTypes.includes(req.file.mimetype)) {
-      fs.existsSync(req.file.path) && fs.unlinkSync(req.file.path);
+    if (!allowedMimeTypes.includes(mimetype)) {
+      // Delete from S3 if wrong type slipped through
+      await deleteFileFromFolder(s3Key, "");
       return res.status(400).json({
         success: false,
         message: "Invalid file type. Allowed: PDF, JPG, PNG, DOC, DOCX.",
@@ -194,8 +176,8 @@ export const uploadDocument = async (req, res) => {
 
     // Validate file size
     const maxBytes = (MAX_FILE_SIZE_MB[documentType] || 5) * 1024 * 1024;
-    if (req.file.size > maxBytes) {
-      fs.existsSync(req.file.path) && fs.unlinkSync(req.file.path);
+    if (fileSize > maxBytes) {
+      await deleteFileFromFolder(s3Key, "");
       return res.status(400).json({
         success: false,
         message: `File size exceeds ${MAX_FILE_SIZE_MB[documentType] || 5}MB limit.`,
@@ -207,20 +189,23 @@ export const uploadDocument = async (req, res) => {
       documents = new ApplicationDocument({ userId: req.userId });
     }
 
-    // Remove old file if it exists
-    const oldFileName = documents[documentType]?.fileName;
-    if (oldFileName) {
-      deleteFileFromFolder(oldFileName, folder);
+    // ✅ Remove old S3 file if it exists
+    const oldFileKey = documents[documentType]?.fileKey;
+    if (oldFileKey) {
+      await deleteFileFromFolder(oldFileKey, "");
+      console.log(`🗑️ Deleted old S3 file: ${oldFileKey}`);
     }
 
-    const fileExt = path.extname(req.file.originalname).toLowerCase().replace(".", "");
+    const fileExt = path.extname(origName).toLowerCase().replace(".", "");
 
+    // ✅ Store S3 key + URL instead of local filename
     const fileData = {
-      fileName:       req.file.filename,
-      fileUrl:        getDynamicFileUrl(req.file.filename, folder),
-      originalName:   req.file.originalname,
+      fileName:       path.basename(s3Key),   // just the filename part
+      fileKey:        s3Key,                   // full S3 key for deletion
+      fileUrl:        s3Url,                   // full S3 URL for access
+      originalName:   origName,
       fileType:       fileExt,
-      fileSize:       req.file.size,
+      fileSize:       fileSize,
       uploadedAt:     new Date(),
       documentStatus: "pending",
       generated:      false,
@@ -243,9 +228,13 @@ export const uploadDocument = async (req, res) => {
       completionPercentage: documents.completionPercentage,
       requiredDocumentsStatus: documents.requiredDocumentsStatus,
     });
+
   } catch (error) {
     console.error("❌ Upload Document Error:", error);
-    req.file?.path && fs.existsSync(req.file.path) && fs.unlinkSync(req.file.path);
+    // ✅ Clean up S3 file on error
+    if (req.file?.key) {
+      await deleteFileFromFolder(req.file.key, "").catch(() => {});
+    }
     return res.status(500).json({
       success: false,
       message: error.message || "Upload failed.",
@@ -254,7 +243,7 @@ export const uploadDocument = async (req, res) => {
 };
 
 /* =====================================================
-   REMOVE DOCUMENT
+   REMOVE DOCUMENT  ✅ UPDATED FOR S3
 ===================================================== */
 export const removeDocument = async (req, res) => {
   try {
@@ -281,8 +270,12 @@ export const removeDocument = async (req, res) => {
       });
     }
 
-    const folder = documentFolderMap[documentType] || "documents/other";
-    deleteFileFromFolder(documents[documentType].fileName, folder);
+    // ✅ Delete from S3 using fileKey (full S3 key)
+    const fileKey = documents[documentType]?.fileKey;
+    if (fileKey) {
+      await deleteFileFromFolder(fileKey, "");
+      console.log(`🗑️ Deleted from S3: ${fileKey}`);
+    }
 
     await documents.removeDocument(documentType);
 
@@ -300,15 +293,6 @@ export const removeDocument = async (req, res) => {
 
 /* =====================================================
    SAVE CERT EXPECTED DATE
-   POST /api/application/documents/cert-expected-date
-
-   Body: {
-     field:        "cert9th" | "cert10th" | "cert11th" | "cert12th",
-     expectedDate: "YYYY-MM"   ← e.g. "2025-06"
-   }
-
-   The frontend Month/Year dropdowns combine their values into
-   "YYYY-MM" before sending. Full date strings are rejected.
 ===================================================== */
 export const saveCertExpectedDate = async (req, res) => {
   try {
@@ -318,7 +302,6 @@ export const saveCertExpectedDate = async (req, res) => {
 
     const { field, expectedDate } = req.body;
 
-    // Validate cert field name
     if (!CERT_FIELDS.includes(field)) {
       return res.status(400).json({
         success: false,
@@ -326,15 +309,10 @@ export const saveCertExpectedDate = async (req, res) => {
       });
     }
 
-    // Require a value
     if (!expectedDate) {
-      return res.status(400).json({
-        success: false,
-        message: "Expected date is required.",
-      });
+      return res.status(400).json({ success: false, message: "Expected date is required." });
     }
 
-    // ✅ Validate YYYY-MM format produced by the Month/Year dropdowns
     if (!isValidYearMonth(expectedDate)) {
       return res.status(400).json({
         success: false,
@@ -368,10 +346,6 @@ export const saveCertExpectedDate = async (req, res) => {
 
 /* =====================================================
    CLEAR CERT EXPECTED DATE
-   DELETE /api/application/documents/cert-expected-date/:field
-
-   Called when student clicks "← Change answer" to reset
-   their Yes/No selection and start over.
 ===================================================== */
 export const clearCertExpectedDate = async (req, res) => {
   try {
@@ -461,7 +435,6 @@ export const checkDocumentsCompletion = async (req, res) => {
       });
     }
 
-    // Build uploaded list for required docs
     const uploadedDocuments = REQUIRED_DOCUMENTS
       .filter((doc) => documents[doc]?.fileName)
       .map((doc) => ({ type: doc, ...documents[doc].toObject?.() || documents[doc] }));
@@ -481,7 +454,8 @@ export const checkDocumentsCompletion = async (req, res) => {
 };
 
 /* =====================================================
-   GET DOCUMENT FILE
+   GET DOCUMENT FILE  ✅ UPDATED FOR S3
+   Now redirects to S3 URL instead of sending local file
 ===================================================== */
 export const getDocumentFile = async (req, res) => {
   try {
@@ -497,23 +471,19 @@ export const getDocumentFile = async (req, res) => {
 
     const documents = await ApplicationDocument.findOne({ userId: req.userId });
 
-    if (!documents || !documents[documentType]?.fileName) {
+    if (!documents || !documents[documentType]?.fileUrl) {
       return res.status(404).json({ success: false, message: "Document not found." });
     }
 
-    const folder = documentFolderMap[documentType] || "documents/other";
-    const filePath = path.join(
-      process.cwd(),
-      "uploads",
-      folder,
-      documents[documentType].fileName
-    );
+    // ✅ Redirect to S3 URL instead of sending local file
+    return res.status(200).json({
+      success: true,
+      fileUrl: documents[documentType].fileUrl,
+      fileName: documents[documentType].fileName,
+      originalName: documents[documentType].originalName,
+      fileType: documents[documentType].fileType,
+    });
 
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ success: false, message: "File not found on server." });
-    }
-
-    return res.sendFile(filePath);
   } catch (error) {
     console.error("❌ Get Document File Error:", error);
     return res.status(500).json({ success: false, message: "Server error." });
@@ -610,8 +580,7 @@ export const getDocumentsByUserId = async (req, res) => {
 
     const { userId } = req.params;
     const documents = await ApplicationDocument.findOne({ userId }).populate(
-      "userId",
-      "email firstName lastName"
+      "userId", "email firstName lastName"
     );
 
     if (!documents) {

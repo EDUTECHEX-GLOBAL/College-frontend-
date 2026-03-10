@@ -5,12 +5,13 @@ import cors from "cors";
 import path from "path";
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { S3Client, HeadBucketCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import connectDB from "./config/db.js";
 import accountRoutes from "./routes/accountRoutes.js";
 import educationRoutes from "./routes/educationRoutes.js";
 import collegesearchRoutes from "./routes/collegesearchRoutes.js";
 import collegeRoutes from "./routes/collegeRoutes.js";
-import generalRoutes from "./routes/generalRoutes.js"; 
+import generalRoutes from "./routes/generalRoutes.js";
 import firstAcademicRoutes from './routes/FirstAcademicRoutes.js';
 import highSchoolCurriculumRoutes from "./routes/highSchoolCurriculumRoutes.js";
 import firstactivitiesRoutes from "./routes/firstmycollegeactivitiesRoutes.js";
@@ -52,19 +53,58 @@ import resumeRoutes from "./routes/resumeRoutes.js";
 import previewRoutes from './routes/applicationPreviewRoutes.js';
 import applicationScoreRoutes from "./routes/applicationscoreroutes.js";
 import gusUniversityRoutes from "./routes/gusuniversityroutes.js";
+
 dotenv.config();
 
-// Initialize
+// =====================================================
+// INITIALIZE
+// =====================================================
 const app = express();
 
-// Get __dirname equivalent for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Connect to DB
+// =====================================================
+// S3 CLIENT SETUP
+// =====================================================
+const s3 = new S3Client({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
+});
+
+const BUCKET_NAME = process.env.AWS_BUCKET_NAME;
+
+// =====================================================
+// CHECK S3 BUCKET CONNECTIVITY
+// =====================================================
+const checkS3Connection = async () => {
+  try {
+    await s3.send(new HeadBucketCommand({ Bucket: BUCKET_NAME }));
+    console.log(`✅ S3 Bucket Connected: ${BUCKET_NAME}`);
+    return true;
+  } catch (err) {
+    console.error(`❌ S3 Bucket Connection Failed!`);
+    console.error(`   → Error   : ${err.message}`);
+    console.error(`   → Code    : ${err.Code || err.code}`);
+    console.error(`   → Bucket  : ${BUCKET_NAME}`);
+    console.error(`   → Region  : ${process.env.AWS_REGION}`);
+    console.error(`   → Key Set : ${!!process.env.AWS_ACCESS_KEY_ID}`);
+    console.error(`   → Secret  : ${!!process.env.AWS_SECRET_ACCESS_KEY}`);
+    return false;
+  }
+};
+
+// =====================================================
+// CONNECT TO DB
+// =====================================================
 connectDB();
 
-// CORS Configuration
+// =====================================================
+// CORS CONFIGURATION
+// =====================================================
 const corsOptions = {
   origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:4200"],
   credentials: true,
@@ -73,11 +113,15 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// Body parser
+// =====================================================
+// BODY PARSER
+// =====================================================
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-// Request logging middleware
+// =====================================================
+// REQUEST LOGGING MIDDLEWARE
+// =====================================================
 app.use((req, res, next) => {
   console.log(`\n📨 ${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
   console.log('Headers:', {
@@ -87,10 +131,112 @@ app.use((req, res, next) => {
   next();
 });
 
-/* ======================================================
-   SERVE STATIC FILES - PATH AGNOSTIC (WORKS EVERYWHERE)
-   ====================================================== */
-// Serve logos
+// =====================================================
+// SERVE /uploads/* — LOCAL FILES FIRST, FALLBACK TO S3
+// Works for both:
+//   - Old files: stored locally in /uploads folder on disk
+//   - New files: stored in S3 (redirects to S3 URL)
+// =====================================================
+const uploadsLocalPath = path.join(__dirname, 'uploads');
+const uploadsAltPath   = path.join(process.cwd(), 'uploads');
+const uploadsDir       = fs.existsSync(uploadsLocalPath)
+  ? uploadsLocalPath
+  : fs.existsSync(uploadsAltPath)
+    ? uploadsAltPath
+    : null;
+
+if (uploadsDir) {
+  console.log('📁 Local uploads folder found at:', uploadsDir);
+  // Serve local files statically
+  app.use('/uploads', express.static(uploadsDir));
+  console.log('✅ Serving local uploads from disk');
+} else {
+  console.log('⚠️  No local uploads folder found — all /uploads requests will redirect to S3');
+}
+
+// Fallback: if file not found locally, redirect to S3
+app.use('/uploads', (req, res) => {
+  const s3Key = req.path.replace(/^\//, '');
+  const s3Url = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
+  console.log(`🔀 File not found locally, redirecting to S3: /uploads${req.path} → ${s3Url}`);
+  return res.redirect(302, s3Url);
+});
+
+// =====================================================
+// FILE PROXY — Stream S3 files privately through server
+// Browser calls: GET /api/files/documents/cv/filename.pdf
+// Server fetches from S3 privately and streams back
+// S3 bucket stays completely PRIVATE ✅
+// =====================================================
+app.use('/api/files', async (req, res) => {
+  try {
+    const s3Key = req.path.replace(/^\//, ''); // e.g. documents/cv/filename.pdf
+    if (!s3Key) return res.status(400).json({ success: false, message: 'No file key provided' });
+
+    console.log(`📥 Proxying S3 file: ${s3Key}`);
+
+    const command = new GetObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: s3Key,
+    });
+
+    const s3Response = await s3.send(command);
+
+    // ✅ Detect correct content type from S3 or file extension
+    const fileName = s3Key.split('/').pop();
+    const ext = fileName.split('.').pop().toLowerCase();
+
+    const mimeTypes = {
+      'pdf':  'application/pdf',
+      'jpg':  'image/jpeg',
+      'jpeg': 'image/jpeg',
+      'png':  'image/png',
+      'webp': 'image/webp',
+      'gif':  'image/gif',
+      'doc':  'application/msword',
+      'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    };
+
+    const contentType = s3Response.ContentType && s3Response.ContentType !== 'application/octet-stream'
+      ? s3Response.ContentType
+      : mimeTypes[ext] || 'application/octet-stream';
+
+    res.setHeader('Content-Type', contentType);
+
+    // ✅ inline = browser previews it (not download)
+    // Use attachment only for doc/docx since browsers can't preview them
+    const isPreviewable = ['pdf','jpg','jpeg','png','webp','gif'].includes(ext);
+    res.setHeader('Content-Disposition', isPreviewable
+      ? `inline; filename="${fileName}"`
+      : `attachment; filename="${fileName}"`
+    );
+
+    if (s3Response.ContentLength) {
+      res.setHeader('Content-Length', s3Response.ContentLength);
+    }
+
+    // ✅ Allow iframe embedding (needed for PDF preview)
+    res.removeHeader('X-Frame-Options');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET');
+    res.setHeader('Cache-Control', 'no-cache');
+
+    // Stream the file body to the response
+    s3Response.Body.pipe(res);
+
+  } catch (err) {
+    console.error('❌ S3 file proxy error:', err.message);
+    if (err.name === 'NoSuchKey' || err.$metadata?.httpStatusCode === 404) {
+      return res.status(404).json({ success: false, message: 'File not found' });
+    }
+    return res.status(500).json({ success: false, message: 'Failed to load file' });
+  }
+});
+
+// =====================================================
+// SERVE STATIC FILES (logos only — uploads now on S3)
+// =====================================================
 const logosPath = path.join(__dirname, "public", "logos");
 if (!fs.existsSync(logosPath)) {
   const altLogosPath = path.join(process.cwd(), "public", "logos");
@@ -103,56 +249,46 @@ if (!fs.existsSync(logosPath)) {
   console.log('📁 Logos found at:', logosPath);
 }
 
-// Serve uploads - always relative to server directory
-const uploadStaticPath = path.join(__dirname, "uploads");
-app.use("/uploads", express.static(uploadStaticPath));
-console.log(`📁 Serving uploads from: ${uploadStaticPath}`);
-
-// Create uploads/documents folder if it doesn't exist
-const documentsPath = path.join(uploadStaticPath, 'documents');
-if (!fs.existsSync(documentsPath)) {
-  fs.mkdirSync(documentsPath, { recursive: true });
-  console.log('📁 Created documents folder at:', documentsPath);
-}
-
-// Optional debug endpoint (can be removed in production)
-app.get('/api/debug/file/:filename', (req, res) => {
-  const filename = req.params.filename;
-  const filePath = path.join(uploadStaticPath, 'documents', filename);
-  
-  const exists = fs.existsSync(filePath);
-  
-  res.json({
-    filename,
-    filePath,
-    exists,
-    __dirname,
-    cwd: process.cwd()
-  });
-});
-
-/* ======================================================
-   DEBUG ENDPOINTS
-   ====================================================== */
+// =====================================================
+// DEBUG ENDPOINTS
+// =====================================================
 app.get('/api/test', (req, res) => {
-  res.json({ 
-    success: true, 
+  res.json({
+    success: true,
     message: '✅ API is working',
     timestamp: new Date().toISOString()
   });
 });
 
+// ✅ S3 connection check endpoint — visit this to verify S3 works
+app.get('/api/debug/s3', async (req, res) => {
+  const connected = await checkS3Connection();
+  res.json({
+    connected,
+    bucket: BUCKET_NAME,
+    region: process.env.AWS_REGION,
+    accessKeySet: !!process.env.AWS_ACCESS_KEY_ID,
+    secretKeySet: !!process.env.AWS_SECRET_ACCESS_KEY,
+    message: connected
+      ? '✅ S3 is working correctly'
+      : '❌ S3 connection failed — check your .env keys and bucket name',
+  });
+});
+
+// S3 file URL lookup
+app.get('/api/debug/s3/:key', async (req, res) => {
+  const key = req.params.key;
+  const s3Url = `https://${BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+  res.json({ key, bucket: BUCKET_NAME, region: process.env.AWS_REGION, s3Url });
+});
+
 app.get('/api/routes', (req, res) => {
   const routes = [];
-  
   const extractRoutes = (stack, basePath = '') => {
     stack.forEach(layer => {
       if (layer.route) {
         const methods = Object.keys(layer.route.methods).join(', ').toUpperCase();
-        routes.push({
-          path: basePath + layer.route.path,
-          methods: methods
-        });
+        routes.push({ path: basePath + layer.route.path, methods });
       } else if (layer.name === 'router' && layer.handle.stack) {
         const routerPath = basePath + (layer.regexp.source
           .replace('\\/?(?=\\/|$)', '')
@@ -164,16 +300,13 @@ app.get('/api/routes', (req, res) => {
       }
     });
   };
-  
   extractRoutes(app._router.stack);
-  
-  const filteredRoutes = routes.filter(r => 
-    r.path.includes('/api/user') || 
-    r.path === '/' || 
+  const filteredRoutes = routes.filter(r =>
+    r.path.includes('/api/user') ||
+    r.path === '/' ||
     r.path === '/api/test' ||
     r.path === '/api/routes'
   );
-  
   res.json({
     success: true,
     message: 'Registered routes',
@@ -192,10 +325,8 @@ console.log('✅ User routes mounted successfully');
    MOUNT PROCESS ADMIN ROUTES
    ====================================================== */
 console.log('📌 Mounting process admin routes...');
-
 app.use("/api/process-admin/documents", processAdminDocumentRoutes);
 console.log('✅ Process admin document routes mounted at /api/process-admin/documents');
-
 app.use("/api/process-admin", processAdminRoutes);
 console.log('✅ Process admin routes mounted at /api/process-admin');
 
@@ -216,7 +347,7 @@ app.use("/api/courses", courseRoutes);
 app.use("/api/documents", documentRoutes);
 app.use('/api/application/preview', previewRoutes);
 app.use("/api/application/score", applicationScoreRoutes);
-app.use("/api/application/process-admin/gus-university", gusUniversityRoutes); // ✅ NEW
+app.use("/api/application/process-admin/gus-university", gusUniversityRoutes);
 app.use("/api/colleges", collegeRoutes);
 app.use("/api/general", generalRoutes);
 app.use("/api/academics", firstAcademicRoutes);
@@ -259,6 +390,11 @@ app.get("/", (req, res) => {
     message: "EduTechEx API is running...",
     version: "1.0.0",
     timestamp: new Date().toISOString(),
+    storage: {
+      type: "AWS S3",
+      bucket: BUCKET_NAME,
+      region: process.env.AWS_REGION,
+    },
     processAdminRoutes: {
       documents: "/api/process-admin/documents/all",
       stats: "/api/process-admin/stats",
@@ -273,12 +409,17 @@ app.get("/", (req, res) => {
   });
 });
 
-app.get("/api/health", (req, res) => {
+app.get("/api/health", async (req, res) => {
+  const s3Connected = await checkS3Connection();
   res.status(200).json({
     success: true,
     message: "Server is healthy",
     uptime: process.uptime(),
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    services: {
+      api: "Running",
+      s3: s3Connected ? `Connected (${BUCKET_NAME})` : "❌ Disconnected",
+    }
   });
 });
 
@@ -290,12 +431,15 @@ app.get("/api/status", (req, res) => {
       database: "Connected",
       api: "Running",
       cors: "Enabled",
+      storage: `AWS S3 (${BUCKET_NAME})`,
     },
     timestamp: new Date().toISOString(),
   });
 });
 
-// 404 Handler
+// =====================================================
+// 404 HANDLER
+// =====================================================
 app.use((req, res) => {
   console.log(`❌ 404 - Route not found: ${req.method} ${req.originalUrl}`);
   res.status(404).json({
@@ -305,20 +449,37 @@ app.use((req, res) => {
   });
 });
 
-// Error handler
+// =====================================================
+// GLOBAL ERROR HANDLER ✅ FULL S3 ERROR LOGGING
+// =====================================================
 app.use((err, req, res, next) => {
-  console.error("❌ Error:", err.message);
-  console.error("Stack:", err.stack);
 
-  if (err.name === "ValidationError") {
-    const messages = Object.values(err.errors).map((e) => e.message);
-    return res.status(400).json({
-      success: false,
-      message: "Validation Error",
-      errors: messages,
-    });
+  // ✅ Always print the full error to terminal for debugging
+  console.error("\n🔴 GLOBAL ERROR CAUGHT:");
+  console.error("   Message      :", err.message);
+  console.error("   Name         :", err.name);
+  console.error("   Code         :", err.code || err.Code);
+  console.error("   HTTP Status  :", err.$metadata?.httpStatusCode || err.status);
+  if (err.storageErrors?.length) {
+    console.error("   StorageErrors:", JSON.stringify(err.storageErrors, null, 2));
+  }
+  console.error("   Stack        :", err.stack);
+
+  // JWT
+  if (err.name === "JsonWebTokenError") {
+    return res.status(401).json({ success: false, message: "Invalid token" });
+  }
+  if (err.name === "TokenExpiredError") {
+    return res.status(401).json({ success: false, message: "Token expired" });
   }
 
+  // Mongoose validation
+  if (err.name === "ValidationError") {
+    const messages = Object.values(err.errors).map((e) => e.message);
+    return res.status(400).json({ success: false, message: "Validation Error", errors: messages });
+  }
+
+  // Mongo duplicate key
   if (err.code === 11000) {
     const field = Object.keys(err.keyPattern)[0];
     return res.status(409).json({
@@ -327,65 +488,92 @@ app.use((err, req, res, next) => {
     });
   }
 
-  if (err.name === "JsonWebTokenError") {
-    return res.status(401).json({ success: false, message: "Invalid token" });
+  // Multer file size
+  if (err.code === "LIMIT_FILE_SIZE") {
+    return res.status(400).json({ success: false, message: "File too large. Max size is 10MB." });
   }
 
-  if (err.name === "TokenExpiredError") {
-    return res.status(401).json({ success: false, message: "Token expired" });
+  // Multer general
+  if (err.name === "MulterError") {
+    return res.status(400).json({ success: false, message: `Upload error: ${err.message}` });
   }
 
+  // ✅ S3 errors — show real detail in development
+  if (err.storageErrors || err.$metadata || err.Code) {
+    return res.status(500).json({
+      success: false,
+      message: "S3 upload failed. Please try again.",
+      ...(process.env.NODE_ENV === "development" && {
+        detail: err.message,
+        code: err.Code || err.code,
+        httpStatus: err.$metadata?.httpStatusCode,
+      }),
+    });
+  }
+
+  // Generic fallback
   res.status(err.status || 500).json({
     success: false,
     message: err.message || "Something went wrong!",
-    error: process.env.NODE_ENV === "development" ? err.stack : undefined,
+    ...(process.env.NODE_ENV === "development" && { error: err.stack }),
   });
 });
 
-// Start server
+// =====================================================
+// START SERVER
+// =====================================================
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
+  const s3Connected = await checkS3Connection();
+
   console.log(`
 ╔════════════════════════════════════════════╗
 ║          🚀 EduTechEx API Server           ║
 ╚════════════════════════════════════════════╝
 
 📡 Server Status:
-   ✅ Port: ${PORT}
-   ✅ Environment: ${process.env.NODE_ENV || "development"}
-   ✅ URL: http://localhost:${PORT}
+   ✅ Port        : ${PORT}
+   ✅ Environment : ${process.env.NODE_ENV || "development"}
+   ✅ URL         : http://localhost:${PORT}
 
-📁 Static Files:
-   ✅ Uploads path: ${uploadStaticPath}
+☁️  Storage (AWS S3):
+   ${s3Connected ? '✅' : '❌'} Bucket : ${BUCKET_NAME}
+   ${s3Connected ? '✅' : '❌'} Region : ${process.env.AWS_REGION}
+   ${s3Connected ? '✅' : '❌'} Key Set: ${!!process.env.AWS_ACCESS_KEY_ID}
+   ${s3Connected ? '✅' : '❌'} Secret : ${!!process.env.AWS_SECRET_ACCESS_KEY}
+   ${s3Connected ? '✅' : '❌'} Status : ${s3Connected ? 'Connected ✅' : 'FAILED ❌ — Check .env!'}
 
-🔐 Process Admin Routes:
-   ✅ GET  /api/process-admin/documents/all
-   ✅ GET  /api/process-admin/documents/stats
-   ✅ GET  /api/process-admin/documents/:id
-   ✅ PUT  /api/process-admin/documents/:id/review
-   ✅ POST /api/process-admin/documents/send-email
-   ✅ POST /api/process-admin/documents/:id/send-correction
-   ✅ GET  /api/process-admin/documents/generate-pdf/:studentId
-
-🔍 User Routes (Mounted at /api/user):
-   ✅ GET  /api/user/test
-   ✅ GET  /api/user/profile
-   ✅ POST /api/user/profile
-   ✅ GET  /api/user/profile/status
-   ✅ PATCH /api/user/profile/image
-   ✅ DELETE /api/user/profile
-   ✅ GET  /api/user/profile/email/:email
-   ✅ GET  /api/user/admin/profiles
-   ✅ GET  /api/user/admin/profiles/program/:program
-   ✅ GET  /api/user/admin/stats
+📁 S3 Folders:
+   ✅ passport/
+   ✅ photograph/
+   ✅ education/
+   ✅ nationalId/
+   ✅ documents/
 
 🔧 Debug Endpoints:
    ✅ GET  /api/test
    ✅ GET  /api/routes
-   ✅ GET  /api/debug/file/:filename
+   ✅ GET  /api/debug/s3        ← S3 connection check
+   ✅ GET  /api/debug/s3/:key   ← S3 file URL lookup
+   ✅ GET  /api/health
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 `);
+
+  if (!s3Connected) {
+    console.error(`
+⚠️  WARNING: S3 is NOT connected!
+    File uploads will FAIL.
+    Fix your .env file:
+
+    AWS_ACCESS_KEY_ID=AKIAxxxxxxxxxxxx
+    AWS_SECRET_ACCESS_KEY=xxxxxxxxxxxxxxxxxxxxxxxx
+    AWS_REGION=ap-south-1
+    AWS_BUCKET_NAME=ups-bucket-s3
+
+    Then restart the server.
+`);
+  }
 });
 
 export default app;

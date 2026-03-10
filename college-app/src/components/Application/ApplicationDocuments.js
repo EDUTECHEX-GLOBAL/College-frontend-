@@ -8,6 +8,22 @@ const API_URL = process.env.REACT_APP_API_BASE_URL
   ? `${process.env.REACT_APP_API_BASE_URL}/api/application/documents`
   : "http://localhost:5000/api/application/documents";
 
+const BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
+
+// =====================================================
+// ✅ HELPER: Resolve any file URL to a viewable URL
+// Handles:
+//   1. Full S3 URL (new uploads)     → return as-is
+//   2. Local /uploads/... path (old) → prepend BASE_URL (server will redirect to S3)
+//   3. null/undefined                → return null
+// =====================================================
+const resolveFileUrl = (fileUrl) => {
+  if (!fileUrl) return null;
+  if (fileUrl.startsWith('https://') || fileUrl.startsWith('http://')) return fileUrl;
+  if (fileUrl.startsWith('/uploads/')) return `${BASE_URL}${fileUrl}`;
+  return fileUrl;
+};
+
 const ApplicationDocuments = ({ formData, onFileUpload }) => {
   const navigate  = useNavigate();
   const location  = useLocation();
@@ -34,7 +50,7 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
   const [cvMode,      setCvMode]      = useState('choose');
   const [showCVModal, setShowCVModal] = useState(false);
 
-  // ── Certificate availability state ──────────────────────────
+  // Certificate availability state
   const [certAvailability, setCertAvailability] = useState({
     cert9th:  null,
     cert10th: null,
@@ -76,7 +92,6 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
   const YEARS = Array.from({ length: 6 }, (_, i) => String(currentYear + i));
 
   const documentTypes = [
-    // ── Personal Documents ──
     {
       id: 'cv', field: 'cv',
       label: 'Curriculum Vitae (Signed and dated)',
@@ -95,8 +110,6 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
       description: 'Upload your passport or government-issued ID.',
       required: true, accept: '.pdf,.jpg,.jpeg,.png', maxSize: 10, category: 'personal', icon: '🪪'
     },
-
-    // ── Academic Documents ──
     {
       id: 'transcript', field: 'transcript',
       label: 'High School Transcript',
@@ -109,8 +122,6 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
       description: 'Upload your Diploma/Graduation Certificate.',
       required: true, accept: '.pdf,.jpg,.jpeg,.png,.doc,.docx', maxSize: 10, category: 'academic', icon: '🎓'
     },
-
-    // ── Grade Certificates ──
     {
       id: 'cert9th', field: 'cert9th',
       label: '9th Grade Certificate',
@@ -135,8 +146,6 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
       description: 'Official certificate / marksheet from your 12th grade (Higher Secondary / A-Level)',
       required: true, accept: '.pdf,.jpg,.jpeg,.png', maxSize: 5, category: 'certificates', icon: '🎓'
     },
-
-    // ── Optional Documents ──
     {
       id: 'testScores', field: 'testScores',
       label: 'Standardized Test Scores (Optional)',
@@ -263,57 +272,55 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
   };
 
   const handleExpectedMonthChange = async (field, month) => {
-  setCertExpectedMonth(prev => ({ ...prev, [field]: month }));
-  const year = certExpectedYear[field];
-  const combined = year && month ? `${year}-${month}` : '';
-  setLocalFormData(prev => ({ ...prev, [`${field}_expectedDate`]: combined }));
+    setCertExpectedMonth(prev => ({ ...prev, [field]: month }));
+    const year = certExpectedYear[field];
+    const combined = year && month ? `${year}-${month}` : '';
+    setLocalFormData(prev => ({ ...prev, [`${field}_expectedDate`]: combined }));
+    if (year && month) {
+      try {
+        await axios.post(
+          `${API_URL}/cert-expected-date`,
+          { field, expectedDate: combined },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } catch (err) {
+        console.error('Failed to save cert expected date:', err.response?.data || err.message);
+      }
+    }
+  };
 
-  if (year && month) {
+  const handleExpectedYearChange = async (field, year) => {
+    setCertExpectedYear(prev => ({ ...prev, [field]: year }));
+    const month = certExpectedMonth[field];
+    const combined = year && month ? `${year}-${month}` : '';
+    setLocalFormData(prev => ({ ...prev, [`${field}_expectedDate`]: combined }));
+    if (year && month) {
+      try {
+        await axios.post(
+          `${API_URL}/cert-expected-date`,
+          { field, expectedDate: combined },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } catch (err) {
+        console.error('Failed to save cert expected date:', err.response?.data || err.message);
+      }
+    }
+  };
+
+  const handleCertAvailReset = async (field) => {
+    setCertAvailability(prev  => ({ ...prev, [field]: null }));
+    setCertExpectedMonth(prev => ({ ...prev, [field]: '' }));
+    setCertExpectedYear(prev  => ({ ...prev, [field]: '' }));
+    setLocalFormData(prev => ({ ...prev, [`${field}_expectedDate`]: '' }));
     try {
-      await axios.post(
-        `${API_URL}/cert-expected-date`,
-        { field, expectedDate: combined },
+      await axios.delete(
+        `${API_URL}/cert-expected-date/${field}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
     } catch (err) {
-      console.error('Failed to save cert expected date:', err.response?.data || err.message);
+      console.error('Failed to clear cert expected date:', err.response?.data || err.message);
     }
-  }
-};
-
- const handleExpectedYearChange = async (field, year) => {
-  setCertExpectedYear(prev => ({ ...prev, [field]: year }));
-  const month = certExpectedMonth[field];
-  const combined = year && month ? `${year}-${month}` : '';
-  setLocalFormData(prev => ({ ...prev, [`${field}_expectedDate`]: combined }));
-
-  if (year && month) {
-    try {
-      await axios.post(
-        `${API_URL}/cert-expected-date`,
-        { field, expectedDate: combined },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-    } catch (err) {
-      console.error('Failed to save cert expected date:', err.response?.data || err.message);
-    }
-  }
-};
-const handleCertAvailReset = async (field) => {
-  setCertAvailability(prev  => ({ ...prev, [field]: null }));
-  setCertExpectedMonth(prev => ({ ...prev, [field]: '' }));
-  setCertExpectedYear(prev  => ({ ...prev, [field]: '' }));
-  setLocalFormData(prev => ({ ...prev, [`${field}_expectedDate`]: '' }));
-
-  try {
-    await axios.delete(
-      `${API_URL}/cert-expected-date/${field}`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-  } catch (err) {
-    console.error('Failed to clear cert expected date:', err.response?.data || err.message);
-  }
-};
+  };
 
   const getCertExpectedDate = (field) => {
     const m = certExpectedMonth[field];
@@ -366,16 +373,26 @@ const handleCertAvailReset = async (field) => {
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
       });
       if (res.data.success) {
+        // ✅ Resolve S3 URL properly
+        const rawUrl = res.data.fileData?.fileUrl || res.data.fileUrl || null;
         const updatedFile = {
-          name:       file.name,
-          size:       file.size,
-          type:       file.type,
-          fileName:   res.data.fileData?.fileName || res.data.fileName,
-          fileUrl:    res.data.fileData?.fileUrl  || res.data.fileUrl,
-          uploadedAt: new Date().toISOString()
+          name:         file.name,
+          size:         file.size,
+          type:         file.type,
+          fileName:     res.data.fileData?.fileName   || res.data.fileName,
+          fileKey:      res.data.fileData?.fileKey    || null,
+          fileUrl:      resolveFileUrl(rawUrl),         // ✅ always a valid URL
+          originalName: res.data.fileData?.originalName || file.name,
+          uploadedAt:   new Date().toISOString()
         };
-        setLocalFormData(prev => ({ ...prev, [field]: updatedFile, [`${field}Preview`]: prev[`${field}Preview`] }));
-        if (res.data.completionPercentage !== undefined) setCompletionPercentage(res.data.completionPercentage);
+        setLocalFormData(prev => ({
+          ...prev,
+          [field]: updatedFile,
+          [`${field}Preview`]: prev[`${field}Preview`]
+        }));
+        if (res.data.completionPercentage !== undefined) {
+          setCompletionPercentage(res.data.completionPercentage);
+        }
         if (onFileUpload) onFileUpload(field, updatedFile);
         setError('');
         setTimeout(() => alert(`${docType.label} uploaded successfully!`), 100);
@@ -504,17 +521,12 @@ const handleCertAvailReset = async (field) => {
       } catch (statusError) {
         console.log("Status endpoint not available, continuing anyway");
       }
-
-      // ✅ CHANGED: Navigate to /preview instead of /special-needs
       let targetPath = location.pathname.includes('/documents')
         ? location.pathname.replace('/documents', '/preview')
         : '/firstyear/dashboard/application/preview';
       navigate(targetPath);
-
     } catch (error) {
       console.error("Error in handleNext:", error);
-
-      // ✅ CHANGED: Fallback also navigates to /preview
       let targetPath = location.pathname.includes('/documents')
         ? location.pathname.replace('/documents', '/preview')
         : '/firstyear/dashboard/application/preview';
@@ -524,7 +536,6 @@ const handleCertAvailReset = async (field) => {
     }
   };
 
-  // ✅ CHANGED: Back navigates to /firsteducation (was already correct, kept as-is)
   const handleBack = () => {
     let backPath = location.pathname.includes('/documents')
       ? location.pathname.replace('/documents', '/firsteducation')
@@ -555,6 +566,12 @@ const handleCertAvailReset = async (field) => {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
+  // ✅ Helper to get viewable URL for any file field
+  const getViewUrl = (fileData) => {
+    if (!fileData) return null;
+    return resolveFileUrl(fileData.fileUrl) || null;
+  };
+
   // ── Certificate Upload Area ──────────────────────────────────
   const CertUploadArea = ({ doc }) => {
     const field        = doc.field;
@@ -563,6 +580,7 @@ const handleCertAvailReset = async (field) => {
     const year         = certExpectedYear[field];
     const fileData     = localFormData[field];
     const expectedDate = getCertExpectedDate(field);
+    const viewUrl      = getViewUrl(fileData); // ✅ resolved S3 URL
 
     if (fileData?.fileName) {
       return (
@@ -592,8 +610,9 @@ const handleCertAvailReset = async (field) => {
                 {fileData.size > 0 && <span className="file-size">{formatFileSize(fileData.size)}</span>}
               </div>
               <div className="file-actions">
-                {fileData.fileUrl && (
-                  <a href={fileData.fileUrl} target="_blank" rel="noopener noreferrer" className="view-link">
+                {/* ✅ Use resolved S3 URL */}
+                {viewUrl && (
+                  <a href={viewUrl} target="_blank" rel="noopener noreferrer" className="view-link">
                     <i className="fas fa-eye"></i> View
                   </a>
                 )}
@@ -862,6 +881,7 @@ const handleCertAvailReset = async (field) => {
 
                       /* ── SPECIAL CV CARD ── */
                       if (doc.id === 'cv') {
+                        const cvViewUrl = getViewUrl(localFormData.cv); // ✅ resolved S3 URL
                         return (
                           <div key={doc.id} className="document-card cv-document-card">
                             <div className="document-header">
@@ -909,8 +929,9 @@ const handleCertAvailReset = async (field) => {
                                       )}
                                     </div>
                                     <div className="file-actions">
-                                      {localFormData.cv.fileUrl && (
-                                        <a href={localFormData.cv.fileUrl} target="_blank" rel="noopener noreferrer" className="view-link">
+                                      {/* ✅ Use resolved S3 URL */}
+                                      {cvViewUrl && (
+                                        <a href={cvViewUrl} target="_blank" rel="noopener noreferrer" className="view-link">
                                           <i className="fas fa-eye"></i> View
                                         </a>
                                       )}
@@ -942,7 +963,6 @@ const handleCertAvailReset = async (field) => {
                                       </div>
                                     </div>
                                   )}
-
                                   {cvMode === 'upload' && (
                                     <div className="upload-placeholder">
                                       <button type="button" className="cv-back-link"
@@ -980,7 +1000,6 @@ const handleCertAvailReset = async (field) => {
                                       </button>
                                     </div>
                                   )}
-
                                   {cvMode === 'generate' && (
                                     <div className="cv-choice-wrapper">
                                       <p className="cv-choice-prompt">CV Generator is ready</p>
@@ -1008,7 +1027,6 @@ const handleCertAvailReset = async (field) => {
                       if (CERT_FIELDS.includes(doc.field)) {
                         const hasFile = localFormData[doc.field]?.fileName;
                         const hasDate = certAvailability[doc.field] === 'no' && getCertExpectedDate(doc.field);
-
                         return (
                           <div
                             key={doc.id}
@@ -1038,6 +1056,7 @@ const handleCertAvailReset = async (field) => {
                       }
 
                       /* ── ALL OTHER DOCUMENT CARDS ── */
+                      const docViewUrl = getViewUrl(localFormData[doc.field]); // ✅ resolved S3 URL
                       return (
                         <div
                           key={doc.id}
@@ -1094,8 +1113,9 @@ const handleCertAvailReset = async (field) => {
                                       )}
                                     </div>
                                     <div className="file-actions">
-                                      {localFormData[doc.field].fileUrl && (
-                                        <a href={localFormData[doc.field].fileUrl} target="_blank" rel="noopener noreferrer" className="view-link">
+                                      {/* ✅ Use resolved S3 URL */}
+                                      {docViewUrl && (
+                                        <a href={docViewUrl} target="_blank" rel="noopener noreferrer" className="view-link">
                                           <i className="fas fa-eye"></i> View
                                         </a>
                                       )}
