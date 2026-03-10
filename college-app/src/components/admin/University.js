@@ -20,6 +20,7 @@ const University = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [sortBy, setSortBy] = useState('name');
   const [filterType, setFilterType] = useState('all');
+  const [programLevel, setProgramLevel] = useState('all');
   const [viewMode, setViewMode] = useState('grid');
   const [selectedProgram, setSelectedProgram] = useState(null);
   const [showProgramDetails, setShowProgramDetails] = useState(false);
@@ -42,7 +43,7 @@ const University = () => {
     }, 500);
 
     return () => clearTimeout(delayDebounce);
-  }, [searchTerm, activeTab]);
+  }, [searchTerm]);
 
   const fetchImportStats = async () => {
     try {
@@ -117,23 +118,113 @@ const University = () => {
         return;
       }
 
-      const endpoint = activeTab === 'universities' 
-        ? `${API_URL}/api/admin/universities/search`
-        : `${API_URL}/api/admin/colleges/search`;
+      // Search in all three APIs: admin, bachelors, and masters
+      const [adminResponse, bachelorsResponse, mastersResponse] = await Promise.all([
+        axios.get(`${API_URL}/api/admin/universities/search`, {
+          params: { q: searchTerm },
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }).catch(err => ({ data: { success: false, data: [] } })),
+        axios.get(`${API_URL}/api/bachelors/universities`, {
+          params: { 
+            search: searchTerm,
+            limit: 50 
+          },
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }).catch(err => ({ data: { success: false, data: [] } })),
+        axios.get(`${API_URL}/api/masters/universities`, {
+          params: { 
+            search: searchTerm,
+            limit: 50 
+          },
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }).catch(err => ({ data: { success: false, data: [] } }))
+      ]);
 
-      const response = await axios.get(endpoint, {
-        params: { q: searchTerm },
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.data.success) {
-        setSearchResults(response.data.data);
-      } else {
-        setError(response.data.message || "Search failed");
+      let combinedResults = [];
+      
+      if (adminResponse.data.success) {
+        const adminUniversities = adminResponse.data.data.map(uni => ({
+          ...uni,
+          source: 'admin',
+          importedByAdmin: true
+        }));
+        combinedResults = [...combinedResults, ...adminUniversities];
       }
+      
+      if (bachelorsResponse.data.success) {
+        const transformedBachelors = bachelorsResponse.data.data.map(uni => ({
+          ...uni,
+          INSTNM: uni.universityName,
+          UNITID: uni.universityCode,
+          CITY: uni.city,
+          STABBR: uni.state,
+          ADDR: uni.address,
+          ZIP: uni.zipCode,
+          WEBADDR: uni.website,
+          location: {
+            city: uni.city,
+            state: uni.state,
+            country: uni.country
+          },
+          programs: uni.programs || [],
+          programCount: uni.programs?.length || 0,
+          importedByAdmin: false,
+          lastUpdated: uni.updatedAt || uni.createdAt,
+          logo: uni.universityLogo,
+          contact: {
+            website: uni.website,
+            adminEmail: uni.adminEmail,
+            adminPhone: uni.adminPhone,
+            admissionEmail: uni.admissionEmail,
+            admissionPhone: uni.admissionPhone
+          },
+          source: 'bachelors'
+        }));
+        combinedResults = [...combinedResults, ...transformedBachelors];
+      }
+
+      if (mastersResponse.data.success) {
+        const transformedMasters = mastersResponse.data.data.map(uni => ({
+          ...uni,
+          INSTNM: uni.universityName,
+          UNITID: uni.universityCode,
+          CITY: uni.city,
+          STABBR: uni.state,
+          ADDR: uni.address,
+          ZIP: uni.zipCode,
+          WEBADDR: uni.website,
+          location: {
+            city: uni.city,
+            state: uni.state,
+            country: uni.country
+          },
+          programs: uni.programs || [],
+          programCount: uni.programs?.length || 0,
+          importedByAdmin: false,
+          lastUpdated: uni.updatedAt || uni.createdAt,
+          logo: uni.universityLogo,
+          contact: {
+            website: uni.website,
+            adminEmail: uni.adminEmail,
+            adminPhone: uni.adminPhone,
+            admissionEmail: uni.admissionEmail,
+            admissionPhone: uni.admissionPhone
+          },
+          source: 'masters'
+        }));
+        combinedResults = [...combinedResults, ...transformedMasters];
+      }
+
+      setSearchResults(combinedResults);
     } catch (err) {
       console.error("Failed to search:", err);
       setError("Search failed. Please try again.");
@@ -143,7 +234,7 @@ const University = () => {
   };
 
   const fetchAllUniversities = async () => {
-    console.log("Fetching all universities...");
+    console.log("Fetching all universities from all APIs...");
     setLoading(true);
     setError(null);
     
@@ -156,20 +247,121 @@ const University = () => {
         return;
       }
 
-      const response = await axios.get(`${API_URL}/api/admin/universities`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      // Fetch from all three APIs simultaneously: admin, bachelors, and masters
+      const [adminResponse, bachelorsResponse, mastersResponse] = await Promise.all([
+        axios.get(`${API_URL}/api/admin/universities`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }).catch(err => ({ data: { success: false, data: [] } })),
+        axios.get(`${API_URL}/api/bachelors/universities`, {
+          params: {
+            limit: 100,
+            sortBy: 'createdAt',
+            sortOrder: 'desc'
+          },
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }).catch(err => ({ data: { success: false, data: [] } })),
+        axios.get(`${API_URL}/api/masters/universities`, {
+          params: {
+            limit: 100,
+            sortBy: 'createdAt',
+            sortOrder: 'desc'
+          },
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }).catch(err => ({ data: { success: false, data: [] } }))
+      ]);
 
-      console.log("API Response:", response.data);
+      console.log("Admin API Response:", adminResponse.data);
+      console.log("Bachelors API Response:", bachelorsResponse.data);
+      console.log("Masters API Response:", mastersResponse.data);
       
-      if (response.data.success) {
-        setUniversities(response.data.data || []);
-      } else {
-        setError(response.data.message || "Failed to load universities");
+      let combinedUniversities = [];
+      
+      // Add admin/imported universities
+      if (adminResponse.data.success) {
+        const adminUniversities = adminResponse.data.data.map(uni => ({
+          ...uni,
+          source: 'admin',
+          importedByAdmin: true
+        }));
+        combinedUniversities = [...combinedUniversities, ...adminUniversities];
       }
+
+      // Add bachelors universities (from your creation form)
+      if (bachelorsResponse.data.success) {
+        const bachelorsUniversities = bachelorsResponse.data.data.map(uni => ({
+          ...uni,
+          INSTNM: uni.universityName,
+          UNITID: uni.universityCode,
+          CITY: uni.city,
+          STABBR: uni.state,
+          ADDR: uni.address,
+          ZIP: uni.zipCode,
+          WEBADDR: uni.website,
+          location: {
+            city: uni.city,
+            state: uni.state,
+            country: uni.country
+          },
+          programs: uni.programs || [],
+          programCount: uni.programs?.length || 0,
+          importedByAdmin: false,
+          lastUpdated: uni.updatedAt || uni.createdAt,
+          logo: uni.universityLogo,
+          contact: {
+            website: uni.website,
+            adminEmail: uni.adminEmail,
+            adminPhone: uni.adminPhone,
+            admissionEmail: uni.admissionEmail,
+            admissionPhone: uni.admissionPhone
+          },
+          source: 'bachelors'
+        }));
+        combinedUniversities = [...combinedUniversities, ...bachelorsUniversities];
+      }
+
+      // Add masters universities (from your new Masters creation form)
+      if (mastersResponse.data.success) {
+        const mastersUniversities = mastersResponse.data.data.map(uni => ({
+          ...uni,
+          INSTNM: uni.universityName,
+          UNITID: uni.universityCode,
+          CITY: uni.city,
+          STABBR: uni.state,
+          ADDR: uni.address,
+          ZIP: uni.zipCode,
+          WEBADDR: uni.website,
+          location: {
+            city: uni.city,
+            state: uni.state,
+            country: uni.country
+          },
+          programs: uni.programs || [],
+          programCount: uni.programs?.length || 0,
+          importedByAdmin: false,
+          lastUpdated: uni.updatedAt || uni.createdAt,
+          logo: uni.universityLogo,
+          contact: {
+            website: uni.website,
+            adminEmail: uni.adminEmail,
+            adminPhone: uni.adminPhone,
+            admissionEmail: uni.admissionEmail,
+            admissionPhone: uni.admissionPhone
+          },
+          source: 'masters'
+        }));
+        combinedUniversities = [...combinedUniversities, ...mastersUniversities];
+      }
+
+      setUniversities(combinedUniversities);
     } catch (err) {
       console.error("Failed to fetch universities:", err);
       
@@ -180,7 +372,7 @@ const University = () => {
             window.location.href = '/login';
           }, 2000);
         } else if (err.response.status === 404) {
-          setError("Admin API endpoint not found. Please check if the server is running.");
+          setError("API endpoint not found. Please check if the server is running.");
         } else {
           setError(`Server error: ${err.response.data.message || err.response.statusText}`);
         }
@@ -208,6 +400,7 @@ const University = () => {
 
       if (response.data.success) {
         setImportStats(response.data.data);
+        fetchAllUniversities();
       }
     } catch (err) {
       console.error("Failed to refresh stats:", err);
@@ -222,46 +415,144 @@ const University = () => {
     if (university.GUS_DATA?.programs_data) {
       return university.GUS_DATA.programs_data.length;
     }
+    if (university.GUS_DATA?.major_areas) {
+      let count = 0;
+      university.GUS_DATA.major_areas.forEach(area => {
+        if (area.specific_programs && Array.isArray(area.specific_programs)) {
+          count += area.specific_programs.length;
+        }
+      });
+      if (count > 0) return count;
+    }
     if (university.metadata?.programs) {
       return university.metadata.programs.length;
     }
     if (university.programStats?.totalPrograms) {
       return university.programStats.totalPrograms;
     }
-    return 0;
+    return university.programCount || 0;
   };
 
-  // Get programs from various possible locations
+  // Get programs from various possible locations - FIXED VERSION
   const getPrograms = (university) => {
+    // 1. Check programs array (for custom universities like Princeton)
     if (university.programs && Array.isArray(university.programs)) {
       return university.programs;
     }
-    if (university.GUS_DATA?.programs_data) {
+    
+    // 2. Check GUS_DATA.programs_data (for imported universities with programs_data)
+    if (university.GUS_DATA?.programs_data && Array.isArray(university.GUS_DATA.programs_data)) {
       return university.GUS_DATA.programs_data;
     }
+    
+    // 3. Check GUS_DATA.major_areas (for imported universities like Sunderland)
+    if (university.GUS_DATA?.major_areas && Array.isArray(university.GUS_DATA.major_areas)) {
+      const programs = [];
+      university.GUS_DATA.major_areas.forEach(area => {
+        if (area.specific_programs && Array.isArray(area.specific_programs)) {
+          area.specific_programs.forEach(prog => {
+            programs.push({
+              id: prog._id || `program-${Date.now()}-${Math.random()}`,
+              title: prog.program_name,
+              program_name: prog.program_name,
+              level: university.GUS_DATA?.level || 'Undergraduate',
+              studyMode: 'On Campus',
+              duration: '3 years',
+              majorArea: area.major_area,
+              description: `${prog.program_name} program in ${area.major_area} at ${university.INSTNM || university.universityName}`
+            });
+          });
+        }
+      });
+      if (programs.length > 0) return programs;
+    }
+    
+    // 4. Check metadata.programs
     if (university.metadata?.programs) {
       return university.metadata.programs;
     }
+    
     return [];
   };
 
-  // Get programs by major area
-  const getProgramsByMajorArea = (university) => {
-    if (university.programsByMajorArea) {
-      return university.programsByMajorArea;
-    }
-    return {};
+  // NEW FUNCTION: Check if university has Bachelor's programs
+  const hasBachelorsPrograms = (university) => {
+    const programs = getPrograms(university);
+    if (programs.length === 0) return false;
+    
+    return programs.some(program => {
+      const level = typeof program === 'string' ? '' : (program.level || program.type || '').toLowerCase();
+      return level.includes('bachelor') || 
+             level.includes('undergraduate') || 
+             level.includes('ba') || 
+             level.includes('bs') ||
+             level.includes('b.sc') ||
+             level.includes('b.a');
+    });
+  };
+
+  // NEW FUNCTION: Check if university has Master's programs
+  const hasMastersPrograms = (university) => {
+    const programs = getPrograms(university);
+    if (programs.length === 0) return false;
+    
+    return programs.some(program => {
+      const level = typeof program === 'string' ? '' : (program.level || program.type || '').toLowerCase();
+      return level.includes('master') || 
+             level.includes('graduate') || 
+             level.includes('ma') || 
+             level.includes('ms') ||
+             level.includes('m.sc') ||
+             level.includes('m.a') ||
+             level.includes('mba');
+    });
+  };
+
+  // NEW FUNCTION: Get Bachelor's programs count
+  const getBachelorsCount = (university) => {
+    const programs = getPrograms(university);
+    if (programs.length === 0) return 0;
+    
+    return programs.filter(program => {
+      const level = typeof program === 'string' ? '' : (program.level || program.type || '').toLowerCase();
+      return level.includes('bachelor') || 
+             level.includes('undergraduate') || 
+             level.includes('ba') || 
+             level.includes('bs') ||
+             level.includes('b.sc') ||
+             level.includes('b.a');
+    }).length;
+  };
+
+  // NEW FUNCTION: Get Master's programs count
+  const getMastersCount = (university) => {
+    const programs = getPrograms(university);
+    if (programs.length === 0) return 0;
+    
+    return programs.filter(program => {
+      const level = typeof program === 'string' ? '' : (program.level || program.type || '').toLowerCase();
+      return level.includes('master') || 
+             level.includes('graduate') || 
+             level.includes('ma') || 
+             level.includes('ms') ||
+             level.includes('m.sc') ||
+             level.includes('m.a') ||
+             level.includes('mba');
+    }).length;
   };
 
   const getLocationString = (university) => {
     const parts = [];
-    if (university.location?.city) parts.push(university.location.city);
+    if (university.city) parts.push(university.city);
+    else if (university.location?.city) parts.push(university.location.city);
     else if (university.CITY) parts.push(university.CITY);
     
-    if (university.location?.state) parts.push(university.location.state);
+    if (university.state) parts.push(university.state);
+    else if (university.location?.state) parts.push(university.location.state);
     else if (university.STABBR) parts.push(university.STABBR);
     
-    if (university.location?.country) parts.push(university.location.country);
+    if (university.country) parts.push(university.country);
+    else if (university.location?.country) parts.push(university.location.country);
     else if (university.GUS_DATA?.country) parts.push(university.GUS_DATA.country);
     else parts.push('USA');
     
@@ -269,15 +560,19 @@ const University = () => {
   };
 
   const getUniversityCode = (university) => {
+    if (university.universityCode) {
+      return university.universityCode;
+    }
     if (university.IALIAS) {
       return university.IALIAS.split(' ').map(w => w[0]).join('').substring(0, 4).toUpperCase();
     }
-    if (university.INSTNM) {
-      const words = university.INSTNM.split(' ');
+    if (university.INSTNM || university.universityName) {
+      const name = university.INSTNM || university.universityName;
+      const words = name.split(' ');
       if (words.length > 1) {
         return words.map(w => w[0]).join('').substring(0, 4).toUpperCase();
       }
-      return university.INSTNM.substring(0, 4).toUpperCase();
+      return name.substring(0, 4).toUpperCase();
     }
     return 'UNI';
   };
@@ -301,9 +596,9 @@ const University = () => {
   // Get color based on program level
   const getLevelColor = (level) => {
     const levelStr = level?.toLowerCase() || '';
-    if (levelStr.includes('bachelor') || levelStr.includes('undergraduate')) {
+    if (levelStr.includes('bachelor') || levelStr.includes('undergraduate') || levelStr.includes('ba') || levelStr.includes('bs')) {
       return '#4CAF50'; // Green
-    } else if (levelStr.includes('master') || levelStr.includes('graduate')) {
+    } else if (levelStr.includes('master') || levelStr.includes('graduate') || levelStr.includes('ma') || levelStr.includes('ms')) {
       return '#FF9800'; // Orange
     } else if (levelStr.includes('phd') || levelStr.includes('doctorate')) {
       return '#F44336'; // Red
@@ -311,80 +606,88 @@ const University = () => {
       return '#9C27B0'; // Purple
     } else if (levelStr.includes('certificate')) {
       return '#00BCD4'; // Cyan
+    } else if (levelStr.includes('foundation')) {
+      return '#FF6B6B'; // Coral
     } else {
       return '#757575'; // Grey
-    }
-  };
-
-  // Get color based on study mode
-  const getStudyModeColor = (mode) => {
-    const modeStr = mode?.toLowerCase() || '';
-    if (modeStr.includes('online')) {
-      return '#2196F3'; // Blue
-    } else if (modeStr.includes('campus') || modeStr.includes('on campus')) {
-      return '#FFC107'; // Amber
-    } else if (modeStr.includes('hybrid') || modeStr.includes('blended')) {
-      return '#9C27B0'; // Purple
-    } else if (modeStr.includes('distance')) {
-      return '#00BCD4'; // Cyan
-    } else {
-      return '#757575'; // Grey
-    }
-  };
-
-  // Get gradient based on major area
-  const getMajorAreaGradient = (majorArea) => {
-    const area = majorArea?.toLowerCase() || '';
-    
-    if (area.includes('business') || area.includes('accounting') || area.includes('marketing')) {
-      return 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'; // Purple
-    } else if (area.includes('health') || area.includes('nursing') || area.includes('medical')) {
-      return 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'; // Pink/Red
-    } else if (area.includes('computer') || area.includes('science') || area.includes('engineering')) {
-      return 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'; // Blue
-    } else if (area.includes('psychology') || area.includes('counseling')) {
-      return 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'; // Pink/Yellow
-    } else if (area.includes('social') || area.includes('communication')) {
-      return 'linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)'; // Orange/Purple
-    } else if (area.includes('science') || area.includes('biology') || area.includes('chemistry')) {
-      return 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'; // Mint/Pink
-    } else if (area.includes('art') || area.includes('design') || area.includes('creative')) {
-      return 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)'; // Pink
-    } else {
-      return 'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)'; // Light Blue
     }
   };
 
   const handleViewDetails = async (university) => {
-    if (!university.programs && university.UNITID) {
-      try {
-        setLoadingPrograms(true);
-        const token = localStorage.getItem('token');
-        const response = await axios.get(`${API_URL}/api/admin/universities/${university.UNITID}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        if (response.data.success) {
-          setSelectedUniversity(response.data.data);
-        } else {
-          setSelectedUniversity(university);
-        }
-      } catch (err) {
-        console.error("Error fetching university details:", err);
-        setSelectedUniversity(university);
-      } finally {
-        setLoadingPrograms(false);
-      }
-    } else {
-      setSelectedUniversity(university);
-    }
+    setLoadingPrograms(true);
     
-    setSelectedProgram(null);
-    setShowDetailsModal(true);
-    setShowProgramDetails(false);
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError("No authentication token found.");
+        setLoadingPrograms(false);
+        return;
+      }
+
+      let details = university;
+      
+      // If it's a bachelors university (custom created), fetch from bachelors API
+      if (university.source === 'bachelors' && university._id) {
+        try {
+          const response = await axios.get(`${API_URL}/api/bachelors/universities/${university._id}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.data.success) {
+            details = response.data.data;
+          }
+        } catch (err) {
+          console.error("Error fetching bachelors university details:", err);
+        }
+      } 
+      // If it's a masters university (custom created), fetch from masters API
+      else if (university.source === 'masters' && university._id) {
+        try {
+          const response = await axios.get(`${API_URL}/api/masters/universities/${university._id}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.data.success) {
+            details = response.data.data;
+          }
+        } catch (err) {
+          console.error("Error fetching masters university details:", err);
+        }
+      }
+      // If it's an imported university, fetch from admin API
+      else if (university.UNITID) {
+        try {
+          const response = await axios.get(`${API_URL}/api/admin/universities/${university.UNITID}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.data.success) {
+            details = response.data.data;
+          }
+        } catch (err) {
+          console.error("Error fetching admin university details:", err);
+        }
+      }
+
+      setSelectedUniversity(details);
+      setSelectedProgram(null);
+      setShowDetailsModal(true);
+      setShowProgramDetails(false);
+    } catch (err) {
+      console.error("Error in handleViewDetails:", err);
+      setError("Failed to load university details.");
+    } finally {
+      setLoadingPrograms(false);
+    }
   };
 
   const handleViewProgramDetails = (program) => {
@@ -404,26 +707,22 @@ const University = () => {
     setShowProgramDetails(false);
   };
 
-  const checkAuthStatus = () => {
-    console.log("=== Auth Debug Info ===");
-    console.log("Token in localStorage:", localStorage.getItem('token'));
-    console.log("API URL:", API_URL);
-    console.log("Active Tab:", activeTab);
-    console.log("Universities count:", universities.length);
-    console.log("Import Stats:", importStats);
-    console.log("======================");
-  };
-
   const sortUniversities = (data) => {
     if (!data) return [];
     
     return [...data].sort((a, b) => {
       if (sortBy === 'name') {
-        return (a.INSTNM || '').localeCompare(b.INSTNM || '');
+        const nameA = a.INSTNM || a.universityName || '';
+        const nameB = b.INSTNM || b.universityName || '';
+        return nameA.localeCompare(nameB);
       } else if (sortBy === 'location') {
         return (getLocationString(a) || '').localeCompare(getLocationString(b) || '');
       } else if (sortBy === 'programs') {
         return getProgramCount(b) - getProgramCount(a);
+      } else if (sortBy === 'bachelors') {
+        return getBachelorsCount(b) - getBachelorsCount(a);
+      } else if (sortBy === 'masters') {
+        return getMastersCount(b) - getMastersCount(a);
       }
       return 0;
     });
@@ -431,19 +730,36 @@ const University = () => {
 
   const filterUniversities = (data) => {
     if (!data) return [];
-    if (filterType === 'all') return data;
+    
+    // First apply source filter
+    let filtered = data;
     if (filterType === 'hasPrograms') {
-      return data.filter(uni => hasPrograms(uni));
+      filtered = filtered.filter(uni => hasPrograms(uni));
+    } else if (filterType === 'imported') {
+      filtered = filtered.filter(uni => uni.source === 'admin');
+    } else if (filterType === 'custom') {
+      // Custom filter now includes both bachelors and masters
+      filtered = filtered.filter(uni => uni.source === 'bachelors' || uni.source === 'masters');
     }
-    if (filterType === 'imported') {
-      return data.filter(uni => uni.importedByAdmin);
+    
+    // Then apply program level filter
+    if (programLevel === 'bachelors') {
+      filtered = filtered.filter(uni => hasBachelorsPrograms(uni));
+    } else if (programLevel === 'masters') {
+      filtered = filtered.filter(uni => hasMastersPrograms(uni));
     }
-    return data;
+    
+    return filtered;
   };
 
   let displayData = searchTerm.trim() && searchResults.length > 0 ? searchResults : universities;
   displayData = filterUniversities(displayData);
   displayData = sortUniversities(displayData);
+
+  // Update stats display to include masters
+  const getCustomCount = () => {
+    return universities.filter(u => u.source === 'bachelors' || u.source === 'masters').length;
+  };
 
   return (
     <div className="university-container">
@@ -488,10 +804,10 @@ const University = () => {
             <div className="stat-icon">🏛️</div>
             <div className="stat-details">
               <h3>Universities</h3>
-              <p className="stat-value">{importStats.database?.universities || 0}</p>
-              {importStats.files && (
-                <p className="stat-sub">File: {importStats.files.universities?.count || 0}</p>
-              )}
+              <p className="stat-value">{universities.length}</p>
+              <p className="stat-sub">
+                {universities.filter(u => u.source === 'admin').length} Imported • {getCustomCount()} Custom
+              </p>
             </div>
           </div>
           
@@ -544,7 +860,7 @@ const University = () => {
           
           <button 
             className="btn-refresh"
-            onClick={refreshStats}
+            onClick={fetchAllUniversities}
           >
             <span className="btn-icon">🔄</span>
             Refresh
@@ -552,6 +868,28 @@ const University = () => {
         </div>
 
         <div className="action-right">
+          {/* Program Level Filter */}
+          <div className="program-level-filter">
+            <button
+              className={`level-btn ${programLevel === 'all' ? 'active' : ''}`}
+              onClick={() => setProgramLevel('all')}
+            >
+              All Programs
+            </button>
+            <button
+              className={`level-btn bachelor ${programLevel === 'bachelors' ? 'active' : ''}`}
+              onClick={() => setProgramLevel('bachelors')}
+            >
+              🎓 Bachelor's
+            </button>
+            <button
+              className={`level-btn master ${programLevel === 'masters' ? 'active' : ''}`}
+              onClick={() => setProgramLevel('masters')}
+            >
+              📘 Master's
+            </button>
+          </div>
+
           <select 
             className="sort-select"
             value={sortBy}
@@ -559,7 +897,9 @@ const University = () => {
           >
             <option value="name">Sort by Name</option>
             <option value="location">Sort by Location</option>
-            <option value="programs">Sort by Programs</option>
+            <option value="programs">Sort by Total Programs</option>
+            <option value="bachelors">Sort by Bachelor's Programs</option>
+            <option value="masters">Sort by Master's Programs</option>
           </select>
 
           <select 
@@ -567,9 +907,10 @@ const University = () => {
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
           >
-            <option value="all">All Items</option>
+            <option value="all">All Universities</option>
             <option value="hasPrograms">Has Programs</option>
-            <option value="imported">Imported</option>
+            <option value="imported">Imported Only</option>
+            <option value="custom">Custom Created</option>
           </select>
 
           <div className="view-toggle">
@@ -588,6 +929,22 @@ const University = () => {
           </div>
         </div>
       </div>
+
+      {/* Active Filter Indicator */}
+      {programLevel !== 'all' && (
+        <div className="active-filter-indicator">
+          <span className="filter-label">Active Filter:</span>
+          <span className="filter-value">
+            {programLevel === 'bachelors' ? '🎓 Bachelor\'s Programs Only' : '📘 Master\'s Programs Only'}
+          </span>
+          <button 
+            className="clear-filter"
+            onClick={() => setProgramLevel('all')}
+          >
+            × Clear
+          </button>
+        </div>
+      )}
 
       {/* Alerts */}
       {importSuccess && (
@@ -613,7 +970,7 @@ const University = () => {
           <input
             type="text"
             className="search-input"
-            placeholder={`Search ${activeTab} by name, location, or program...`}
+            placeholder="Search universities by name, location, or program..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -647,7 +1004,11 @@ const University = () => {
         <div className="empty-state">
           <div className="empty-icon">🏛️</div>
           <h3>No universities found</h3>
-          <p>Click the "Import Universities" button to load data</p>
+          <p>
+            {programLevel !== 'all' 
+              ? `No universities with ${programLevel === 'bachelors' ? 'Bachelor\'s' : 'Master\'s'} programs found.` 
+              : 'Click the "Import Universities" button to load data or create one in the Bachelors or Masters section.'}
+          </p>
           <button 
             className="btn-import"
             onClick={importUniversities}
@@ -663,19 +1024,22 @@ const University = () => {
         <div className={`university-items ${viewMode}`}>
           {displayData.map((uni, index) => {
             const programCount = getProgramCount(uni);
+            const bachelorsCount = getBachelorsCount(uni);
+            const mastersCount = getMastersCount(uni);
             const location = getLocationString(uni);
             const uniCode = getUniversityCode(uni);
             const salary = getSalary(uni);
             const programs = getPrograms(uni);
+            const isCustom = uni.source === 'bachelors' || uni.source === 'masters';
 
             return (
               <div key={uni._id || uni.UNITID || index} className="university-item">
                 <div className="item-header">
                   <div className="item-logo">
-                    {uni.logo ? (
+                    {uni.logo || uni.universityLogo ? (
                       <img 
-                        src={uni.logo} 
-                        alt={uni.INSTNM}
+                        src={uni.logo || uni.universityLogo} 
+                        alt={uni.INSTNM || uni.universityName}
                         onError={(e) => {
                           e.target.onerror = null;
                           e.target.style.display = 'none';
@@ -688,7 +1052,7 @@ const University = () => {
                   </div>
                   
                   <div className="item-info">
-                    <h3 className="item-title">{uni.INSTNM}</h3>
+                    <h3 className="item-title">{uni.INSTNM || uni.universityName}</h3>
                     <p className="item-location">
                       <span className="location-icon">📍</span> {location}
                     </p>
@@ -703,23 +1067,37 @@ const University = () => {
                   )}
                   
                   {programCount > 0 && (
-                    <div className="item-program-badge">
-                      {programCount} Programs
+                    <div className="program-count-badges">
+                      {bachelorsCount > 0 && (
+                        <span className="program-count-badge bachelor">
+                          🎓 {bachelorsCount} Bachelor's
+                        </span>
+                      )}
+                      {mastersCount > 0 && (
+                        <span className="program-count-badge master">
+                          📘 {mastersCount} Master's
+                        </span>
+                      )}
                     </div>
                   )}
                   
-                  {uni.importedByAdmin && (
-                    <span className="item-badge">Imported</span>
+                  {uni.source === 'bachelors' ? (
+                    <span className="item-badge custom">✨ Bachelor's</span>
+                  ) : uni.source === 'masters' ? (
+                    <span className="item-badge custom">📘 Master's</span>
+                  ) : (
+                    <span className="item-badge imported">📥 Imported</span>
                   )}
                 </div>
 
                 <div className="item-footer">
                   <span className="item-date">
-                    {uni.lastUpdated ? new Date(uni.lastUpdated).toLocaleDateString('en-US', { 
-                      month: 'short', 
-                      day: 'numeric',
-                      year: 'numeric'
-                    }) : 'Recently updated'}
+                    {uni.lastUpdated || uni.updatedAt || uni.createdAt ? 
+                      new Date(uni.lastUpdated || uni.updatedAt || uni.createdAt).toLocaleDateString('en-US', { 
+                        month: 'short', 
+                        day: 'numeric',
+                        year: 'numeric'
+                      }) : 'Recently updated'}
                   </span>
                   <button 
                     className="item-view-btn"
@@ -734,18 +1112,23 @@ const University = () => {
                   <div className="program-preview">
                     <h4>Top Programs:</h4>
                     <div className="program-tags">
-                      {programs.slice(0, 3).map((prog, idx) => (
-                        <span 
-                          key={idx} 
-                          className="program-tag"
-                          style={{
-                            background: getLevelColor(prog.level),
-                            color: 'white'
-                          }}
-                        >
-                          {prog.title || prog.program_name || `Program ${idx + 1}`}
-                        </span>
-                      ))}
+                      {programs.slice(0, 3).map((prog, idx) => {
+                        const programName = typeof prog === 'string' ? prog : (prog.title || prog.program_name || `Program ${idx + 1}`);
+                        const programLevel = typeof prog === 'string' ? '' : (prog.level || prog.type);
+                        
+                        return (
+                          <span 
+                            key={idx} 
+                            className="program-tag"
+                            style={{
+                              background: getLevelColor(programLevel),
+                              color: 'white'
+                            }}
+                          >
+                            {programName}
+                          </span>
+                        );
+                      })}
                       {programs.length > 3 && (
                         <span className="program-tag more">+{programs.length - 3} more</span>
                       )}
@@ -772,10 +1155,10 @@ const University = () => {
                 <div className="modal-header">
                   <div className="modal-header-left">
                     <div className="modal-logo">
-                      {selectedUniversity.logo ? (
+                      {selectedUniversity.universityLogo || selectedUniversity.logo ? (
                         <img 
-                          src={selectedUniversity.logo} 
-                          alt={selectedUniversity.INSTNM}
+                          src={selectedUniversity.universityLogo || selectedUniversity.logo} 
+                          alt={selectedUniversity.universityName || selectedUniversity.INSTNM}
                           onError={(e) => {
                             e.target.onerror = null;
                             e.target.style.display = 'none';
@@ -787,8 +1170,15 @@ const University = () => {
                       )}
                     </div>
                     <div>
-                      <h2>{selectedUniversity.INSTNM}</h2>
+                      <h2>{selectedUniversity.universityName || selectedUniversity.INSTNM}</h2>
                       <p className="modal-location">{getLocationString(selectedUniversity)}</p>
+                      {selectedUniversity.source && (
+                        <span className={`source-badge ${selectedUniversity.source}`}>
+                          {selectedUniversity.source === 'bachelors' ? '✨ Bachelor\'s University' : 
+                           selectedUniversity.source === 'masters' ? '📘 Master\'s University' : 
+                           '📥 Imported'}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <button className="modal-close-btn" onClick={closeModal}>×</button>
@@ -801,56 +1191,104 @@ const University = () => {
                       <h4>University Information</h4>
                       <div className="info-grid">
                         <div className="info-item">
-                          <span className="info-label">UNITID:</span>
-                          <span className="info-value">{selectedUniversity.UNITID}</span>
+                          <span className="info-label">Code:</span>
+                          <span className="info-value">{selectedUniversity.universityCode || selectedUniversity.UNITID || 'N/A'}</span>
                         </div>
-                        {selectedUniversity.ZIP && (
+                        {selectedUniversity.establishedYear && (
                           <div className="info-item">
-                            <span className="info-label">ZIP:</span>
-                            <span className="info-value">{selectedUniversity.ZIP}</span>
+                            <span className="info-label">Established:</span>
+                            <span className="info-value">{selectedUniversity.establishedYear}</span>
                           </div>
                         )}
-                        {selectedUniversity.ADDR && (
-                          <div className="info-item full-width">
-                            <span className="info-label">Address:</span>
-                            <span className="info-value">{selectedUniversity.ADDR}</span>
+                        {selectedUniversity.universityType && (
+                          <div className="info-item">
+                            <span className="info-label">Type:</span>
+                            <span className="info-value">{selectedUniversity.universityType}</span>
                           </div>
                         )}
-                        {(selectedUniversity.WEBADDR || selectedUniversity.contact?.website) && (
+                        {selectedUniversity.ranking && (
+                          <div className="info-item">
+                            <span className="info-label">Ranking:</span>
+                            <span className="info-value">{selectedUniversity.ranking}</span>
+                          </div>
+                        )}
+                        {selectedUniversity.website && (
                           <div className="info-item full-width">
                             <span className="info-label">Website:</span>
-                            <a href={selectedUniversity.WEBADDR || selectedUniversity.contact?.website} target="_blank" rel="noopener noreferrer">
-                              {selectedUniversity.WEBADDR || selectedUniversity.contact?.website}
+                            <a href={selectedUniversity.website} target="_blank" rel="noopener noreferrer">
+                              {selectedUniversity.website}
                             </a>
+                          </div>
+                        )}
+                        {selectedUniversity.accreditation && (
+                          <div className="info-item">
+                            <span className="info-label">Accreditation:</span>
+                            <span className="info-value">{selectedUniversity.accreditation}</span>
                           </div>
                         )}
                       </div>
                     </div>
 
-                    {selectedUniversity.metadata && (
+                    {/* Contact Information */}
+                    {(selectedUniversity.adminEmail || selectedUniversity.admissionEmail || selectedUniversity.adminPhone) && (
                       <div className="modal-section">
-                        <h4>Additional Information</h4>
+                        <h4>Contact Information</h4>
                         <div className="info-grid">
-                          {selectedUniversity.metadata.opeid && (
+                          {selectedUniversity.adminEmail && (
                             <div className="info-item">
-                              <span className="info-label">OPEID:</span>
-                              <span className="info-value">{selectedUniversity.metadata.opeid}</span>
+                              <span className="info-label">Admin Email:</span>
+                              <span className="info-value">{selectedUniversity.adminEmail}</span>
                             </div>
                           )}
-                          {selectedUniversity.metadata.sector && (
+                          {selectedUniversity.adminPhone && (
                             <div className="info-item">
-                              <span className="info-label">Sector:</span>
-                              <span className="info-value">{selectedUniversity.metadata.sector}</span>
+                              <span className="info-label">Admin Phone:</span>
+                              <span className="info-value">{selectedUniversity.adminPhone}</span>
                             </div>
                           )}
-                          {selectedUniversity.metadata.iclevel && (
+                          {selectedUniversity.admissionEmail && (
                             <div className="info-item">
-                              <span className="info-label">Level:</span>
-                              <span className="info-value">
-                                {selectedUniversity.metadata.iclevel === 1 ? '4-year' : 
-                                 selectedUniversity.metadata.iclevel === 2 ? '2-year' : 
-                                 selectedUniversity.metadata.iclevel === 3 ? 'Graduate' : 'Unknown'}
-                              </span>
+                              <span className="info-label">Admission Email:</span>
+                              <span className="info-value">{selectedUniversity.admissionEmail}</span>
+                            </div>
+                          )}
+                          {selectedUniversity.admissionPhone && (
+                            <div className="info-item">
+                              <span className="info-label">Admission Phone:</span>
+                              <span className="info-value">{selectedUniversity.admissionPhone}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Tuition Information */}
+                    {selectedUniversity.tuitionFees && (
+                      <div className="modal-section">
+                        <h4>Tuition Fees (Annual)</h4>
+                        <div className="info-grid">
+                          {selectedUniversity.tuitionFees.inState && (
+                            <div className="info-item">
+                              <span className="info-label">In-State:</span>
+                              <span className="info-value">${selectedUniversity.tuitionFees.inState}</span>
+                            </div>
+                          )}
+                          {selectedUniversity.tuitionFees.outOfState && (
+                            <div className="info-item">
+                              <span className="info-label">Out-of-State:</span>
+                              <span className="info-value">${selectedUniversity.tuitionFees.outOfState}</span>
+                            </div>
+                          )}
+                          {selectedUniversity.tuitionFees.international && (
+                            <div className="info-item">
+                              <span className="info-label">International:</span>
+                              <span className="info-value">${selectedUniversity.tuitionFees.international}</span>
+                            </div>
+                          )}
+                          {selectedUniversity.tuitionFees.roomAndBoard && (
+                            <div className="info-item">
+                              <span className="info-label">Room & Board:</span>
+                              <span className="info-value">${selectedUniversity.tuitionFees.roomAndBoard}</span>
                             </div>
                           )}
                         </div>
@@ -858,106 +1296,49 @@ const University = () => {
                     )}
 
                     {/* Programs Section */}
-                    {hasPrograms(selectedUniversity) && (
+                    {getPrograms(selectedUniversity).length > 0 && (
                       <div className="modal-section">
                         <h4>All Programs ({getProgramCount(selectedUniversity)})</h4>
-                        
-                        {/* Display by major area if available */}
-                        {selectedUniversity.programsByMajorArea && Object.keys(selectedUniversity.programsByMajorArea).length > 0 ? (
-                          Object.entries(selectedUniversity.programsByMajorArea).map(([majorArea, progs]) => (
-                            <div key={majorArea} className="major-area-section">
-                              <h5 className="major-area-title" style={{ background: getMajorAreaGradient(majorArea) }}>
-                                {majorArea}
-                              </h5>
-                              <div className="programs-grid">
-                                {progs.map((program, idx) => (
-                                  <div 
-                                    key={idx} 
-                                    className="program-card"
-                                    onClick={() => handleViewProgramDetails(program)}
-                                    style={{
-                                      borderLeft: `4px solid ${getLevelColor(program.level)}`
-                                    }}
-                                  >
-                                    <h5 className="program-title">
-                                      {program.title || program.program_name}
-                                    </h5>
-                                    <div className="program-badges">
-                                      {program.level && (
-                                        <span 
-                                          className="program-level"
-                                          style={{ backgroundColor: getLevelColor(program.level) }}
-                                        >
-                                          {program.level}
-                                        </span>
-                                      )}
-                                      {program.studyMode && (
-                                        <span 
-                                          className="program-mode"
-                                          style={{ backgroundColor: getStudyModeColor(program.studyMode) }}
-                                        >
-                                          {program.studyMode}
-                                        </span>
-                                      )}
-                                      {program.duration && (
-                                        <span className="program-duration">
-                                          {program.duration}
-                                        </span>
-                                      )}
-                                    </div>
-                                    <button className="view-program-btn">View Details →</button>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          ))
-                        ) : (
-                          /* Fallback to simple list */
-                          <div className="programs-grid">
-                            {getPrograms(selectedUniversity).map((program, idx) => (
+                        <div className="programs-grid">
+                          {getPrograms(selectedUniversity).map((program, idx) => {
+                            const programName = typeof program === 'string' ? program : (program.title || program.program_name || `Program ${idx + 1}`);
+                            const programLevel = typeof program === 'string' ? '' : (program.level || program.type);
+                            const programDuration = typeof program === 'string' ? '' : program.duration;
+                            
+                            return (
                               <div 
                                 key={idx} 
                                 className="program-card"
                                 onClick={() => handleViewProgramDetails(program)}
                                 style={{
-                                  borderLeft: `4px solid ${getLevelColor(program.level)}`
+                                  borderLeft: `4px solid ${getLevelColor(programLevel)}`
                                 }}
                               >
-                                <h5 className="program-title">
-                                  {program.title || program.program_name || `Program ${idx + 1}`}
-                                </h5>
-                                <div className="program-badges">
-                                  {program.level && (
+                                <h5 className="program-title">{programName}</h5>
+                                {programLevel && (
+                                  <div className="program-badges">
                                     <span 
                                       className="program-level"
-                                      style={{ backgroundColor: getLevelColor(program.level) }}
+                                      style={{ backgroundColor: getLevelColor(programLevel) }}
                                     >
-                                      {program.level}
+                                      {programLevel}
                                     </span>
-                                  )}
-                                  {program.studyMode && (
-                                    <span 
-                                      className="program-mode"
-                                      style={{ backgroundColor: getStudyModeColor(program.studyMode) }}
-                                    >
-                                      {program.studyMode}
-                                    </span>
-                                  )}
-                                  {program.duration && (
-                                    <span className="program-duration">
-                                      {program.duration}
-                                    </span>
-                                  )}
-                                </div>
+                                    {programDuration && (
+                                      <span className="program-duration">
+                                        {programDuration}
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
                                 <button className="view-program-btn">View Details →</button>
                               </div>
-                            ))}
-                          </div>
-                        )}
+                            );
+                          })}
+                        </div>
                       </div>
                     )}
 
-                    {!hasPrograms(selectedUniversity) && (
+                    {getPrograms(selectedUniversity).length === 0 && (
                       <div className="modal-section">
                         <p className="no-programs-message">No programs available for this university.</p>
                       </div>
@@ -980,32 +1361,12 @@ const University = () => {
                           <div className="detail-item">
                             <span className="detail-label">Level:</span>
                             <span 
-                              className="detail-value"
+                              className="detail-value level-badge"
                               style={{ 
                                 backgroundColor: getLevelColor(selectedProgram.level),
-                                color: 'white',
-                                padding: '4px 8px',
-                                borderRadius: '4px'
                               }}
                             >
                               {selectedProgram.level}
-                            </span>
-                          </div>
-                        )}
-                        
-                        {selectedProgram.studyMode && (
-                          <div className="detail-item">
-                            <span className="detail-label">Study Mode:</span>
-                            <span 
-                              className="detail-value"
-                              style={{ 
-                                backgroundColor: getStudyModeColor(selectedProgram.studyMode),
-                                color: 'white',
-                                padding: '4px 8px',
-                                borderRadius: '4px'
-                              }}
-                            >
-                              {selectedProgram.studyMode}
                             </span>
                           </div>
                         )}
@@ -1024,45 +1385,34 @@ const University = () => {
                           </div>
                         )}
                         
+                        {selectedProgram.studyMode && (
+                          <div className="detail-item">
+                            <span className="detail-label">Study Mode:</span>
+                            <span className="detail-value">{selectedProgram.studyMode}</span>
+                          </div>
+                        )}
+                        
                         {selectedProgram.fees && (
                           <div className="detail-item">
-                            <span className="detail-label">Tuition Fees:</span>
+                            <span className="detail-label">Tuition:</span>
                             <span className="detail-value">{selectedProgram.fees}</span>
                           </div>
                         )}
                         
-                        {selectedProgram.majorArea && (
+                        {selectedProgram.description && (
                           <div className="detail-item full-width">
-                            <span className="detail-label">Major Area:</span>
-                            <span className="detail-value">{selectedProgram.majorArea}</span>
+                            <span className="detail-label">Description:</span>
+                            <p className="detail-value description-text">{selectedProgram.description}</p>
                           </div>
                         )}
                         
-                        {selectedProgram.locations && selectedProgram.locations.length > 0 && (
+                        {selectedProgram.requirements && (
                           <div className="detail-item full-width">
-                            <span className="detail-label">Locations:</span>
-                            <div className="location-tags">
-                              {selectedProgram.locations.map((loc, idx) => (
-                                <span key={idx} className="location-tag">{loc}</span>
-                              ))}
-                            </div>
+                            <span className="detail-label">Requirements:</span>
+                            <p className="detail-value description-text">{selectedProgram.requirements}</p>
                           </div>
                         )}
                       </div>
-                      
-                      {selectedProgram.description && (
-                        <div className="program-description">
-                          <h4>Description</h4>
-                          <p>{selectedProgram.description}</p>
-                        </div>
-                      )}
-                      
-                      {selectedProgram.requirements && (
-                        <div className="program-requirements">
-                          <h4>Requirements</h4>
-                          <p>{selectedProgram.requirements}</p>
-                        </div>
-                      )}
                     </div>
                   </div>
                 )}

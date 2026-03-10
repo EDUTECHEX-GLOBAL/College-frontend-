@@ -125,7 +125,29 @@ export const importUniversities = async (req, res) => {
 
     // -------- Colleges --------
     for (const col of colleges) {
+      try {
+        // Get the parent university to get universityCode and universityName
+      const parentUniversity = await University.findOne({ UNITID: col.UNITID });
+      
+      // Map the college data to match the College model schema
       const data = {
+        // Map to the expected fields in College model
+        collegeName: col.INSTNM || col.collegeName || "",
+        collegeCode: col.IALIAS || col.collegeCode || `COL-${col.UNITID || Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+        universityCode: col.UNITID ? col.UNITID.toString() : (parentUniversity?.UNITID?.toString() || ""),
+        universityName: parentUniversity?.INSTNM || col.universityName || "",
+        description: col.description || "",
+        establishedYear: col.establishedYear || "",
+        website: col.WEBADDR || col.website || "",
+        address: col.ADDR || col.address || "",
+        city: col.CITY || col.city || "",
+        state: col.STABBR || col.state || "",
+        country: col.country || "USA",
+        contactEmail: col.contactEmail || col.adminEmail || "",
+        contactPhone: col.GENTELE || col.contactPhone || "",
+        programs: col.programs || [],
+        
+        // Also keep the original fields for backward compatibility
         UNITID: col.UNITID,
         INSTNM: col.INSTNM,
         IALIAS: col.IALIAS || "",
@@ -149,14 +171,25 @@ export const importUniversities = async (req, res) => {
         },
       };
 
-      const existing = await College.findOne({ UNITID: col.UNITID });
+      // Check if college already exists by UNITID or collegeCode
+      const existing = await College.findOne({ 
+        $or: [
+          { UNITID: col.UNITID },
+          { collegeCode: data.collegeCode }
+        ]
+      });
 
       if (existing) {
-        await College.updateOne({ UNITID: col.UNITID }, data);
+        await College.updateOne({ _id: existing._id }, data);
         updatedColleges++;
       } else {
         await College.create(data);
         importedColleges++;
+      }
+    } catch (colError) {
+        console.error(`Error processing college: ${col.INSTNM || 'Unknown'}`, colError.message);
+        // Continue with next college even if this one fails
+        continue;
       }
     }
 
@@ -729,4 +762,3 @@ export const testUniversityData = async (req, res) => {
     });
   }
 };
-

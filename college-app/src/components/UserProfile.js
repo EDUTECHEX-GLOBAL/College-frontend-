@@ -208,15 +208,29 @@ const UserProfile = () => {
       const response = await axios.get(`${API_URL}/api/admin/universities`, {
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
       });
+      
+      let allUniversities = [];
+      
       if (response.data.success) {
-        setUniversities(response.data.data || []);
-        for (const uni of response.data.data) {
+        allUniversities = response.data.data || [];
+        setUniversities(allUniversities);
+        
+        // Pre-fetch courses for all universities
+        for (const uni of allUniversities) {
           await fetchUniversityCourses(uni);
         }
       } else {
         setError(response.data.message || "Failed to load universities");
       }
+      
+      // Add custom universities (from bachelors API) - you'll need to implement this part
+      // For now, just using the admin universities
+      
+      console.log(`📊 Total universities: ${allUniversities.length}`);
+      
     } catch (error) {
+      console.error("Error fetching universities:", error);
+      
       if (error.response?.status === 401) {
         setError("Your session has expired. Please login again.");
         setTimeout(() => navigate('/login'), 2000);
@@ -233,22 +247,55 @@ const UserProfile = () => {
   const fetchUniversityCourses = async (university) => {
     try {
       const uniId = university.UNITID || university._id;
+      
+      // Skip Kansas universities
       if (university.INSTNM?.toLowerCase().includes('kansas')) return;
+      
       let courses = [];
+      
+      console.log(`🔍 Fetching courses for ${university.INSTNM || university.universityName}`);
+      
+      // 1. Check if programs are already in the university object
       if (university.programs && Array.isArray(university.programs)) {
-        courses = university.programs.map(prog => ({
-          id: prog.id || prog.programId || `prog-${Date.now()}-${Math.random()}`,
-          title: prog.title || prog.program_name || 'Program',
-          program_name: prog.program_name || prog.title,
-          level: prog.level || 'Undergraduate',
-          studyMode: prog.studyMode || 'On Campus',
-          locations: prog.locations || [`${university.CITY || ''}, ${university.STABBR || ''}`],
-          duration: prog.duration || '3-4 years',
-          description: prog.description || `${prog.title} program at ${university.INSTNM}`,
-          majorArea: prog.majorArea || 'General'
-        }));
-      } else if (university.GUS_DATA?.programs_data) {
-        courses = university.GUS_DATA.programs_data.map(prog => ({
+        console.log(`📚 Found ${university.programs.length} programs in university.programs`);
+        courses = university.programs.map((prog, index) => {
+          let title = '';
+          let level = '';
+          let studyMode = '';
+          let duration = '';
+          let majorArea = '';
+          
+          if (typeof prog === 'string') {
+            title = prog;
+            level = 'Undergraduate';
+            studyMode = 'On Campus';
+            duration = '3-4 years';
+          } else {
+            title = prog.title || prog.program_name || prog.name || `Program ${index + 1}`;
+            level = prog.level || 'Undergraduate';
+            studyMode = prog.studyMode || 'On Campus';
+            duration = prog.duration || '3-4 years';
+            majorArea = prog.majorArea || 'General';
+          }
+          
+          return {
+            id: prog.id || prog._id || `prog-${uniId}-${index}`,
+            title: title,
+            program_name: title,
+            level: level,
+            studyMode: studyMode,
+            locations: prog.locations || [`${university.CITY || university.city || ''}, ${university.STABBR || university.state || ''}`],
+            duration: duration,
+            description: prog.description || `${title} program at ${university.INSTNM || university.universityName}`,
+            majorArea: majorArea
+          };
+        });
+      }
+      
+      // 2. Check GUS_DATA.programs_data
+      else if (university.GUS_DATA?.programs_data) {
+        console.log(`📚 Found ${university.GUS_DATA.programs_data.length} programs in GUS_DATA.programs_data`);
+        courses = university.GUS_DATA.programs_data.map((prog, index) => ({
           id: prog.id || `prog-${Date.now()}-${Math.random()}`,
           title: prog.title || prog.program_name || 'Program',
           program_name: prog.program_name || prog.title,
@@ -259,7 +306,11 @@ const UserProfile = () => {
           description: prog.description || `${prog.title} program at ${university.INSTNM}`,
           majorArea: prog.majorArea || 'General'
         }));
-      } else if (university.GUS_DATA?.major_areas) {
+      }
+      
+      // 3. Check GUS_DATA.major_areas
+      else if (university.GUS_DATA?.major_areas) {
+        console.log(`📚 Found major areas in GUS_DATA.major_areas`);
         university.GUS_DATA.major_areas.forEach(area => {
           if (area.specific_programs) {
             area.specific_programs.forEach(prog => {
@@ -277,7 +328,11 @@ const UserProfile = () => {
             });
           }
         });
-      } else if (university.metadata?.programs) {
+      }
+      
+      // 4. Check metadata.programs
+      else if (university.metadata?.programs) {
+        console.log(`📚 Found ${university.metadata.programs.length} programs in metadata.programs`);
         courses = university.metadata.programs.map(prog => ({
           id: prog.id || `prog-${Date.now()}-${Math.random()}`,
           title: prog.title || prog.program_name || 'Program',
@@ -290,9 +345,19 @@ const UserProfile = () => {
           majorArea: prog.majorArea || 'General'
         }));
       }
-      setUniversityCourses(prev => ({ ...prev, [uniId]: courses }));
+      
+      console.log(`✅ Found ${courses.length} courses for ${university.INSTNM || university.universityName}`);
+      if (courses.length > 0) {
+        console.log("Sample course:", courses[0]);
+      }
+      
+      setUniversityCourses(prev => ({
+        ...prev,
+        [uniId]: courses
+      }));
+      
     } catch (error) {
-      console.error(`Error fetching courses for ${university.INSTNM}:`, error);
+      console.error(`Error fetching courses for ${university.INSTNM || university.universityName}:`, error);
     }
   };
 
@@ -398,14 +463,23 @@ const UserProfile = () => {
       return false;
     });
     const universityWithCourses = {
-      UNITID: currentUniversity.UNITID, _id: currentUniversity._id,
-      INSTNM: currentUniversity.INSTNM, CITY: currentUniversity.CITY,
-      STABBR: currentUniversity.STABBR, COUNTRY: currentUniversity.COUNTRY || 'USA',
+      UNITID: currentUniversity.UNITID, 
+      _id: currentUniversity._id,
+      INSTNM: currentUniversity.INSTNM, 
+      CITY: currentUniversity.CITY,
+      STABBR: currentUniversity.STABBR, 
+      COUNTRY: currentUniversity.COUNTRY || 'USA',
       location: currentUniversity.location || {},
       selectedCourses: tempSelectedCourses.map(course => ({
-        id: course.id, title: course.title, program_name: course.program_name,
-        level: course.level, studyMode: course.studyMode, duration: course.duration,
-        locations: course.locations, majorArea: course.majorArea, description: course.description
+        id: course.id, 
+        title: course.title, 
+        program_name: course.program_name,
+        level: course.level, 
+        studyMode: course.studyMode, 
+        duration: course.duration,
+        locations: course.locations, 
+        majorArea: course.majorArea, 
+        description: course.description
       }))
     };
     if (isUniSelected) {
@@ -450,9 +524,15 @@ const UserProfile = () => {
     } else if (selectedUniversities.length < 5) {
       if (isKansas) {
         const kansasUniversity = {
-          UNITID: university.UNITID, _id: university._id, INSTNM: university.INSTNM,
-          CITY: university.CITY, STABBR: university.STABBR, COUNTRY: university.COUNTRY || 'USA',
-          location: university.location || {}, selectedCourses: [], isKansas: true
+          UNITID: university.UNITID, 
+          _id: university._id, 
+          INSTNM: university.INSTNM,
+          CITY: university.CITY, 
+          STABBR: university.STABBR, 
+          COUNTRY: university.COUNTRY || 'USA',
+          location: university.location || {}, 
+          selectedCourses: [], 
+          isKansas: true
         };
         setSelectedUniversities([...selectedUniversities, kansasUniversity]);
         setShowSuccess(true);
@@ -543,7 +623,6 @@ const UserProfile = () => {
     setSubmittingRequest(true);
     try {
       const response = await axios.post(
-        // ✅ FIXED: was /api/university/request — now correctly under /api/user/
         `${API_URL}/api/user/university/request`,
         {
           universityName: requestForm.universityName.trim(),
@@ -700,8 +779,12 @@ const UserProfile = () => {
       });
 
       const profileData = {
-        profileImage: imagePreview, basicInfo, education, eligibleProgram,
-        selectedUniversities: formattedUniversities, profileCompleted: true,
+        profileImage: imagePreview, 
+        basicInfo, 
+        education, 
+        eligibleProgram,
+        selectedUniversities: formattedUniversities, 
+        profileCompleted: true,
         completedAt: new Date().toISOString()
       };
 
@@ -721,7 +804,6 @@ const UserProfile = () => {
         localStorage.setItem('userProfile', JSON.stringify(profileData));
         localStorage.setItem('profileCompleted', 'true');
         setShowSuccess(true);
-        // ✅ FIXED: replaced alert() with toast
         showToast("Profile submitted successfully! Redirecting to dashboard...", "success");
         setTimeout(() => navigateToDashboard(), 1500);
       } else {
@@ -744,14 +826,17 @@ const UserProfile = () => {
       setError(errorMessage);
 
       const profileData = {
-        profileImage: imagePreview, basicInfo, education, eligibleProgram,
+        profileImage: imagePreview, 
+        basicInfo, 
+        education, 
+        eligibleProgram,
         selectedUniversities: formattedUniversities,
-        completedAt: new Date().toISOString(), profileCompleted: true
+        completedAt: new Date().toISOString(), 
+        profileCompleted: true
       };
       localStorage.setItem('userProfile', JSON.stringify(profileData));
       localStorage.setItem('profileCompleted', 'true');
       setShowSuccess(true);
-      // ✅ FIXED: replaced alert() with toast
       showToast("Profile saved locally! Redirecting to dashboard...", "warning");
       setTimeout(() => navigateToDashboard(), 1500);
     } finally {

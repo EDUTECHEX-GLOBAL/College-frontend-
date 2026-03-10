@@ -1,4 +1,4 @@
-// src/App.js - MERGED VERSION WITH ALL ROUTES
+// src/App.js - Updated for admin folder
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
@@ -20,9 +20,9 @@ import AdminDashboard from "./components/admin/admindashboard";
 // ✅ Process Admin Dashboard Page
 import ProcessAdminDashboard from "./components/processadmin/processAdminDashboard";
 
-// ✅ Summer Program Pages
-import SummerSign from "./components/summarprogram/summersign";
-import SummerLogin from "./components/summarprogram/summerlogin";
+// ✅ NEW EDUCATION PAGES - ADMIN FOLDER
+import BachelorsTemplate from "./components/admin/Bachelors";
+
 
 // Core pages
 import Home from "./components/Home";
@@ -34,8 +34,8 @@ import ExtendedProfile from "./components/ExtendedProfile/ExtendedProfile";
 import ForgotPassword from "./components/ForgotPassword";
 
 // Dashboards
-import Dashboard from "./components/Dashboard";           // First-year main dashboard
-import DashboardTest from "./components/Dashboardtest";   // Transfer dashboard
+import Dashboard from "./components/Dashboard";
+import DashboardTest from "./components/Dashboardtest";
 
 function App() {
   return (
@@ -44,7 +44,10 @@ function App() {
         {/* Role Selection - FIRST PAGE */}
         <Route path="/" element={<RoleSelection />} />
 
-        {/* Old Homepage (for "Continue as Student") */}
+        {/* ✅ BACHELORS APPLICATION ROUTES - ADMIN FOLDER */}
+        <Route path="/bachelors" element={<BachelorsTemplate />} />
+        
+        {/* Old Homepage */}
         <Route path="/home" element={<Home />} />
 
         {/* Create Account pages */}
@@ -66,9 +69,7 @@ function App() {
         <Route path="/process-admin-login" element={<ProcessAdminLogin />} />
         <Route path="/process-admin-dashboard" element={<ProcessAdminDashboard />} />
 
-        {/* ✅ Summer Program Routes */}
-        <Route path="/summer/sign-up" element={<SummerSign />} />
-        <Route path="/summer/login" element={<SummerLogin />} />
+       
 
         {/* Forgot Password Routes */}
         <Route path="/firstyear/forgot-password" element={<ForgotPassword />} />
@@ -82,11 +83,11 @@ function App() {
         <Route path="/transfer/dashboard/*" element={<DashboardTest studentType="transfer" />} />
         <Route path="/dashboard-test/*" element={<DashboardTest />} />
 
-        {/* Redirects - Keep for backward compatibility */}
+        {/* Redirects */}
         <Route path="/admin-dashboard-old" element={<Navigate to="/sign-in" replace />} />
         <Route path="/student-dashboard" element={<Navigate to="/home" replace />} />
 
-        {/* Catch All - Redirect to Role Selection */}
+        {/* Catch All */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
