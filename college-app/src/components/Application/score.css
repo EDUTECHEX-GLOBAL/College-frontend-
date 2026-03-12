@@ -101,7 +101,7 @@ input[type="date"]:focus {
 /* ══════════════════════════════════════
    CHECKBOX GRID (TEST SELECTION)
 ══════════════════════════════════════ */
-.checkbox-grid {
+.score-checkbox-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 12px;

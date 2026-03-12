@@ -2,24 +2,22 @@
 import React, { useState, useEffect } from 'react';
 import './TOEFLiBTSection.css';
 
-const TOEFLiBTSection = ({ 
-  formData, 
+const TOEFLiBTSection = ({
+  formData,
   handleInputChange,
   clearAnswer,
-  clearRelatedFields 
+  clearRelatedFields
 }) => {
   const [showScoreForm, setShowScoreForm] = useState(false);
 
-  // Determine if we should show score form based on past tests
   useEffect(() => {
     const pastTests = parseInt(formData.toeflPastTests || '0');
     setShowScoreForm(pastTests > 0);
   }, [formData.toeflPastTests]);
 
-  // Score options for dropdowns (0-30)
+  // Score options 0-30
   const scoreOptions = Array.from({ length: 31 }, (_, i) => i);
 
-  // Handle clearing past tests and related fields
   const handleClearPastTests = () => {
     clearRelatedFields('toeflPastTests', [
       'toeflHighestReadingScore', 'toeflReadingScoreDate',
@@ -30,10 +28,42 @@ const TOEFLiBTSection = ({
     ]);
   };
 
-  // Handle clearing future sittings and related fields
   const handleClearFutureSittings = () => {
     clearAnswer('toeflFutureSittings');
   };
+
+  // Reusable score row
+  const ScoreRow = ({ scoreLabel, scoreName, dateName }) => (
+    <div className="form-row">
+      <div className="form-field">
+        <p className="question-text">{scoreLabel}*</p>
+        <select
+          name={scoreName}
+          value={formData[scoreName] || ''}
+          onChange={handleInputChange}
+          className="score-dropdown"
+        >
+          <option value="">Choose</option>
+          {scoreOptions.map(score => (
+            <option key={score} value={score}>{score}</option>
+          ))}
+        </select>
+      </div>
+      <div className="form-field">
+        <p className="question-text">{scoreLabel.replace('Highest ', '').replace(' score', '')} score date*</p>
+        <input
+          type="date"
+          name={dateName}
+          value={formData[dateName] || ''}
+          onChange={handleInputChange}
+          className="date-input"
+        />
+        <div className="form-helper">
+          Format: month day, year (e.g. August 1, 2002)
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="toefl-section">
@@ -41,7 +71,7 @@ const TOEFLiBTSection = ({
       <div className="section-status">
         {formData.toeflPastTests && formData.toeflFutureSittings ? 'Complete' : 'In Progress'}
       </div>
-      
+
       <div className="form-content">
         {/* Number of Past TOEFL iBT Tests */}
         <div className="form-group">
@@ -62,8 +92,8 @@ const TOEFLiBTSection = ({
               </label>
             ))}
           </div>
-          <button 
-            type="button" 
+          <button
+            type="button"
             className="clear-answer-button"
             onClick={handleClearPastTests}
           >
@@ -90,8 +120,8 @@ const TOEFLiBTSection = ({
               </label>
             ))}
           </div>
-          <button 
-            type="button" 
+          <button
+            type="button"
             className="clear-answer-button"
             onClick={handleClearFutureSittings}
           >
@@ -99,134 +129,31 @@ const TOEFLiBTSection = ({
           </button>
         </div>
 
-        {/* Score Form - Only show if past tests > 0 */}
+        {/* Score Form - only if past tests > 0 */}
         {showScoreForm && (
           <div className="detailed-fields">
             <h3>TOEFL iBT Scores</h3>
-            
-            {/* Reading Score */}
-            <div className="form-row">
-              <div className="form-field">
-                <p className="question-text">Highest reading score*</p>
-                <select 
-                  name="toeflHighestReadingScore"
-                  value={formData.toeflHighestReadingScore || ''}
-                  onChange={handleInputChange}
-                  className="score-dropdown"
-                >
-                  <option value="">Choose an option</option>
-                  {scoreOptions.map(score => (
-                    <option key={score} value={score}>{score}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-field">
-                <p className="question-text">Reading score date*</p>
-                <input
-                  type="date"
-                  name="toeflReadingScoreDate"
-                  value={formData.toeflReadingScoreDate || ''}
-                  onChange={handleInputChange}
-                  className="date-input"
-                />
-                <div className="form-helper">
-                  Date uses "month day, year" format (e.g. August 1, 2002)
-                </div>
-              </div>
-            </div>
 
-            {/* Speaking Score */}
-            <div className="form-row">
-              <div className="form-field">
-                <p className="question-text">Highest speaking score*</p>
-                <select 
-                  name="toeflHighestSpeakingScore"
-                  value={formData.toeflHighestSpeakingScore || ''}
-                  onChange={handleInputChange}
-                  className="score-dropdown"
-                >
-                  <option value="">Choose an option</option>
-                  {scoreOptions.map(score => (
-                    <option key={score} value={score}>{score}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-field">
-                <p className="question-text">Speaking score date*</p>
-                <input
-                  type="date"
-                  name="toeflSpeakingScoreDate"
-                  value={formData.toeflSpeakingScoreDate || ''}
-                  onChange={handleInputChange}
-                  className="date-input"
-                />
-                <div className="form-helper">
-                  Date uses "month day, year" format (e.g. August 1, 2002)
-                </div>
-              </div>
-            </div>
-
-            {/* Listening Score */}
-            <div className="form-row">
-              <div className="form-field">
-                <p className="question-text">Highest listening score*</p>
-                <select 
-                  name="toeflHighestListeningScore"
-                  value={formData.toeflHighestListeningScore || ''}
-                  onChange={handleInputChange}
-                  className="score-dropdown"
-                >
-                  <option value="">Choose an option</option>
-                  {scoreOptions.map(score => (
-                    <option key={score} value={score}>{score}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-field">
-                <p className="question-text">Listening score date*</p>
-                <input
-                  type="date"
-                  name="toeflListeningScoreDate"
-                  value={formData.toeflListeningScoreDate || ''}
-                  onChange={handleInputChange}
-                  className="date-input"
-                />
-                <div className="form-helper">
-                  Date uses "month day, year" format (e.g. August 1, 2002)
-                </div>
-              </div>
-            </div>
-
-            {/* Writing Score */}
-            <div className="form-row">
-              <div className="form-field">
-                <p className="question-text">Highest writing score*</p>
-                <select 
-                  name="toeflHighestWritingScore"
-                  value={formData.toeflHighestWritingScore || ''}
-                  onChange={handleInputChange}
-                  className="score-dropdown"
-                >
-                  <option value="">Choose an option</option>
-                  {scoreOptions.map(score => (
-                    <option key={score} value={score}>{score}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-field">
-                <p className="question-text">Writing score date*</p>
-                <input
-                  type="date"
-                  name="toeflWritingScoreDate"
-                  value={formData.toeflWritingScoreDate || ''}
-                  onChange={handleInputChange}
-                  className="date-input"
-                />
-                <div className="form-helper">
-                  Date uses "month day, year" format (e.g. August 1, 2002)
-                </div>
-              </div>
-            </div>
+            <ScoreRow
+              scoreLabel="Highest reading score"
+              scoreName="toeflHighestReadingScore"
+              dateName="toeflReadingScoreDate"
+            />
+            <ScoreRow
+              scoreLabel="Highest speaking score"
+              scoreName="toeflHighestSpeakingScore"
+              dateName="toeflSpeakingScoreDate"
+            />
+            <ScoreRow
+              scoreLabel="Highest listening score"
+              scoreName="toeflHighestListeningScore"
+              dateName="toeflListeningScoreDate"
+            />
+            <ScoreRow
+              scoreLabel="Highest writing score"
+              scoreName="toeflHighestWritingScore"
+              dateName="toeflWritingScoreDate"
+            />
 
             {/* Total Score */}
             <div className="form-row">
@@ -240,7 +167,8 @@ const TOEFLiBTSection = ({
                   className="total-score-input"
                   min="0"
                   max="120"
-                  placeholder="0-120"
+                  placeholder="0–120"
+                  inputMode="numeric"
                 />
               </div>
               <div className="form-field">
@@ -253,7 +181,7 @@ const TOEFLiBTSection = ({
                   className="date-input"
                 />
                 <div className="form-helper">
-                  Date uses "month day, year" format (e.g. August 1, 2002)
+                  Format: month day, year (e.g. August 1, 2002)
                 </div>
               </div>
             </div>

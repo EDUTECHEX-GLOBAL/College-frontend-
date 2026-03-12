@@ -3,13 +3,16 @@
   background: #f8f9fa;
   padding: 20px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  box-sizing: border-box;
 }
 
 .activities-content {
   max-width: 800px;
   margin: 0 auto;
+  position: relative;
 }
 
+/* ── Header ──────────────────────────────────────────────── */
 .activities-header {
   display: flex;
   justify-content: space-between;
@@ -17,13 +20,35 @@
   margin-bottom: 20px;
   padding-bottom: 15px;
   border-bottom: 1px solid #dee2e6;
+  position: relative;
+  gap: 12px;
+}
+
+.header-left-container {
+  flex: 1;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.header-center {
+  flex: 2;
+  display: flex;
+  justify-content: center;
+}
+
+.header-right {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .activities-header h1 {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 600;
   color: #1a1a1a;
   margin: 0;
+  text-align: center;
+  line-height: 1.3;
 }
 
 .progress-status {
@@ -31,17 +56,54 @@
   color: #856404;
   padding: 6px 12px;
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
+  white-space: nowrap;
 }
 
+/* ── Back Button ─────────────────────────────────────────── */
+.back-dashboard-btn {
+  background: transparent;
+  color: #2C5AA0;
+  border: 1px solid #2C5AA0;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  min-height: 40px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.back-dashboard-btn:hover {
+  background: rgba(44, 90, 160, 0.08);
+  border-color: #1E3D6F;
+  color: #1E3D6F;
+}
+
+.back-dashboard-btn:active {
+  transform: scale(0.98);
+}
+
+.back-dashboard-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Card ────────────────────────────────────────────────── */
 .activities-card {
   background: white;
   border: 1px solid #dee2e6;
   border-radius: 8px;
   padding: 30px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  position: relative;
+  isolation: isolate;
   overflow: hidden;
 }
 
@@ -54,6 +116,7 @@
   border-bottom: 1px solid #dee2e6;
 }
 
+/* ── Description ─────────────────────────────────────────── */
 .activities-description {
   margin-bottom: 30px;
 }
@@ -84,6 +147,7 @@
   text-decoration: underline;
 }
 
+/* ── Question / Answer buttons ───────────────────────────── */
 .activities-question {
   margin-bottom: 25px;
 }
@@ -94,24 +158,29 @@
   color: #1a1a1a;
   margin-bottom: 15px;
   font-size: 16px;
+  line-height: 1.4;
 }
 
 .answer-options {
   display: flex;
-  gap: 15px;
+  flex-wrap: wrap;
+  gap: 12px;
   margin-bottom: 15px;
 }
 
 .answer-btn {
-  padding: 10px 25px;
+  padding: 12px 28px;
   border: 2px solid #6c757d;
   background: white;
   color: #495057;
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-height: 48px; /* touch-friendly */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .answer-btn:hover {
@@ -139,6 +208,11 @@
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-height: 40px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  display: inline-flex;
+  align-items: center;
 }
 
 .clear-answer:hover {
@@ -152,6 +226,7 @@
   cursor: not-allowed;
 }
 
+/* ── Continue Section ────────────────────────────────────── */
 .continue-section {
   margin-top: 30px;
   padding-top: 20px;
@@ -163,12 +238,15 @@
   background: #007bff;
   color: white;
   border: none;
-  padding: 12px 30px;
+  padding: 14px 32px;
   border-radius: 4px;
   font-size: 16px;
   font-weight: 500;
   cursor: pointer;
   transition: background 0.2s ease;
+  min-height: 48px; /* touch-friendly */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .continue-btn:hover {
@@ -180,12 +258,12 @@
   cursor: not-allowed;
 }
 
-/* Activities Form Styles */
+/* ── Instructions Banner ─────────────────────────────────── */
 .activities-instructions {
   background: #e7f3ff;
   border: 1px solid #b3d9ff;
   border-radius: 4px;
-  padding: 15px;
+  padding: 14px;
   margin-bottom: 25px;
 }
 
@@ -193,28 +271,30 @@
   color: #0066cc;
   margin: 0;
   font-weight: 500;
+  line-height: 1.4;
 }
 
+/* ── Activity Form Card ──────────────────────────────────── */
 .activity-form {
-  margin-bottom: 30px;
-  padding: 25px;
+  margin-bottom: 28px;
+  padding: 24px;
   border: 1px solid #e9ecef;
   border-radius: 8px;
   background: #fdfdfd;
-  position: relative;
 }
 
 .activity-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 25px;
-  padding-bottom: 15px;
+  margin-bottom: 22px;
+  padding-bottom: 14px;
   border-bottom: 1px solid #dee2e6;
+  gap: 12px;
 }
 
 .activity-header h3 {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 600;
   color: #1a1a1a;
   margin: 0;
@@ -224,100 +304,56 @@
   background: #dc3545;
   color: white;
   border: none;
-  padding: 8px 16px;
+  padding: 8px 14px;
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   transition: background 0.2s ease;
+  min-height: 36px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .remove-activity:hover {
   background: #c82333;
 }
 
+/* ── Form Groups ─────────────────────────────────────────── */
 .activitiessection-form-group {
-  margin-bottom: 25px;
-  position: relative;
+  margin-bottom: 22px;
 }
 
+.activitiessection-form-group label,
 .activitiessection-form-group label {
   display: block;
   font-weight: 600;
   color: #1a1a1a;
   margin-bottom: 8px;
   font-size: 14px;
+  line-height: 1.4;
 }
 
-/* Enhanced Dropdown Styles */
-.form-group select {
-  width: 100%;
-  padding: 12px 40px 12px 12px;
-  border: 1px solid #ced4da;
-  border-radius: 6px;
-  font-size: 14px;
-  transition: all 0.2s ease;
-  box-sizing: border-box;
-  font-family: inherit;
-  background: white;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236c757d' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 16px;
-  cursor: pointer;
-}
-
-.form-group select:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-}
-
-/* Custom dropdown container to ensure proper z-index */
-.form-group select {
-  position: relative;
-  z-index: 1;
-}
-
-/* Ensure dropdown appears above other content */
-.form-group select:focus {
-  z-index: 1000;
-}
-
-/* Style the dropdown options */
-.form-group select option {
-  padding: 12px;
-  font-size: 14px;
-  border-bottom: 1px solid #f0f0f0;
-  background: white;
-  color: #1a1a1a;
-}
-
-.form-group select option:hover {
-  background: #007bff;
-  color: white;
-}
-
-.form-group select option:checked {
-  background: #007bff;
-  color: white;
-}
-
-/* Regular input and textarea styles */
-.form-group input,
+/* Inputs & Textareas */
+.form-group input[type="text"],
+.form-group input[type="number"],
 .form-group textarea {
   width: 100%;
   padding: 12px;
   border: 1px solid #ced4da;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 16px; /* prevents iOS auto-zoom */
   transition: all 0.2s ease;
   box-sizing: border-box;
   font-family: inherit;
   background: white;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
-.form-group input:focus,
+.form-group input[type="text"]:focus,
+.form-group input[type="number"]:focus,
 .form-group textarea:focus {
   outline: none;
   border-color: #007bff;
@@ -326,43 +362,101 @@
 
 .form-group textarea {
   resize: vertical;
-  min-height: 100px;
-  font-family: inherit;
+  min-height: 90px;
   line-height: 1.4;
 }
 
+/* Select */
+.form-group select {
+  width: 100%;
+  padding: 12px 40px 12px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 16px; /* prevents iOS auto-zoom */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+  font-family: inherit;
+  background-color: white;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236c757d' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  cursor: pointer;
+  color: #1a1a1a;
+}
+
+.form-group select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  z-index: 1000;
+}
+
+.form-group select:hover {
+  border-color: #9ca3af;
+}
+
+.form-group select option {
+  padding: 12px;
+  font-size: 14px;
+  background: white;
+  color: #1a1a1a;
+}
+
+.form-group select option:checked {
+  background: #007bff;
+  color: white;
+}
+
+/* Char count */
 .char-count {
   text-align: right;
   font-size: 12px;
   color: #6c757d;
-  margin-top: 6px;
+  margin-top: 5px;
 }
 
-/* Simple checkbox and radio styles */
+/* ── Checkbox & Radio Groups ─────────────────────────────── */
 .simple-checkbox-group,
 .simple-radio-group {
   display: flex;
-  gap: 20px;
   flex-wrap: wrap;
+  gap: 16px;
   margin-top: 8px;
 }
 
 .simple-checkbox-group label,
-.simple-radio-group label {
+.simple-radio-group label,
+.checkbox-label,
+.radio-label {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   cursor: pointer;
   font-weight: normal;
   margin: 0;
+  font-size: 14px;
+  min-height: 40px; /* touch-friendly */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .simple-checkbox-group input[type="checkbox"],
-.simple-radio-group input[type="radio"] {
+.simple-radio-group input[type="radio"],
+.checkbox-label input[type="checkbox"],
+.radio-label input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #007bff;
+  cursor: pointer;
+  flex-shrink: 0;
   margin: 0;
 }
 
-/* Form Row Layout */
+/* ── Two-column Form Row ─────────────────────────────────── */
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -373,15 +467,17 @@
   margin-bottom: 0;
 }
 
+/* ── Add Activity Row ────────────────────────────────────── */
 .add-activity-section {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
+  padding: 18px 20px;
   background: #f8f9fa;
   border-radius: 6px;
-  margin-bottom: 25px;
+  margin-bottom: 24px;
   border: 1px dashed #dee2e6;
+  gap: 12px;
 }
 
 .activities-remaining {
@@ -400,6 +496,10 @@
   font-weight: 500;
   cursor: pointer;
   transition: background 0.2s ease;
+  min-height: 44px;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .add-activity-btn:hover {
@@ -409,138 +509,20 @@
 hr {
   border: none;
   border-top: 1px solid #e9ecef;
-  margin: 30px 0;
+  margin: 28px 0;
 }
 
-/* Enhanced Dropdown Fixes for Different Browsers */
-@supports (-webkit-appearance: none) or (-moz-appearance: none) {
-  .form-group select {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-  }
-}
-
-/* Ensure dropdown has proper stacking context */
-.activities-card {
-  isolation: isolate;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .activities-container {
-    padding: 15px;
-  }
-
-  .activities-card {
-    padding: 20px;
-  }
-
-  .activities-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  .answer-options {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .form-row {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-
-  .add-activity-section {
-    flex-direction: column;
-    gap: 15px;
-    text-align: center;
-  }
-
-  .simple-checkbox-group,
-  .simple-radio-group {
-    gap: 15px;
-  }
-
-  .activity-form {
-    padding: 20px;
-  }
-  
-  /* Mobile dropdown improvements */
-  .form-group select {
-    font-size: 16px; /* Prevents zoom on iOS */
-  }
-}
-
-@media (max-width: 480px) {
-  .activities-card {
-    padding: 15px;
-  }
-
-  .activity-form {
-    padding: 15px;
-  }
-
-  .activitiessection-form-group {
-    margin-bottom: 20px;
-  }
-
-  .activities-header h1 {
-    font-size: 20px;
-  }
-
-  .activities-card h2 {
-    font-size: 18px;
-  }
-
-  .simple-checkbox-group,
-  .simple-radio-group {
-    gap: 12px;
-  }
-}
-
-/* Additional fixes for dropdown positioning */
-.activitiessection-form-group {
-  z-index: auto;
-}
-
-.form-group:focus-within {
-  z-index: 10;
-}
-
-/* Ensure dropdown doesn't get cut off */
-.activities-content {
-  position: relative;
-}
-
-/* Modern dropdown enhancements */
-.form-group select {
-  border: 1px solid #d1d5db;
-  background-color: white;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.form-group select:hover {
-  border-color: #9ca3af;
-}
-
-.form-group select:active {
-  border-color: #007bff;
-  transform: translateY(0);
-}
-
-/* React Select Overrides */
+/* ── React Select Overrides ──────────────────────────────── */
 .react-select-container {
   position: relative;
-  z-index: 1000;
+  z-index: 100;
 }
 
 .react-select__control {
-  min-height: 44px !important;
+  min-height: 48px !important;
   border: 1px solid #ced4da !important;
   border-radius: 6px !important;
-  font-size: 14px !important;
+  font-size: 16px !important; /* prevents iOS auto-zoom */
   font-family: inherit !important;
   transition: all 0.2s ease !important;
 }
@@ -553,14 +535,14 @@ hr {
 .react-select__menu {
   z-index: 9999 !important;
   border-radius: 6px !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
   border: 1px solid #e5e7eb !important;
   margin-top: 2px !important;
 }
 
 .react-select__option {
-  font-size: 14px !important;
-  padding: 10px 12px !important;
+  font-size: 15px !important;
+  padding: 12px !important; /* larger tap target on mobile */
 }
 
 .react-select__option--is-focused {
@@ -581,127 +563,162 @@ hr {
   color: #1a1a1a !important;
 }
 
-/* Ensure dropdown always opens below and doesn't get cut off */
 .react-select__menu-portal {
   z-index: 9999 !important;
 }
 
-/* Fix for mobile devices */
+/* ── Responsive: Tablet (≤768px) ─────────────────────────── */
 @media (max-width: 768px) {
-  .react-select__menu {
-    position: fixed !important;
-    top: auto !important;
-    bottom: auto !important;
-    left: 20px !important;
-    right: 20px !important;
-    width: auto !important;
+  .activities-container {
+    padding: 14px;
   }
-}
 
-.back-dashboard-btn {
-  background: transparent;
-  color: #2C5AA0;
-  border: 1px solid #2C5AA0;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-}
+  .activities-card {
+    padding: 20px 16px;
+  }
 
-.back-dashboard-btn:hover {
-  background: rgba(44, 90, 160, 0.08);
-  border-color: #1E3D6F;
-  color: #1E3D6F;
-  transform: translateY(-1px);
-}
-
-.back-dashboard-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.back-dashboard-btn:active {
-  transform: translateY(0);
-}
-
-/* Modified Activities Header Layout */
-.activities-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #dee2e6;
-  position: relative;
-}
-
-.header-left-container {
-  flex: 1;
-  display: flex;
-  justify-content: flex-start;
-}
-
-.header-center {
-  flex: 2;
-  display: flex;
-  justify-content: center;
-}
-
-.header-right {
-  flex: 1;
-  display: flex;
-  justify-content: flex-end;
-}
-
-/* Ensure the existing h1 styling is preserved */
-.activities-header h1 {
-  font-size: 24px;
-  font-weight: 600;
-  color: #1a1a1a;
-  margin: 0;
-  text-align: center;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
+  /* Stack header vertically */
   .activities-header {
     flex-direction: column;
-    gap: 15px;
     align-items: stretch;
+    gap: 12px;
   }
-  
+
   .header-left-container,
   .header-center,
   .header-right {
     justify-content: center;
     width: 100%;
+    flex: none;
   }
-  
+
   .back-dashboard-btn {
     width: 100%;
     justify-content: center;
   }
-  
+
   .activities-header h1 {
-    font-size: 20px;
+    font-size: 19px;
     text-align: center;
+  }
+
+  .answer-options {
+    gap: 10px;
+  }
+
+  .answer-btn {
+    flex: 1;
+    min-width: 80px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .form-row .form-group {
+    margin-bottom: 20px;
+  }
+
+  .add-activity-section {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+
+  .add-activity-btn {
+    width: 100%;
+  }
+
+  .simple-checkbox-group,
+  .simple-radio-group {
+    gap: 12px;
+  }
+
+  .activity-form {
+    padding: 18px 14px;
+  }
+
+  .continue-section {
+    text-align: center;
+  }
+
+  .continue-btn {
+    width: 100%;
   }
 }
 
+/* ── Responsive: Mobile Portrait (≤480px) ────────────────── */
 @media (max-width: 480px) {
+  .activities-container {
+    padding: 10px 0;
+  }
+
+  .activities-content {
+    padding: 0 10px;
+  }
+
+  .activities-card {
+    padding: 16px 12px;
+    border-radius: 6px;
+  }
+
+  .activities-card h2 {
+    font-size: 17px;
+  }
+
+  .activities-header h1 {
+    font-size: 17px;
+  }
+
   .back-dashboard-btn {
     font-size: 13px;
-    padding: 6px 12px;
+    padding: 8px 12px;
   }
-  
-  .activities-header h1 {
-    font-size: 18px;
+
+  .activitiessection-form-group {
+    margin-bottom: 18px;
   }
+
+  .activity-form {
+    padding: 14px 12px;
+    margin-bottom: 20px;
+  }
+
+  .activity-header h3 {
+    font-size: 15px;
+  }
+
+  .remove-activity {
+    font-size: 12px;
+    padding: 7px 10px;
+  }
+
+  .simple-checkbox-group,
+  .simple-radio-group {
+    gap: 8px;
+  }
+
+  /* Stack checkbox/radio items vertically on very small screens */
+  .simple-radio-group {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .activities-instructions {
+    padding: 12px;
+  }
+
+  .add-activity-section {
+    padding: 14px 12px;
+  }
+
+  .activities-remaining {
+    font-size: 13px;
+  }
+}
+
+/* ── z-index fix for dropdowns ───────────────────────────── */
+.form-group:focus-within {
+  z-index: 10;
 }

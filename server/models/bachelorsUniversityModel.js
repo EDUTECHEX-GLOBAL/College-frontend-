@@ -2,9 +2,8 @@ import mongoose from 'mongoose';
 
 // Define a sub-schema for detailed program information
 const programDetailSchema = new mongoose.Schema({
-  name: {
+  name: {           // ✅ ADDED - was missing, causing "Program 1" fallback
     type: String,
-    required: true,
     trim: true
   },
   title: {
@@ -59,7 +58,7 @@ const programDetailSchema = new mongoose.Schema({
     default: 'Other'
   }
 }, { 
-  _id: false,  // Don't create _id for sub-documents
+  _id: false,
   timestamps: false 
 });
 
@@ -181,8 +180,7 @@ const bachelorsUniversitySchema = new mongoose.Schema({
     trim: true
   },
   
-  // Academic Details - UPDATED to support both formats
-  // Keep simple program categories for backward compatibility
+  // Academic Details
   programCategories: [{
     type: String,
     enum: [
@@ -203,8 +201,13 @@ const bachelorsUniversitySchema = new mongoose.Schema({
     ]
   }],
   
-  // NEW: Detailed program information
-  programs: [programDetailSchema],
+  // ✅ FIXED: programs now uses Mixed type to accept BOTH:
+  //    - plain strings: ["Computer Science & IT", "Engineering"]  (old data)
+  //    - objects: [{ name: "Computer Science", level: "Bachelor", ... }]  (new data)
+  programs: {
+    type: [mongoose.Schema.Types.Mixed],
+    default: []
+  },
   
   intakes: [{
     type: String,
@@ -238,7 +241,6 @@ const bachelorsUniversitySchema = new mongoose.Schema({
     composite: String
   },
   
-  // UPDATED: Added more English test options
   englishTests: [{
     type: String,
     enum: [
@@ -254,7 +256,6 @@ const bachelorsUniversitySchema = new mongoose.Schema({
     ]
   }],
   
-  // UPDATED: Application requirements can now be objects or strings
   applicationRequirements: [{
     type: String,
     trim: true
@@ -281,6 +282,14 @@ const bachelorsUniversitySchema = new mongoose.Schema({
   },
   
   // Metadata
+  source: {
+    type: String,
+    default: 'bachelors'
+  },
+  degreeLevel: {
+    type: String,
+    default: 'Bachelors'
+  },
   createdBy: {
     type: String,
     default: 'admin'
@@ -289,8 +298,6 @@ const bachelorsUniversitySchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  
-  // To track which format is being used
   dataFormat: {
     type: String,
     enum: ['simple', 'detailed'],
@@ -300,12 +307,30 @@ const bachelorsUniversitySchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Update timestamp and program count on save
+// ✅ FIXED pre-save hook: normalizes plain string programs into objects
 bachelorsUniversitySchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   
-  // Calculate program count from detailed programs if available
   if (this.programs && Array.isArray(this.programs)) {
+    // Normalize any plain strings into proper program objects
+    this.programs = this.programs.map(p => {
+      if (typeof p === 'string') {
+        return {
+          name: p,
+          title: p,
+          program_name: p,
+          level: 'Bachelor',
+          duration: '4 years',
+          studyMode: 'On Campus',
+          description: `${p} program`
+        };
+      }
+      // Already an object — ensure name is set
+      if (typeof p === 'object' && !p.name) {
+        p.name = p.title || p.program_name || 'Unknown Program';
+      }
+      return p;
+    });
     this.programCount = this.programs.length;
   } else if (this.programCategories && Array.isArray(this.programCategories)) {
     this.programCount = this.programCategories.length;
@@ -314,7 +339,6 @@ bachelorsUniversitySchema.pre('save', function(next) {
   next();
 });
 
-// Index for search - updated to include program details
 bachelorsUniversitySchema.index({ 
   universityName: 'text', 
   city: 'text',
@@ -322,15 +346,13 @@ bachelorsUniversitySchema.index({
   'programs.description': 'text'
 });
 
-// Virtual for getting program names (useful for display)
 bachelorsUniversitySchema.virtual('programNames').get(function() {
   if (this.programs && Array.isArray(this.programs)) {
-    return this.programs.map(p => p.name);
+    return this.programs.map(p => typeof p === 'string' ? p : (p.name || p.title || p.program_name));
   }
   return this.programCategories || [];
 });
 
-// Use a different model name to avoid conflict
 const BachelorsUniversity = mongoose.models.BachelorsUniversity || mongoose.model('BachelorsUniversity', bachelorsUniversitySchema);
 
 export default BachelorsUniversity;

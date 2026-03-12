@@ -1,283 +1,314 @@
 /* src/components/testing-sections/PTEAcademicTestsSection.css */
+
+/* ── Wrapper ── */
 .pte-section {
   background: white;
-  margin: 16px 24px;
-  border-radius: 6px;
-  border: 1px solid #e1e5e9;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  max-width: 100%;
-  overflow: hidden;
+  margin: 20px 40px;
+  padding: 32px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
+/* ── Section Heading ── */
 .pte-section h2 {
-  background: #f8f9fa;
-  margin: 0;
-  padding: 20px 24px;
   font-size: 20px;
   font-weight: 600;
   color: #1a202c;
-  border-bottom: 1px solid #e8ecef;
+  margin: 0 0 8px 0;
 }
 
+/* ── Status Badge ── */
 .pte-section .section-status {
-  background: #f0f7ff;
-  padding: 12px 24px;
-  font-size: 14px;
+  font-size: 13px;
   color: #2C5AA0;
   font-weight: 500;
-  border-bottom: 1px solid #e1e5e9;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.pte-section .section-status::before {
-  content: "●";
-  color: #2C5AA0;
-  font-size: 14px;
-}
-
-.pte-section .form-content {
-  padding: 24px;
-  max-width: 100%;
-}
-
-.pte-section .form-group {
+  background: #e8f0fe;
+  padding: 3px 10px;
+  border-radius: 12px;
+  display: inline-block;
   margin-bottom: 24px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid #f1f3f4;
 }
 
-.pte-section .form-group:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-  padding-bottom: 0;
+/* ── Form Content ── */
+.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
 }
 
-.pte-section .question-text {
+/* ── Individual Form Group ── */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.question-text {
   font-size: 14px;
-  color: #374151;
-  margin: 0 0 12px 0;
-  line-height: 1.4;
   font-weight: 500;
+  color: #374151;
+  margin: 0;
+  line-height: 1.5;
 }
 
-/* Vertical Radio Groups - Compact spacing */
+/* ── Vertical Radio Group ── */
 .radio-group-vertical {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-bottom: 8px;
+  gap: 10px;
 }
 
-.radio-group-vertical .radio-option {
+.radio-option {
   display: flex;
   align-items: center;
   gap: 10px;
   cursor: pointer;
-  font-size: 14px;
-  color: #4a5568;
-  padding: 8px 12px;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
+  user-select: none;
 }
 
-.radio-group-vertical .radio-option:hover {
-  background: #f7fafc;
-}
-
-.radio-group-vertical .radio-option input[type="radio"] {
-  margin: 0;
+.radio-option input[type="radio"] {
   width: 16px;
   height: 16px;
-  accent-color: #2C5AA0;
   cursor: pointer;
-}
-
-/* Enhanced radio button styling for better visual feedback */
-.radio-group-vertical .radio-option input[type="radio"]:checked {
   accent-color: #2C5AA0;
-  background-color: #2C5AA0;
-  border-color: #2C5AA0;
+  flex-shrink: 0;
 }
 
-.radio-group-vertical .radio-option input[type="radio"]:checked + .radio-label {
+.radio-label {
+  font-size: 14px;
+  color: #374151;
+}
+
+/* ── Clear Answer Button ── */
+.clear-answer-button {
+  background: none;
+  border: none;
   color: #2C5AA0;
-  font-weight: 500;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 0;
+  text-decoration: underline;
+  text-align: left;
+  transition: color 0.2s ease;
+  align-self: flex-start;
 }
 
-.radio-group-vertical .radio-label {
-  transition: color 0.2s ease, font-weight 0.2s ease;
+.clear-answer-button:hover {
+  color: #1E3D6F;
 }
 
-/* Score Dropdowns - Compact */
+/* ── Score Details Sub-section ── */
+.detailed-fields {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.detailed-fields h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 4px 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* ── Score / Date Pair Row ── */
+.field-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.field-group:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+/* ── Score Dropdown ── */
 .score-dropdown {
-  width: 120px;
-  padding: 6px 8px;
+  width: 100%;
+  padding: 10px 12px;
   border: 1px solid #d1d5db;
   border-radius: 4px;
   font-size: 14px;
   background: white;
   color: #374151;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
 }
 
 .score-dropdown:focus {
   outline: none;
   border-color: #2C5AA0;
-  box-shadow: 0 0 0 2px rgba(44, 90, 160, 0.1);
+  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
 }
 
-/* Date Inputs - Compact */
+/* ── Date Input ── */
 .date-input {
   width: 100%;
-  max-width: 250px;
-  padding: 6px 8px;
+  padding: 10px 12px;
   border: 1px solid #d1d5db;
   border-radius: 4px;
   font-size: 14px;
+  background: white;
   color: #374151;
-  font-family: inherit;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
 }
 
 .date-input:focus {
   outline: none;
   border-color: #2C5AA0;
-  box-shadow: 0 0 0 2px rgba(44, 90, 160, 0.1);
+  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
 }
 
-.date-input::placeholder {
-  color: #9ca3af;
-  font-size: 13px;
-}
-
-/* Clear Answer Button - Compact */
-.clear-answer-button {
-  background: none;
-  border: 1px solid #d1d5db;
-  color: #6b7280;
-  padding: 4px 8px;
-  border-radius: 3px;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.clear-answer-button:hover {
-  background: #f9fafb;
-  border-color: #9ca3af;
-}
-
-/* Detailed Fields Section - Compact */
-.detailed-fields {
-  background: #fafbfc;
-  border: 1px solid #e8ecef;
-  border-radius: 6px;
-  padding: 16px;
-  margin: 16px 0;
-}
-
-.detailed-fields h3 {
-  font-size: 15px;
-  font-weight: 600;
-  color: #2d3748;
-  margin: 0 0 16px 0;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #e8ecef;
-}
-
-/* Field Groups for better organization - Compact */
-.field-group {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 16px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #e8ecef;
-}
-
-.field-group:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-  padding-bottom: 0;
-}
-
-.field-group .form-group {
-  margin-bottom: 0;
-  padding-bottom: 0;
-  border-bottom: none;
-  background: none;
-  padding: 0;
-  border: none;
-}
-
-/* Form Helper Text - Compact */
+/* ── Helper Text ── */
 .form-helper {
   font-size: 12px;
   color: #6b7280;
-  margin-top: 4px;
+  margin-top: 5px;
   font-style: italic;
+  line-height: 1.4;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
+/* ════════════════════════════════════════
+   RESPONSIVE — Tablet  ≤ 1023px
+════════════════════════════════════════ */
+@media (max-width: 1023px) {
   .pte-section {
-    margin: 12px 16px;
+    margin: 20px 24px;
+    padding: 28px;
   }
-  
-  .pte-section .form-content {
+
+  .detailed-fields {
     padding: 20px;
   }
-  
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Mobile  ≤ 767px
+════════════════════════════════════════ */
+@media (max-width: 767px) {
+  .pte-section {
+    margin: 15px 16px;
+    padding: 20px;
+    border-radius: 6px;
+  }
+
   .pte-section h2 {
-    padding: 16px 20px;
     font-size: 18px;
   }
-  
-  .pte-section .section-status {
-    padding: 10px 20px;
+
+  .form-content {
+    gap: 22px;
   }
-  
-  .score-dropdown {
-    width: 100%;
-  }
-  
-  .date-input {
-    max-width: 100%;
-  }
-  
-  .detailed-fields {
-    padding: 12px;
-    margin: 12px 0;
-  }
-  
+
+  /* Stack score + date vertically on mobile */
   .field-group {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 14px;
+    padding-bottom: 16px;
+  }
+
+  .detailed-fields {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .detailed-fields h3 {
+    font-size: 15px;
+  }
+
+  .radio-group-vertical {
+    gap: 8px;
   }
 }
 
+/* ════════════════════════════════════════
+   RESPONSIVE — Small Mobile  ≤ 480px
+════════════════════════════════════════ */
 @media (max-width: 480px) {
   .pte-section {
-    margin: 8px 12px;
-  }
-  
-  .pte-section .form-content {
+    margin: 10px 12px;
     padding: 16px;
   }
-  
+
   .pte-section h2 {
-    padding: 14px 16px;
+    font-size: 17px;
   }
-  
-  .pte-section .section-status {
-    padding: 8px 16px;
+
+  .question-text {
+    font-size: 13px;
   }
-  
+
+  .radio-label {
+    font-size: 13px;
+  }
+
+  .score-dropdown,
+  .date-input {
+    padding: 9px 10px;
+    font-size: 13px;
+  }
+
   .detailed-fields {
-    padding: 8px;
+    padding: 14px;
+    gap: 14px;
+    border-radius: 6px;
   }
-  
-  .radio-group-vertical .radio-option {
-    padding: 6px 8px;
+
+  .detailed-fields h3 {
+    font-size: 14px;
+    padding-bottom: 10px;
+    margin-bottom: 0;
+  }
+
+  .form-helper {
+    font-size: 11px;
+  }
+
+  .form-content {
+    gap: 18px;
+  }
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Very Small  ≤ 360px
+════════════════════════════════════════ */
+@media (max-width: 360px) {
+  .pte-section {
+    margin: 8px;
+    padding: 12px;
+  }
+
+  .pte-section h2 {
+    font-size: 16px;
+  }
+
+  .score-dropdown,
+  .date-input {
+    font-size: 12px;
+    padding: 8px 9px;
+  }
+
+  .question-text {
+    font-size: 12px;
+  }
+
+  .radio-label {
+    font-size: 12px;
+  }
+
+  .detailed-fields {
+    padding: 10px;
   }
 }

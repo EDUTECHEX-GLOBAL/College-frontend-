@@ -24,6 +24,7 @@ const GusUniversity = () => {
     const [pdfLoading, setPdfLoading]     = useState(null);
     const [stats, setStats]               = useState({ total: 0, completed: 0, incomplete: 0, underReview: 0 });
     const [docViewer, setDocViewer]       = useState(null);
+    const [downloadingDoc, setDownloadingDoc] = useState(false);
 
     const apiRef = useRef(null);
     if (!apiRef.current) {
@@ -185,7 +186,6 @@ const GusUniversity = () => {
     const API_BASE_URL_VIEW = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
     // ─── Document Viewer ─────────────────────────────────────────────────────
-    // ✅ All files served via /api/files/ proxy — S3 stays private
     const DOC_FOLDER_MAP_VIEW = {
         'CV':                    'documents/cv',
         'Photo':                 'documents/photo',
@@ -207,23 +207,19 @@ const GusUniversity = () => {
         let url;
         if (meta.fileUrl) {
             if (meta.fileUrl.startsWith('/api/files/')) {
-                // ✅ Already a proxy URL from controller — prepend base URL
                 url = `${API_BASE_URL_VIEW}${meta.fileUrl}`;
             } else if (meta.fileUrl.startsWith('https://')) {
-                // ✅ Direct S3 URL — route through proxy
                 try {
                     const parsed = new URL(meta.fileUrl);
                     const key = parsed.pathname.replace(/^\//, '');
                     url = `${API_BASE_URL_VIEW}/api/files/${key}`;
                 } catch {
-                    url = meta.fileUrl; // fallback
+                    url = meta.fileUrl;
                 }
             } else {
-                // ✅ Relative path like /uploads/... — prepend base URL
                 url = `${API_BASE_URL_VIEW}${meta.fileUrl}`;
             }
         } else {
-            // ✅ Fallback — build proxy URL from fileName + folder map
             const folder = DOC_FOLDER_MAP_VIEW[label] || 'documents/other';
             url = `${API_BASE_URL_VIEW}/api/files/${folder}/${meta.fileName}`;
         }
@@ -233,6 +229,36 @@ const GusUniversity = () => {
 
     const closeDocViewer = () => setDocViewer(null);
     const isImageType    = (ft) => ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes((ft || '').toLowerCase());
+
+    // ─── Download Document Handler ──────────────────────────────────────────
+    const handleDownloadDoc = async () => {
+        if (!docViewer?.url) return;
+        setDownloadingDoc(true);
+        try {
+            const token =
+                localStorage.getItem('processAdminToken') ||
+                localStorage.getItem('token')             ||
+                localStorage.getItem('adminToken');
+            const response = await fetch(docViewer.url, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const blob    = await response.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            const a       = document.createElement('a');
+            a.href        = blobUrl;
+            a.download    = docViewer.originalName || docViewer.label || 'document';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(blobUrl);
+        } catch (err) {
+            console.error('Download error:', err);
+            alert('Download failed. Try "Open in New Tab" and save from there.');
+        } finally {
+            setDownloadingDoc(false);
+        }
+    };
 
     // ─── PDF Generator ──────────────────────────────────────────────────────
     const handleDownloadPDF = async (app) => {
@@ -522,7 +548,6 @@ const GusUniversity = () => {
                     { label: 'Recommendation Letter', meta: app.documents.recLetterMeta  },
                 ].filter(d => d.meta?.fileUrl);
 
-                // ── Load pdf.js once for all PDFs ──────────────────────
                 if (!window.pdfjsLib) {
                     await new Promise((res, rej) => {
                         const s = document.createElement('script');
@@ -534,7 +559,6 @@ const GusUniversity = () => {
                         'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
                 }
 
-                // ── Helper: fetch file as ArrayBuffer (reliable for binary) ─
                 const fetchFile = (url) => new Promise((resolve, reject) => {
                     const token =
                         localStorage.getItem('processAdminToken') ||
@@ -546,7 +570,7 @@ const GusUniversity = () => {
                     if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
                     xhr.onload = () => {
                         if (xhr.status >= 200 && xhr.status < 300) {
-                            resolve(xhr.response); // blob
+                            resolve(xhr.response);
                         } else {
                             reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText} — ${url}`));
                         }
@@ -555,21 +579,18 @@ const GusUniversity = () => {
                     xhr.send();
                 });
 
-                // ── Helper: blob → base64 dataURL ───────────────────────
                 const blobToBase64 = (blob) => new Promise((res) => {
                     const r  = new FileReader();
                     r.onload = () => res(r.result);
                     r.readAsDataURL(blob);
                 });
 
-                // ── Helper: blob → ArrayBuffer ──────────────────────────
                 const blobToArrayBuffer = (blob) => new Promise((res) => {
                     const r  = new FileReader();
                     r.onload = () => res(r.result);
                     r.readAsArrayBuffer(blob);
                 });
 
-                // ── Helper: add document header bar ─────────────────────
                 const addDocHeader = (lbl, filename, pageNum = null, totalPages = null) => {
                     doc.setFillColor(...C.primary);
                     doc.rect(0, 0, PW, 16, 'F');
@@ -584,21 +605,19 @@ const GusUniversity = () => {
                     doc.text(fname, ML, 13);
                 };
 
-                // ── Helper: embed image with correct aspect ratio ────────
                 const embedImage = (base64, fmt, label, filename, pageNum = null, totalPages = null) => {
                     doc.addPage();
                     addDocHeader(label, filename, pageNum, totalPages);
                     drawPageFooter();
 
-                    // Create temp image to get natural dimensions
                     const img    = new Image();
                     img.src      = base64;
                     const natW   = img.naturalWidth  || 800;
                     const natH   = img.naturalHeight || 1000;
                     const ratio  = natW / natH;
 
-                    const maxW   = PW - ML - MR;   // 182mm
-                    const maxH   = PH - 32;         // 265mm (below header + above footer)
+                    const maxW   = PW - ML - MR;
+                    const maxH   = PH - 32;
 
                     let drawW = maxW;
                     let drawH = drawW / ratio;
@@ -610,7 +629,6 @@ const GusUniversity = () => {
 
                 for (const { label, meta } of docEntries) {
                     try {
-                        // Build absolute URL
                         const BASE    = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
                         const fileUrl = meta.fileUrl.startsWith('http')
                             ? meta.fileUrl
@@ -622,14 +640,12 @@ const GusUniversity = () => {
                         const fname   = meta.originalName || meta.fileName || '';
 
                         if (isImage) {
-                            // ── Fetch and embed image ────────────────────────────
                             const blob   = await fetchFile(fileUrl);
                             const base64 = await blobToBase64(blob);
                             const imgFmt = ext === 'png' ? 'PNG' : 'JPEG';
                             embedImage(base64, imgFmt, label, fname);
 
                         } else if (isPdf) {
-                            // ── Render each PDF page as high-res image ───────────
                             const blob     = await fetchFile(fileUrl);
                             const arrayBuf = await blobToArrayBuffer(blob);
                             const uint8    = new Uint8Array(arrayBuf);
@@ -639,8 +655,6 @@ const GusUniversity = () => {
 
                             for (let p = 1; p <= numPages; p++) {
                                 const page = await pdfDoc.getPage(p);
-
-                                // Use high scale for crisp output
                                 const viewport = page.getViewport({ scale: 3.0 });
                                 const canvas   = document.createElement('canvas');
                                 canvas.width   = viewport.width;
@@ -648,7 +662,6 @@ const GusUniversity = () => {
                                 const ctx      = canvas.getContext('2d');
                                 await page.render({ canvasContext: ctx, viewport }).promise;
                                 const imgData  = canvas.toDataURL('image/jpeg', 0.95);
-
                                 embedImage(imgData, 'JPEG', label, fname, p, numPages);
                             }
                         }
@@ -1138,6 +1151,7 @@ const GusUniversity = () => {
                                 </div>
                             </div>
                             <div className="gus-docviewer-hdr-right">
+                                {/* ── Open in New Tab ── */}
                                 <a
                                     href={docViewer.url}
                                     target="_blank"
@@ -1152,6 +1166,32 @@ const GusUniversity = () => {
                                     </svg>
                                     Open in New Tab
                                 </a>
+
+                                {/* ── Download Button ── */}
+                                <button
+                                    className="gus-docviewer-open-btn"
+                                    title="Download file"
+                                    disabled={downloadingDoc}
+                                    onClick={handleDownloadDoc}
+                                    style={{ marginLeft: 6, cursor: downloadingDoc ? 'not-allowed' : 'pointer', opacity: downloadingDoc ? 0.7 : 1 }}
+                                >
+                                    {downloadingDoc ? (
+                                        <>
+                                            <span className="gus-btn-spinner" style={{ width: 12, height: 12, marginRight: 4 }} />
+                                            Downloading...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 14, height: 14 }}>
+                                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                                                <polyline points="7 10 12 15 17 10"/>
+                                                <line x1="12" y1="15" x2="12" y2="3"/>
+                                            </svg>
+                                            Download
+                                        </>
+                                    )}
+                                </button>
+
                                 <button className="gus-docviewer-close" onClick={closeDocViewer}>✕</button>
                             </div>
                         </div>
@@ -1171,9 +1211,13 @@ const GusUniversity = () => {
                                     <div className="gus-docviewer-fallback" style={{ display: 'none' }}>
                                         <span style={{ fontSize: 48 }}>🖼️</span>
                                         <p>Could not load image preview.</p>
-                                        <a href={docViewer.url} target="_blank" rel="noopener noreferrer" className="gus-docviewer-open-btn">
-                                            Open File Directly
-                                        </a>
+                                        <button
+                                            className="gus-docviewer-open-btn"
+                                            onClick={handleDownloadDoc}
+                                            disabled={downloadingDoc}
+                                        >
+                                            {downloadingDoc ? 'Downloading...' : 'Download File'}
+                                        </button>
                                     </div>
                                 </div>
                             ) : docViewer.fileType === 'pdf' ? (
@@ -1195,14 +1239,19 @@ const GusUniversity = () => {
                                     <p style={{ color: '#9ca3af', fontSize: 13 }}>
                                         Preview not available for <strong>.{docViewer.fileType}</strong> files.
                                     </p>
-                                    <a href={docViewer.url} target="_blank" rel="noopener noreferrer" className="gus-docviewer-open-btn" style={{ marginTop: 8 }}>
+                                    <button
+                                        className="gus-docviewer-open-btn"
+                                        onClick={handleDownloadDoc}
+                                        disabled={downloadingDoc}
+                                        style={{ marginTop: 8, cursor: downloadingDoc ? 'not-allowed' : 'pointer' }}
+                                    >
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 14, height: 14 }}>
                                             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
                                             <polyline points="7 10 12 15 17 10"/>
                                             <line x1="12" y1="15" x2="12" y2="3"/>
                                         </svg>
-                                        Download File
-                                    </a>
+                                        {downloadingDoc ? 'Downloading...' : 'Download File'}
+                                    </button>
                                 </div>
                             )}
                         </div>

@@ -1,6 +1,20 @@
 // controllers/bachelorsController.js
 import BachelorsUniversity from '../models/bachelorsUniversityModel.js';
 
+
+// ✅ Normalize programs — converts plain strings into proper objects
+const normalizePrograms = (programs) => {
+  if (!Array.isArray(programs)) return [];
+  return programs.map(p => {
+    if (typeof p === 'string') {
+      return { name: p, title: p, program_name: p, level: 'Bachelor', duration: '4 years', studyMode: 'On Campus', description: `${p} program` };
+    }
+    if (typeof p === 'object' && p !== null && !p.name) {
+      p.name = p.title || p.program_name || 'Unknown Program';
+    }
+    return p;
+  });
+};
 // @desc    Create a new university
 // @route   POST /api/bachelors/universities
 // @access  Private/Admin
@@ -25,7 +39,7 @@ export const createUniversity = async (req, res) => {
       ...req.body,
       universityCode: req.body.universityCode?.toUpperCase(),
       // Ensure arrays are properly formatted
-      programs: req.body.programs || [],
+      programs: normalizePrograms(req.body.programs),
       intakes: req.body.intakes || [],
       englishTests: req.body.englishTests || ["TOEFL iBT", "IELTS Academic"],
       applicationRequirements: req.body.applicationRequirements || [],

@@ -1,4 +1,5 @@
 /* src/components/education-sections/GradesSection.css */
+
 .grades-section {
   background: white;
   margin: 20px 40px;
@@ -8,6 +9,7 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
+/* ── Header ── */
 .grades-header {
   margin-bottom: 24px;
   padding-bottom: 16px;
@@ -31,9 +33,10 @@
   display: inline-block;
 }
 
+/* ── Grid & Form Groups ── */
 .grades-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px;
 }
 
@@ -58,6 +61,7 @@
   color: #dc2626;
 }
 
+/* ── Inputs ── */
 .grades-input,
 .grades-select {
   width: 100%;
@@ -67,6 +71,7 @@
   font-size: 14px;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   background: white;
+  box-sizing: border-box;
 }
 
 .grades-input:focus,
@@ -76,6 +81,14 @@
   box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
 }
 
+.grades-hint {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* ── Radio Group ── */
 .grades-radio-group {
   display: flex;
   flex-direction: column;
@@ -93,6 +106,7 @@
   width: 16px;
   height: 16px;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .grades-radio-label {
@@ -101,32 +115,88 @@
   cursor: pointer;
 }
 
-.grades-hint {
-  font-size: 12px;
-  color: #6b7280;
-  margin-top: 4px;
-  font-style: italic;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
+/* ════════════════════════════════════════
+   RESPONSIVE — Tablet  ≤ 1023px
+════════════════════════════════════════ */
+@media (max-width: 1023px) {
   .grades-section {
-    margin: 15px 20px;
-    padding: 24px;
-  }
-  
-  .grades-grid {
-    grid-template-columns: 1fr;
+    margin: 20px 24px;
+    padding: 28px;
   }
 }
 
-@media (max-width: 480px) {
+/* ════════════════════════════════════════
+   RESPONSIVE — Mobile  ≤ 767px
+════════════════════════════════════════ */
+@media (max-width: 767px) {
   .grades-section {
-    margin: 10px 15px;
+    margin: 15px 16px;
     padding: 20px;
+    border-radius: 6px;
   }
-  
+
   .grades-title {
     font-size: 18px;
+  }
+
+  .grades-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .grades-full-width {
+    grid-column: 1;
+  }
+
+  .grades-form-group {
+    margin-bottom: 18px;
+  }
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Small Mobile  ≤ 480px
+════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .grades-section {
+    margin: 10px 12px;
+    padding: 16px;
+  }
+
+  .grades-title {
+    font-size: 17px;
+  }
+
+  .grades-input,
+  .grades-select {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .grades-form-group {
+    margin-bottom: 14px;
+  }
+
+  .grades-radio-group {
+    gap: 10px;
+  }
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Very Small  ≤ 360px
+════════════════════════════════════════ */
+@media (max-width: 360px) {
+  .grades-section {
+    margin: 8px;
+    padding: 12px;
+  }
+
+  .grades-title {
+    font-size: 16px;
+  }
+
+  .grades-input,
+  .grades-select {
+    padding: 9px 10px;
+    font-size: 12px;
   }
 }

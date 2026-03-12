@@ -2,12 +2,12 @@
 import React from 'react';
 import './TestsTakenSection.css';
 
-const TestsTakenSection = ({ 
-  formData, 
-  handleInputChange, 
+const TestsTakenSection = ({
+  formData,
+  handleInputChange,
   handleArrayChange,
   clearAnswer,
-  clearArrayAnswer 
+  clearArrayAnswer
 }) => {
   const testTypes = [
     { id: 'act-tests', name: 'ACT Tests' },
@@ -36,7 +36,7 @@ const TestsTakenSection = ({
       <div className="section-status">
         {formData.selfReportScores && formData.internationalPromotionExams ? 'Complete' : 'In Progress'}
       </div>
-      
+
       <div className="form-content">
         {/* Main Self-Reporting Question */}
         <div className="form-group">
@@ -65,8 +65,8 @@ const TestsTakenSection = ({
               <span className="radio-label">No</span>
             </label>
           </div>
-          <button 
-            type="button" 
+          <button
+            type="button"
             className="clear-answer-button"
             onClick={() => clearAnswer('selfReportScores')}
           >
@@ -74,14 +74,12 @@ const TestsTakenSection = ({
           </button>
         </div>
 
-        {/* Tests to Report Section - Show all test types as selectable checkboxes */}
+        {/* Tests to Report */}
         {formData.selfReportScores === 'yes' && (
           <div className="form-group">
             <p className="question-text">
               Indicate all tests you wish to report. Be sure to include tests you expect to take in addition to tests you have already taken.*
             </p>
-            
-            {/* Test Types as Selectable Checkboxes */}
             <div className="test-types-grid">
               {testTypes.map((test) => (
                 <label key={test.id} className="test-checkbox-item">
@@ -97,8 +95,8 @@ const TestsTakenSection = ({
                 </label>
               ))}
             </div>
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="clear-answer-button"
               onClick={() => clearArrayAnswer('testsToReport')}
             >
@@ -134,8 +132,8 @@ const TestsTakenSection = ({
               <span className="radio-label">No</span>
             </label>
           </div>
-          <button 
-            type="button" 
+          <button
+            type="button"
             className="clear-answer-button"
             onClick={() => clearAnswer('internationalPromotionExams')}
           >

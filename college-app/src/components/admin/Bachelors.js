@@ -721,7 +721,7 @@ const UniversityAdminTemplate = () => {
           ...formData,
           programs: selectedPrograms,
           intakes: formData.intakes.length > 0 ? formData.intakes : availableIntakes.slice(0, 3),
-          source: 'custom',
+          source: 'bachelors',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           programCount: selectedPrograms.length

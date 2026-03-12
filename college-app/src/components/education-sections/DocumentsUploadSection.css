@@ -1,4 +1,5 @@
 /* src/components/education-sections/DocumentsUploadSection.css */
+
 .documents-upload-section {
   background: white;
   margin: 20px 40px;
@@ -8,6 +9,7 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
+/* ── Header ── */
 .documents-upload-header {
   margin-bottom: 24px;
   padding-bottom: 16px;
@@ -38,12 +40,14 @@
   line-height: 1.5;
 }
 
+/* ── Upload Grid ── */
 .documents-upload-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 24px;
 }
 
+/* ── Individual Upload Item ── */
 .documents-upload-item {
   border: 2px dashed #d1d5db;
   border-radius: 8px;
@@ -82,6 +86,7 @@
   line-height: 1.4;
 }
 
+/* ── Drop Zone ── */
 .documents-upload-area {
   cursor: pointer;
   padding: 20px;
@@ -112,6 +117,7 @@
   display: none;
 }
 
+/* ── Uploaded File Row ── */
 .documents-uploaded-file {
   display: flex;
   align-items: center;
@@ -128,11 +134,13 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
 .documents-file-icon {
   color: #10b981;
   font-size: 20px;
+  flex-shrink: 0;
 }
 
 .documents-file-details h4 {
@@ -140,6 +148,9 @@
   font-weight: 600;
   color: #374151;
   margin: 0 0 2px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .documents-file-details span {
@@ -156,12 +167,14 @@
   padding: 4px 8px;
   border-radius: 4px;
   transition: background 0.2s ease;
+  flex-shrink: 0;
 }
 
 .documents-remove-file-btn:hover {
   background: #fef2f2;
 }
 
+/* ── Upload Button ── */
 .documents-upload-btn {
   background: #2C5AA0;
   color: white;
@@ -181,6 +194,7 @@
   background: #1E3D6F;
 }
 
+/* ── Requirements Box ── */
 .documents-requirements {
   margin-top: 32px;
   padding: 20px;
@@ -208,51 +222,131 @@
   margin-bottom: 4px;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
+/* ════════════════════════════════════════
+   RESPONSIVE — Tablet  ≤ 1023px
+════════════════════════════════════════ */
+@media (max-width: 1023px) {
   .documents-upload-section {
-    margin: 15px 20px;
-    padding: 24px;
-  }
-  
-  .documents-upload-item {
-    padding: 24px;
-  }
-  
-  .documents-uploaded-file {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  
-  .documents-remove-file-btn {
-    align-self: flex-end;
+    margin: 20px 24px;
+    padding: 28px;
   }
 }
 
-@media (max-width: 480px) {
+/* ════════════════════════════════════════
+   RESPONSIVE — Mobile  ≤ 767px
+════════════════════════════════════════ */
+@media (max-width: 767px) {
   .documents-upload-section {
-    margin: 10px 15px;
+    margin: 15px 16px;
     padding: 20px;
+    border-radius: 6px;
   }
-  
+
   .documents-upload-title {
     font-size: 18px;
   }
-  
+
   .documents-upload-item {
-    padding: 20px;
+    padding: 24px 16px;
   }
-  
+
+  .documents-upload-grid {
+    gap: 16px;
+  }
+
+  /* Uploaded file: stack on mobile */
+  .documents-uploaded-file {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .documents-remove-file-btn {
+    align-self: flex-end;
+  }
+
+  .documents-requirements {
+    margin-top: 24px;
+    padding: 16px;
+  }
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Small Mobile  ≤ 480px
+════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .documents-upload-section {
+    margin: 10px 12px;
+    padding: 16px;
+  }
+
+  .documents-upload-title {
+    font-size: 17px;
+  }
+
+  .documents-upload-item {
+    padding: 20px 14px;
+  }
+
   .documents-upload-icon {
     font-size: 36px;
+    margin-bottom: 12px;
   }
-  
+
   .documents-upload-text {
     font-size: 14px;
   }
-  
+
   .documents-upload-subtext {
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+
+  .documents-upload-area {
+    padding: 14px;
+  }
+
+  .documents-upload-area p {
+    font-size: 13px;
+  }
+
+  .documents-upload-btn {
+    width: 100%;
+    justify-content: center;
+    font-size: 13px;
+  }
+
+  .documents-requirements h4 {
+    font-size: 14px;
+  }
+
+  .documents-requirements ul {
+    font-size: 13px;
+  }
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Very Small  ≤ 360px
+════════════════════════════════════════ */
+@media (max-width: 360px) {
+  .documents-upload-section {
+    margin: 8px;
+    padding: 12px;
+  }
+
+  .documents-upload-title {
+    font-size: 16px;
+  }
+
+  .documents-upload-item {
+    padding: 16px 10px;
+  }
+
+  .documents-upload-icon {
+    font-size: 28px;
+  }
+
+  .documents-file-details h4 {
     font-size: 12px;
   }
 }

@@ -1,4 +1,5 @@
 /* src/components/education-sections/CurrentSchoolSection.css */
+
 .current-school-section {
   background: white;
   margin: 20px 40px;
@@ -8,6 +9,7 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
+/* ── Header ── */
 .current-school-header {
   margin-bottom: 24px;
   padding-bottom: 16px;
@@ -38,6 +40,7 @@
   line-height: 1.5;
 }
 
+/* ── Grid & Form Groups ── */
 .current-school-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -65,6 +68,7 @@
   color: #dc2626;
 }
 
+/* ── Inputs ── */
 .current-school-input,
 .current-school-select {
   width: 100%;
@@ -74,6 +78,7 @@
   font-size: 14px;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   background: white;
+  box-sizing: border-box;
 }
 
 .current-school-input:focus,
@@ -90,6 +95,7 @@
   font-style: italic;
 }
 
+/* ── Radio Group ── */
 .current-school-radio-group {
   display: flex;
   flex-direction: column;
@@ -107,6 +113,7 @@
   width: 16px;
   height: 16px;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .current-school-radio-label {
@@ -115,6 +122,7 @@
   cursor: pointer;
 }
 
+/* ── Address Sub-section ── */
 .current-school-address-section {
   margin-top: 32px;
   padding-top: 24px;
@@ -128,25 +136,93 @@
   margin-bottom: 16px;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
+/* ════════════════════════════════════════
+   RESPONSIVE — Tablet  ≤ 1023px
+════════════════════════════════════════ */
+@media (max-width: 1023px) {
   .current-school-section {
-    margin: 15px 20px;
-    padding: 24px;
-  }
-  
-  .current-school-grid {
-    grid-template-columns: 1fr;
+    margin: 20px 24px;
+    padding: 28px;
   }
 }
 
-@media (max-width: 480px) {
+/* ════════════════════════════════════════
+   RESPONSIVE — Mobile  ≤ 767px
+════════════════════════════════════════ */
+@media (max-width: 767px) {
   .current-school-section {
-    margin: 10px 15px;
+    margin: 15px 16px;
     padding: 20px;
+    border-radius: 6px;
   }
-  
+
   .current-school-title {
     font-size: 18px;
+  }
+
+  .current-school-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .current-school-full-width {
+    grid-column: 1;
+  }
+
+  .current-school-form-group {
+    margin-bottom: 18px;
+  }
+
+  .current-school-address-section {
+    margin-top: 24px;
+    padding-top: 18px;
+  }
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Small Mobile  ≤ 480px
+════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .current-school-section {
+    margin: 10px 12px;
+    padding: 16px;
+  }
+
+  .current-school-title {
+    font-size: 17px;
+  }
+
+  .current-school-input,
+  .current-school-select {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .current-school-form-group {
+    margin-bottom: 14px;
+  }
+
+  .current-school-radio-group {
+    gap: 10px;
+  }
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Very Small  ≤ 360px
+════════════════════════════════════════ */
+@media (max-width: 360px) {
+  .current-school-section {
+    margin: 8px;
+    padding: 12px;
+  }
+
+  .current-school-title {
+    font-size: 16px;
+  }
+
+  .current-school-input,
+  .current-school-select {
+    padding: 9px 10px;
+    font-size: 12px;
   }
 }

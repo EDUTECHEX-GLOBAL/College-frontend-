@@ -394,7 +394,7 @@ h5 {
   margin-bottom: 0;
 }
 
-.form-group label {
+.master-form-group label {
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
@@ -465,7 +465,7 @@ h5 {
 }
 
 /* Checkbox Grid */
-.checkbox-grid {
+.master-checkbox-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 12px;

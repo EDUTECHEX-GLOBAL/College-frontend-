@@ -6,7 +6,6 @@ import "./UserProfile.css";
 
 const API_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
-// Common courses shown in autocomplete
 const COURSE_SUGGESTIONS_LIST = [
   "Computer Science", "Business Administration", "Data Science",
   "Mechanical Engineering", "Electrical Engineering", "Civil Engineering",
@@ -20,6 +19,61 @@ const COURSE_SUGGESTIONS_LIST = [
   "Cloud Computing", "Software Engineering", "Robotics", "Aerospace Engineering",
 ];
 
+// ─── Normalize any university into a common shape ────────────────────────────
+// ✅ FIX: programs are fully normalized here so every item has name+title set
+const normalizeUniversity = (uni, source = 'admin') => {
+  const name = uni.INSTNM || uni.universityName || 'Unknown University';
+  const city = uni.CITY || uni.city || uni.location?.city || '';
+  const state = uni.STABBR || uni.state || uni.location?.state || '';
+  const country = uni.country || uni.location?.country || uni.COUNTRY || 'USA';
+
+  let programs = [];
+
+  if (Array.isArray(uni.programs) && uni.programs.length > 0) {
+    programs = uni.programs.map((p, i) => {
+      if (typeof p === 'string') {
+        // Plain string (old data) → convert to object
+        return { id: `prog-str-${i}`, name: p, title: p, program_name: p,
+          level: 'Undergraduate', studyMode: 'On Campus', duration: '3-4 years' };
+      }
+      // Object → ensure name AND title are always set
+      const resolved = p.name || p.title || p.program_name || `Program ${i + 1}`;
+      return { ...p, name: resolved, title: resolved,
+        program_name: p.program_name || resolved };
+    });
+  } else if (uni.GUS_DATA?.programs_data?.length) {
+    programs = uni.GUS_DATA.programs_data.map((p, i) => {
+      const resolved = p.title || p.program_name || `Program ${i + 1}`;
+      return { ...p, name: resolved, title: resolved, program_name: p.program_name || resolved };
+    });
+  } else if (uni.GUS_DATA?.major_areas?.length) {
+    uni.GUS_DATA.major_areas.forEach(area =>
+      (area.specific_programs || []).forEach(p => {
+        const pName = p.program_name || 'Unknown Program';
+        programs.push({ name: pName, title: pName, program_name: pName,
+          level: uni.GUS_DATA?.level || 'Undergraduate',
+          studyMode: 'On Campus', duration: '3-4 years', majorArea: area.major_area });
+      })
+    );
+  } else if (uni.metadata?.programs?.length) {
+    programs = uni.metadata.programs.map((p, i) => {
+      const resolved = p.title || p.program_name || p.name || `Program ${i + 1}`;
+      return { ...p, name: resolved, title: resolved, program_name: p.program_name || resolved };
+    });
+  }
+
+  return {
+    ...uni,
+    _normalizedId: uni.UNITID?.toString() || uni.universityCode || uni._id?.toString() || '',
+    INSTNM: name,
+    CITY: city,
+    STABBR: state,
+    location: { city, state, country, ...(typeof uni.location === 'object' ? uni.location : {}) },
+    programs,
+    _source: source,
+  };
+};
+
 const UserProfile = () => {
   const [step, setStep] = useState(1);
   const navigate = useNavigate();
@@ -28,19 +82,12 @@ const UserProfile = () => {
   const token = localStorage.getItem('token');
   const userType = localStorage.getItem('studentType') || 'firstyear';
 
-  // Profile image state
   const [profileImage, setProfileImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-
-  // Loading states
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fetchingProfile, setFetchingProfile] = useState(true);
-
-  // Error state
   const [error, setError] = useState('');
-
-  // ── Toast notification state ───────────────────────────────────────────────
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
   const showToast = useCallback((message, type = 'success') => {
@@ -48,42 +95,19 @@ const UserProfile = () => {
     setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3500);
   }, []);
 
-  // Step 1: Basic Student Information
   const [basicInfo, setBasicInfo] = useState({
-    fullName: "",
-    email: userEmail,
-    mobile: "",
-    dob: "",
-    gender: "",
-    nationality: "",
-    residence: "",
+    fullName: "", email: userEmail, mobile: "", dob: "", gender: "", nationality: "", residence: "",
   });
-
-  // Step 2: Education Background
   const [education, setEducation] = useState({
-    qualification: "",
-    institution: "",
-    field: "",
-    year: "",
-    cgpa: "",
+    qualification: "", institution: "", field: "", year: "", cgpa: "",
   });
-
-  // Step 3: Program Eligibility
   const [eligibleProgram, setEligibleProgram] = useState("");
-
-  // Step 3: Selected Universities with Courses
   const [selectedUniversities, setSelectedUniversities] = useState([]);
-
-  // All universities from MongoDB
   const [universities, setUniversities] = useState([]);
   const [filteredUniversities, setFilteredUniversities] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-
-  // Course selection states
   const [universityCourses, setUniversityCourses] = useState({});
   const [loadingCourses, setLoadingCourses] = useState(false);
-
-  // Modal states for course selection
   const [showCourseModal, setShowCourseModal] = useState(false);
   const [currentUniversity, setCurrentUniversity] = useState(null);
   const [currentUniversityCourses, setCurrentUniversityCourses] = useState([]);
@@ -91,290 +115,192 @@ const UserProfile = () => {
   const [tempSelectedCourses, setTempSelectedCourses] = useState([]);
   const [courseSearchTerm, setCourseSearchTerm] = useState("");
   const [courseFilter, setCourseFilter] = useState({ level: "", studyMode: "", majorArea: "" });
-
-  // Request University States
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [requestForm, setRequestForm] = useState({ universityName: "", country: "" });
   const [requestFormErrors, setRequestFormErrors] = useState({});
   const [submittingRequest, setSubmittingRequest] = useState(false);
   const [requestSuccess, setRequestSuccess] = useState(false);
-
-  // Course tag states for Request University modal
   const [reqCourseInput, setReqCourseInput] = useState("");
   const [reqCourses, setReqCourses] = useState([]);
   const [reqSuggestions, setReqSuggestions] = useState([]);
   const [showReqSuggestions, setShowReqSuggestions] = useState(false);
   const reqCourseInputRef = useRef(null);
-
-  // Validation errors
   const [validationErrors, setValidationErrors] = useState({});
-
-  // Success animation state
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Handle profile image upload
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        setError("Image size should be less than 5MB");
-        return;
-      }
-      if (!file.type.startsWith('image/')) {
-        setError("Please upload an image file");
-        return;
-      }
-      setProfileImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-        setShowSuccess(true);
-        setTimeout(() => setShowSuccess(false), 2000);
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { setError("Image size should be less than 5MB"); return; }
+    if (!file.type.startsWith('image/')) { setError("Please upload an image file"); return; }
+    setProfileImage(file);
+    const reader = new FileReader();
+    reader.onloadend = () => { setImagePreview(reader.result); setShowSuccess(true); setTimeout(() => setShowSuccess(false), 2000); };
+    reader.readAsDataURL(file);
   };
 
-  // Fetch existing profile on component mount
   useEffect(() => {
     const checkExistingProfile = async () => {
       if (!token) { setFetchingProfile(false); return; }
       try {
         setFetchingProfile(true);
-        const response = await axios.get(`${API_URL}/api/user/profile`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const response = await axios.get(`${API_URL}/api/user/profile`, { headers: { 'Authorization': `Bearer ${token}` } });
         if (response.data.success && response.data.data) {
           const profile = response.data.data;
           setBasicInfo(profile.basicInfo || { fullName: "", email: userEmail, mobile: "", dob: "", gender: "", nationality: "", residence: "" });
           setEducation(profile.education || { qualification: "", institution: "", field: "", year: "", cgpa: "" });
           setEligibleProgram(profile.eligibleProgram || "");
-          if (profile.selectedUniversities && profile.selectedUniversities.length > 0) {
-            setSelectedUniversities(profile.selectedUniversities);
-          } else {
-            setSelectedUniversities([]);
-          }
+          setSelectedUniversities(profile.selectedUniversities?.length > 0 ? profile.selectedUniversities : []);
           if (profile.profileImage) setImagePreview(profile.profileImage);
         }
       } catch (error) {
-        if (error.response?.status === 404) {
-          setError('');
-        } else if (error.response?.status === 401) {
-          setError('Authentication failed. Please log in again.');
-        } else {
-          setError(`Server error: ${error.response?.status}`);
-        }
-      } finally {
-        setFetchingProfile(false);
-      }
+        if (error.response?.status === 404) { setError(''); }
+        else if (error.response?.status === 401) { setError('Authentication failed. Please log in again.'); }
+        else { setError(`Server error: ${error.response?.status}`); }
+      } finally { setFetchingProfile(false); }
     };
     checkExistingProfile();
   }, [token, userEmail]);
 
   useEffect(() => {
     const profileCompleted = localStorage.getItem('profileCompleted') === 'true';
-    if (profileCompleted && !fetchingProfile && selectedUniversities.length > 0) {
-      navigateToDashboard();
-    }
+    if (profileCompleted && !fetchingProfile && selectedUniversities.length > 0) navigateToDashboard();
   }, [fetchingProfile, selectedUniversities]);
 
-  useEffect(() => {
-    fetchUniversitiesFromMongoDB();
-  }, []);
+  useEffect(() => { fetchUniversitiesFromMongoDB(); }, []);
 
   useEffect(() => {
-    if (universities.length > 0) filterUniversities();
+    let filtered = [...universities];
+    if (eligibleProgram) {
+      if (eligibleProgram === "Bachelor") filtered = filtered.filter(u => u._source === 'bachelors' || u._source === 'admin');
+      else if (eligibleProgram === "Master") filtered = filtered.filter(u => u._source === 'masters' || u._source === 'admin');
+      else if (eligibleProgram === "PhD") filtered = filtered.filter(u => u._source === 'admin' && u.INSTNM?.toLowerCase().includes('university') && (u.metadata?.iclevel === 1 || u.programs?.length > 10));
+    }
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(u => {
+        const name = (u.INSTNM || '').toLowerCase();
+        const city = (u.CITY || u.location?.city || '').toLowerCase();
+        const state = (u.STABBR || u.location?.state || '').toLowerCase();
+        const alias = (u.IALIAS || '').toLowerCase();
+        const code = (u.universityCode || '').toLowerCase();
+        return name.includes(term) || city.includes(term) || state.includes(term) || alias.includes(term) || code.includes(term);
+      });
+    }
+    setFilteredUniversities(filtered);
   }, [eligibleProgram, searchTerm, universities]);
 
-  useEffect(() => {
-    if (currentUniversityCourses.length > 0) filterCourses();
-  }, [courseSearchTerm, courseFilter, currentUniversityCourses]);
+  useEffect(() => { if (currentUniversityCourses.length > 0) filterCourses(); }, [courseSearchTerm, courseFilter, currentUniversityCourses]);
 
   useEffect(() => {
     const term = reqCourseInput.trim().toLowerCase();
     if (!term) { setReqSuggestions([]); setShowReqSuggestions(false); return; }
-    const filtered = COURSE_SUGGESTIONS_LIST
-      .filter(c => c.toLowerCase().includes(term) && !reqCourses.includes(c))
-      .slice(0, 6);
+    const filtered = COURSE_SUGGESTIONS_LIST.filter(c => c.toLowerCase().includes(term) && !reqCourses.includes(c)).slice(0, 6);
     setReqSuggestions(filtered);
     setShowReqSuggestions(filtered.length > 0);
   }, [reqCourseInput, reqCourses]);
 
   const fetchUniversitiesFromMongoDB = async () => {
     if (!token) { setLoading(false); return; }
-    setLoading(true);
-    setError('');
+    setLoading(true); setError('');
     try {
-      const response = await axios.get(`${API_URL}/api/admin/universities`, {
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
-      });
-      
-      let allUniversities = [];
-      
-      if (response.data.success) {
-        allUniversities = response.data.data || [];
-        setUniversities(allUniversities);
-        
-        // Pre-fetch courses for all universities
-        for (const uni of allUniversities) {
-          await fetchUniversityCourses(uni);
+      const fetchAllAdminUniversities = async () => {
+        let allAdmin = []; let page = 1; const limit = 100;
+        while (true) {
+          try {
+            const res = await axios.get(`${API_URL}/api/admin/universities`, { params: { page, limit }, headers: { 'Authorization': `Bearer ${token}` } });
+            const data = res.data?.data || [];
+            if (!Array.isArray(data) || data.length === 0) break;
+            allAdmin = [...allAdmin, ...data];
+            if (data.length < limit) break;
+            page++;
+          } catch (err) { console.warn('Admin fetch failed page', page, err.message); break; }
         }
-      } else {
-        setError(response.data.message || "Failed to load universities");
+        return allAdmin;
+      };
+
+      const [adminData, bachelorsRes, mastersRes] = await Promise.all([
+        fetchAllAdminUniversities(),
+        axios.get(`${API_URL}/api/bachelors/universities`, { params: { limit: 500 }, headers: { 'Authorization': `Bearer ${token}` } })
+          .catch(err => { console.warn('Bachelors fetch failed:', err.message); return { data: { success: false, data: [] } }; }),
+        axios.get(`${API_URL}/api/masters/universities`, { params: { limit: 500 }, headers: { 'Authorization': `Bearer ${token}` } })
+          .catch(err => { console.warn('Masters fetch failed:', err.message); return { data: { success: false, data: [] } }; }),
+      ]);
+
+      let allUniversities = [];
+      if (Array.isArray(adminData) && adminData.length > 0)
+        allUniversities = [...allUniversities, ...adminData.map(u => normalizeUniversity(u, 'admin'))];
+      if (bachelorsRes.data?.success && Array.isArray(bachelorsRes.data.data))
+        allUniversities = [...allUniversities, ...bachelorsRes.data.data.map(u => normalizeUniversity(u, 'bachelors'))];
+      if (mastersRes.data?.success && Array.isArray(mastersRes.data.data))
+        allUniversities = [...allUniversities, ...mastersRes.data.data.map(u => normalizeUniversity(u, 'masters'))];
+
+      // Build course cache — programs are normalized objects at this point
+      const courseCache = {};
+      for (const uni of allUniversities) {
+        const id = uni._normalizedId;
+        if (id && uni.programs?.length > 0) courseCache[id] = buildCoursesFromPrograms(uni);
       }
-      
-      // Add custom universities (from bachelors API) - you'll need to implement this part
-      // For now, just using the admin universities
-      
-      console.log(`📊 Total universities: ${allUniversities.length}`);
-      
+
+      setUniversityCourses(courseCache);
+      setUniversities(allUniversities);
+      if (allUniversities.length === 0) setError("No universities found. Please make sure universities have been imported or created.");
     } catch (error) {
       console.error("Error fetching universities:", error);
-      
-      if (error.response?.status === 401) {
-        setError("Your session has expired. Please login again.");
-        setTimeout(() => navigate('/login'), 2000);
-      } else if (error.code === 'ERR_NETWORK') {
-        setError("Cannot connect to server. Please make sure the server is running.");
-      } else {
-        setError(error.response?.data?.message || "Failed to load universities. Please try again.");
-      }
-    } finally {
-      setLoading(false);
-    }
+      if (error.response?.status === 401) { setError("Your session has expired. Please login again."); setTimeout(() => navigate('/login'), 2000); }
+      else if (error.code === 'ERR_NETWORK') { setError("Cannot connect to server. Please make sure the server is running."); }
+      else { setError(error.response?.data?.message || "Failed to load universities. Please try again."); }
+    } finally { setLoading(false); }
   };
 
-  const fetchUniversityCourses = async (university) => {
-    try {
-      const uniId = university.UNITID || university._id;
-      
-      // Skip Kansas universities
-      if (university.INSTNM?.toLowerCase().includes('kansas')) return;
-      
-      let courses = [];
-      
-      console.log(`🔍 Fetching courses for ${university.INSTNM || university.universityName}`);
-      
-      // 1. Check if programs are already in the university object
-      if (university.programs && Array.isArray(university.programs)) {
-        console.log(`📚 Found ${university.programs.length} programs in university.programs`);
-        courses = university.programs.map((prog, index) => {
-          let title = '';
-          let level = '';
-          let studyMode = '';
-          let duration = '';
-          let majorArea = '';
-          
-          if (typeof prog === 'string') {
-            title = prog;
-            level = 'Undergraduate';
-            studyMode = 'On Campus';
-            duration = '3-4 years';
-          } else {
-            title = prog.title || prog.program_name || prog.name || `Program ${index + 1}`;
-            level = prog.level || 'Undergraduate';
-            studyMode = prog.studyMode || 'On Campus';
-            duration = prog.duration || '3-4 years';
-            majorArea = prog.majorArea || 'General';
-          }
-          
-          return {
-            id: prog.id || prog._id || `prog-${uniId}-${index}`,
-            title: title,
-            program_name: title,
-            level: level,
-            studyMode: studyMode,
-            locations: prog.locations || [`${university.CITY || university.city || ''}, ${university.STABBR || university.state || ''}`],
-            duration: duration,
-            description: prog.description || `${title} program at ${university.INSTNM || university.universityName}`,
-            majorArea: majorArea
-          };
-        });
+  // ✅ FIX: Programs are already normalized objects from normalizeUniversity.
+  // resolvedName always picks a real name, never falls back to "Program N" unless truly empty.
+  const buildCoursesFromPrograms = (university) => {
+    const uniName = university.INSTNM;
+    const uniCity = university.CITY || '';
+    const uniState = university.STABBR || '';
+
+    return (university.programs || []).map((prog, index) => {
+      if (typeof prog === 'string') {
+        return {
+          id: `prog-${university._normalizedId}-${index}`,
+          title: prog, name: prog, program_name: prog,
+          level: 'Undergraduate', studyMode: 'On Campus', duration: '3-4 years',
+          locations: [`${uniCity}, ${uniState}`], majorArea: 'General',
+          description: `${prog} at ${uniName}`,
+        };
       }
-      
-      // 2. Check GUS_DATA.programs_data
-      else if (university.GUS_DATA?.programs_data) {
-        console.log(`📚 Found ${university.GUS_DATA.programs_data.length} programs in GUS_DATA.programs_data`);
-        courses = university.GUS_DATA.programs_data.map((prog, index) => ({
-          id: prog.id || `prog-${Date.now()}-${Math.random()}`,
-          title: prog.title || prog.program_name || 'Program',
-          program_name: prog.program_name || prog.title,
-          level: prog.level || university.GUS_DATA?.level || 'Undergraduate',
-          studyMode: prog.studyMode || 'On Campus',
-          locations: prog.locations || [`${university.CITY || ''}, ${university.STABBR || ''}`],
-          duration: prog.duration || '3-4 years',
-          description: prog.description || `${prog.title} program at ${university.INSTNM}`,
-          majorArea: prog.majorArea || 'General'
-        }));
-      }
-      
-      // 3. Check GUS_DATA.major_areas
-      else if (university.GUS_DATA?.major_areas) {
-        console.log(`📚 Found major areas in GUS_DATA.major_areas`);
-        university.GUS_DATA.major_areas.forEach(area => {
-          if (area.specific_programs) {
-            area.specific_programs.forEach(prog => {
-              courses.push({
-                id: `area-${area.major_area}-${prog.program_name.replace(/\s+/g, '-')}`,
-                title: prog.program_name,
-                program_name: prog.program_name,
-                level: university.GUS_DATA?.level || 'Undergraduate',
-                studyMode: 'On Campus',
-                locations: [`${university.CITY || ''}, ${university.STABBR || ''}`],
-                majorArea: area.major_area,
-                duration: '3-4 years',
-                description: `${prog.program_name} program in ${area.major_area} at ${university.INSTNM}`
-              });
-            });
-          }
-        });
-      }
-      
-      // 4. Check metadata.programs
-      else if (university.metadata?.programs) {
-        console.log(`📚 Found ${university.metadata.programs.length} programs in metadata.programs`);
-        courses = university.metadata.programs.map(prog => ({
-          id: prog.id || `prog-${Date.now()}-${Math.random()}`,
-          title: prog.title || prog.program_name || 'Program',
-          program_name: prog.program_name || prog.title,
-          level: prog.level || 'Undergraduate',
-          studyMode: prog.studyMode || 'On Campus',
-          locations: prog.locations || [`${university.CITY || ''}, ${university.STABBR || ''}`],
-          duration: prog.duration || '3-4 years',
-          description: prog.description || `${prog.title} program at ${university.INSTNM}`,
-          majorArea: prog.majorArea || 'General'
-        }));
-      }
-      
-      console.log(`✅ Found ${courses.length} courses for ${university.INSTNM || university.universityName}`);
-      if (courses.length > 0) {
-        console.log("Sample course:", courses[0]);
-      }
-      
-      setUniversityCourses(prev => ({
-        ...prev,
-        [uniId]: courses
-      }));
-      
-    } catch (error) {
-      console.error(`Error fetching courses for ${university.INSTNM || university.universityName}:`, error);
-    }
+      // ✅ name and title are guaranteed set by normalizeUniversity, but keep fallback
+      const resolvedName = prog.name || prog.title || prog.program_name || `Program ${index + 1}`;
+      return {
+        id: prog.id || prog._id || `prog-${university._normalizedId}-${index}`,
+        title: resolvedName,
+        name: resolvedName,
+        program_name: prog.program_name || resolvedName,
+        level: prog.level || 'Undergraduate',
+        studyMode: prog.studyMode || 'On Campus',
+        duration: prog.duration || '3-4 years',
+        locations: prog.locations || [`${uniCity}, ${uniState}`],
+        majorArea: prog.majorArea || '',
+        description: prog.description || `${resolvedName} at ${uniName}`,
+      };
+    });
   };
 
   const filterCourses = () => {
     let filtered = [...currentUniversityCourses];
     if (courseSearchTerm.trim()) {
       const term = courseSearchTerm.toLowerCase();
-      filtered = filtered.filter(course =>
-        (course.title || course.program_name || '').toLowerCase().includes(term) ||
-        (course.majorArea || '').toLowerCase().includes(term) ||
-        (course.level || '').toLowerCase().includes(term) ||
-        (course.description || '').toLowerCase().includes(term)
+      filtered = filtered.filter(c =>
+        (c.title || c.program_name || '').toLowerCase().includes(term) ||
+        (c.majorArea || '').toLowerCase().includes(term) ||
+        (c.level || '').toLowerCase().includes(term) ||
+        (c.description || '').toLowerCase().includes(term)
       );
     }
-    if (courseFilter.level) filtered = filtered.filter(course => (course.level || '').toLowerCase() === courseFilter.level.toLowerCase());
-    if (courseFilter.studyMode) filtered = filtered.filter(course => (course.studyMode || '').toLowerCase().includes(courseFilter.studyMode.toLowerCase()));
-    if (courseFilter.majorArea) filtered = filtered.filter(course => (course.majorArea || '').toLowerCase().includes(courseFilter.majorArea.toLowerCase()));
+    if (courseFilter.level) filtered = filtered.filter(c => (c.level || '').toLowerCase() === courseFilter.level.toLowerCase());
+    if (courseFilter.studyMode) filtered = filtered.filter(c => (c.studyMode || '').toLowerCase().includes(courseFilter.studyMode.toLowerCase()));
+    if (courseFilter.majorArea) filtered = filtered.filter(c => (c.majorArea || '').toLowerCase().includes(courseFilter.majorArea.toLowerCase()));
     setFilteredCourses(filtered);
   };
 
@@ -393,52 +319,23 @@ const UserProfile = () => {
     if (program) { setShowSuccess(true); setTimeout(() => setShowSuccess(false), 1500); }
   };
 
-  const filterUniversities = () => {
-    let filtered = [...universities];
-    if (eligibleProgram) {
-      if (eligibleProgram === "Master") {
-        filtered = filtered.filter(u =>
-          u.metadata?.programs?.length > 0 ||
-          u.metadata?.majorAreas?.length > 0 ||
-          u.GUS_DATA?.programs_data?.length > 0 ||
-          u.GUS_DATA?.major_areas?.length > 0
-        );
-      } else if (eligibleProgram === "PhD") {
-        filtered = filtered.filter(u =>
-          u.INSTNM?.toLowerCase().includes('university') &&
-          (u.metadata?.iclevel === 1 || u.metadata?.programs?.length > 10)
-        );
-      }
-    }
-    if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(u => {
-        const instnm = (u.INSTNM || '').toLowerCase();
-        const city = (u.location?.city || u.CITY || '').toLowerCase();
-        const state = (u.location?.state || u.STABBR || '').toLowerCase();
-        const alias = (u.IALIAS || '').toLowerCase();
-        return instnm.includes(term) || city.includes(term) || state.includes(term) || alias.includes(term);
-      });
-    }
-    setFilteredUniversities(filtered);
-  };
+  const getUniKey = (uni) => uni._normalizedId || uni.UNITID?.toString() || uni._id?.toString() || '';
 
+  // ✅ FIX: Always fetch the fresh normalized version from the universities list
+  // when opening the course modal, so programs are always fully populated
   const openCourseModal = (university) => {
-    const uniId = university.UNITID || university._id;
-    const isKansas = university.INSTNM?.toLowerCase().includes('kansas');
-    if (isKansas) {
-      setError("Kansas universities don't have course selection. They will be added directly.");
-      setTimeout(() => setError(''), 3000);
-      toggleUniversity(university);
-      return;
-    }
-    setCurrentUniversity(university);
-    const courses = universityCourses[uniId] || [];
-    setCurrentUniversityCourses(courses);
-    setFilteredCourses(courses);
+    const uniKey = getUniKey(university);
+    const freshUni = (uniKey && universities.find(u => getUniKey(u) === uniKey)) || university;
+    const availableCourses = universityCourses[uniKey] || buildCoursesFromPrograms(freshUni);
+
+    if (availableCourses.length === 0) { toggleUniversity(university); return; }
+
+    setCurrentUniversity(freshUni);
+    setCurrentUniversityCourses(availableCourses);
+    setFilteredCourses(availableCourses);
     setCourseSearchTerm("");
     setCourseFilter({ level: "", studyMode: "", majorArea: "" });
-    const existingUni = selectedUniversities.find(u => u.UNITID === university.UNITID || u._id === university._id);
+    const existingUni = selectedUniversities.find(u => getUniKey(u) === uniKey);
     setTempSelectedCourses([...(existingUni?.selectedCourses || [])]);
     setShowCourseModal(true);
     document.body.style.overflow = 'hidden';
@@ -457,88 +354,50 @@ const UserProfile = () => {
 
   const saveCourseSelection = () => {
     if (!currentUniversity) return;
-    const isUniSelected = selectedUniversities.some(u => {
-      if (u.UNITID && currentUniversity.UNITID && u.UNITID === currentUniversity.UNITID) return true;
-      if (u._id && currentUniversity._id && u._id.toString() === currentUniversity._id.toString()) return true;
-      return false;
-    });
+    const uniKey = getUniKey(currentUniversity);
     const universityWithCourses = {
-      UNITID: currentUniversity.UNITID, 
-      _id: currentUniversity._id,
-      INSTNM: currentUniversity.INSTNM, 
-      CITY: currentUniversity.CITY,
-      STABBR: currentUniversity.STABBR, 
-      COUNTRY: currentUniversity.COUNTRY || 'USA',
-      location: currentUniversity.location || {},
+      ...currentUniversity,
       selectedCourses: tempSelectedCourses.map(course => ({
-        id: course.id, 
-        title: course.title, 
-        program_name: course.program_name,
-        level: course.level, 
-        studyMode: course.studyMode, 
-        duration: course.duration,
-        locations: course.locations, 
-        majorArea: course.majorArea, 
-        description: course.description
+        id: course.id,
+        // ✅ always store real name in title
+        title: course.title || course.name || course.program_name || 'Course',
+        name: course.name || course.title || course.program_name || 'Course',
+        program_name: course.program_name || course.title || course.name || '',
+        level: course.level, studyMode: course.studyMode, duration: course.duration,
+        locations: course.locations, majorArea: course.majorArea, description: course.description,
       }))
     };
+    const isUniSelected = selectedUniversities.some(u => getUniKey(u) === uniKey);
     if (isUniSelected) {
-      setSelectedUniversities(selectedUniversities.map(u => {
-        if (u.UNITID === currentUniversity.UNITID || u._id === currentUniversity._id) return universityWithCourses;
-        return u;
-      }));
+      setSelectedUniversities(prev => prev.map(u => getUniKey(u) === uniKey ? universityWithCourses : u));
     } else if (selectedUniversities.length < 5) {
-      setSelectedUniversities([...selectedUniversities, universityWithCourses]);
+      setSelectedUniversities(prev => [...prev, universityWithCourses]);
     }
-    setShowCourseModal(false);
-    setCurrentUniversity(null);
-    setTempSelectedCourses([]);
+    setShowCourseModal(false); setCurrentUniversity(null); setTempSelectedCourses([]);
     document.body.style.overflow = 'auto';
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 1500);
+    setShowSuccess(true); setTimeout(() => setShowSuccess(false), 1500);
   };
 
   const closeCourseModal = () => {
-    setShowCourseModal(false);
-    setCurrentUniversity(null);
-    setTempSelectedCourses([]);
-    setCourseSearchTerm("");
-    setCourseFilter({ level: "", studyMode: "", majorArea: "" });
+    setShowCourseModal(false); setCurrentUniversity(null); setTempSelectedCourses([]);
+    setCourseSearchTerm(""); setCourseFilter({ level: "", studyMode: "", majorArea: "" });
     document.body.style.overflow = 'auto';
   };
 
   const toggleUniversity = (university) => {
     if (!university) return;
-    const isKansas = university.INSTNM?.toLowerCase().includes('kansas');
-    const isSelected = selectedUniversities.some(u => {
-      if (u.UNITID && university.UNITID && u.UNITID === university.UNITID) return true;
-      if (u._id && university._id && u._id.toString() === university._id.toString()) return true;
-      return false;
-    });
+    const uniKey = getUniKey(university);
+    const isSelected = selectedUniversities.some(u => getUniKey(u) === uniKey);
     if (isSelected) {
-      setSelectedUniversities(selectedUniversities.filter(u => {
-        if (u.UNITID && university.UNITID && u.UNITID === university.UNITID) return false;
-        if (u._id && university._id && u._id.toString() === university._id.toString()) return false;
-        return true;
-      }));
+      setSelectedUniversities(prev => prev.filter(u => getUniKey(u) !== uniKey));
     } else if (selectedUniversities.length < 5) {
-      if (isKansas) {
-        const kansasUniversity = {
-          UNITID: university.UNITID, 
-          _id: university._id, 
-          INSTNM: university.INSTNM,
-          CITY: university.CITY, 
-          STABBR: university.STABBR, 
-          COUNTRY: university.COUNTRY || 'USA',
-          location: university.location || {}, 
-          selectedCourses: [], 
-          isKansas: true
-        };
-        setSelectedUniversities([...selectedUniversities, kansasUniversity]);
-        setShowSuccess(true);
-        setTimeout(() => setShowSuccess(false), 1500);
+      const freshUni = universities.find(u => getUniKey(u) === uniKey) || university;
+      const availableCourses = universityCourses[uniKey] || buildCoursesFromPrograms(freshUni);
+      if (availableCourses.length === 0) {
+        setSelectedUniversities(prev => [...prev, { ...freshUni, selectedCourses: [], isDirectApply: true }]);
+        setShowSuccess(true); setTimeout(() => setShowSuccess(false), 1500);
       } else {
-        openCourseModal(university);
+        openCourseModal(freshUni);
       }
     } else {
       setError("You can select maximum 5 universities");
@@ -547,38 +406,22 @@ const UserProfile = () => {
   };
 
   const removeUniversity = (university) => {
-    setSelectedUniversities(selectedUniversities.filter(u => {
-      if (u.UNITID && university.UNITID && u.UNITID === university.UNITID) return false;
-      if (u._id && university._id && u._id.toString() === university._id.toString()) return false;
-      return true;
-    }));
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 1000);
+    const uniKey = getUniKey(university);
+    setSelectedUniversities(prev => prev.filter(u => getUniKey(u) !== uniKey));
+    setShowSuccess(true); setTimeout(() => setShowSuccess(false), 1000);
   };
-
-  // ─── Request University Handlers ──────────────────────────────────────────
 
   const openRequestModal = () => {
     setRequestForm({ universityName: searchTerm || "", country: "" });
-    setRequestFormErrors({});
-    setRequestSuccess(false);
-    setReqCourses([]);
-    setReqCourseInput("");
-    setReqSuggestions([]);
-    setShowReqSuggestions(false);
-    setShowRequestModal(true);
-    document.body.style.overflow = 'hidden';
+    setRequestFormErrors({}); setRequestSuccess(false);
+    setReqCourses([]); setReqCourseInput(""); setReqSuggestions([]); setShowReqSuggestions(false);
+    setShowRequestModal(true); document.body.style.overflow = 'hidden';
   };
 
   const closeRequestModal = () => {
-    setShowRequestModal(false);
-    setRequestForm({ universityName: "", country: "" });
-    setRequestFormErrors({});
-    setRequestSuccess(false);
-    setReqCourses([]);
-    setReqCourseInput("");
-    setReqSuggestions([]);
-    setShowReqSuggestions(false);
+    setShowRequestModal(false); setRequestForm({ universityName: "", country: "" });
+    setRequestFormErrors({}); setRequestSuccess(false);
+    setReqCourses([]); setReqCourseInput(""); setReqSuggestions([]); setShowReqSuggestions(false);
     document.body.style.overflow = 'auto';
   };
 
@@ -586,14 +429,9 @@ const UserProfile = () => {
     const trimmed = courseName.trim().replace(/,+$/, '');
     if (!trimmed) return;
     if (reqCourses.includes(trimmed)) { setReqCourseInput(""); return; }
-    if (reqCourses.length >= 5) {
-      setRequestFormErrors(prev => ({ ...prev, courses: "You can add up to 5 courses" }));
-      return;
-    }
-    setReqCourses(prev => [...prev, trimmed]);
-    setReqCourseInput("");
-    setReqSuggestions([]);
-    setShowReqSuggestions(false);
+    if (reqCourses.length >= 5) { setRequestFormErrors(prev => ({ ...prev, courses: "You can add up to 5 courses" })); return; }
+    setReqCourses(prev => [...prev, trimmed]); setReqCourseInput("");
+    setReqSuggestions([]); setShowReqSuggestions(false);
     setRequestFormErrors(prev => ({ ...prev, courses: null }));
     setTimeout(() => reqCourseInputRef.current?.focus(), 0);
   };
@@ -601,12 +439,8 @@ const UserProfile = () => {
   const removeReqCourse = (courseName) => setReqCourses(prev => prev.filter(c => c !== courseName));
 
   const handleReqCourseKeyDown = (e) => {
-    if (e.key === 'Enter' || e.key === ',') {
-      e.preventDefault();
-      if (reqCourseInput.trim()) addReqCourse(reqCourseInput);
-    } else if (e.key === 'Backspace' && reqCourseInput === '' && reqCourses.length > 0) {
-      setReqCourses(prev => prev.slice(0, -1));
-    }
+    if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); if (reqCourseInput.trim()) addReqCourse(reqCourseInput); }
+    else if (e.key === 'Backspace' && reqCourseInput === '' && reqCourses.length > 0) setReqCourses(prev => prev.slice(0, -1));
   };
 
   const validateRequestForm = () => {
@@ -622,38 +456,15 @@ const UserProfile = () => {
     if (!validateRequestForm()) return;
     setSubmittingRequest(true);
     try {
-      const response = await axios.post(
-        `${API_URL}/api/user/university/request`,
-        {
-          universityName: requestForm.universityName.trim(),
-          country: requestForm.country.trim(),
-          interestedCourses: reqCourses,
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      if (response.data.success) {
-        setRequestSuccess(true);
-        setTimeout(() => closeRequestModal(), 3500);
-      } else {
-        setRequestFormErrors({ submit: response.data.message || "Failed to submit request. Please try again." });
-      }
+      const response = await axios.post(`${API_URL}/api/user/university/request`,
+        { universityName: requestForm.universityName.trim(), country: requestForm.country.trim(), interestedCourses: reqCourses },
+        { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } });
+      if (response.data.success) { setRequestSuccess(true); setTimeout(() => closeRequestModal(), 3500); }
+      else { setRequestFormErrors({ submit: response.data.message || "Failed to submit request. Please try again." }); }
     } catch (err) {
-      console.error("Error submitting university request:", err);
-      const msg =
-        err.response?.data?.message ||
-        (err.code === 'ERR_NETWORK' ? "Cannot connect to server." : "Failed to submit request.");
-      setRequestFormErrors({ submit: msg });
-    } finally {
-      setSubmittingRequest(false);
-    }
+      setRequestFormErrors({ submit: err.response?.data?.message || (err.code === 'ERR_NETWORK' ? "Cannot connect to server." : "Failed to submit request.") });
+    } finally { setSubmittingRequest(false); }
   };
-
-  // ──────────────────────────────────────────────────────────────────────────
 
   const validateStep1 = () => {
     const errors = {};
@@ -663,9 +474,7 @@ const UserProfile = () => {
     if (!basicInfo.gender) errors.gender = "Gender is required";
     if (!basicInfo.nationality) errors.nationality = "Nationality is required";
     if (!basicInfo.residence) errors.residence = "Country of residence is required";
-    if (basicInfo.mobile && !/^[0-9+\-\s()]{10,15}$/.test(basicInfo.mobile)) {
-      errors.mobile = "Please enter a valid mobile number";
-    }
+    if (basicInfo.mobile && !/^[0-9+\-\s()]{10,15}$/.test(basicInfo.mobile)) errors.mobile = "Please enter a valid mobile number";
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -683,122 +492,87 @@ const UserProfile = () => {
   };
 
   const validateStep3 = () => {
-    if (selectedUniversities.length < 3) {
-      setError('Please select at least 3 universities');
-      setTimeout(() => setError(''), 3000);
-      return false;
-    }
+    if (selectedUniversities.length < 3) { setError('Please select at least 3 universities'); setTimeout(() => setError(''), 3000); return false; }
     for (const uni of selectedUniversities) {
-      const isKansas = uni.INSTNM?.toLowerCase().includes('kansas') || uni.isKansas;
-      if (!isKansas && (uni.selectedCourses || []).length === 0) {
+      if (!uni.isDirectApply && (uni.selectedCourses || []).length === 0) {
         setError(`Please select at least one course for ${uni.INSTNM}`);
-        setTimeout(() => setError(''), 3000);
-        return false;
+        setTimeout(() => setError(''), 3000); return false;
       }
     }
     return true;
   };
 
-  const isStep1Valid = () =>
-    basicInfo.fullName && basicInfo.mobile && basicInfo.dob &&
-    basicInfo.gender && basicInfo.nationality && basicInfo.residence;
-
-  const isStep2Valid = () =>
-    education.qualification && education.institution &&
-    education.field && education.year && education.cgpa;
-
+  const isStep1Valid = () => basicInfo.fullName && basicInfo.mobile && basicInfo.dob && basicInfo.gender && basicInfo.nationality && basicInfo.residence;
+  const isStep2Valid = () => education.qualification && education.institution && education.field && education.year && education.cgpa;
   const isStep3Valid = () => {
     if (selectedUniversities.length < 3) return false;
     for (const uni of selectedUniversities) {
-      const isKansas = uni.INSTNM?.toLowerCase().includes('kansas') || uni.isKansas;
-      if (!isKansas && (uni.selectedCourses || []).length === 0) return false;
+      if (!uni.isDirectApply && (uni.selectedCourses || []).length === 0) return false;
     }
     return true;
   };
 
   const navigateToDashboard = () => {
-    if (userType === 'transfer') {
-      navigate('/transfer/dashboard');
-    } else {
-      navigate('/firstyear/dashboard');
-    }
+    if (userType === 'transfer') navigate('/transfer/dashboard');
+    else navigate('/firstyear/dashboard');
   };
 
   const uploadProfileImage = async () => {
     if (!profileImage || !token) return null;
     try {
-      const response = await axios.patch(
-        `${API_URL}/api/user/profile/image`,
+      const response = await axios.patch(`${API_URL}/api/user/profile/image`,
         { profileImage: imagePreview },
-        { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } }
-      );
+        { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } });
       if (response.data.success) return response.data.data;
-    } catch (error) {
-      console.error("Error uploading profile image:", error);
-    }
+    } catch (error) { console.error("Error uploading profile image:", error); }
     return null;
   };
 
   const handleSubmitProfile = async () => {
     if (!token) { setError("You must be logged in to submit your profile"); return; }
     if (!validateStep3()) return;
-
-    setSaving(true);
-    setError('');
+    setSaving(true); setError('');
     let formattedUniversities = [];
-
     try {
       if (profileImage) await uploadProfileImage();
-
       formattedUniversities = selectedUniversities.map(u => {
-        const isKansas = u.INSTNM?.toLowerCase().includes('kansas') || u.isKansas;
         const city = u.CITY || u.location?.city || '';
         const state = u.STABBR || u.location?.state || '';
         const locationStr = city + (city && state ? ', ' : '') + state;
         const courses = u.selectedCourses || [];
         return {
-          id: u.UNITID?.toString() || u._id?.toString() || '',
+          id: u.UNITID?.toString() || u.universityCode || u._id?.toString() || u._normalizedId || '',
           unitid: u.UNITID || null,
-          name: u.INSTNM || 'Unknown University',
+          name: u.INSTNM || u.universityName || 'Unknown University',
           location: locationStr || 'Location not specified',
           city, state,
-          country: u.COUNTRY || u.location?.country || 'USA',
-          isKansas: !!isKansas,
+          country: u.location?.country || u.country || u.COUNTRY || 'USA',
+          isDirectApply: !!u.isDirectApply,
           selectedCourses: courses.map(c => ({
             id: c.id || `course-${Math.random()}`,
-            title: c.title || c.program_name || 'Program',
-            program_name: c.program_name || c.title || '',
-            level: c.level || '',
-            studyMode: c.studyMode || '',
+            // ✅ always store real name
+            title: c.title || c.name || c.program_name || 'Program',
+            name: c.name || c.title || c.program_name || 'Program',
+            program_name: c.program_name || c.title || c.name || '',
+            level: c.level || '', studyMode: c.studyMode || '',
             duration: c.duration || '',
             locations: Array.isArray(c.locations) ? c.locations : [],
-            majorArea: c.majorArea || '',
-            description: c.description || ''
+            majorArea: c.majorArea || '', description: c.description || '',
           }))
         };
       });
 
       const profileData = {
-        profileImage: imagePreview, 
-        basicInfo, 
-        education, 
-        eligibleProgram,
-        selectedUniversities: formattedUniversities, 
-        profileCompleted: true,
-        completedAt: new Date().toISOString()
+        profileImage: imagePreview, basicInfo, education, eligibleProgram,
+        selectedUniversities: formattedUniversities,
+        profileCompleted: true, completedAt: new Date().toISOString()
       };
 
       const payloadSize = JSON.stringify(profileData).length;
-      console.log("📦 Payload size (bytes):", payloadSize);
-      if (payloadSize > 500000) {
-        setError("Profile data is too large. Please reduce course selections.");
-        setSaving(false);
-        return;
-      }
+      if (payloadSize > 500000) { setError("Profile data is too large. Please reduce course selections."); setSaving(false); return; }
 
-      const response = await axios.post(`${API_URL}/api/user/profile`, profileData, {
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
-      });
+      const response = await axios.post(`${API_URL}/api/user/profile`, profileData,
+        { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } });
 
       if (response.data.success) {
         localStorage.setItem('userProfile', JSON.stringify(profileData));
@@ -806,42 +580,22 @@ const UserProfile = () => {
         setShowSuccess(true);
         showToast("Profile submitted successfully! Redirecting to dashboard...", "success");
         setTimeout(() => navigateToDashboard(), 1500);
-      } else {
-        setError(response.data.message || "Failed to save profile");
-      }
+      } else { setError(response.data.message || "Failed to save profile"); }
     } catch (error) {
       let errorMessage = "Failed to save profile. Please try again.";
       if (error.response) {
-        if (error.response.status === 401) {
-          errorMessage = "Your session has expired. Please login again.";
-          setTimeout(() => navigate('/login'), 2000);
-        } else if (error.response.status === 400) {
-          errorMessage = error.response.data.errors?.join(', ') || error.response.data.message || "Invalid profile data";
-        } else if (error.response.data?.message) {
-          errorMessage = error.response.data.message;
-        }
-      } else if (error.code === 'ERR_NETWORK') {
-        errorMessage = "Cannot connect to server. Saving locally only.";
-      }
+        if (error.response.status === 401) { errorMessage = "Your session has expired. Please login again."; setTimeout(() => navigate('/login'), 2000); }
+        else if (error.response.status === 400) { errorMessage = error.response.data.errors?.join(', ') || error.response.data.message || "Invalid profile data"; }
+        else if (error.response.data?.message) { errorMessage = error.response.data.message; }
+      } else if (error.code === 'ERR_NETWORK') { errorMessage = "Cannot connect to server. Saving locally only."; }
       setError(errorMessage);
-
-      const profileData = {
-        profileImage: imagePreview, 
-        basicInfo, 
-        education, 
-        eligibleProgram,
-        selectedUniversities: formattedUniversities,
-        completedAt: new Date().toISOString(), 
-        profileCompleted: true
-      };
+      const profileData = { profileImage: imagePreview, basicInfo, education, eligibleProgram, selectedUniversities: formattedUniversities, completedAt: new Date().toISOString(), profileCompleted: true };
       localStorage.setItem('userProfile', JSON.stringify(profileData));
       localStorage.setItem('profileCompleted', 'true');
       setShowSuccess(true);
       showToast("Profile saved locally! Redirecting to dashboard...", "warning");
       setTimeout(() => navigateToDashboard(), 1500);
-    } finally {
-      setSaving(false);
-    }
+    } finally { setSaving(false); }
   };
 
   const handleSaveProgress = (nextStep) => {
@@ -853,9 +607,7 @@ const UserProfile = () => {
   };
 
   const handleCancel = () => {
-    if (window.confirm("Are you sure you want to cancel? Your progress will be lost.")) {
-      navigateToDashboard();
-    }
+    if (window.confirm("Are you sure you want to cancel? Your progress will be lost.")) navigateToDashboard();
   };
 
   const getInitials = (name) => {
@@ -863,17 +615,10 @@ const UserProfile = () => {
     return name.split(' ').map(word => word[0]).slice(0, 2).join('').toUpperCase();
   };
 
-  const getProgramCount = (university) => {
-    if (university.programs && Array.isArray(university.programs)) return university.programs.length;
-    if (university.GUS_DATA?.programs_data) return university.GUS_DATA.programs_data.length;
-    if (university.metadata?.programs) return university.metadata.programs.length;
-    return 0;
-  };
+  const getProgramCount = (university) => university.programs?.length || 0;
 
   const getUserInitials = () => {
-    if (basicInfo.fullName) {
-      return basicInfo.fullName.split(' ').map(name => name[0]).slice(0, 2).join('').toUpperCase();
-    }
+    if (basicInfo.fullName) return basicInfo.fullName.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
     return userEmail ? userEmail.charAt(0).toUpperCase() : 'U';
   };
 
@@ -882,7 +627,7 @@ const UserProfile = () => {
   const getLevelColor = (level) => {
     const l = level?.toLowerCase() || '';
     if (l.includes('bachelor') || l.includes('undergraduate')) return '#4CAF50';
-    if (l.includes('master') || l.includes('graduate')) return '#FF9800';
+    if (l.includes('master') || l.includes('graduate') || l.includes('mba')) return '#FF9800';
     if (l.includes('phd') || l.includes('doctorate')) return '#F44336';
     if (l.includes('diploma')) return '#9C27B0';
     if (l.includes('certificate')) return '#00BCD4';
@@ -898,9 +643,11 @@ const UserProfile = () => {
     return '#757575';
   };
 
-  const getUniqueLevels = () => [...new Set(currentUniversityCourses.map(c => c.level).filter(Boolean))];
-  const getUniqueStudyModes = () => [...new Set(currentUniversityCourses.map(c => c.studyMode).filter(Boolean))];
-  const getUniqueMajorAreas = () => [...new Set(currentUniversityCourses.map(c => c.majorArea).filter(Boolean))];
+  const getSourceLabel = (uni) => {
+    if (uni._source === 'bachelors') return "🎓 Bachelor's";
+    if (uni._source === 'masters') return "📘 Master's";
+    return null;
+  };
 
   if (fetchingProfile) {
     return (
@@ -920,26 +667,20 @@ const UserProfile = () => {
 
   return (
     <div className="profile-wrapper">
-      {/* ── Toast Notification ─────────────────────────────────────────────── */}
       {toast.show && (
         <div className={`toast-notification toast-${toast.type}`}>
           <span>{toast.type === 'success' ? '✅' : toast.type === 'warning' ? '⚠️' : '❌'}</span>
           <span>{toast.message}</span>
         </div>
       )}
-
-      {/* Success Animation Overlay */}
       {showSuccess && (
         <div className="success-animation-overlay">
           <div className="success-animation">
-            <div className="checkmark-circle">
-              <div className="checkmark"></div>
-            </div>
+            <div className="checkmark-circle"><div className="checkmark"></div></div>
           </div>
         </div>
       )}
 
-      {/* Header */}
       <div className="userprofile-profile-header">
         <div className="header-container">
           <div className="profile-image-wrapper">
@@ -952,50 +693,31 @@ const UserProfile = () => {
                 </div>
               )}
               <label htmlFor="profile-upload" className="image-upload-label">
-                <input
-                  type="file"
-                  id="profile-upload"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="image-upload-input"
-                />
+                <input type="file" id="profile-upload" accept="image/*" onChange={handleImageUpload} className="image-upload-input" />
                 <span className="upload-icon">+</span>
               </label>
             </div>
           </div>
-
           <div className="header-title-section">
             <h1 className="header-title">Complete Your Profile</h1>
             <p className="header-email">{basicInfo.email}</p>
           </div>
-
-          <button className="header-cancel-btn ripple-effect" onClick={handleCancel}>
-            Cancel
-          </button>
+          <button className="header-cancel-btn ripple-effect" onClick={handleCancel}>Cancel</button>
         </div>
       </div>
 
       <div className="userprofile-profile-content">
-        {/* Error Message */}
         {error && (
           <div className="error-message">
             <span className="error-icon">⚠️</span>
             <span>{error}</span>
-            {error.includes("Cannot connect") && (
-              <button className="retry-btn ripple-effect" onClick={handleRetry}>Retry</button>
-            )}
+            {error.includes("Cannot connect") && <button className="retry-btn ripple-effect" onClick={handleRetry}>Retry</button>}
           </div>
         )}
 
-        {/* Progress Steps */}
         <div className="userprofile-progress-container">
           <div className="progress-steps-horizontal">
-            {[
-              { num: 1, label: "Basic Info" },
-              { num: 2, label: "Education" },
-              { num: 3, label: "Universities & Courses" },
-              { num: 4, label: "Review" },
-            ].map(({ num, label }) => (
+            {[{ num: 1, label: "Basic Info" }, { num: 2, label: "Education" }, { num: 3, label: "Universities & Courses" }, { num: 4, label: "Review" }].map(({ num, label }) => (
               <div key={num} className={`step-horizontal ${step === num ? 'active' : ''} ${step > num ? 'completed' : ''}`}>
                 <span className="step-number-horizontal">{num}</span>
                 <span className="step-label-horizontal">{label}</span>
@@ -1004,13 +726,10 @@ const UserProfile = () => {
           </div>
         </div>
 
-        {/* Step 1: Basic Information */}
+        {/* ── Step 1 ── */}
         {step === 1 && (
           <div className="form-card userprofile-fade-in">
-            <div className="card-header">
-              <h2>Personal Information</h2>
-              <p>Tell us about yourself</p>
-            </div>
+            <div className="card-header"><h2>Personal Information</h2><p>Tell us about yourself</p></div>
             <div className="form-fields">
               <div className="form-row">
                 <label>Full Name</label>
@@ -1076,13 +795,10 @@ const UserProfile = () => {
           </div>
         )}
 
-        {/* Step 2: Education Background */}
+        {/* ── Step 2 ── */}
         {step === 2 && (
           <div className="form-card userprofile-fade-in">
-            <div className="card-header">
-              <h2>Education Background</h2>
-              <p>Tell us about your academic journey</p>
-            </div>
+            <div className="card-header"><h2>Education Background</h2><p>Tell us about your academic journey</p></div>
             <div className="form-fields">
               <div className="form-row">
                 <label>Highest Qualification Completed</label>
@@ -1138,25 +854,22 @@ const UserProfile = () => {
           </div>
         )}
 
-        {/* Step 3: Select Universities and Courses */}
+        {/* ── Step 3 ── */}
         {step === 3 && (
           <div className="form-card userprofile-fade-in">
             <div className="card-header">
               <h2>Select Universities & Courses</h2>
               <p>Choose at least 3 universities and select up to 2 courses for each</p>
             </div>
-
             {eligibleProgram && (
               <div className="program-indicator">
                 <span>Showing universities for: <strong>{eligibleProgram} Program</strong></span>
               </div>
             )}
-
             <div className="university-controls">
               <div className="search-wrapper">
                 <span className="search-icon">🔍</span>
-                <input type="text" className="search-input"
-                  placeholder="Search universities by name, city, country..."
+                <input type="text" className="search-input" placeholder="Search universities by name, city, country..."
                   value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
               </div>
               <div className="selection-counter">
@@ -1176,79 +889,67 @@ const UserProfile = () => {
                 <div className="universities-grid">
                   {filteredUniversities.length > 0 ? (
                     filteredUniversities.map((uni) => {
-                      const uniId = uni.UNITID || uni._id;
-                      const isKansas = uni.INSTNM?.toLowerCase().includes('kansas');
-                      const isSelected = selectedUniversities.some(u => {
-                        if (u.UNITID && uni.UNITID && u.UNITID === uni.UNITID) return true;
-                        if (u._id && uni._id && u._id.toString() === uni._id.toString()) return true;
-                        return false;
-                      });
+                      const uniKey = getUniKey(uni);
+                      const isSelected = selectedUniversities.some(u => getUniKey(u) === uniKey);
                       const programCount = getProgramCount(uni);
+                      const isDirectApply = programCount === 0;
                       const location = uni.CITY || uni.location?.city || '';
                       const state = uni.STABBR || uni.location?.state || '';
-                      const selectedUni = selectedUniversities.find(u => u.UNITID === uni.UNITID || u._id === uni._id);
+                      const selectedUni = selectedUniversities.find(u => getUniKey(u) === uniKey);
                       const selectedCoursesForUni = selectedUni?.selectedCourses || [];
+                      const sourceLabel = getSourceLabel(uni);
 
                       return (
-                        <div key={uniId?.toString() || Math.random()} className="university-card-wrapper">
-                          <div
-                            className={`university-card ${isSelected ? 'selected' : ''} ${isKansas ? 'kansas' : ''}`}
-                            onClick={() => toggleUniversity(uni)}
-                          >
+                        <div key={uniKey || Math.random()} className="university-card-wrapper">
+                          <div className={`university-card ${isSelected ? 'selected' : ''} ${isDirectApply ? 'direct-apply' : ''}`}
+                            onClick={() => toggleUniversity(uni)}>
                             <div className="university-logo">{getInitials(uni.INSTNM)}</div>
                             <div className="university-details">
                               <h4>{uni.INSTNM || 'Unknown University'}</h4>
                               <p>{location}{location && state ? ', ' : ''}{state}</p>
-                              {programCount > 0 && !isKansas && (
-                                <span className="program-badge">{programCount} courses available</span>
-                              )}
-                              {isKansas && <span className="kansas-badge">Direct Apply Only</span>}
+                              {programCount > 0 && <span className="program-badge">{programCount} courses available</span>}
+                              {isDirectApply && <span className="direct-apply-badge">Direct Apply</span>}
+                              {sourceLabel && <span className="source-label-badge">{sourceLabel}</span>}
                             </div>
                             {isSelected && <span className="check-mark">✓</span>}
                           </div>
 
-                          {isSelected && !isKansas && selectedCoursesForUni.length > 0 && (
+                          {isSelected && !isDirectApply && selectedCoursesForUni.length > 0 && (
                             <div className="selected-courses-preview">
                               <span className="preview-label">Selected courses:</span>
                               <div className="preview-courses">
                                 {selectedCoursesForUni.map((course, idx) => (
+                                  // ✅ real course name displayed
                                   <span key={idx} className="preview-course-tag">
-                                    {course.title || course.program_name}
+                                    {course.title || course.name || course.program_name || 'Course'}
                                   </span>
                                 ))}
                               </div>
-                              <button className="edit-courses-btn ripple-effect" onClick={(e) => { e.stopPropagation(); openCourseModal(uni); }}>
-                                Edit Courses
-                              </button>
+                              <button className="edit-courses-btn ripple-effect"
+                                onClick={(e) => { e.stopPropagation(); openCourseModal(uni); }}>Edit Courses</button>
                             </div>
                           )}
 
-                          {isSelected && !isKansas && selectedCoursesForUni.length === 0 && (
+                          {isSelected && !isDirectApply && selectedCoursesForUni.length === 0 && (
                             <div className="selected-courses-preview warning">
                               <span className="preview-label">⚠️ No courses selected</span>
-                              <button className="edit-courses-btn ripple-effect" onClick={(e) => { e.stopPropagation(); openCourseModal(uni); }}>
-                                Select Courses
-                              </button>
+                              <button className="edit-courses-btn ripple-effect"
+                                onClick={(e) => { e.stopPropagation(); openCourseModal(uni); }}>Select Courses</button>
                             </div>
-                          )}
-
-                          {isSelected && isKansas && (
-                            <div className="kansas-note"><span>Kansas University - Direct Apply</span></div>
                           )}
                         </div>
                       );
                     })
                   ) : (
                     <div className="no-results">
-                      <p>No universities found matching your search.</p>
-                      {universities.length === 0 && (
-                        <button className="retry-btn ripple-effect" onClick={handleRetry}>Refresh Universities</button>
-                      )}
+                      <p>No universities found{searchTerm ? ` matching "${searchTerm}"` : ' for your program level'}.</p>
+                      {universities.length === 0
+                        ? <button className="retry-btn ripple-effect" onClick={handleRetry}>Refresh Universities</button>
+                        : searchTerm && <button className="retry-btn ripple-effect" onClick={() => setSearchTerm('')}>Clear Search</button>}
                     </div>
                   )}
                 </div>
 
-                {/* Request University Banner */}
                 <div className="request-university-banner">
                   <div className="request-banner-content">
                     <div className="request-banner-icon">🏛️</div>
@@ -1273,13 +974,10 @@ const UserProfile = () => {
           </div>
         )}
 
-        {/* Step 4: Review & Submit */}
+        {/* ── Step 4: Review ── */}
         {step === 4 && (
           <div className="form-card userprofile-fade-in">
-            <div className="card-header">
-              <h2>Review Your Profile</h2>
-              <p>Please verify your information before submitting</p>
-            </div>
+            <div className="card-header"><h2>Review Your Profile</h2><p>Please verify your information before submitting</p></div>
             <div className="review-section">
               <h3>Personal Information</h3>
               <div className="review-grid">
@@ -1305,39 +1003,62 @@ const UserProfile = () => {
             <div className="review-section">
               <h3>Selected Universities & Courses ({selectedUniversities.length})</h3>
               <div className="universities-list">
-                {selectedUniversities.length > 0 ? (
-                  selectedUniversities.map((uni, index) => {
-                    const isKansas = uni.INSTNM?.toLowerCase().includes('kansas') || uni.isKansas;
-                    const courses = uni.selectedCourses || [];
-                    return (
-                      <div key={uni.UNITID || uni._id} className="review-university-item">
-                        <p className="review-university-name">
-                          <strong>{index + 1}. {uni.INSTNM || 'Unknown University'}</strong>
-                          {isKansas && <span className="kansas-tag"> (Direct Apply)</span>}
-                        </p>
-                        {!isKansas && courses.length > 0 && (
-                          <div className="review-courses-list">
-                            <p className="courses-label">Selected Courses ({courses.length}):</p>
-                            <ul>
-                              {courses.map((course, idx) => (
-                                <li key={idx}>
-                                  {course.title || course.program_name}
-                                  {course.level && <span className="course-level"> - {course.level}</span>}
-                                  {course.studyMode && <span className="course-mode"> ({course.studyMode})</span>}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                        {!isKansas && courses.length === 0 && (
-                          <p className="warning-text">⚠️ No courses selected for this university</p>
-                        )}
+                {selectedUniversities.length > 0 ? selectedUniversities.map((uni, index) => {
+                  const courses = uni.selectedCourses || [];
+                  const isDirectApply = uni.isDirectApply || (courses.length === 0 && getProgramCount(uni) === 0);
+                  const city = uni.CITY || uni.city || uni.location?.city || '';
+                  const state = uni.STABBR || uni.state || uni.location?.state || '';
+                  const country = uni.location?.country || uni.country || uni.COUNTRY || 'USA';
+                  const locationStr = [city, state, country].filter(Boolean).join(', ');
+                  const website = uni.WEBADDR || uni.website || uni.contact?.website || '';
+                  const uniType = uni.universityType || '';
+                  const established = uni.establishedYear || '';
+                  const phone = uni.GENTELE || uni.adminPhone || uni.contact?.phone || '';
+                  const address = uni.ADDR || uni.address || uni.location?.address || '';
+
+                  return (
+                    <div key={getUniKey(uni) || index} className="review-university-item">
+                      <p className="review-university-name">
+                        <strong>{index + 1}. {uni.INSTNM || uni.universityName || 'Unknown University'}</strong>
+                        {isDirectApply && <span className="direct-apply-tag"> (Direct Apply)</span>}
+                        {uni._source === 'bachelors' && <span className="source-tag bachelors-tag"> 🎓 Bachelor's</span>}
+                        {uni._source === 'masters' && <span className="source-tag masters-tag"> 📘 Master's</span>}
+                      </p>
+                      <div className="review-uni-details">
+                        {locationStr && <p className="review-detail-item"><span className="review-detail-label">📍 Location:</span><span>{locationStr}</span></p>}
+                        {address && <p className="review-detail-item"><span className="review-detail-label">🏠 Address:</span><span>{address}</span></p>}
+                        {uniType && <p className="review-detail-item"><span className="review-detail-label">🏛️ Type:</span><span>{uniType}</span></p>}
+                        {established && <p className="review-detail-item"><span className="review-detail-label">📅 Established:</span><span>{established}</span></p>}
+                        {phone && <p className="review-detail-item"><span className="review-detail-label">📞 Phone:</span><span>{phone}</span></p>}
+                        {website && <p className="review-detail-item"><span className="review-detail-label">🌐 Website:</span><a href={website.startsWith('http') ? website : `https://${website}`} target="_blank" rel="noopener noreferrer">{website}</a></p>}
                       </div>
-                    );
-                  })
-                ) : (
-                  <p>No universities selected</p>
-                )}
+                      {isDirectApply && (
+                        <div className="direct-apply-review-note">
+                          <span>✅ This university accepts direct applications — no course pre-selection required.</span>
+                        </div>
+                      )}
+                      {!isDirectApply && courses.length > 0 && (
+                        <div className="review-courses-list">
+                          <p className="courses-label">Selected Courses ({courses.length}):</p>
+                          <ul>
+                            {courses.map((course, idx) => (
+                              <li key={idx}>
+                                {/* ✅ real course name in review step */}
+                                {course.title || course.name || course.program_name || 'Course'}
+                                {course.level && <span className="course-level"> - {course.level}</span>}
+                                {course.studyMode && <span className="course-mode"> ({course.studyMode})</span>}
+                                {course.duration && <span className="course-duration"> · {course.duration}</span>}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {!isDirectApply && courses.length === 0 && (
+                        <p className="warning-text">⚠️ No courses selected for this university</p>
+                      )}
+                    </div>
+                  );
+                }) : <p>No universities selected</p>}
               </div>
             </div>
             <div className="form-actions">
@@ -1349,15 +1070,9 @@ const UserProfile = () => {
           </div>
         )}
 
-        {/* Bottom Progress Steps */}
         <div className="bottom-progress">
           <div className="progress-steps-horizontal">
-            {[
-              { num: 1, label: "Basic Info" },
-              { num: 2, label: "Education" },
-              { num: 3, label: "Universities & Courses" },
-              { num: 4, label: "Review" },
-            ].map(({ num, label }) => (
+            {[{ num: 1, label: "Basic Info" }, { num: 2, label: "Education" }, { num: 3, label: "Universities & Courses" }, { num: 4, label: "Review" }].map(({ num, label }) => (
               <div key={num} className={`step-horizontal ${step === num ? 'active' : ''} ${step > num ? 'completed' : ''}`}>
                 <span className="step-number-horizontal">{num}</span>
                 <span className="step-label-horizontal">{label}</span>
@@ -1367,7 +1082,7 @@ const UserProfile = () => {
         </div>
       </div>
 
-      {/* Course Selection Modal */}
+      {/* ── Course Selection Modal ── */}
       {showCourseModal && currentUniversity && (
         <div className="modal-overlay" onClick={closeCourseModal}>
           <div className="modal-content course-modal" onClick={e => e.stopPropagation()}>
@@ -1384,9 +1099,7 @@ const UserProfile = () => {
                   <input type="text" className="course-search-input"
                     placeholder="Search courses by name, major, level..."
                     value={courseSearchTerm} onChange={(e) => setCourseSearchTerm(e.target.value)} />
-                  {courseSearchTerm && (
-                    <button className="clear-search-btn" onClick={() => setCourseSearchTerm("")}>×</button>
-                  )}
+                  {courseSearchTerm && <button className="clear-search-btn" onClick={() => setCourseSearchTerm("")}>×</button>}
                 </div>
                 {(courseSearchTerm || courseFilter.level || courseFilter.studyMode || courseFilter.majorArea) && (
                   <div className="active-filters">
@@ -1397,24 +1110,22 @@ const UserProfile = () => {
                         <button onClick={() => setCourseSearchTerm("")}>×</button>
                       </span>
                     )}
-                    <button className="clear-all-filters" onClick={() => { setCourseSearchTerm(""); setCourseFilter({ level: "", studyMode: "", majorArea: "" }); }}>
-                      Clear All
-                    </button>
+                    <button className="clear-all-filters" onClick={() => { setCourseSearchTerm(""); setCourseFilter({ level: "", studyMode: "", majorArea: "" }); }}>Clear All</button>
                   </div>
                 )}
               </div>
+
               {loadingCourses ? (
-                <div className="courses-loading">
-                  <div className="spinner-small"></div>
-                  <p>Loading courses...</p>
-                </div>
+                <div className="courses-loading"><div className="spinner-small"></div><p>Loading courses...</p></div>
               ) : filteredCourses.length > 0 ? (
                 <div className="courses-grid">
                   {filteredCourses.map((course, idx) => {
                     const isSelected = tempSelectedCourses.some(c => c.id === course.id);
+                    // ✅ always show real course name in modal cards
+                    const displayName = course.title || course.name || course.program_name || 'Course';
                     return (
                       <div key={course.id || idx} className={`course-card ${isSelected ? 'selected' : ''}`} onClick={() => toggleTempCourse(course)}>
-                        <h4 className="course-title">{course.title || course.program_name}</h4>
+                        <h4 className="course-title">{displayName}</h4>
                         <div className="course-badges">
                           {course.level && <span className="course-level-badge" style={{ backgroundColor: getLevelColor(course.level) }}>{course.level}</span>}
                           {course.studyMode && <span className="course-mode-badge" style={{ backgroundColor: getStudyModeColor(course.studyMode) }}>{course.studyMode}</span>}
@@ -1428,10 +1139,10 @@ const UserProfile = () => {
                 </div>
               ) : (
                 <div className="no-courses">
-                  <p>No courses match your search criteria.</p>
-                  <button className="clear-filters-btn" onClick={() => { setCourseSearchTerm(""); setCourseFilter({ level: "", studyMode: "", majorArea: "" }); }}>
-                    Clear Filters
-                  </button>
+                  <p>No courses available for this university.</p>
+                  {(courseSearchTerm || courseFilter.level || courseFilter.studyMode) && (
+                    <button className="clear-filters-btn" onClick={() => { setCourseSearchTerm(""); setCourseFilter({ level: "", studyMode: "", majorArea: "" }); }}>Clear Filters</button>
+                  )}
                 </div>
               )}
             </div>
@@ -1445,7 +1156,7 @@ const UserProfile = () => {
         </div>
       )}
 
-      {/* Request University Modal */}
+      {/* ── Request University Modal ── */}
       {showRequestModal && (
         <div className="modal-overlay" onClick={closeRequestModal}>
           <div className="modal-content request-university-modal" onClick={e => e.stopPropagation()}>
@@ -1453,22 +1164,16 @@ const UserProfile = () => {
               <h3>🏛️ Request a New University</h3>
               <button className="modal-close-btn ripple-effect" onClick={closeRequestModal}>×</button>
             </div>
-
             {requestSuccess ? (
               <div className="request-success-state">
                 <div className="request-success-icon">✅</div>
                 <h4>Request Submitted!</h4>
-                <p>
-                  Your request for <strong>"{requestForm.universityName}"</strong> has been sent to our admin team.
-                  They'll review it along with your course interests and notify you once it's added.
-                </p>
+                <p>Your request for <strong>"{requestForm.universityName}"</strong> has been sent to our admin team.</p>
                 {reqCourses.length > 0 && (
                   <div className="request-success-courses">
                     <p className="success-courses-label">Courses you requested:</p>
                     <div className="success-course-tags">
-                      {reqCourses.map((c, i) => (
-                        <span key={i} className="success-course-tag">{c}</span>
-                      ))}
+                      {reqCourses.map((c, i) => <span key={i} className="success-course-tag">{c}</span>)}
                     </div>
                   </div>
                 )}
@@ -1476,53 +1181,36 @@ const UserProfile = () => {
               </div>
             ) : (
               <div className="modal-body">
-                <p className="request-modal-desc">
-                  Can't find your university? Fill in the details below and our team will review and add it.
-                </p>
-
-                {requestFormErrors.submit && (
-                  <div className="request-submit-error">
-                    <span>⚠️ {requestFormErrors.submit}</span>
-                  </div>
-                )}
-
+                <p className="request-modal-desc">Can't find your university? Fill in the details below and our team will review and add it.</p>
+                {requestFormErrors.submit && <div className="request-submit-error"><span>⚠️ {requestFormErrors.submit}</span></div>}
                 <div className="form-fields">
                   <div className="form-row">
                     <label>University Name <span className="required-star">*</span></label>
-                    <input type="text" placeholder="e.g., Harvard University"
-                      value={requestForm.universityName}
+                    <input type="text" placeholder="e.g., Harvard University" value={requestForm.universityName}
                       onChange={(e) => { setRequestForm({ ...requestForm, universityName: e.target.value }); if (requestFormErrors.universityName) setRequestFormErrors({ ...requestFormErrors, universityName: null }); }}
                       className={requestFormErrors.universityName ? 'error' : ''} />
                     {requestFormErrors.universityName && <span className="field-error">{requestFormErrors.universityName}</span>}
                   </div>
-
                   <div className="form-row">
                     <label>Country <span className="required-star">*</span></label>
-                    <input type="text" placeholder="e.g., United States"
-                      value={requestForm.country}
+                    <input type="text" placeholder="e.g., United States" value={requestForm.country}
                       onChange={(e) => { setRequestForm({ ...requestForm, country: e.target.value }); if (requestFormErrors.country) setRequestFormErrors({ ...requestFormErrors, country: null }); }}
                       className={requestFormErrors.country ? 'error' : ''} />
                     {requestFormErrors.country && <span className="field-error">{requestFormErrors.country}</span>}
                   </div>
-
                   <div className="form-row" style={{ position: 'relative' }}>
-                    <label>
-                      Courses of Interest <span className="required-star">*</span>
-                      <span className="optional-label"> — up to 5</span>
-                    </label>
+                    <label>Courses of Interest <span className="required-star">*</span><span className="optional-label"> — up to 5</span></label>
                     <div className={`course-tag-input-wrapper${requestFormErrors.courses ? ' error-border' : ''}`}>
                       {reqCourses.map((course, i) => (
                         <span key={i} className="course-tag">
                           {course}
-                          <button type="button" className="course-tag-remove"
-                            onClick={() => removeReqCourse(course)} aria-label={`Remove ${course}`}>×</button>
+                          <button type="button" className="course-tag-remove" onClick={() => removeReqCourse(course)}>×</button>
                         </span>
                       ))}
                       {reqCourses.length < 5 && (
                         <input ref={reqCourseInputRef} type="text" className="course-tag-input"
                           placeholder={reqCourses.length === 0 ? "Type a course and press Enter…" : "Add another…"}
-                          value={reqCourseInput}
-                          onChange={(e) => setReqCourseInput(e.target.value)}
+                          value={reqCourseInput} onChange={(e) => setReqCourseInput(e.target.value)}
                           onKeyDown={handleReqCourseKeyDown}
                           onFocus={() => { if (reqSuggestions.length > 0) setShowReqSuggestions(true); }}
                           onBlur={() => setTimeout(() => setShowReqSuggestions(false), 150)}
@@ -1533,40 +1221,30 @@ const UserProfile = () => {
                     {showReqSuggestions && reqSuggestions.length > 0 && (
                       <div className="course-suggestions-dropdown">
                         {reqSuggestions.map((s, i) => (
-                          <button key={i} type="button" className="course-suggestion-item"
-                            onMouseDown={() => addReqCourse(s)}>{s}</button>
+                          <button key={i} type="button" className="course-suggestion-item" onMouseDown={() => addReqCourse(s)}>{s}</button>
                         ))}
                       </div>
                     )}
                     {requestFormErrors.courses && <span className="field-error">{requestFormErrors.courses}</span>}
                   </div>
                 </div>
-
                 <div className="request-info-note">
                   <span>ℹ️</span>
-                  <p>Once submitted, our admin team will review your request along with your course interests and notify you when the university is added or if it's rejected.</p>
+                  <p>Once submitted, our admin team will review your request and notify you when the university is added.</p>
                 </div>
               </div>
             )}
-
             {!requestSuccess && (
               <div className="modal-footer">
-                <button className="cancel-btn ripple-effect" onClick={closeRequestModal} disabled={submittingRequest}>
-                  Cancel
-                </button>
+                <button className="cancel-btn ripple-effect" onClick={closeRequestModal} disabled={submittingRequest}>Cancel</button>
                 <button className="save-btn ripple-effect" onClick={handleSubmitUniversityRequest} disabled={submittingRequest}>
-                  {submittingRequest ? (
-                    <span className="btn-loading">
-                      <span className="btn-spinner"></span> Submitting...
-                    </span>
-                  ) : 'Submit Request'}
+                  {submittingRequest ? <span className="btn-loading"><span className="btn-spinner"></span> Submitting...</span> : 'Submit Request'}
                 </button>
               </div>
             )}
           </div>
         </div>
       )}
-
     </div>
   );
 };

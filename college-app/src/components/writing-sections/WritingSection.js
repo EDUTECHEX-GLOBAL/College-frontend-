@@ -5,35 +5,35 @@ import AdditionalInformation from './AdditionalInformation';
 import './WritingSection.css';
 
 const WritingSection = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const navigate  = useNavigate();
+  const location  = useLocation();
   const [activeSubsection, setActiveSubsection] = useState('personal-essay');
 
   useEffect(() => {
-    if (location.pathname.includes('/additional-information')) {
-      setActiveSubsection('additional-information');
-    } else {
-      setActiveSubsection('personal-essay');
-    }
+    setActiveSubsection(
+      location.pathname.includes('/additional-information')
+        ? 'additional-information'
+        : 'personal-essay'
+    );
   }, [location.pathname]);
 
   return (
     <div className="writing-section">
       <div className="writing-container">
         <div className="writing-main-content">
-          {/* Back Button at top left of content */}
+          {/* Back to Dashboard */}
           <div className="content-back-button">
-            <button 
+            <button
               className="back-to-dashboard-content-btn"
               onClick={() => navigate('/firstyear/dashboard')}
             >
               ← Back to Dashboard
             </button>
           </div>
-          
+
           <Routes>
-            <Route path="/" element={<PersonalEssay />} />
-            <Route path="/personal-essay" element={<PersonalEssay />} />
+            <Route path="/"                       element={<PersonalEssay />} />
+            <Route path="/personal-essay"         element={<PersonalEssay />} />
             <Route path="/additional-information" element={<AdditionalInformation />} />
           </Routes>
         </div>

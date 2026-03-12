@@ -25,7 +25,7 @@ const ActivitiesSection = () => {
   const [loading, setLoading] = useState(false);
 
   const activityTypes = [
-    'Social Justice', 'Art', 'Athletics: Club', 'Athletics: JV/Varsity', 
+    'Social Justice', 'Art', 'Athletics: Club', 'Athletics: JV/Varsity',
     'Career Oriented', 'Community Service', 'Computer/Technology', 'Cultural',
     'Dance', 'Debate/Speech', 'Environmental', 'Family Responsibilities',
     'Foreign Exchange', 'Foreign Language', 'Internship', 'Journalism/Publication',
@@ -34,25 +34,22 @@ const ActivitiesSection = () => {
     'Student Government', 'Theater/Drama', 'Work (Paid)', 'Other'
   ].map(type => ({ value: type, label: type }));
 
-  // Custom styles for react-select
   const customStyles = {
     control: (base, state) => ({
       ...base,
-      minHeight: '44px',
+      minHeight: '48px',
       border: '1px solid #ced4da',
       borderRadius: '6px',
       boxShadow: state.isFocused ? '0 0 0 3px rgba(0, 123, 255, 0.1)' : 'none',
       borderColor: state.isFocused ? '#007bff' : '#ced4da',
-      '&:hover': {
-        borderColor: state.isFocused ? '#007bff' : '#9ca3af'
-      },
-      fontSize: '14px',
+      '&:hover': { borderColor: state.isFocused ? '#007bff' : '#9ca3af' },
+      fontSize: '16px', // prevents iOS auto-zoom
       fontFamily: 'inherit',
     }),
     menu: (base) => ({
       ...base,
       borderRadius: '6px',
-      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
       border: '1px solid #e5e7eb',
       zIndex: 9999,
       marginTop: '2px'
@@ -60,27 +57,18 @@ const ActivitiesSection = () => {
     menuList: (base) => ({
       ...base,
       padding: 0,
-      maxHeight: '200px'
+      maxHeight: '220px'
     }),
     option: (base, state) => ({
       ...base,
-      fontSize: '14px',
-      padding: '10px 12px',
+      fontSize: '15px',
+      padding: '12px', // larger tap targets on mobile
       backgroundColor: state.isSelected ? '#007bff' : state.isFocused ? '#f8f9fa' : 'white',
       color: state.isSelected ? 'white' : '#1a1a1a',
-      '&:active': {
-        backgroundColor: '#007bff',
-        color: 'white'
-      }
+      '&:active': { backgroundColor: '#007bff', color: 'white' }
     }),
-    placeholder: (base) => ({
-      ...base,
-      color: '#6c757d'
-    }),
-    singleValue: (base) => ({
-      ...base,
-      color: '#1a1a1a'
-    })
+    placeholder: (base) => ({ ...base, color: '#6c757d' }),
+    singleValue: (base) => ({ ...base, color: '#1a1a1a' })
   };
 
   useEffect(() => {
@@ -90,18 +78,14 @@ const ActivitiesSection = () => {
         if (!token) return;
 
         const response = await axios.get(`${API_URL}/api/students/activities`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
         });
 
         if (response.data.success) {
           const activitiesData = response.data.activitiesData;
           setHasActivities(activitiesData.hasActivities);
-          
-          if (activitiesData.hasActivities && activitiesData.activities && activitiesData.activities.length > 0) {
-            // Convert stored activity types to react-select format
+
+          if (activitiesData.hasActivities && activitiesData.activities?.length > 0) {
             const formattedActivities = activitiesData.activities.map(activity => ({
               ...activity,
               type: activity.type ? { value: activity.type, label: activity.type } : ''
@@ -114,52 +98,35 @@ const ActivitiesSection = () => {
         console.error('Error fetching activities data:', error);
       }
     };
-
     fetchActivitiesData();
   }, []);
 
-  // ADDED: Back to Dashboard function
   const handleBackToDashboard = () => {
     const isFirstYear = window.location.pathname.includes('/firstyear/');
-    const basePath = isFirstYear ? '/firstyear/dashboard' : '/transfer/dashboard';
-    navigate(basePath);
+    navigate(isFirstYear ? '/firstyear/dashboard' : '/transfer/dashboard');
   };
 
   const handleAnswerSelect = async (answer) => {
     setLoading(true);
-    
-    // Immediately update UI
     setHasActivities(answer);
-    
+
     if (answer) {
       setShowActivitiesForm(true);
     } else {
-      // If No, mark as complete and redirect to dashboard
-      // FIXED: Use handleBackToDashboard instead of hardcoded path
       handleBackToDashboard();
     }
 
-    // Save to backend
     try {
       const token = localStorage.getItem('token');
-      if (!token) {
-        navigate('/sign-in');
-        return;
-      }
+      if (!token) { navigate('/sign-in'); return; }
 
       const response = await axios.post(
         `${API_URL}/api/students/activities/has-activities`,
         { hasActivities: answer },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
+        { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } }
       );
 
       if (response.data.success) {
-        // Update localStorage with fresh data from backend
         const storedUserData = localStorage.getItem('userData');
         if (storedUserData) {
           const userData = JSON.parse(storedUserData);
@@ -182,20 +149,15 @@ const ActivitiesSection = () => {
 
   const updateActivity = (index, field, value) => {
     const updatedActivities = [...activities];
-    updatedActivities[index] = {
-      ...updatedActivities[index],
-      [field]: value
-    };
+    updatedActivities[index] = { ...updatedActivities[index], [field]: value };
     setActivities(updatedActivities);
   };
 
   const updateGradeLevels = (index, grade, checked) => {
     const updatedActivities = [...activities];
-    if (checked) {
-      updatedActivities[index].gradeLevels = [...updatedActivities[index].gradeLevels, grade];
-    } else {
-      updatedActivities[index].gradeLevels = updatedActivities[index].gradeLevels.filter(g => g !== grade);
-    }
+    updatedActivities[index].gradeLevels = checked
+      ? [...updatedActivities[index].gradeLevels, grade]
+      : updatedActivities[index].gradeLevels.filter(g => g !== grade);
     setActivities(updatedActivities);
   };
 
@@ -218,8 +180,7 @@ const ActivitiesSection = () => {
 
   const removeActivity = (index) => {
     if (activities.length > 1) {
-      const updatedActivities = activities.filter((_, i) => i !== index);
-      setActivities(updatedActivities);
+      setActivities(activities.filter((_, i) => i !== index));
     }
   };
 
@@ -227,26 +188,21 @@ const ActivitiesSection = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      if (!token) {
-        navigate('/sign-in');
-        return;
-      }
+      if (!token) { navigate('/sign-in'); return; }
 
-      // Convert react-select objects back to strings for backend
       const activitiesForBackend = activities.map(activity => ({
         ...activity,
         type: activity.type ? activity.type.value : ''
       }));
 
-      // Validate required fields
-      const hasEmptyFields = activitiesForBackend.some(activity => 
-        !activity.type || 
-        !activity.position || 
-        !activity.description || 
-        activity.gradeLevels.length === 0 || 
-        !activity.timing || 
-        !activity.hoursPerWeek || 
-        !activity.weeksPerYear || 
+      const hasEmptyFields = activitiesForBackend.some(activity =>
+        !activity.type ||
+        !activity.position ||
+        !activity.description ||
+        activity.gradeLevels.length === 0 ||
+        !activity.timing ||
+        !activity.hoursPerWeek ||
+        !activity.weeksPerYear ||
         activity.continueInCollege === null
       );
 
@@ -256,33 +212,21 @@ const ActivitiesSection = () => {
         return;
       }
 
-      // Save activities to backend
       const response = await axios.post(
         `${API_URL}/api/students/activities/details`,
         { activities: activitiesForBackend },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
+        { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } }
       );
 
       if (response.data.success) {
-        // Update localStorage with progress data
         const storedUserData = localStorage.getItem('userData');
         if (storedUserData) {
           const userData = JSON.parse(storedUserData);
           localStorage.setItem('userData', JSON.stringify({
             ...userData,
-            applicationProgress: {
-              ...userData.applicationProgress,
-              activities: 100
-            }
+            applicationProgress: { ...userData.applicationProgress, activities: 100 }
           }));
         }
-
-        // Navigate to responsibilities section
         navigate('/firstyear/dashboard/activities/responsibilities');
       }
     } catch (error) {
@@ -295,46 +239,28 @@ const ActivitiesSection = () => {
 
   const handleClearAnswer = async () => {
     setLoading(true);
-    
-    // Immediately update UI
     setHasActivities(null);
     setShowActivitiesForm(false);
     setActivities([{
-      id: 1,
-      type: '',
-      position: '',
-      organization: '',
-      description: '',
-      gradeLevels: [],
-      timing: '',
-      hoursPerWeek: '',
-      weeksPerYear: '',
-      continueInCollege: null
+      id: 1, type: '', position: '', organization: '', description: '',
+      gradeLevels: [], timing: '', hoursPerWeek: '', weeksPerYear: '', continueInCollege: null
     }]);
 
-    // Clear from backend
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
 
       const response = await axios.delete(`${API_URL}/api/students/activities/has-activities`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
       });
 
       if (response.data.success) {
-        // Update localStorage progress
         const storedUserData = localStorage.getItem('userData');
         if (storedUserData) {
           const userData = JSON.parse(storedUserData);
           localStorage.setItem('userData', JSON.stringify({
             ...userData,
-            applicationProgress: {
-              ...userData.applicationProgress,
-              activities: 0
-            }
+            applicationProgress: { ...userData.applicationProgress, activities: 0 }
           }));
         }
       }
@@ -346,33 +272,33 @@ const ActivitiesSection = () => {
     }
   };
 
-  // Render Initial Question Screen
+  // ── Shared Header ──────────────────────────────────────────
+  const PageHeader = () => (
+    <div className="activities-header">
+      <div className="header-left-container">
+        <button className="back-dashboard-btn" onClick={handleBackToDashboard} disabled={loading}>
+          ← Back to Dashboard
+        </button>
+      </div>
+      <div className="header-center">
+        <h1>Complete your Common Application</h1>
+      </div>
+      <div className="header-right">
+        <div className="progress-status">In progress</div>
+      </div>
+    </div>
+  );
+
+  // ── Initial Question Screen ────────────────────────────────
   if (!showActivitiesForm) {
     return (
       <div className="activities-container">
         <div className="activities-content">
-          {/* MODIFIED: Added Back Button to the left of Complete your Application */}
-          <div className="activities-header">
-            <div className="header-left-container">
-              <button
-                className="back-dashboard-btn"
-                onClick={handleBackToDashboard}
-                disabled={loading}
-              >
-                ← Back to Dashboard
-              </button>
-            </div>
-            <div className="header-center">
-              <h1>Complete your Common Application</h1>
-            </div>
-            <div className="header-right">
-              <div className="progress-status">In progress</div>
-            </div>
-          </div>
+          <PageHeader />
 
           <div className="activities-card">
             <h2>Activities</h2>
-            
+
             <div className="activities-description">
               <p>Reporting activities can help colleges better understand your life outside of the classroom. Examples of activities might include:</p>
               <ul>
@@ -405,13 +331,9 @@ const ActivitiesSection = () => {
                   No
                 </button>
               </div>
-              
+
               {hasActivities !== null && (
-                <button
-                  className="clear-answer"
-                  onClick={handleClearAnswer}
-                  disabled={loading}
-                >
+                <button className="clear-answer" onClick={handleClearAnswer} disabled={loading}>
                   Clear answer
                 </button>
               )}
@@ -422,32 +344,15 @@ const ActivitiesSection = () => {
     );
   }
 
-  // Render Activities Form Screen
+  // ── Activities Form Screen ─────────────────────────────────
   return (
     <div className="activities-container">
       <div className="activities-content">
-        {/* MODIFIED: Added Back Button to the left of Complete your Application */}
-        <div className="activities-header">
-          <div className="header-left-container">
-            <button
-              className="back-dashboard-btn"
-              onClick={handleBackToDashboard}
-              disabled={loading}
-            >
-              ← Back to Dashboard
-            </button>
-          </div>
-          <div className="header-center">
-            <h1>Complete your Common Application</h1>
-          </div>
-          <div className="header-right">
-            <div className="progress-status">In progress</div>
-          </div>
-        </div>
+        <PageHeader />
 
         <div className="activities-card">
           <h2>Activities</h2>
-          
+
           <div className="activities-instructions">
             <p>Please list your activities in the order of their importance to you.</p>
           </div>
@@ -468,7 +373,8 @@ const ActivitiesSection = () => {
                 )}
               </div>
 
-              <div className="form-group">
+              {/* Activity Type */}
+              <div className="form-group activitiessection-form-group">
                 <label>Activity type *</label>
                 <Select
                   options={activityTypes}
@@ -483,7 +389,8 @@ const ActivitiesSection = () => {
                 />
               </div>
 
-              <div className="form-group">
+              {/* Position */}
+              <div className="form-group activitiessection-form-group">
                 <label>Position/Leadership description (Max characters: 50) *</label>
                 <input
                   type="text"
@@ -493,11 +400,13 @@ const ActivitiesSection = () => {
                   placeholder="Enter position or leadership role"
                   required
                   disabled={loading}
+                  autoComplete="off"
                 />
                 <div className="char-count">{activity.position.length}/50</div>
               </div>
 
-              <div className="form-group">
+              {/* Organization */}
+              <div className="form-group activitiessection-form-group">
                 <label>Organization Name (Max characters: 100)</label>
                 <input
                   type="text"
@@ -506,11 +415,13 @@ const ActivitiesSection = () => {
                   maxLength={100}
                   placeholder="Enter organization name"
                   disabled={loading}
+                  autoComplete="off"
                 />
                 <div className="char-count">{activity.organization.length}/100</div>
               </div>
 
-              <div className="form-group">
+              {/* Description */}
+              <div className="form-group activitiessection-form-group">
                 <label>Please describe this activity, including what you accomplished and any recognition you received, etc. (Max characters: 150) *</label>
                 <textarea
                   value={activity.description}
@@ -524,99 +435,48 @@ const ActivitiesSection = () => {
                 <div className="char-count">{activity.description.length}/150</div>
               </div>
 
-              <div className="form-group">
+              {/* Grade Levels */}
+              <div className="form-group activitiessection-form-group">
                 <label>Participation grade levels *</label>
                 <div className="simple-checkbox-group">
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={activity.gradeLevels.includes(9)}
-                      onChange={(e) => updateGradeLevels(index, 9, e.target.checked)}
-                      disabled={loading}
-                    />
-                    <span>9</span>
-                  </label>
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={activity.gradeLevels.includes(10)}
-                      onChange={(e) => updateGradeLevels(index, 10, e.target.checked)}
-                      disabled={loading}
-                    />
-                    <span>10</span>
-                  </label>
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={activity.gradeLevels.includes(11)}
-                      onChange={(e) => updateGradeLevels(index, 11, e.target.checked)}
-                      disabled={loading}
-                    />
-                    <span>11</span>
-                  </label>
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={activity.gradeLevels.includes(12)}
-                      onChange={(e) => updateGradeLevels(index, 12, e.target.checked)}
-                      disabled={loading}
-                    />
-                    <span>12</span>
-                  </label>
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={activity.gradeLevels.includes('Post-graduate')}
-                      onChange={(e) => updateGradeLevels(index, 'Post-graduate', e.target.checked)}
-                      disabled={loading}
-                    />
-                    <span>Post-graduate</span>
-                  </label>
+                  {[9, 10, 11, 12, 'Post-graduate'].map(grade => (
+                    <label key={grade} className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={activity.gradeLevels.includes(grade)}
+                        onChange={(e) => updateGradeLevels(index, grade, e.target.checked)}
+                        disabled={loading}
+                      />
+                      <span>{grade}</span>
+                    </label>
+                  ))}
                 </div>
               </div>
 
-              <div className="form-group">
+              {/* Timing */}
+              <div className="form-group activitiessection-form-group">
                 <label>Timing of participation *</label>
                 <div className="simple-radio-group">
-                  <label className="radio-label">
-                    <input
-                      type="radio"
-                      name={`timing-${index}`}
-                      value="During school year"
-                      checked={activity.timing === 'During school year'}
-                      onChange={(e) => updateActivity(index, 'timing', e.target.value)}
-                      required
-                      disabled={loading}
-                    />
-                    <span>During school year</span>
-                  </label>
-                  <label className="radio-label">
-                    <input
-                      type="radio"
-                      name={`timing-${index}`}
-                      value="During school break"
-                      checked={activity.timing === 'During school break'}
-                      onChange={(e) => updateActivity(index, 'timing', e.target.value)}
-                      disabled={loading}
-                    />
-                    <span>During school break</span>
-                  </label>
-                  <label className="radio-label">
-                    <input
-                      type="radio"
-                      name={`timing-${index}`}
-                      value="All year"
-                      checked={activity.timing === 'All year'}
-                      onChange={(e) => updateActivity(index, 'timing', e.target.value)}
-                      disabled={loading}
-                    />
-                    <span>All year</span>
-                  </label>
+                  {['During school year', 'During school break', 'All year'].map(val => (
+                    <label key={val} className="radio-label">
+                      <input
+                        type="radio"
+                        name={`timing-${index}`}
+                        value={val}
+                        checked={activity.timing === val}
+                        onChange={(e) => updateActivity(index, 'timing', e.target.value)}
+                        required={val === 'During school year'}
+                        disabled={loading}
+                      />
+                      <span>{val}</span>
+                    </label>
+                  ))}
                 </div>
               </div>
 
+              {/* Hours / Weeks row */}
               <div className="form-row">
-                <div className="form-group">
+                <div className="form-group activitiessection-form-group">
                   <label>Hours spent per week *</label>
                   <input
                     type="number"
@@ -626,10 +486,10 @@ const ActivitiesSection = () => {
                     max="168"
                     required
                     disabled={loading}
+                    inputMode="numeric"
                   />
                 </div>
-
-                <div className="form-group">
+                <div className="form-group activitiessection-form-group">
                   <label>Weeks spent per year *</label>
                   <input
                     type="number"
@@ -639,11 +499,13 @@ const ActivitiesSection = () => {
                     max="52"
                     required
                     disabled={loading}
+                    inputMode="numeric"
                   />
                 </div>
               </div>
 
-              <div className="form-group">
+              {/* Continue in college */}
+              <div className="form-group activitiessection-form-group">
                 <label>I intend to participate in a similar activity in college. *</label>
                 <div className="simple-radio-group">
                   <label className="radio-label">

@@ -6,6 +6,7 @@
   border: 1px solid #d1d5db;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   max-width: 100%;
+  overflow: hidden;
 }
 
 .tests-taken-section h2 {
@@ -34,7 +35,8 @@
 .tests-taken-section .section-status::before {
   content: "●";
   color: #2C5AA0;
-  font-size: 16px;
+  font-size: 14px;
+  flex-shrink: 0;
 }
 
 .tests-taken-section .form-content {
@@ -57,11 +59,13 @@
   font-size: 14px;
   color: #374151;
   margin: 0 0 16px 0;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
+/* Horizontal Radio Groups */
 .tests-taken-section .radio-group-horizontal {
   display: flex;
+  flex-wrap: wrap;
   gap: 24px;
   margin-bottom: 12px;
 }
@@ -73,23 +77,34 @@
   cursor: pointer;
   font-size: 14px;
   color: #374151;
+  min-height: 44px; /* touch-friendly */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .tests-taken-section .radio-option input[type="radio"] {
   margin: 0;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
+  accent-color: #2C5AA0;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 .tests-taken-section .clear-answer-button {
   background: none;
   border: 1px solid #d1d5db;
   color: #6b7280;
-  padding: 6px 12px;
+  padding: 8px 14px;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-height: 36px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  display: inline-flex;
+  align-items: center;
 }
 
 .tests-taken-section .clear-answer-button:hover {
@@ -97,7 +112,7 @@
   border-color: #9ca3af;
 }
 
-/* Test Types as Checkbox Grid - Common App Style */
+/* Test Types Checkbox Grid */
 .test-types-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -117,9 +132,11 @@
   border: 2px solid #e5e7eb;
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   background: white;
-  position: relative;
+  min-height: 48px; /* touch-friendly */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .test-checkbox-item:hover {
@@ -129,9 +146,11 @@
 
 .test-checkbox-item input[type="checkbox"] {
   margin: 0;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   cursor: pointer;
+  accent-color: #2C5AA0;
+  flex-shrink: 0;
 }
 
 .test-checkbox-label {
@@ -139,6 +158,7 @@
   font-weight: 500;
   color: #374151;
   flex: 1;
+  line-height: 1.3;
 }
 
 .test-selected-icon {
@@ -146,6 +166,7 @@
   font-weight: bold;
   font-size: 16px;
   margin-left: auto;
+  flex-shrink: 0;
 }
 
 .test-checkbox-item input[type="checkbox"]:checked + .test-checkbox-label {
@@ -153,50 +174,19 @@
   font-weight: 600;
 }
 
-.test-checkbox-item input[type="checkbox"]:checked {
-  background-color: #2C5AA0;
-  border-color: #2C5AA0;
-}
-
-.test-checkbox-item input[type="checkbox"]:checked ~ .test-selected-icon {
-  display: block;
-}
-
-/* Remove the old test types container styles since we're using checkboxes now */
-.test-types-container {
-  display: none;
-}
-
-.test-type-subsection {
-  display: none;
-}
-
-.test-type-info {
-  display: none;
-}
-
-.test-type-name {
-  display: none;
-}
-
-.test-type-progress {
-  display: none;
-}
-
-.test-type-arrow {
-  display: none;
-}
-
-/* Remove the old tests-grid styles since we're not using checkboxes anymore */
-.tests-grid {
-  display: none;
-}
-
+/* Hidden legacy elements */
+.test-types-container,
+.test-type-subsection,
+.test-type-info,
+.test-type-name,
+.test-type-progress,
+.test-type-arrow,
+.tests-grid,
 .test-checkbox {
   display: none;
 }
 
-/* Expandable Navigation Sections */
+/* Expandable Nav Sections */
 .nav-section-expandable {
   padding: 0;
   cursor: pointer;
@@ -262,7 +252,7 @@
 }
 
 .nav-subitem .nav-content {
-  padding: 12px 24px 12px 40px; /* Indent sub-items */
+  padding: 12px 24px 12px 40px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -284,75 +274,96 @@
   color: white;
 }
 
-/* Responsive Design */
+/* ─── Responsive: Tablet ─────────────────────────────────── */
 @media (max-width: 768px) {
   .tests-taken-section {
-    margin: 15px 20px;
+    margin: 15px 16px;
   }
-  
+
   .tests-taken-section .form-content {
-    padding: 20px;
+    padding: 20px 16px;
   }
-  
+
   .tests-taken-section .radio-group-horizontal {
-    flex-direction: column;
-    gap: 12px;
+    gap: 16px;
   }
-  
+
   .test-types-grid {
     grid-template-columns: 1fr;
     padding: 16px;
     gap: 10px;
   }
-  
+
   .test-checkbox-item {
     padding: 10px 14px;
   }
-  
+
   .nav-header {
     padding: 12px 20px;
   }
-  
+
   .nav-subitem .nav-content {
     padding: 10px 20px 10px 36px;
   }
 }
 
+/* ─── Responsive: Mobile Portrait ────────────────────────── */
 @media (max-width: 480px) {
   .tests-taken-section {
-    margin: 10px 15px;
+    margin: 10px 0;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
   }
-  
-  .tests-taken-section .form-content {
-    padding: 16px;
-  }
-  
+
   .tests-taken-section h2 {
-    padding: 16px 20px;
-    font-size: 18px;
+    padding: 14px 16px;
+    font-size: 17px;
+    border-radius: 0;
   }
-  
+
   .tests-taken-section .section-status {
-    padding: 10px 20px;
+    padding: 10px 16px;
+    font-size: 13px;
   }
-  
+
+  .tests-taken-section .form-content {
+    padding: 16px 14px;
+  }
+
+  .tests-taken-section .form-group {
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+  }
+
+  .tests-taken-section .question-text {
+    font-size: 13px;
+  }
+
+  .tests-taken-section .radio-group-horizontal {
+    flex-direction: column;
+    gap: 4px;
+  }
+
   .test-types-grid {
+    grid-template-columns: 1fr;
     padding: 12px;
     gap: 8px;
+    margin: 14px 0;
   }
-  
+
   .test-checkbox-item {
-    padding: 8px 12px;
+    padding: 10px 12px;
   }
-  
+
   .test-checkbox-label {
     font-size: 13px;
   }
-  
+
   .nav-header {
     padding: 10px 16px;
   }
-  
+
   .nav-subitem .nav-content {
     padding: 8px 16px 8px 32px;
   }

@@ -1,10 +1,8 @@
 import mongoose from 'mongoose';
 
-// Program sub-schema for detailed program information
 const programDetailSchema = new mongoose.Schema({
-  name: {
+  name: {           // ✅ ADDED - was missing
     type: String,
-    required: true,
     trim: true
   },
   title: {
@@ -63,7 +61,6 @@ const programDetailSchema = new mongoose.Schema({
 }, { _id: false });
 
 const mastersUniversitySchema = new mongoose.Schema({
-  // Basic Information
   universityName: {
     type: String,
     required: [true, 'University name is required'],
@@ -100,14 +97,8 @@ const mastersUniversitySchema = new mongoose.Schema({
       'Liberal Arts College (with Graduate Programs)'
     ]
   },
-  accreditation: {
-    type: String,
-    trim: true
-  },
-  ranking: {
-    type: String,
-    trim: true
-  },
+  accreditation: { type: String, trim: true },
+  ranking: { type: String, trim: true },
   website: {
     type: String,
     required: [true, 'Website is required'],
@@ -117,208 +108,107 @@ const mastersUniversitySchema = new mongoose.Schema({
       'Please enter a valid URL'
     ]
   },
-  
-  // Location
-  country: {
-    type: String,
-    required: [true, 'Country is required'],
-    trim: true
-  },
-  state: {
-    type: String,
-    required: [true, 'State/Province is required'],
-    trim: true
-  },
-  city: {
-    type: String,
-    required: [true, 'City is required'],
-    trim: true,
-    index: true
-  },
-  address: {
-    type: String,
-    required: [true, 'Address is required'],
-    trim: true
-  },
-  zipCode: {
-    type: String,
-    required: [true, 'ZIP/Postal code is required'],
-    trim: true
-  },
-  
-  // Contact
+  country: { type: String, required: [true, 'Country is required'], trim: true },
+  state: { type: String, required: [true, 'State/Province is required'], trim: true },
+  city: { type: String, required: [true, 'City is required'], trim: true, index: true },
+  address: { type: String, required: [true, 'Address is required'], trim: true },
+  zipCode: { type: String, required: [true, 'ZIP/Postal code is required'], trim: true },
   adminEmail: {
-    type: String,
-    required: [true, 'Admin email is required'],
-    lowercase: true,
-    trim: true,
-    match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email']
+    type: String, required: [true, 'Admin email is required'],
+    lowercase: true, trim: true, match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email']
   },
-  adminPhone: {
-    type: String,
-    required: [true, 'Admin phone is required'],
-    trim: true
-  },
+  adminPhone: { type: String, required: [true, 'Admin phone is required'], trim: true },
   admissionEmail: {
-    type: String,
-    required: [true, 'Admission email is required'],
-    lowercase: true,
-    trim: true,
-    match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email']
+    type: String, required: [true, 'Admission email is required'],
+    lowercase: true, trim: true, match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email']
   },
-  admissionPhone: {
-    type: String,
-    trim: true
+  admissionPhone: { type: String, trim: true },
+  
+  // ✅ FIXED: Mixed type to handle both strings and objects
+  programs: {
+    type: [mongoose.Schema.Types.Mixed],
+    default: []
   },
   
-  // Academic Details
-  programs: [programDetailSchema],
-  
-  intakes: [{
-    type: String,
-    trim: true
-  }],
-  
+  intakes: [{ type: String, trim: true }],
   applicationDeadlines: {
     earlyDecision: { type: String, trim: true },
     earlyAction: { type: String, trim: true },
     regularDecision: { type: String, trim: true },
     rolling: { type: String, trim: true }
   },
-  
   tuitionFees: {
-    inState: {
-      type: String,
-      required: [true, 'In-state tuition is required'],
-      trim: true
-    },
+    inState: { type: String, required: [true, 'In-state tuition is required'], trim: true },
     outOfState: { type: String, trim: true },
     international: { type: String, trim: true },
     roomAndBoard: { type: String, trim: true }
   },
-  
-  // Masters-specific Requirements
-  minimumGPA: {
-    type: String,
-    trim: true
-  },
-  minimumUndergraduateGPA: {
-    type: String,
-    default: '3.0',
-    trim: true
-  },
-  
+  minimumGPA: { type: String, trim: true },
+  minimumUndergraduateGPA: { type: String, default: '3.0', trim: true },
   greRequirements: {
     quantitative: { type: String, trim: true },
     verbal: { type: String, trim: true },
     analytical: { type: String, trim: true },
     total: { type: String, trim: true }
   },
-  
   gmatRequirements: {
     total: { type: String, trim: true },
     quantitative: { type: String, trim: true },
     verbal: { type: String, trim: true }
   },
-  
   englishTests: [{
     type: String,
-    enum: [
-      'TOEFL iBT', 
-      'IELTS Academic', 
-      'PTE Academic', 
-      'Duolingo English Test', 
-      'Cambridge English'
-    ]
+    enum: ['TOEFL iBT', 'IELTS Academic', 'PTE Academic', 'Duolingo English Test', 'Cambridge English']
   }],
-  
-  applicationRequirements: [{
-    type: String,
-    trim: true
-  }],
-  
-  // Work Experience
-  workExperienceRequired: {
-    type: Boolean,
-    default: false
-  },
-  minimumWorkExperience: {
-    type: String,
-    trim: true
-  },
-  preferredWorkExperience: {
-    type: String,
-    trim: true
-  },
-  
-  // Additional Requirements
-  researchProposalRequired: {
-    type: Boolean,
-    default: false
-  },
-  writingSampleRequired: {
-    type: Boolean,
-    default: false
-  },
-  interviewRequired: {
-    type: Boolean,
-    default: false
-  },
-  
-  // Media
-  universityLogo: {
-    type: String,
-    default: null
-  },
-  coverImage: {
-    type: String,
-    default: null
-  },
-  
-  // Status
-  isActive: {
-    type: Boolean,
-    default: true
-  },
-  featured: {
-    type: Boolean,
-    default: false
-  },
-  
-  // Metadata
-  degreeLevel: {
-    type: String,
-    default: 'Masters'
-  },
-  source: {
-    type: String,
-    default: 'masters-custom'
-  },
-  createdBy: {
-    type: String,
-    default: 'admin'
-  },
-  programCount: {
-    type: Number,
-    default: 0
-  }
+  applicationRequirements: [{ type: String, trim: true }],
+  workExperienceRequired: { type: Boolean, default: false },
+  minimumWorkExperience: { type: String, trim: true },
+  preferredWorkExperience: { type: String, trim: true },
+  researchProposalRequired: { type: Boolean, default: false },
+  writingSampleRequired: { type: Boolean, default: false },
+  interviewRequired: { type: Boolean, default: false },
+  universityLogo: { type: String, default: null },
+  coverImage: { type: String, default: null },
+  isActive: { type: Boolean, default: true },
+  featured: { type: Boolean, default: false },
+  degreeLevel: { type: String, default: 'Masters' },
+  source: { type: String, default: 'masters' },
+  createdBy: { type: String, default: 'admin' },
+  programCount: { type: Number, default: 0 }
 }, {
   timestamps: true
 });
 
-// Update timestamp and program count on save
+// ✅ FIXED pre-save hook: normalizes plain string programs into objects
 mastersUniversitySchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   
-  // Calculate program count
   if (this.programs && Array.isArray(this.programs)) {
+    // Normalize any plain strings into proper program objects
+    this.programs = this.programs.map(p => {
+      if (typeof p === 'string') {
+        return {
+          name: p,
+          title: p,
+          program_name: p,
+          level: 'Master',
+          duration: '2 years',
+          studyMode: 'On Campus',
+          description: `${p} program`
+        };
+      }
+      // Already an object — ensure name is set
+      if (typeof p === 'object' && !p.name) {
+        p.name = p.title || p.program_name || 'Unknown Program';
+      }
+      return p;
+    });
     this.programCount = this.programs.length;
   }
   
   next();
 });
 
-// Index for search
 mastersUniversitySchema.index({ 
   universityName: 'text', 
   city: 'text',
@@ -326,10 +216,9 @@ mastersUniversitySchema.index({
   'programs.description': 'text'
 });
 
-// Virtual for getting program names
 mastersUniversitySchema.virtual('programNames').get(function() {
   if (this.programs && Array.isArray(this.programs)) {
-    return this.programs.map(p => p.name);
+    return this.programs.map(p => typeof p === 'string' ? p : (p.name || p.title || p.program_name));
   }
   return [];
 });

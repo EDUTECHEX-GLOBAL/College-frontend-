@@ -13,15 +13,13 @@ const ResponsibilitiesSection = () => {
     circumstances: []
   });
 
-  // ADDED: Back to Dashboard function
   const handleBackToDashboard = () => {
     const isFirstYear = window.location.pathname.includes('/firstyear/');
-    const basePath = isFirstYear ? '/firstyear/dashboard' : '/transfer/dashboard';
-    navigate(basePath);
+    navigate(isFirstYear ? '/firstyear/dashboard' : '/transfer/dashboard');
   };
 
   const responsibilityOptions = [
-    'Assisting family or household members with tasks such as doctors\' appointments, bank visits, or visa interviews',
+    "Assisting family or household members with tasks such as doctors' appointments, bank visits, or visa interviews",
     'Farm work or unpaid work for a family business',
     'Interpreting or translating for family or household members',
     'Managing family or household finances, budget, or paying bills',
@@ -48,10 +46,7 @@ const ResponsibilitiesSection = () => {
         if (!token) return;
 
         const response = await axios.get(`${API_URL}/api/students/responsibilities`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
         });
 
         if (response.data.success) {
@@ -64,57 +59,36 @@ const ResponsibilitiesSection = () => {
         console.error('Error fetching responsibilities data:', error);
       }
     };
-
     fetchResponsibilitiesData();
   }, []);
 
   const handleResponsibilityChange = (responsibility, checked) => {
     setResponsibilitiesData(prev => {
       if (responsibility === 'None of these') {
-        return {
-          ...prev,
-          responsibilities: checked ? [] : prev.responsibilities
-        };
+        return { ...prev, responsibilities: checked ? [] : prev.responsibilities };
       }
-
       if (checked) {
-        // Remove "None of these" if any other option is selected
-        const filteredResponsibilities = prev.responsibilities.filter(r => r !== 'None of these');
         return {
           ...prev,
-          responsibilities: [...filteredResponsibilities, responsibility]
-        };
-      } else {
-        return {
-          ...prev,
-          responsibilities: prev.responsibilities.filter(r => r !== responsibility)
+          responsibilities: [...prev.responsibilities.filter(r => r !== 'None of these'), responsibility]
         };
       }
+      return { ...prev, responsibilities: prev.responsibilities.filter(r => r !== responsibility) };
     });
   };
 
   const handleCircumstanceChange = (circumstance, checked) => {
     setResponsibilitiesData(prev => {
       if (circumstance === 'None of these') {
-        return {
-          ...prev,
-          circumstances: checked ? [] : prev.circumstances
-        };
+        return { ...prev, circumstances: checked ? [] : prev.circumstances };
       }
-
       if (checked) {
-        // Remove "None of these" if any other option is selected
-        const filteredCircumstances = prev.circumstances.filter(c => c !== 'None of these');
         return {
           ...prev,
-          circumstances: [...filteredCircumstances, circumstance]
-        };
-      } else {
-        return {
-          ...prev,
-          circumstances: prev.circumstances.filter(c => c !== circumstance)
+          circumstances: [...prev.circumstances.filter(c => c !== 'None of these'), circumstance]
         };
       }
+      return { ...prev, circumstances: prev.circumstances.filter(c => c !== circumstance) };
     });
   };
 
@@ -122,37 +96,23 @@ const ResponsibilitiesSection = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      if (!token) {
-        navigate('/sign-in');
-        return;
-      }
+      if (!token) { navigate('/sign-in'); return; }
 
       const response = await axios.post(
         `${API_URL}/api/students/responsibilities`,
         { responsibilitiesData },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
+        { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } }
       );
 
       if (response.data.success) {
-        // Update localStorage with progress data
         const storedUserData = localStorage.getItem('userData');
         if (storedUserData) {
           const userData = JSON.parse(storedUserData);
           localStorage.setItem('userData', JSON.stringify({
             ...userData,
-            applicationProgress: {
-              ...userData.applicationProgress,
-              responsibilities: 100
-            }
+            applicationProgress: { ...userData.applicationProgress, responsibilities: 100 }
           }));
         }
-
-        // Navigate to dashboard
         handleBackToDashboard();
       }
     } catch (error) {
@@ -163,14 +123,25 @@ const ResponsibilitiesSection = () => {
     }
   };
 
-  const isFormValid = () => {
-    return true; // All fields are optional
-  };
+  // Reusable checkbox option row
+  const OptionRow = ({ label, checked, onChange, isNone = false }) => (
+    <label className={`option-label${isNone ? ' none-option' : ''}`}>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        className="option-input"
+        disabled={loading}
+      />
+      <span className="checkmark"></span>
+      <span className="option-text">{label}</span>
+    </label>
+  );
 
   return (
     <div className="responsibilities-container">
       <div className="responsibilities-content">
-        {/* MODIFIED: Added Back Button to the left of Complete your Application */}
+        {/* Header */}
         <div className="responsibilities-header">
           <div className="header-left-container">
             <button
@@ -191,88 +162,67 @@ const ResponsibilitiesSection = () => {
 
         <div className="responsibilities-card">
           <h2>Responsibilities and circumstances</h2>
-          
+
           <div className="responsibilities-description">
             <p>
-              Sometimes academics and activities are impacted by household responsibilities or other circumstances. 
-              Sharing this information with colleges can help them better understand the context of your application. 
-              You may repeat information you already provided elsewhere in your application.
+              Sometimes academics and activities are impacted by household responsibilities or other
+              circumstances. Sharing this information with colleges can help them better understand
+              the context of your application. You may repeat information you already provided
+              elsewhere in your application.
             </p>
           </div>
 
-          {/* Responsibilities Section */}
+          {/* Responsibilities */}
           <div className="section-group">
-            <div className="section-header">
+            <div className="responsibilities-section-header">
               <h3>
                 Please select which responsibilities you spend 4 or more hours per week doing.
                 <span className="required-asterisk">*</span>
               </h3>
             </div>
-            
+
             <div className="options-group">
               {responsibilityOptions.map((option, index) => (
-                <label key={index} className="option-label">
-                  <input
-                    type="checkbox"
-                    checked={responsibilitiesData.responsibilities.includes(option)}
-                    onChange={(e) => handleResponsibilityChange(option, e.target.checked)}
-                    className="option-input"
-                    disabled={loading}
-                  />
-                  <span className="checkmark"></span>
-                  <span className="option-text">{option}</span>
-                </label>
-              ))}
-              
-              <label className="option-label none-option">
-                <input
-                  type="checkbox"
-                  checked={responsibilitiesData.responsibilities.includes('None of these')}
-                  onChange={(e) => handleResponsibilityChange('None of these', e.target.checked)}
-                  className="option-input"
-                  disabled={loading}
+                <OptionRow
+                  key={index}
+                  label={option}
+                  checked={responsibilitiesData.responsibilities.includes(option)}
+                  onChange={(e) => handleResponsibilityChange(option, e.target.checked)}
                 />
-                <span className="checkmark"></span>
-                <span className="option-text">None of these</span>
-              </label>
+              ))}
+              <OptionRow
+                label="None of these"
+                isNone
+                checked={responsibilitiesData.responsibilities.includes('None of these')}
+                onChange={(e) => handleResponsibilityChange('None of these', e.target.checked)}
+              />
             </div>
           </div>
 
-          {/* Circumstances Section */}
+          {/* Circumstances */}
           <div className="section-group">
-            <div className="section-header">
+            <div className="responsibilities-section-header">
               <h3>
                 Please select which circumstances you've experienced.
                 <span className="required-asterisk">*</span>
               </h3>
             </div>
-            
+
             <div className="options-group">
               {circumstanceOptions.map((option, index) => (
-                <label key={index} className="option-label">
-                  <input
-                    type="checkbox"
-                    checked={responsibilitiesData.circumstances.includes(option)}
-                    onChange={(e) => handleCircumstanceChange(option, e.target.checked)}
-                    className="option-input"
-                    disabled={loading}
-                  />
-                  <span className="checkmark"></span>
-                  <span className="option-text">{option}</span>
-                </label>
-              ))}
-              
-              <label className="option-label none-option">
-                <input
-                  type="checkbox"
-                  checked={responsibilitiesData.circumstances.includes('None of these')}
-                  onChange={(e) => handleCircumstanceChange('None of these', e.target.checked)}
-                  className="option-input"
-                  disabled={loading}
+                <OptionRow
+                  key={index}
+                  label={option}
+                  checked={responsibilitiesData.circumstances.includes(option)}
+                  onChange={(e) => handleCircumstanceChange(option, e.target.checked)}
                 />
-                <span className="checkmark"></span>
-                <span className="option-text">None of these</span>
-              </label>
+              ))}
+              <OptionRow
+                label="None of these"
+                isNone
+                checked={responsibilitiesData.circumstances.includes('None of these')}
+                onChange={(e) => handleCircumstanceChange('None of these', e.target.checked)}
+              />
             </div>
           </div>
 
@@ -280,7 +230,7 @@ const ResponsibilitiesSection = () => {
             <button
               className="continue-btn"
               onClick={handleSaveAndContinue}
-              disabled={loading || !isFormValid()}
+              disabled={loading}
             >
               {loading ? 'Saving...' : 'Continue'}
             </button>

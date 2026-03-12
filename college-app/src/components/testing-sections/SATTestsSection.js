@@ -6,7 +6,6 @@ const SATTestsSection = ({ formData, handleInputChange, clearAnswer }) => {
   const pastScoreOptions = ['0', '1', '2', '3', '4', '5'];
   const futureSittingOptions = ['0', '1', '2', '3'];
 
-  // Check if section is complete
   const isSectionComplete = formData.pastSATScores && formData.futureSATSittings;
 
   return (
@@ -18,7 +17,7 @@ const SATTestsSection = ({ formData, handleInputChange, clearAnswer }) => {
           {isSectionComplete ? 'Complete' : 'In Progress'}
         </div>
       </div>
-      
+
       <div className="form-content">
         {/* Past SAT Scores */}
         <div className="form-group">
@@ -39,8 +38,8 @@ const SATTestsSection = ({ formData, handleInputChange, clearAnswer }) => {
             </select>
           </div>
           <div className="clear-button-container">
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="clear-answer-button"
               onClick={() => clearAnswer('pastSATScores')}
             >
@@ -70,8 +69,8 @@ const SATTestsSection = ({ formData, handleInputChange, clearAnswer }) => {
             ))}
           </div>
           <div className="clear-button-container">
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="clear-answer-button"
               onClick={() => clearAnswer('futureSATSittings')}
             >

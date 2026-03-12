@@ -42,42 +42,34 @@ const AdminLogin = () => {
         `${API_URL}/api/admin/login`,
         formData,
         {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true // For cookies if using HTTP-only cookies
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
         }
       );
 
       if (response.data.success) {
-        // Store token in localStorage or context
         localStorage.setItem("adminToken", response.data.token);
         localStorage.setItem("adminData", JSON.stringify(response.data.admin));
-        
-        // Store admin info for session management
         localStorage.setItem("adminLoggedIn", "true");
         localStorage.setItem("adminEmail", response.data.admin.email);
         localStorage.setItem("adminName", response.data.admin.name);
         localStorage.setItem("adminRole", response.data.admin.role);
-        
-        // Set token for future requests
-        axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.token}`;
-        
+
+        axios.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${response.data.token}`;
+
         navigate("/admin-dashboard");
       } else {
         setError(response.data.message || "Login failed");
       }
-    } catch (error) {
-      console.error("Login error:", error);
-      
-      if (error.response) {
-        // Server responded with error
-        setError(error.response.data.message || "Invalid credentials");
-      } else if (error.request) {
-        // Request made but no response
+    } catch (err) {
+      console.error("Login error:", err);
+      if (err.response) {
+        setError(err.response.data.message || "Invalid credentials");
+      } else if (err.request) {
         setError("Cannot connect to server. Please try again later.");
       } else {
-        // Something else happened
         setError("An error occurred. Please try again.");
       }
     } finally {
@@ -85,40 +77,45 @@ const AdminLogin = () => {
     }
   };
 
-  const togglePasswordVisibility = () => setShowPassword(!showPassword);
+  const togglePasswordVisibility = () => setShowPassword((p) => !p);
   const handleBackToStudentType = () => navigate("/");
 
   return (
     <div className="admin-login-wrapper">
       <div className="admin-login-container">
-        {/* Left Side - Form */}
+
+        {/* ── Left: Form ── */}
         <div className="login-left">
           <h1 className="login-title">Admin Login 👋</h1>
           <p className="login-subtitle">Access your admin dashboard</p>
 
           {error && <div className="error-message">{error}</div>}
 
-          <form className="login-form" onSubmit={handleSubmit}>
-            <label>Email</label>
+          <form className="login-form" onSubmit={handleSubmit} noValidate>
+            <label htmlFor="email">Email</label>
             <input
+              id="email"
               type="email"
               name="email"
-              placeholder="Enter admin email"
+              placeholder="admin@example.com"
               value={formData.email}
               onChange={handleChange}
               disabled={loading}
+              autoComplete="username"
               required
             />
 
-            <label>Password</label>
+            <label htmlFor="password">Password</label>
             <div className="password-container">
               <input
+                id="password"
                 type={showPassword ? "text" : "password"}
                 name="password"
-                placeholder="Enter admin password"
+                placeholder="Enter your password"
                 value={formData.password}
                 onChange={handleChange}
                 disabled={loading}
+                autoComplete="current-password"
                 required
                 minLength="6"
               />
@@ -127,33 +124,48 @@ const AdminLogin = () => {
                 className="toggle-password"
                 onClick={togglePasswordVisibility}
                 disabled={loading}
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? "Hide" : "Show"}
               </button>
             </div>
 
-            <button type="submit" className="btn-login" disabled={loading}>
-              {loading ? "Signing In..." : "Login"}
+            <button
+              type="submit"
+              className="btn-login"
+              disabled={loading}
+            >
+              {loading ? "Signing In…" : "Login"}
             </button>
           </form>
 
-          <button className="back-link" onClick={handleBackToStudentType} disabled={loading}>
+          <button
+            className="back-link"
+            onClick={handleBackToStudentType}
+            disabled={loading}
+          >
             ← Back to Dashboard
           </button>
 
           <div className="login-footer">
-            <p>© {new Date().getFullYear()} EdutechEX All Rights Reserved.</p>
-            <p className="login-tip">Use your admin credentials provided by the system administrator</p>
+            <p>© {new Date().getFullYear()} EdutechEX. All Rights Reserved.</p>
+            <p className="login-tip">
+              Use admin credentials provided by your system administrator.
+            </p>
           </div>
         </div>
 
-        {/* Right Side - Illustration */}
+        {/* ── Right: Illustration ── */}
         <div className="login-right">
-          <img src={loginIllustration} alt="Login Illustration" className="login-image" />
+          <img
+            src={loginIllustration}
+            alt="Admin Login Illustration"
+            className="login-image"
+          />
           <h2>Admin Dashboard Access</h2>
           <p className="login-now-text">Secure Login Required</p>
           <div className="security-info">
-            <p><strong>Security Features:</strong></p>
+            <p>Security Features</p>
             <ul>
               <li>Encrypted password storage</li>
               <li>Account lockout protection</li>
@@ -162,6 +174,7 @@ const AdminLogin = () => {
             </ul>
           </div>
         </div>
+
       </div>
     </div>
   );

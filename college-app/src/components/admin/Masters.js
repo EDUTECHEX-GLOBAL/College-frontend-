@@ -790,7 +790,7 @@ const MastersUniversityAdminTemplate = () => {
           ...formData,
           programs: selectedPrograms,
           intakes: formData.intakes.length > 0 ? formData.intakes : availableIntakes.slice(0, 3),
-          source: 'masters-custom',
+          source: 'masters',
           degreeLevel: 'Masters',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
