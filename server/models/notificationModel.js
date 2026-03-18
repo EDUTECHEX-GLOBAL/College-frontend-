@@ -5,11 +5,13 @@ const notificationSchema = new mongoose.Schema(
     type: {
       type: String,
       enum: [
-        "NEW_USER",           // admin: new user registered
-        "WELCOME",            // student: welcome message
-        "PENDING_APPROVAL",   // student: waiting for admin approval
-        "APPROVAL",           // student: approved by admin
-        "UNIVERSITY_REQUEST"  // admin: student requested a new university ← NEW
+        "NEW_USER",              // admin: new user registered
+        "WELCOME",               // student: welcome message
+        "PENDING_APPROVAL",      // student: waiting for admin approval
+        "APPROVAL",              // student: approved by admin
+        "UNIVERSITY_REQUEST",    // admin: student requested a new university
+        "UNIVERSITY_APPROVED",   // ✅ ADDED: student notified their university was approved
+        "UNIVERSITY_REJECTED",   // ✅ ADDED: student notified their university was rejected
       ],
       required: true,
     },
@@ -51,4 +53,4 @@ const notificationSchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.model("Notification", notificationSchema); // ← THIS LINE WAS MISSING
+export default mongoose.model("Notification", notificationSchema);

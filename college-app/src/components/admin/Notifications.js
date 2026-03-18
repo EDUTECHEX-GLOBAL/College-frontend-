@@ -40,17 +40,35 @@ const Notifications = ({ fullView = false, onUnreadCountChange }) => {
     } finally {
       setLoading(false);
     }
-  }, [adminToken, onUnreadCountChange, API_URL]); // Added API_URL to dependencies
+  }, [adminToken, onUnreadCountChange, API_URL]);
 
   useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000);
-    return () => clearInterval(interval);
+
+    // ✅ FIX: Skip polling when browser tab is hidden to prevent ERR_NETWORK_IO_SUSPENDED
+    const interval = setInterval(() => {
+      if (!document.hidden) {
+        fetchNotifications();
+      }
+    }, 30000);
+
+    // ✅ FIX: Also re-fetch when tab becomes visible again after being hidden
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchNotifications();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, [fetchNotifications]);
 
   const markAsRead = async (id) => {
     const originalNotifications = [...notifications];
-    
+
     // Optimistic update
     setNotifications((prev) =>
       prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
@@ -73,9 +91,9 @@ const Notifications = ({ fullView = false, onUnreadCountChange }) => {
 
   const markAllAsRead = async () => {
     if (unreadCount === 0) return;
-    
+
     const originalNotifications = [...notifications];
-    
+
     // Optimistic update
     setNotifications((prev) =>
       prev.map((n) => ({ ...n, isRead: true }))
@@ -101,7 +119,7 @@ const Notifications = ({ fullView = false, onUnreadCountChange }) => {
   const deleteNotification = async (id) => {
     const originalNotifications = [...notifications];
     const notificationToDelete = notifications.find(n => n._id === id);
-    
+
     // Optimistic update
     setNotifications((prev) => prev.filter((n) => n._id !== id));
     if (!notificationToDelete?.isRead) {

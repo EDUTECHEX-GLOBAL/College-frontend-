@@ -1,4 +1,4 @@
-// ProcessAdminDashboard.js — EduTechEx Brand Edition
+// ProcessAdminDashboard.js — Purple/Amber Theme (matched to SocialEco design)
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -45,7 +45,7 @@ const getStatusText = (status) => {
 
 /* ─── SVG Icon Components ─── */
 const IcoPlay = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="#4B6BDB">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="#7B61FF">
     <polygon points="5 3 19 12 5 21 5 3"/>
   </svg>
 );
@@ -239,7 +239,7 @@ const ProcessAdminDashboard = () => {
       <div className="pad-stats-row">
 
         <div className="pad-stat-card">
-          <StatIcon bg="#EEF3FF" stroke="#5B8DEF">
+          <StatIcon bg="#EDE9FF" stroke="#7B61FF">
             <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
             <polyline points="14 2 14 8 20 8"/>
             <line x1="16" y1="13" x2="8" y2="13"/>
@@ -262,7 +262,7 @@ const ProcessAdminDashboard = () => {
         </div>
 
         <div className="pad-stat-card">
-          <StatIcon bg="#EEF3FF" stroke="#5B8DEF">
+          <StatIcon bg="#EDE9FF" stroke="#7B61FF">
             <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/>
           </StatIcon>
           <div>
@@ -272,7 +272,7 @@ const ProcessAdminDashboard = () => {
         </div>
 
         <div className="pad-stat-card">
-          <StatIcon bg="#F0EEFF" stroke="#7B6CF6">
+          <StatIcon bg="#F0EEFF" stroke="#A78BFA">
             <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
             <path d="M6 12v5c3 3 9 3 12 0v-5"/>
           </StatIcon>
@@ -283,7 +283,7 @@ const ProcessAdminDashboard = () => {
         </div>
 
         <div className="pad-stat-card">
-          <StatIcon bg="#FFF8EC" stroke="#F5A623">
+          <StatIcon bg="#FFF8EE" stroke="#F4A623">
             <circle cx="12" cy="12" r="10"/>
             <polyline points="12 6 12 12 16 14"/>
           </StatIcon>
@@ -313,15 +313,15 @@ const ProcessAdminDashboard = () => {
             <svg viewBox="0 0 500 120" preserveAspectRatio="none" width="100%" height="120">
               <defs>
                 <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#5B8DEF" stopOpacity="0.20"/>
-                  <stop offset="100%" stopColor="#5B8DEF" stopOpacity="0.01"/>
+                  <stop offset="0%" stopColor="#7B61FF" stopOpacity="0.22"/>
+                  <stop offset="100%" stopColor="#7B61FF" stopOpacity="0.01"/>
                 </linearGradient>
               </defs>
               {[10,35,60,85].map((y, i) => (
-                <line key={i} x1="22" y1={y} x2="498" y2={y} stroke="#EEF1F8" strokeWidth="1"/>
+                <line key={i} x1="22" y1={y} x2="498" y2={y} stroke="#ECEAF8" strokeWidth="1"/>
               ))}
               {['30','25','20','5'].map((t, i) => (
-                <text key={i} x="2" y={[13,38,63,88][i]} fontSize="8" fill="#C0C8DC">{t}</text>
+                <text key={i} x="2" y={[13,38,63,88][i]} fontSize="8" fill="#C0BCDC">{t}</text>
               ))}
               <path
                 d="M28,105 L98,80 L170,65 L244,63 L318,38 L393,50 L468,34 L468,112 L28,112Z"
@@ -329,14 +329,14 @@ const ProcessAdminDashboard = () => {
               />
               <path
                 d="M28,105 L98,80 L170,65 L244,63 L318,38 L393,50 L468,34"
-                stroke="#5B8DEF" strokeWidth="2.2" fill="none"
+                stroke="#7B61FF" strokeWidth="2.2" fill="none"
                 strokeLinecap="round" strokeLinejoin="round"
               />
               {[[28,105],[98,80],[170,65],[244,63],[318,38],[393,50],[468,34]].map(([cx, cy], i) => (
                 <circle key={i} cx={cx} cy={cy}
                   r={i === 4 ? 5 : 3.5}
-                  fill={i === 4 ? "#5B8DEF" : "white"}
-                  stroke="#5B8DEF" strokeWidth="2"
+                  fill={i === 4 ? "#7B61FF" : "white"}
+                  stroke="#7B61FF" strokeWidth="2"
                 />
               ))}
             </svg>
@@ -347,9 +347,9 @@ const ProcessAdminDashboard = () => {
             ))}
           </div>
           <div className="pad-chart-footer">
-            <span className="pad-cfi"><span className="pad-cfd" style={{background:'#5B8DEF'}}></span><strong>120</strong> Total</span>
+            <span className="pad-cfi"><span className="pad-cfd" style={{background:'#7B61FF'}}></span><strong>120</strong> Total</span>
             <span className="pad-cfi"><span className="pad-cfd" style={{background:'#3EBDA0'}}></span><strong>38</strong> this week</span>
-            <span className="pad-cfi"><span className="pad-cfd" style={{background:'#F5A623'}}></span><strong>12</strong> feedetts</span>
+            <span className="pad-cfi"><span className="pad-cfd" style={{background:'#F4A623'}}></span><strong>12</strong> feedetts</span>
             <span className="pad-lines-ico"><IcoLines /></span>
           </div>
         </div>
@@ -370,15 +370,15 @@ const ProcessAdminDashboard = () => {
           <div className="pad-chart-body">
             <svg viewBox="0 0 400 120" preserveAspectRatio="none" width="100%" height="120">
               {[10,35,60,85].map((y, i) => (
-                <line key={i} x1="22" y1={y} x2="398" y2={y} stroke="#EEF1F8" strokeWidth="1"/>
+                <line key={i} x1="22" y1={y} x2="398" y2={y} stroke="#ECEAF8" strokeWidth="1"/>
               ))}
               {['50','40','30','20'].map((t, i) => (
-                <text key={i} x="0" y={[13,38,63,88][i]} fontSize="8" fill="#C0C8DC">{t}</text>
+                <text key={i} x="0" y={[13,38,63,88][i]} fontSize="8" fill="#C0BCDC">{t}</text>
               ))}
-              <rect x="32"  y="10"  width="48" height="95" rx="5" fill="#3EBDA0" opacity="0.80"/>
+              <rect x="32"  y="10"  width="48" height="95" rx="5" fill="#7B61FF" opacity="0.80"/>
               <rect x="100" y="34"  width="48" height="71" rx="5" fill="#A78BFA" opacity="0.78"/>
-              <rect x="168" y="50"  width="48" height="55" rx="5" fill="#60A5FA" opacity="0.78"/>
-              <rect x="236" y="60"  width="48" height="45" rx="5" fill="#6EE7B7" opacity="0.78"/>
+              <rect x="168" y="50"  width="48" height="55" rx="5" fill="#F4A623" opacity="0.78"/>
+              <rect x="236" y="60"  width="48" height="45" rx="5" fill="#3EBDA0" opacity="0.78"/>
               <rect x="304" y="70"  width="48" height="35" rx="5" fill="#FCD34D" opacity="0.88"/>
             </svg>
           </div>
@@ -388,8 +388,8 @@ const ProcessAdminDashboard = () => {
             ))}
           </div>
           <div className="pad-chart-footer">
-            <span className="pad-cfi"><span className="pad-cfd" style={{background:'#3EBDA0'}}></span><strong>55</strong> Total</span>
-            <span className="pad-cfi"><span className="pad-cfd" style={{background:'#F5A623'}}></span><strong>12</strong> Pending</span>
+            <span className="pad-cfi"><span className="pad-cfd" style={{background:'#7B61FF'}}></span><strong>55</strong> Total</span>
+            <span className="pad-cfi"><span className="pad-cfd" style={{background:'#F4A623'}}></span><strong>12</strong> Pending</span>
             <span className="pad-view-all-link">View All</span>
           </div>
         </div>

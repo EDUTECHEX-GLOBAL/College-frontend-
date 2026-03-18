@@ -15,6 +15,7 @@ const normalizePrograms = (programs) => {
     return p;
   });
 };
+
 // @desc    Create a new university
 // @route   POST /api/bachelors/universities
 // @access  Private/Admin
@@ -22,22 +23,29 @@ export const createUniversity = async (req, res) => {
   try {
     console.log('Received data:', req.body); // Debug log
 
-    // Check if university code already exists
-    const existingUniversity = await BachelorsUniversity.findOne({ 
-      universityCode: req.body.universityCode?.toUpperCase() 
-    });
-    
-    if (existingUniversity) {
-      return res.status(400).json({
-        success: false,
-        message: 'University with this code already exists'
+    // ✅ FIX: Only check for duplicate code if universityCode is actually provided
+    if (req.body.universityCode) {
+      const existingUniversity = await BachelorsUniversity.findOne({
+        universityCode: req.body.universityCode.toUpperCase()
       });
+
+      if (existingUniversity) {
+        return res.status(400).json({
+          success: false,
+          message: 'University with this code already exists'
+        });
+      }
     }
+
+    // ✅ FIX: Generate a unique universityCode if one was not provided
+    const rawCode = req.body.universityCode
+      ? req.body.universityCode.toUpperCase()
+      : `UNI-${Date.now().toString(36).toUpperCase()}`;
 
     // Prepare data with proper formatting
     const universityData = {
       ...req.body,
-      universityCode: req.body.universityCode?.toUpperCase(),
+      universityCode: rawCode,
       // Ensure arrays are properly formatted
       programs: normalizePrograms(req.body.programs),
       intakes: req.body.intakes || [],
@@ -76,7 +84,7 @@ export const createUniversity = async (req, res) => {
     });
   } catch (error) {
     console.error('Create university error:', error);
-    
+
     // Handle validation errors
     if (error.name === 'ValidationError') {
       const messages = Object.values(error.errors).map(val => ({
@@ -111,11 +119,11 @@ export const createUniversity = async (req, res) => {
 // @access  Private/Admin
 export const getAllUniversities = async (req, res) => {
   try {
-    const { 
-      page = 1, 
-      limit = 10, 
-      state, 
-      type, 
+    const {
+      page = 1,
+      limit = 10,
+      state,
+      type,
       search,
       isActive,
       featured,
@@ -125,11 +133,11 @@ export const getAllUniversities = async (req, res) => {
 
     // Build filter
     const filter = {};
-    
+
     if (isActive !== undefined) {
       filter.isActive = isActive === 'true';
     }
-    
+
     if (featured !== undefined) {
       filter.featured = featured === 'true';
     }
@@ -153,7 +161,7 @@ export const getAllUniversities = async (req, res) => {
 
     // Pagination
     const skip = (parseInt(page) - 1) * parseInt(limit);
-    
+
     // Build sort object
     const sort = {};
     sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
@@ -228,12 +236,12 @@ export const updateUniversity = async (req, res) => {
     }
 
     // Check if university code is being changed and if it's unique
-    if (req.body.universityCode && 
+    if (req.body.universityCode &&
         req.body.universityCode.toUpperCase() !== university.universityCode) {
-      const existingUniversity = await BachelorsUniversity.findOne({ 
-        universityCode: req.body.universityCode.toUpperCase() 
+      const existingUniversity = await BachelorsUniversity.findOne({
+        universityCode: req.body.universityCode.toUpperCase()
       });
-      
+
       if (existingUniversity) {
         return res.status(400).json({
           success: false,
@@ -263,7 +271,7 @@ export const updateUniversity = async (req, res) => {
     });
   } catch (error) {
     console.error('Update university error:', error);
-    
+
     if (error.name === 'ValidationError') {
       const messages = Object.values(error.errors).map(val => ({
         field: val.path,

@@ -3,7 +3,7 @@ import axios from 'axios';
 
 // Create the Axios instance
 const axiosInstance = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000', // ✅ Added fallback
+  baseURL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000', // ✅ Added fallback
   timeout: 15000, // ✅ Increased timeout for testing data (was 10000)
   headers: {
     Accept: 'application/json',

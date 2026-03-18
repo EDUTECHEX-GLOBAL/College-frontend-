@@ -175,13 +175,8 @@ export const deleteNotification = async (req, res) => {
 
 /**
  * POST /api/notifications/send-to-user
- * Admin sends a notification directly to a student (approve/reject university request etc.)
- *
+ * Admin sends a notification directly to a student (approve/reject university request)
  * Body: { userId, type, title, message }
- *
- * NOTE: `type` must be a valid enum from notificationModel.js
- * Currently supported: "UNIVERSITY_APPROVED" | "UNIVERSITY_REJECTED"
- * → Make sure these are added to the model enum (see notificationModel.js fix below)
  */
 export const sendNotificationToUser = async (req, res) => {
   try {
@@ -191,10 +186,10 @@ export const sendNotificationToUser = async (req, res) => {
 
     const { userId, type, title, message } = req.body;
 
-    if (!userId)   return res.status(400).json({ success: false, message: "userId is required" });
-    if (!type)     return res.status(400).json({ success: false, message: "type is required" });
-    if (!title)    return res.status(400).json({ success: false, message: "title is required" });
-    if (!message)  return res.status(400).json({ success: false, message: "message is required" });
+    if (!userId)  return res.status(400).json({ success: false, message: "userId is required" });
+    if (!type)    return res.status(400).json({ success: false, message: "type is required" });
+    if (!title)   return res.status(400).json({ success: false, message: "title is required" });
+    if (!message) return res.status(400).json({ success: false, message: "message is required" });
 
     // Verify target user exists
     const userExists = await Account.findById(userId).select("_id");
@@ -219,7 +214,6 @@ export const sendNotificationToUser = async (req, res) => {
       notification,
     });
   } catch (error) {
-    // Return clear message if `type` fails enum validation
     if (error.name === "ValidationError") {
       const msg = Object.values(error.errors).map((e) => e.message).join(", ");
       return res.status(400).json({ success: false, message: `Validation error: ${msg}` });
@@ -270,6 +264,7 @@ export const approveUserFromNotification = async (req, res) => {
 
 /**
  * GET /api/user/notifications
+ * Fetch all notifications for the logged-in student
  */
 export const getUserNotifications = async (req, res) => {
   try {
@@ -290,5 +285,41 @@ export const getUserNotifications = async (req, res) => {
   } catch (error) {
     console.error("❌ Failed to fetch user notifications:", error);
     res.status(500).json({ success: false, message: "Failed to fetch notifications" });
+  }
+};
+
+/**
+ * PATCH /api/user/notifications/:id/read
+ * Student marks a single notification as read.
+ * Called by the UniversityRequestPopup after it detects an approved/rejected response.
+ */
+export const markUserNotificationRead = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ success: false, message: "Notification ID is required" });
+    }
+
+    // Only allow marking notifications that belong to this student
+    const notification = await Notification.findOneAndUpdate(
+      { _id: id, userId },
+      { isRead: true },
+      { new: true }
+    );
+
+    if (!notification) {
+      return res.status(404).json({ success: false, message: "Notification not found" });
+    }
+
+    console.log(`🔔 Notification ${id} marked as read by user ${userId}`);
+    return res.status(200).json({ success: true, notification });
+  } catch (error) {
+    console.error("❌ markUserNotificationRead failed:", error);
+    return res.status(500).json({ success: false, message: "Failed to mark notification as read" });
   }
 };

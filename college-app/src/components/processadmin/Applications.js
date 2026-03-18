@@ -1,4 +1,4 @@
-// Applications.js – INTERNATIONAL APPLICATIONS (ADMIN)
+// Applications.js – INTERNATIONAL APPLICATIONS (ADMIN) — Purple/Amber Theme
 import axios from "axios";
 import React, { useEffect, useState, useCallback } from "react";
 import jsPDF from "jspdf";

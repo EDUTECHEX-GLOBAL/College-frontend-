@@ -1,46 +1,49 @@
 /* processAdminDashboard.css
    ══════════════════════════════════════════════════════
-   Colour palette — matched pixel-perfect to screenshot
+   Colour palette — matched to SocialEco purple/amber design
    ──────────────────────────────────────────────────────
    Sidebar:     #FFFFFF (pure white)
-   Active row:  #3B5BDB (medium indigo-blue)
-   Background:  #EEF2FF (soft periwinkle)
+   Active row:  #7B61FF (purple)
+   Background:  #F4F2FF (soft lavender)
    Cards:       #FFFFFF
-   Primary:     #3B5BDB
+   Primary:     #7B61FF
+   Secondary:   #F4A623 (amber/orange)
    Teal:        #3EBDA0
-   Violet:      #7B6CF6
-   Amber:       #F5A623
+   Violet:      #A78BFA
    Danger:      #EF4444
-   Text dark:   #1E2A45
-   Text mid:    #5A6478
-   Text light:  #9BA5B4
-   Border:      #E8ECF6
+   Text dark:   #2D2B55
+   Text mid:    #6B68A0
+   Text light:  #B0ACCF
+   Border:      #ECEAF8
    ══════════════════════════════════════════════════════ */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --primary:      #3B5BDB;
-  --primary-lt:   #EEF3FF;
+  --primary:      #7B61FF;
+  --primary-lt:   #EDE9FF;
+  --primary-dark: #5B4FCF;
+  --secondary:    #F4A623;
+  --secondary-lt: #FFF8EE;
   --teal:         #3EBDA0;
   --teal-lt:      #EDFAF6;
-  --violet:       #7B6CF6;
+  --violet:       #A78BFA;
   --violet-lt:    #F0EEFF;
-  --amber:        #F5A623;
-  --amber-lt:     #FFF8EC;
+  --amber:        #F4A623;
+  --amber-lt:     #FFF8EE;
   --danger:       #EF4444;
-  --orange:       #F97316;
-  --bg:           #EEF2FF;
+  --orange:       #F4A623;
+  --bg:           #F4F2FF;
   --surface:      #FFFFFF;
-  --text:         #1E2A45;
-  --text-mid:     #5A6478;
-  --text-lt:      #9BA5B4;
-  --border:       #E8ECF6;
+  --text:         #2D2B55;
+  --text-mid:     #6B68A0;
+  --text-lt:      #B0ACCF;
+  --border:       #ECEAF8;
   --sb-w:         215px;
   --sb-closed:    68px;
   --radius:       14px;
-  --shadow-sm:    0 1px 4px rgba(59,91,219,.07), 0 2px 8px rgba(59,91,219,.04);
-  --shadow-md:    0 4px 20px rgba(59,91,219,.12);
+  --shadow-sm:    0 1px 4px rgba(123,97,255,.07), 0 2px 8px rgba(123,97,255,.04);
+  --shadow-md:    0 4px 20px rgba(123,97,255,.15);
   --t:            0.22s cubic-bezier(.4,0,.2,1);
 }
 
@@ -92,7 +95,7 @@ body {
   display: flex; flex-direction: column;
   flex-shrink: 0;
   transition: width var(--t);
-  box-shadow: 2px 0 16px rgba(59,91,219,.06);
+  box-shadow: 2px 0 16px rgba(123,97,255,.08);
   position: relative; z-index: 100;
   overflow: hidden;
 }
@@ -110,7 +113,7 @@ body {
 }
 .process-admin-dashboard .sidebar-logo-icon {
   width: 34px; height: 34px;
-  background: #F0F4FF;
+  background: var(--primary-lt);
   border-radius: 9px;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
@@ -122,9 +125,9 @@ body {
 .process-admin-dashboard .sidebar-header h2 span { color: var(--primary); }
 
 .process-admin-dashboard .sidebar-toggle {
-  background: #F5F7FF;
+  background: var(--primary-lt);
   border: 1px solid var(--border);
-  color: var(--text-lt);
+  color: var(--primary);
   cursor: pointer;
   width: 28px; height: 28px;
   border-radius: 7px;
@@ -158,7 +161,7 @@ body {
   background: var(--primary-lt); color: var(--primary);
 }
 
-/* Active state — solid blue fill like the image */
+/* Active state — solid purple fill like the image */
 .process-admin-dashboard .sidebar-menu > li.active {
   background: var(--primary);
   color: #fff;
@@ -171,7 +174,7 @@ body {
 
 .process-admin-dashboard .kansas-parent { justify-content: space-between; }
 .process-admin-dashboard .kansas-parent.expanded {
-  background: #F5F7FF; color: var(--text); font-weight: 600;
+  background: var(--primary-lt); color: var(--primary); font-weight: 600;
 }
 
 .process-admin-dashboard .dropdown-arrow {
@@ -183,7 +186,7 @@ body {
 .process-admin-dashboard .sub-menu {
   list-style: none;
   padding: 3px 0 3px 14px;
-  border-left: 2px solid #E0E8FF;
+  border-left: 2px solid var(--primary-lt);
   margin: 2px 0 2px 20px;
 }
 .process-admin-dashboard .sub-menu li {
@@ -216,7 +219,7 @@ body {
   flex-shrink: 0; transition: background var(--t), color var(--t);
 }
 .process-admin-dashboard .sb-ico-sm { width: 22px; height: 22px; border-radius: 5px; }
-.process-admin-dashboard .sb-blue   { background: #EEF3FF; color: #5B8DEF; }
+.process-admin-dashboard .sb-blue   { background: var(--primary-lt); color: var(--primary); }
 .process-admin-dashboard .sb-teal   { background: var(--teal-lt); color: var(--teal); }
 .process-admin-dashboard .sb-amber  { background: var(--amber-lt); color: var(--amber); }
 
@@ -281,7 +284,7 @@ body {
   font-size: 17px; font-weight: 800;
   color: var(--primary); letter-spacing: -.4px; white-space: nowrap;
 }
-.process-admin-dashboard .navbar-left h1 span { color: var(--primary); }
+.process-admin-dashboard .navbar-left h1 span { color: var(--secondary); }
 
 .process-admin-dashboard .navbar-center { flex: 1; max-width: 440px; }
 
@@ -295,32 +298,32 @@ body {
 }
 .process-admin-dashboard .search-input {
   width: 100%; padding: 10px 18px 10px 40px;
-  border: 1.5px solid #D8DFFF;
+  border: 1.5px solid #DDD8FF;
   border-radius: 40px; font-size: 13px; outline: none;
-  background: #F5F7FF; color: var(--text);
+  background: var(--primary-lt); color: var(--text);
   font-family: 'Inter', sans-serif;
   transition: border-color var(--t), box-shadow var(--t), background var(--t);
 }
 .process-admin-dashboard .search-input::placeholder { color: var(--text-lt); }
 .process-admin-dashboard .search-input:focus {
   border-color: var(--primary); background: #fff;
-  box-shadow: 0 0 0 3px rgba(59,91,219,.1);
+  box-shadow: 0 0 0 3px rgba(123,97,255,.12);
 }
 
 .process-admin-dashboard .navbar-right {
   display: flex; align-items: center; gap: 10px;
 }
 
-/* Bell — orange bg like image */
+/* Bell — amber bg like image */
 .process-admin-dashboard .notif-btn {
   position: relative;
   width: 40px; height: 40px; border-radius: 50%;
-  background: #FFF7ED; border: none;
+  background: var(--secondary-lt); border: none;
   display: flex; align-items: center; justify-content: center;
-  cursor: pointer; color: var(--orange);
+  cursor: pointer; color: var(--secondary);
   transition: all var(--t);
 }
-.process-admin-dashboard .notif-btn:hover { background: #FFEDD5; }
+.process-admin-dashboard .notif-btn:hover { background: #FFE8B0; }
 .process-admin-dashboard .notif-dot {
   position: absolute; top: 6px; right: 6px;
   width: 8px; height: 8px; background: var(--danger);
@@ -331,14 +334,14 @@ body {
 .process-admin-dashboard .admin-profile {
   display: flex; align-items: center; gap: 9px;
   padding: 5px 14px 5px 5px;
-  background: #F5F7FF; border: 1.5px solid #D8DFFF;
+  background: var(--primary-lt); border: 1.5px solid #DDD8FF;
   border-radius: 40px; cursor: pointer;
   transition: border-color var(--t);
 }
 .process-admin-dashboard .admin-profile:hover { border-color: var(--primary); }
 .process-admin-dashboard .profile-icon {
   width: 32px; height: 32px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary), #A78BFA);
+  background: linear-gradient(135deg, var(--primary), var(--violet));
   display: flex; align-items: center; justify-content: center;
   color: #fff; flex-shrink: 0;
 }
@@ -348,13 +351,13 @@ body {
   overflow: hidden; text-overflow: ellipsis;
 }
 
-/* Mail button — gradient blue like image */
+/* Mail button — gradient purple like image */
 .process-admin-dashboard .mail-btn {
   width: 38px; height: 38px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary), #818CF8);
+  background: linear-gradient(135deg, var(--primary), var(--violet));
   border: none; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 3px 10px rgba(59,91,219,.3);
+  box-shadow: 0 3px 10px rgba(123,97,255,.35);
   transition: all var(--t);
 }
 .process-admin-dashboard .mail-btn:hover {
@@ -423,13 +426,13 @@ body {
 .process-admin-dashboard .pad-chart-title {
   font-size: 14px; color: var(--text); font-weight: 400;
 }
-.process-admin-dashboard .pad-chart-title strong { font-weight: 700; }
+.process-admin-dashboard .pad-chart-title strong { font-weight: 700; color: var(--primary); }
 .process-admin-dashboard .pad-pills {
   display: flex; gap: 4px; flex-wrap: wrap; align-items: center;
 }
 .process-admin-dashboard .pad-pill {
   font-size: 9px; font-weight: 700; padding: 2px 7px;
-  border-radius: 20px; background: #F1F4FF; color: var(--text-lt);
+  border-radius: 20px; background: var(--primary-lt); color: var(--text-lt);
 }
 .process-admin-dashboard .pad-pill-blue  { background: var(--primary-lt); color: var(--primary); }
 .process-admin-dashboard .pad-pill-amber { background: var(--amber-lt); color: var(--amber); }
@@ -453,7 +456,7 @@ body {
 .process-admin-dashboard .pad-chart-footer {
   display: flex; align-items: center; gap: 14px;
   padding: 8px 18px 14px;
-  border-top: 1px solid #F5F7FF; flex-wrap: wrap;
+  border-top: 1px solid var(--primary-lt); flex-wrap: wrap;
 }
 .process-admin-dashboard .pad-cfi {
   display: flex; align-items: center; gap: 5px;
@@ -497,16 +500,17 @@ body {
 .process-admin-dashboard .pad-table {
   width: 100%; border-collapse: collapse;
 }
-.process-admin-dashboard .pad-table thead tr { background: #F8F9FF; }
+.process-admin-dashboard .pad-table thead tr { background: var(--primary-lt); }
 .process-admin-dashboard .pad-table th {
   padding: 9px 18px;
-  font-size: 11.5px; font-weight: 700; color: var(--text-lt); text-align: left;
+  font-size: 11.5px; font-weight: 700; color: var(--primary); text-align: left;
 }
 .process-admin-dashboard .pad-table td {
   padding: 12px 18px;
   font-size: 13px; color: var(--text);
-  border-top: 1px solid #F5F7FC;
+  border-top: 1px solid var(--border);
 }
+.process-admin-dashboard .pad-table tbody tr:hover { background: #FAFAFF; }
 .process-admin-dashboard .pad-chev { color: var(--text-lt); font-size: 11px; }
 
 /* Status badges */
@@ -515,19 +519,19 @@ body {
   padding: 5px 13px; border-radius: 20px;
   font-size: 12px; font-weight: 700;
 }
-.process-admin-dashboard .pad-pending  { background: #FFF8EC; color: #D97706; }
+.process-admin-dashboard .pad-pending  { background: var(--secondary-lt); color: #A05A00; }
 .process-admin-dashboard .pad-approved { background: var(--teal); color: #fff; }
 .process-admin-dashboard .pad-review   { background: var(--primary-lt); color: var(--primary); }
 
 .process-admin-dashboard .pad-table-footer {
   padding: 10px 18px 14px;
   display: flex; justify-content: flex-end;
-  border-top: 1px solid #F5F7FC;
+  border-top: 1px solid var(--border);
 }
 .process-admin-dashboard .pad-view-all-btn {
   display: flex; align-items: center; gap: 5px;
   padding: 7px 16px; border-radius: 8px;
-  border: 1px solid #D8DFFF; background: #F5F7FF;
+  border: 1px solid #DDD8FF; background: var(--primary-lt);
   font-size: 12px; font-weight: 600; color: var(--primary);
   cursor: pointer; font-family: 'Inter', sans-serif;
   transition: all var(--t);
@@ -547,7 +551,7 @@ body {
 .process-admin-dashboard .pad-activity-hdr {
   display: flex; align-items: center; justify-content: space-between;
   padding: 14px 16px;
-  border-bottom: 1px solid #F5F7FC;
+  border-bottom: 1px solid var(--border);
 }
 .process-admin-dashboard .pad-activity-arrow {
   font-size: 18px; color: var(--text-lt); cursor: pointer;
@@ -570,8 +574,8 @@ body {
   flex-shrink: 0; margin-top: 1px;
 }
 .process-admin-dashboard .pad-dot-teal   { background: #D1FAE5; color: #059669; }
-.process-admin-dashboard .pad-dot-blue   { background: #DBEAFE; color: #2563EB; }
-.process-admin-dashboard .pad-dot-indigo { background: #E0E7FF; color: #4F46E5; }
+.process-admin-dashboard .pad-dot-blue   { background: var(--primary-lt); color: var(--primary); }
+.process-admin-dashboard .pad-dot-indigo { background: var(--violet-lt); color: var(--violet); }
 .process-admin-dashboard .pad-act-txt {
   font-size: 12.5px; color: var(--text-mid); line-height: 1.5;
 }
@@ -607,7 +611,7 @@ body {
    APPLICATION MODAL
 ════════════════════════════════════ */
 .process-admin-dashboard .application-id-badge {
-  background: linear-gradient(90deg, var(--primary), #818CF8);
+  background: linear-gradient(90deg, var(--primary), var(--violet));
   color: #fff; padding: 4px 12px; border-radius: 20px;
   font-size: 11px; font-weight: 800; letter-spacing: .4px;
   display: inline-block;
@@ -620,7 +624,7 @@ body {
   background: var(--surface); border-radius: 18px;
   width: 800px; max-width: 90%; max-height: 85vh;
   overflow-y: auto;
-  box-shadow: 0 24px 70px rgba(59,91,219,.2);
+  box-shadow: 0 24px 70px rgba(123,97,255,.22);
 }
 .process-admin-dashboard .details-section {
   margin-bottom: 16px; padding: 16px 20px;
@@ -630,7 +634,7 @@ body {
 .process-admin-dashboard .details-section h4 {
   margin: 0 0 12px 0; color: var(--primary);
   font-size: 13.5px; font-weight: 700;
-  border-bottom: 2px solid rgba(59,91,219,.1); padding-bottom: 8px;
+  border-bottom: 2px solid rgba(123,97,255,.12); padding-bottom: 8px;
 }
 .process-admin-dashboard .info-grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;
@@ -689,7 +693,7 @@ body {
 .process-admin-dashboard .email-doc-btn {
   padding: 6px 13px; border: none; border-radius: 7px; cursor: pointer;
   font-size: 12px; display: flex; align-items: center; gap: 5px;
-  background: linear-gradient(90deg, var(--primary), #818CF8);
+  background: linear-gradient(90deg, var(--primary), var(--violet));
   color: #fff; font-weight: 700; transition: all var(--t);
   font-family: 'Inter', sans-serif;
 }

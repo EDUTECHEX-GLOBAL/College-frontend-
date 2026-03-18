@@ -2,688 +2,475 @@
 import University from '../models/University.js';
 import College from '../models/College.js';
 import UserProfile from '../models/userprofilemodel.js';
+import BachelorsUniversity from '../models/bachelorsUniversityModel.js';
+import MastersUniversity from '../models/mastersUniversityModel.js';
 
-// 🔍 SEARCH UNIVERSITIES BASED ON STUDENT PROFILE AND SELECTED UNIVERSITIES
-export const searchColleges = async (req, res) => {
-  try {
-    const { query, program, field, country } = req.query;
-    const userId = req.userId; // From auth middleware
-
-    console.log('🔍 College Search Request:', { query, program, field, country, userId });
-
-    // Get student profile if userId exists
-    let studentProfile = null;
-    let selectedUniversities = [];
-    
-    if (userId) {
-      try {
-        studentProfile = await UserProfile.findOne({ userId });
-        console.log('📋 Student Profile Found:', studentProfile ? 'Yes' : 'No');
-        
-        if (studentProfile) {
-          console.log('   - Program:', studentProfile.eligibleProgram);
-          console.log('   - Field:', studentProfile.education?.field);
-          console.log('   - Country:', studentProfile.basicInfo?.residence);
-          
-          // Get selected universities from profile
-          selectedUniversities = studentProfile.selectedUniversities || [];
-          console.log(`   - Selected Universities: ${selectedUniversities.length}`);
-          
-          // Log selected universities with their courses
-          selectedUniversities.forEach((uni, index) => {
-            const courseCount = uni.selectedCourses?.length || 0;
-            console.log(`     ${index + 1}. ${uni.name} - ${courseCount} courses selected`);
-            if (courseCount > 0) {
-              uni.selectedCourses?.forEach((course, idx) => {
-                console.log(`        - Course ${idx + 1}: ${course.title || course.program_name} (${course.level || 'N/A'})`);
-              });
-            }
-          });
-        }
-      } catch (profileError) {
-        console.error("Error fetching student profile:", profileError);
-        // Continue without profile
-      }
-    }
-
-    // If no profile exists, return appropriate message
-    if (!studentProfile) {
-      return res.status(200).json({
-        success: true,
-        count: 0,
-        colleges: [],
-        hasProfile: false,
-        message: "Please complete your profile to see university recommendations"
-      });
-    }
-
-    // If no universities selected in profile, return message
-    if (!selectedUniversities || selectedUniversities.length === 0) {
-      return res.status(200).json({
-        success: true,
-        count: 0,
-        colleges: [],
-        hasProfile: true,
-        profileUsed: {
-          program: studentProfile.eligibleProgram,
-          field: studentProfile.education?.field,
-          country: studentProfile.basicInfo?.residence
-        },
-        message: "No universities selected in your profile. Please select universities in your profile first."
-      });
-    }
-
-    // Extract all university IDs from selectedUniversities
-    const universityIds = selectedUniversities
-      .map(u => u.id || u.unitid)
-      .filter(id => id !== null && id !== undefined);
-
-    console.log('🔎 Looking for universities with IDs:', universityIds);
-
-    if (universityIds.length === 0) {
-      return res.status(200).json({
-        success: true,
-        count: 0,
-        colleges: [],
-        hasProfile: true,
-        message: "No valid university IDs found in profile"
-      });
-    }
-
-    // Build search query to find universities by ID
-    const universities = [];
-    
-    // Try to find each university by its ID
-    for (const id of universityIds) {
-      try {
-        const idStr = String(id).trim();
-        let university = null;
-        
-        // Try to find by UNITID (if it's a number)
-        if (!isNaN(idStr) && /^\d+$/.test(idStr)) {
-          university = await University.findOne({ UNITID: parseInt(idStr, 10) });
-        }
-        
-        // If not found, try by _id (if it looks like an ObjectId)
-        if (!university && idStr.length === 24 && /^[0-9a-fA-F]{24}$/.test(idStr)) {
-          university = await University.findById(idStr);
-        }
-        
-        // If still not found, try by UNITID as string
-        if (!university) {
-          university = await University.findOne({ UNITID: idStr });
-        }
-        
-        if (university) {
-          universities.push(university);
-          console.log(`✅ Found university: ${university.INSTNM} for ID: ${idStr}`);
-        } else {
-          console.log(`❌ No university found for ID: ${idStr}`);
-        }
-      } catch (err) {
-        console.error(`Error finding university for ID ${id}:`, err.message);
-      }
-    }
-
-    console.log(`📚 Found ${universities.length} universities out of ${universityIds.length} selected`);
-
-    // If no universities found, return debug info
-    if (universities.length === 0) {
-      // Get sample universities from database for debugging
-      const sampleUniversities = await University.find({})
-        .select('UNITID INSTNM location')
-        .limit(5);
-      
-      return res.status(200).json({
-        success: true,
-        count: 0,
-        colleges: [],
-        hasProfile: true,
-        debug: {
-          searchedIds: universityIds,
-          sampleDbIds: sampleUniversities.map(u => ({
-            UNITID: u.UNITID,
-            _id: u._id.toString(),
-            name: u.INSTNM
-          }))
-        },
-        message: "Selected universities not found in database. Please update your profile and reselect universities."
-      });
-    }
-
-    // Create a map of selected universities with their courses for quick lookup
-    const selectedUniMap = {};
-    selectedUniversities.forEach(uni => {
-      const id = uni.id || uni.unitid;
-      if (id) {
-        selectedUniMap[String(id).trim()] = uni;
-      }
-    });
-
-    // Transform universities to match frontend expected format and include selected courses
-    const transformedUniversities = universities.map(uni => {
-      const uniObj = uni.toObject ? uni.toObject() : uni;
-      const uniId = String(uniObj.UNITID || uniObj._id).trim();
-      
-      // Get the selected university data from profile
-      const selectedUniData = selectedUniMap[uniId] || {};
-
-      // Calculate match percentage based on student profile
-      let matchPercentage = 0;
-      let matchReasons = [];
-
-      // Check program match (40 points)
-      if (studentProfile.eligibleProgram) {
-        const programLevel = studentProfile.eligibleProgram;
-        const uniProgramLevel = uniObj.metadata?.iclevel;
-        
-        if ((programLevel === 'Bachelor' && uniProgramLevel === 1) ||
-            (programLevel === 'Master' && uniProgramLevel === 3) ||
-            (programLevel === 'PhD' && uniProgramLevel === 4)) {
-          matchPercentage += 40;
-          matchReasons.push('Program level matches your qualification');
-        }
-      }
-
-      // Check field of study match (30 points)
-      if (studentProfile.education?.field && uniObj.metadata?.programs) {
-        const fieldMatch = uniObj.metadata.programs.some(p => 
-          p.title?.toLowerCase().includes(studentProfile.education.field.toLowerCase())
-        );
-        if (fieldMatch) {
-          matchPercentage += 30;
-          matchReasons.push('Programs available in your field of study');
-        }
-      }
-
-      // Check location preference (20 points)
-      if (studentProfile.basicInfo?.residence && uniObj.location?.country) {
-        if (studentProfile.basicInfo.residence.toLowerCase().includes(uniObj.location.country.toLowerCase())) {
-          matchPercentage += 20;
-          matchReasons.push('Located in your preferred country');
-        }
-      }
-
-      // Check program count (10 points)
-      const programCount = uniObj.stats?.totalPrograms || uniObj.metadata?.programs?.length || 0;
-      if (programCount > 20) {
-        matchPercentage += 10;
-        matchReasons.push('Extensive program offerings');
-      } else if (programCount > 10) {
-        matchPercentage += 7;
-        matchReasons.push('Good variety of programs');
-      } else if (programCount > 5) {
-        matchPercentage += 5;
-        matchReasons.push('Multiple programs available');
-      }
-
-      // Get programs for this university
-      const programs = extractProgramsFromUniversity(uniObj);
-
-      return {
-        UNITID: uniObj.UNITID || uniObj._id.toString(),
-        _id: uniObj._id.toString(),
-        INSTNM: uniObj.INSTNM || 'Unknown University',
-        IALIAS: uniObj.IALIAS || '',
-        CITY: uniObj.location?.city || uniObj.CITY || '',
-        STABBR: uniObj.location?.state || uniObj.STABBR || '',
-        COUNTRY: uniObj.location?.country || 'USA',
-        WEBADDR: uniObj.contact?.website || uniObj.WEBADDR || '',
-        logo: getUniversityLogo(uniObj.INSTNM || 'University'),
-        fallbackLogo: '/default-university-logo.png',
-        programCount: programCount,
-        programs: programs,
-        matchPercentage: Math.min(100, matchPercentage),
-        matchReasons: matchReasons,
-        location: uniObj.location || {},
-        contact: uniObj.contact || {},
-        stats: uniObj.stats || {},
-        metadata: {
-          iclevel: uniObj.metadata?.iclevel,
-          control: uniObj.metadata?.control,
-          sector: uniObj.metadata?.sector
-        },
-        importedByAdmin: uniObj.importedByAdmin || false,
-        
-        // IMPORTANT: Include the selected courses from the user's profile
-        selectedCourses: selectedUniData.selectedCourses || [],
-        isKansas: selectedUniData.isKansas || false,
-        selectedUniversityData: selectedUniData
-      };
-    });
-
-    // Sort by match percentage
-    transformedUniversities.sort((a, b) => b.matchPercentage - a.matchPercentage);
-
-    return res.status(200).json({
-      success: true,
-      count: transformedUniversities.length,
-      colleges: transformedUniversities,
-      hasProfile: true,
-      totalSelected: selectedUniversities.length,
-      profileUsed: {
-        program: studentProfile.eligibleProgram,
-        field: studentProfile.education?.field,
-        country: studentProfile.basicInfo?.residence,
-        selectedCount: selectedUniversities.length
-      },
-      // Include summary of selected courses
-      selectedCoursesSummary: transformedUniversities.map(uni => ({
-        universityName: uni.INSTNM,
-        universityId: uni.UNITID,
-        courseCount: uni.selectedCourses?.length || 0,
-        courses: uni.selectedCourses || []
-      })).filter(uni => uni.courseCount > 0)
-    });
-
-  } catch (error) {
-    console.error("❌ College search error:", error);
-    // Return a proper error response without crashing
-    return res.status(500).json({
-      success: false,
-      message: "An error occurred while searching for colleges",
-      error: error.message,
-      colleges: []
-    });
+// ─────────────────────────────────────────────────────────────────────────────
+// CORE HELPER: find a university across ALL three collections
+// IDs can be:
+//   • numeric string  → admin University (UNITID)
+//   • 24-char hex     → any collection (_id)
+//   • "PRIN001" style → BachelorsUniversity / MastersUniversity (universityCode)
+// Returns { doc, source } or null
+// ─────────────────────────────────────────────────────────────────────────────
+const findUniversityAcrossCollections = async (idStr) => {
+  // 1. Numeric → admin University UNITID
+  if (/^\d+$/.test(idStr)) {
+    const u = await University.findOne({ UNITID: parseInt(idStr, 10) });
+    if (u) return { doc: u, source: 'admin' };
   }
+
+  // 2. 24-char hex → try all three by _id
+  if (idStr.length === 24 && /^[0-9a-fA-F]{24}$/.test(idStr)) {
+    const u = await University.findById(idStr);
+    if (u) return { doc: u, source: 'admin' };
+    const b = await BachelorsUniversity.findById(idStr);
+    if (b) return { doc: b, source: 'bachelors' };
+    const m = await MastersUniversity.findById(idStr);
+    if (m) return { doc: m, source: 'masters' };
+  }
+
+  // 3. universityCode (case-insensitive) → bachelors first, then masters
+  const bCode = await BachelorsUniversity.findOne({
+    universityCode: { $regex: new RegExp(`^${idStr}$`, 'i') }
+  });
+  if (bCode) return { doc: bCode, source: 'bachelors' };
+
+  const mCode = await MastersUniversity.findOne({
+    universityCode: { $regex: new RegExp(`^${idStr}$`, 'i') }
+  });
+  if (mCode) return { doc: mCode, source: 'masters' };
+
+  // 4. String UNITID fallback on admin collection
+  const uStr = await University.findOne({ UNITID: idStr });
+  if (uStr) return { doc: uStr, source: 'admin' };
+
+  return null;
 };
 
-// Helper function to extract programs from university data
-const extractProgramsFromUniversity = (uniObj) => {
-  let programs = [];
-  
-  // 1. Try to get from metadata.programs
-  if (uniObj.metadata?.programs && Array.isArray(uniObj.metadata.programs)) {
-    programs = uniObj.metadata.programs.map((prog, index) => ({
-      id: prog.id || `prog-${uniObj.UNITID}-${index + 1}`,
-      title: prog.title || 'Unknown Program',
-      program_name: prog.program_name || prog.title,
-      level: prog.level || (uniObj.metadata?.iclevel === 1 ? 'Undergraduate' : 'Graduate'),
-      studyMode: prog.studyMode || 'On Campus',
-      locations: prog.locations || [`${uniObj.CITY || ''}, ${uniObj.STABBR || ''}`],
-      duration: prog.duration || getDurationForLevel(prog.level),
-      description: prog.description || `${prog.title} program at ${uniObj.INSTNM}`,
-      majorArea: prog.majorArea || 'General'
-    }));
-  }
-  
-  // 2. Try to get from GUS_DATA.programs_data
-  else if (uniObj.GUS_DATA?.programs_data && Array.isArray(uniObj.GUS_DATA.programs_data)) {
-    programs = uniObj.GUS_DATA.programs_data.map((prog, index) => ({
-      id: prog.id || `prog-${uniObj.UNITID}-${index + 1}`,
-      title: prog.title || prog.program_name || 'Program',
-      program_name: prog.program_name || prog.title,
-      level: prog.level || uniObj.GUS_DATA?.level || 'Undergraduate',
-      studyMode: prog.studyMode || 'On Campus',
-      locations: prog.locations || [`${uniObj.CITY || ''}, ${uniObj.STABBR || ''}`],
-      duration: prog.duration || '3-4 years',
-      description: prog.description || `${prog.title || prog.program_name} program at ${uniObj.INSTNM}`,
-      majorArea: prog.majorArea || 'General'
-    }));
-  }
-  
-  // 3. Try to get from GUS_DATA.major_areas
-  else if (uniObj.GUS_DATA?.major_areas && Array.isArray(uniObj.GUS_DATA.major_areas)) {
-    uniObj.GUS_DATA.major_areas.forEach(area => {
-      if (area.specific_programs && Array.isArray(area.specific_programs)) {
-        area.specific_programs.forEach(prog => {
-          programs.push({
-            id: `area-${area.major_area}-${prog.program_name.replace(/\s+/g, '-')}`,
-            title: prog.program_name,
-            program_name: prog.program_name,
-            level: uniObj.GUS_DATA?.level || 'Undergraduate',
-            studyMode: 'On Campus',
-            locations: [`${uniObj.CITY || ''}, ${uniObj.STABBR || ''}`],
-            duration: '3-4 years',
-            description: `${prog.program_name} program in ${area.major_area} at ${uniObj.INSTNM}`,
-            majorArea: area.major_area
-          });
-        });
+// ─────────────────────────────────────────────────────────────────────────────
+// HELPER: extract programs from any collection's document shape
+// ─────────────────────────────────────────────────────────────────────────────
+const extractProgramsFromUniversity = (uniObj, source = 'admin') => {
+  const city    = uniObj.CITY  || uniObj.city  || uniObj.location?.city  || '';
+  const state   = uniObj.STABBR|| uniObj.state || uniObj.location?.state || '';
+  const name    = uniObj.INSTNM|| uniObj.universityName || '';
+  const defaultLoc = [city, state].filter(Boolean).join(', ');
+
+  // bachelors / masters template universities
+  if ((source === 'bachelors' || source === 'masters') &&
+      Array.isArray(uniObj.programs) && uniObj.programs.length > 0) {
+    return uniObj.programs.map((p, i) => {
+      if (typeof p === 'string') {
+        return {
+          id: `prog-${uniObj.universityCode || uniObj._id}-${i}`,
+          title: p, name: p, program_name: p,
+          level: source === 'bachelors' ? 'Bachelor' : 'Master',
+          studyMode: 'On Campus',
+          duration: source === 'bachelors' ? '4 years' : '2 years',
+          locations: [defaultLoc], majorArea: 'General',
+          description: `${p} at ${name}`,
+        };
       }
+      const pName = p.name || p.title || p.program_name || `Program ${i + 1}`;
+      return {
+        id: p.id || p._id?.toString() || `prog-${uniObj.universityCode || uniObj._id}-${i}`,
+        title: pName, name: pName, program_name: p.program_name || pName,
+        level: p.level || (source === 'bachelors' ? 'Bachelor' : 'Master'),
+        studyMode: p.studyMode || 'On Campus',
+        duration: p.duration || (source === 'bachelors' ? '4 years' : '2 years'),
+        locations: p.locations?.length ? p.locations : [defaultLoc],
+        majorArea: p.majorArea || p.category || 'General',
+        description: p.description || `${pName} at ${name}`,
+      };
     });
   }
-  
-  return programs;
+
+  // admin / imported universities
+  if (Array.isArray(uniObj.metadata?.programs) && uniObj.metadata.programs.length > 0) {
+    return uniObj.metadata.programs.map((p, i) => ({
+      id: p.id || `prog-${uniObj.UNITID}-${i + 1}`,
+      title: p.title || 'Unknown Program', program_name: p.program_name || p.title,
+      level: p.level || (uniObj.metadata?.iclevel === 1 ? 'Undergraduate' : 'Graduate'),
+      studyMode: p.studyMode || 'On Campus',
+      locations: p.locations?.length ? p.locations : [defaultLoc],
+      duration: p.duration || getDurationForLevel(p.level),
+      description: p.description || `${p.title} at ${name}`,
+      majorArea: p.majorArea || 'General',
+    }));
+  }
+
+  if (Array.isArray(uniObj.GUS_DATA?.programs_data) && uniObj.GUS_DATA.programs_data.length > 0) {
+    return uniObj.GUS_DATA.programs_data.map((p, i) => ({
+      id: p.id || `prog-${uniObj.UNITID}-${i + 1}`,
+      title: p.title || p.program_name || 'Program', program_name: p.program_name || p.title,
+      level: p.level || uniObj.GUS_DATA?.level || 'Undergraduate',
+      studyMode: p.studyMode || 'On Campus',
+      locations: p.locations?.length ? p.locations : [defaultLoc],
+      duration: p.duration || '3-4 years',
+      description: p.description || `${p.title || p.program_name} at ${name}`,
+      majorArea: p.majorArea || 'General',
+    }));
+  }
+
+  if (Array.isArray(uniObj.GUS_DATA?.major_areas) && uniObj.GUS_DATA.major_areas.length > 0) {
+    const programs = [];
+    uniObj.GUS_DATA.major_areas.forEach(area => {
+      (area.specific_programs || []).forEach(prog => {
+        programs.push({
+          id: `area-${area.major_area}-${prog.program_name.replace(/\s+/g, '-')}`,
+          title: prog.program_name, program_name: prog.program_name,
+          level: uniObj.GUS_DATA?.level || 'Undergraduate',
+          studyMode: 'On Campus', locations: [defaultLoc], duration: '3-4 years',
+          description: `${prog.program_name} in ${area.major_area} at ${name}`,
+          majorArea: area.major_area,
+        });
+      });
+    });
+    if (programs.length) return programs;
+  }
+
+  return [];
 };
 
 const getDurationForLevel = (level) => {
   if (!level) return '3-4 years';
-  const levelStr = level.toLowerCase();
-  if (levelStr.includes('master')) return '1-2 years';
-  if (levelStr.includes('phd')) return '3-5 years';
-  if (levelStr.includes('bachelor')) return '3-4 years';
+  const l = level.toLowerCase();
+  if (l.includes('master')) return '1-2 years';
+  if (l.includes('phd'))    return '3-5 years';
   return '3-4 years';
 };
 
-// 🔍 GET UNIVERSITY BY ID WITH FULL DETAILS AND PROGRAMS
+// ─────────────────────────────────────────────────────────────────────────────
+// HELPER: normalise a raw doc into consistent shape
+// ─────────────────────────────────────────────────────────────────────────────
+const normaliseDoc = (rawDoc, source) => {
+  const u = rawDoc.toObject ? rawDoc.toObject() : rawDoc;
+  const programs = extractProgramsFromUniversity(u, source);
+  return {
+    UNITID:         u.UNITID         || null,
+    universityCode: u.universityCode || null,
+    _id:            u._id?.toString() || '',
+    INSTNM:  u.INSTNM  || u.universityName || 'Unknown University',
+    IALIAS:  u.IALIAS  || '',
+    CITY:    u.CITY    || u.city    || u.location?.city  || '',
+    STABBR:  u.STABBR  || u.state   || u.location?.state || '',
+    COUNTRY: u.COUNTRY || u.country || u.location?.country || 'USA',
+    WEBADDR: u.WEBADDR || u.website || u.contact?.website || '',
+    logo:    getUniversityLogo(u.INSTNM || u.universityName || 'University'),
+    fallbackLogo: '/default-university-logo.png',
+    programs,
+    programCount: programs.length,
+    location: u.location || { city: u.city || u.CITY, state: u.state || u.STABBR, country: u.country || u.COUNTRY },
+    contact:  u.contact  || { website: u.website || u.WEBADDR },
+    stats:    u.stats    || {},
+    metadata: { iclevel: u.metadata?.iclevel, control: u.metadata?.control, sector: u.metadata?.sector },
+    tuitionFees:     u.tuitionFees     || null,
+    establishedYear: u.establishedYear || null,
+    universityType:  u.universityType  || null,
+    ranking:         u.ranking         || null,
+    importedByAdmin: u.importedByAdmin || false,
+    source,
+    _raw: u,
+  };
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HELPER: calculate match % against student profile
+// ─────────────────────────────────────────────────────────────────────────────
+const calcMatch = (normUni, profile) => {
+  let pct = 0;
+  const reasons = [];
+
+  if (profile.eligibleProgram) {
+    const lvl = profile.eligibleProgram;
+    if (
+      (lvl === 'Bachelor' && (normUni.source === 'bachelors' || normUni.source === 'profile-fallback' || normUni._raw?.metadata?.iclevel === 1)) ||
+      (lvl === 'Master'   && (normUni.source === 'masters'   || normUni._raw?.metadata?.iclevel === 3)) ||
+      (lvl === 'PhD'      && normUni._raw?.metadata?.iclevel === 4)
+    ) { pct += 40; reasons.push('Program level matches your qualification'); }
+  }
+
+  if (profile.education?.field && normUni.programs.length > 0) {
+    const f = profile.education.field.toLowerCase();
+    if (normUni.programs.some(p => (p.title||'').toLowerCase().includes(f) || (p.program_name||'').toLowerCase().includes(f)))
+    { pct += 30; reasons.push('Programs available in your field of study'); }
+  }
+
+  if (profile.basicInfo?.residence && normUni.COUNTRY) {
+    if (normUni.COUNTRY.toLowerCase().includes(profile.basicInfo.residence.toLowerCase()))
+    { pct += 20; reasons.push('Located in your preferred country'); }
+  }
+
+  const pc = normUni.programCount;
+  if (pc > 20)      { pct += 10; reasons.push('Extensive program offerings'); }
+  else if (pc > 10) { pct += 7;  reasons.push('Good variety of programs'); }
+  else if (pc > 5)  { pct += 5;  reasons.push('Multiple programs available'); }
+
+  return { matchPercentage: Math.min(100, pct), matchReasons: reasons };
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HELPER: build response item
+// ─────────────────────────────────────────────────────────────────────────────
+const buildResponseItem = (normUni, selectedUniData, studentProfile) => {
+  const { matchPercentage, matchReasons } = calcMatch(normUni, studentProfile);
+  return {
+    UNITID:         normUni.UNITID,
+    universityCode: normUni.universityCode,
+    _id:            normUni._id,
+    INSTNM:   normUni.INSTNM,
+    IALIAS:   normUni.IALIAS,
+    CITY:     normUni.CITY,
+    STABBR:   normUni.STABBR,
+    COUNTRY:  normUni.COUNTRY,
+    WEBADDR:  normUni.WEBADDR,
+    logo:     normUni.logo,
+    fallbackLogo: normUni.fallbackLogo,
+    programCount:  normUni.programCount,
+    programs:      normUni.programs,
+    matchPercentage,
+    matchReasons,
+    location:  normUni.location,
+    contact:   normUni.contact,
+    stats:     normUni.stats,
+    metadata:  normUni.metadata,
+    source:    normUni.source,
+    importedByAdmin: normUni.importedByAdmin,
+    // ── CRITICAL: courses the student chose in their profile ────────────────
+    selectedCourses:        selectedUniData?.selectedCourses || [],
+    isKansas:               selectedUniData?.isKansas        || false,
+    selectedUniversityData: selectedUniData,
+  };
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MAIN: GET /api/college-search
+// ─────────────────────────────────────────────────────────────────────────────
+export const searchColleges = async (req, res) => {
+  try {
+    const { query } = req.query;
+    const userId = req.userId;
+
+    console.log('🔍 College Search Request:', { query, userId });
+
+    // 1. Load student profile
+    let studentProfile = null;
+    if (userId) {
+      try {
+        studentProfile = await UserProfile.findOne({ userId });
+        console.log('📋 Student Profile Found:', studentProfile ? 'Yes' : 'No');
+      } catch (e) {
+        console.error('Error fetching student profile:', e);
+      }
+    }
+
+    if (!studentProfile) {
+      return res.status(200).json({
+        success: true, count: 0, colleges: [], hasProfile: false,
+        message: 'Please complete your profile to see university recommendations',
+      });
+    }
+
+    const selectedUniversities = studentProfile.selectedUniversities || [];
+    console.log(`   - Selected Universities in profile: ${selectedUniversities.length}`);
+    selectedUniversities.forEach((u, i) => console.log(`     ${i+1}. ${u.name} [id: ${u.id}]`));
+
+    if (selectedUniversities.length === 0) {
+      return res.status(200).json({
+        success: true, count: 0, colleges: [], hasProfile: true,
+        message: 'No universities selected in your profile. Please select universities in your profile first.',
+      });
+    }
+
+    // 2. Build id → selectedUni map
+    const selectedUniMap = {};
+    selectedUniversities.forEach(uni => {
+      const key = String(uni.id || uni.unitid || '').trim();
+      if (key) selectedUniMap[key] = uni;
+    });
+
+    const universityIds = Object.keys(selectedUniMap);
+    console.log('🔎 Looking for university IDs:', universityIds);
+
+    // 3. Fetch each university across all collections, with profile-data fallback
+    const results = [];
+
+    for (const idStr of universityIds) {
+      try {
+        const found = await findUniversityAcrossCollections(idStr);
+
+        if (found) {
+          const normUni = normaliseDoc(found.doc, found.source);
+          console.log(`✅ Found [${found.source}]: ${normUni.INSTNM} for ID: ${idStr}`);
+          results.push({ normUni, selectedUniData: selectedUniMap[idStr] });
+        } else {
+          // FALLBACK: use data already stored in the student's profile
+          const profileUni = selectedUniMap[idStr];
+          console.log(`⚠️  Not in DB — using profile data for: ${profileUni?.name} (${idStr})`);
+
+          if (profileUni?.name) {
+            const fallbackNorm = {
+              UNITID: null, universityCode: idStr, _id: '',
+              INSTNM:   profileUni.name,
+              IALIAS:   '',
+              CITY:     profileUni.city    || '',
+              STABBR:   profileUni.state   || '',
+              COUNTRY:  profileUni.country || 'USA',
+              WEBADDR:  '',
+              logo:     getUniversityLogo(profileUni.name),
+              fallbackLogo: '/default-university-logo.png',
+              programs:     [],
+              programCount: 0,
+              location: { city: profileUni.city, state: profileUni.state, country: profileUni.country },
+              contact: {}, stats: {}, metadata: {},
+              source: 'profile-fallback', importedByAdmin: false, _raw: profileUni,
+            };
+            results.push({ normUni: fallbackNorm, selectedUniData: profileUni });
+          }
+        }
+      } catch (err) {
+        console.error(`Error finding university for ID ${idStr}:`, err.message);
+      }
+    }
+
+    console.log(`📚 Found/built ${results.length} / ${universityIds.length} universities`);
+
+    // 4. Optional text filter
+    let filtered = results;
+    if (query?.trim()) {
+      const q = query.trim().toLowerCase();
+      filtered = results.filter(({ normUni }) =>
+        normUni.INSTNM.toLowerCase().includes(q) ||
+        normUni.CITY.toLowerCase().includes(q) ||
+        normUni.STABBR.toLowerCase().includes(q)
+      );
+    }
+
+    // 5. Build response
+    const colleges = filtered
+      .map(({ normUni, selectedUniData }) => buildResponseItem(normUni, selectedUniData, studentProfile))
+      .sort((a, b) => b.matchPercentage - a.matchPercentage);
+
+    return res.status(200).json({
+      success: true,
+      count: colleges.length,
+      colleges,
+      hasProfile: true,
+      totalSelected: selectedUniversities.length,
+      profileUsed: {
+        program:      studentProfile.eligibleProgram,
+        field:        studentProfile.education?.field,
+        country:      studentProfile.basicInfo?.residence,
+        selectedCount: selectedUniversities.length,
+      },
+      selectedCoursesSummary: colleges
+        .filter(u => u.selectedCourses?.length > 0)
+        .map(u => ({
+          universityName: u.INSTNM,
+          universityId:   u.UNITID || u.universityCode,
+          courseCount:    u.selectedCourses.length,
+          courses:        u.selectedCourses,
+        })),
+    });
+
+  } catch (error) {
+    console.error('❌ College search error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'An error occurred while searching for colleges',
+      error: error.message,
+      colleges: [],
+    });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/college-search/:id
+// ─────────────────────────────────────────────────────────────────────────────
 export const getUniversityById = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.userId;
 
-    console.log(`🔍 Fetching university details for ID: ${id}`);
+    if (!id) return res.status(400).json({ success: false, message: 'University ID is required' });
 
-    if (!id) {
-      return res.status(400).json({
-        success: false,
-        message: "University ID is required"
-      });
-    }
+    const found = await findUniversityAcrossCollections(id.toString());
+    if (!found) return res.status(404).json({ success: false, message: 'University not found' });
 
-    // Try to find by UNITID or _id
-    let university;
-    const idStr = id.toString();
-    
-    // Check if id is a number (UNITID)
-    if (!isNaN(idStr) && idStr.match(/^\d+$/)) {
-      university = await University.findOne({ UNITID: Number(idStr) });
-    } 
-    
-    // If not found and id looks like an ObjectId
-    if (!university && idStr.length === 24 && /^[0-9a-fA-F]{24}$/.test(idStr)) {
-      university = await University.findById(idStr);
-    }
-    
-    // Try as string UNITID
-    if (!university) {
-      university = await University.findOne({ UNITID: idStr });
-    }
+    const normUni = normaliseDoc(found.doc, found.source);
 
-    if (!university) {
-      return res.status(404).json({
-        success: false,
-        message: "University not found"
-      });
-    }
-
-    // Get student profile for personalized recommendations and selected courses
-    let studentProfile = null;
     let selectedUniversityData = null;
-    
     if (userId) {
       try {
-        studentProfile = await UserProfile.findOne({ userId });
-        
-        // Find if this university is in the user's selected universities
-        if (studentProfile && studentProfile.selectedUniversities) {
-          selectedUniversityData = studentProfile.selectedUniversities.find(u => 
-            u.id === idStr || u.unitid?.toString() === idStr || u._id?.toString() === idStr
-          );
+        const profile = await UserProfile.findOne({ userId });
+        if (profile?.selectedUniversities) {
+          selectedUniversityData = profile.selectedUniversities.find(u => {
+            const key = String(u.id || u.unitid || '').trim();
+            return key === id.toString() ||
+                   key === normUni.UNITID?.toString() ||
+                   key === normUni.universityCode;
+          });
         }
-      } catch (profileError) {
-        console.error("Error fetching student profile:", profileError);
-      }
+      } catch (_) {}
     }
-
-    const uniObj = university.toObject ? university.toObject() : university;
-    
-    // Extract programs
-    const programs = extractProgramsFromUniversity(uniObj);
-    const programCount = programs.length;
-
-    // Transform university data
-    const transformedUniversity = {
-      UNITID: uniObj.UNITID || uniObj._id.toString(),
-      _id: uniObj._id.toString(),
-      INSTNM: uniObj.INSTNM || 'Unknown University',
-      IALIAS: uniObj.IALIAS || '',
-      CITY: uniObj.location?.city || uniObj.CITY || '',
-      STABBR: uniObj.location?.state || uniObj.STABBR || '',
-      COUNTRY: uniObj.location?.country || 'USA',
-      ADDRESS: uniObj.location?.address || uniObj.ADDR || '',
-      ZIP: uniObj.location?.zip || uniObj.ZIP || '',
-      WEBADDR: uniObj.contact?.website || uniObj.WEBADDR || '',
-      logo: getUniversityLogo(uniObj.INSTNM || 'University'),
-      fallbackLogo: '/default-university-logo.png',
-      programs: programs,
-      programCount: programCount,
-      stats: uniObj.stats || {},
-      location: uniObj.location || {},
-      contact: uniObj.contact || {},
-      metadata: uniObj.metadata || {},
-      GUS_DATA: uniObj.GUS_DATA || {},
-      importedByAdmin: uniObj.importedByAdmin || false,
-      
-      // Include selected courses from user's profile if available
-      selectedCourses: selectedUniversityData?.selectedCourses || [],
-      isKansas: selectedUniversityData?.isKansas || false,
-      selectedUniversityData: selectedUniversityData
-    };
 
     return res.status(200).json({
       success: true,
-      data: transformedUniversity
+      data: {
+        UNITID:         normUni.UNITID,
+        universityCode: normUni.universityCode,
+        _id:            normUni._id,
+        INSTNM:   normUni.INSTNM,
+        IALIAS:   normUni.IALIAS,
+        CITY:     normUni.CITY,
+        STABBR:   normUni.STABBR,
+        COUNTRY:  normUni.COUNTRY,
+        ADDRESS:  normUni._raw?.ADDR || normUni._raw?.address || '',
+        ZIP:      normUni._raw?.ZIP  || normUni._raw?.zipCode  || '',
+        WEBADDR:  normUni.WEBADDR,
+        logo:     normUni.logo,
+        fallbackLogo: normUni.fallbackLogo,
+        programs:     normUni.programs,
+        programCount: normUni.programCount,
+        stats:    normUni.stats,
+        location: normUni.location,
+        contact:  normUni.contact,
+        metadata: normUni.metadata,
+        GUS_DATA: normUni._raw?.GUS_DATA || {},
+        tuitionFees:     normUni.tuitionFees,
+        establishedYear: normUni.establishedYear,
+        universityType:  normUni.universityType,
+        ranking:         normUni.ranking,
+        importedByAdmin: normUni.importedByAdmin,
+        source:          normUni.source,
+        selectedCourses:        selectedUniversityData?.selectedCourses || [],
+        isKansas:               selectedUniversityData?.isKansas        || false,
+        selectedUniversityData,
+      },
     });
-
   } catch (error) {
-    console.error("❌ Error fetching university details:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch university details",
-      error: error.message
-    });
+    console.error('❌ Error fetching university details:', error);
+    return res.status(500).json({ success: false, message: 'Failed to fetch university details', error: error.message });
   }
 };
 
-// 🎯 GET RECOMMENDED UNIVERSITIES BASED ON STUDENT PROFILE
-export const getRecommendedUniversities = async (req, res) => {
-  try {
-    const userId = req.userId;
-
-    if (!userId) {
-      return res.status(401).json({
-        success: false,
-        message: "User not authenticated"
-      });
-    }
-
-    // Get student profile
-    const studentProfile = await UserProfile.findOne({ userId });
-
-    if (!studentProfile) {
-      return res.status(404).json({
-        success: false,
-        message: "Student profile not found. Please complete your profile first."
-      });
-    }
-
-    // Get selected universities from profile
-    const selectedUniversities = studentProfile.selectedUniversities || [];
-    
-    if (!selectedUniversities || selectedUniversities.length === 0) {
-      return res.status(200).json({
-        success: true,
-        count: 0,
-        recommendations: [],
-        profile: {
-          program: studentProfile.eligibleProgram,
-          field: studentProfile.education?.field,
-          country: studentProfile.basicInfo?.residence
-        },
-        message: "No universities selected in your profile. Please select universities in your profile first."
-      });
-    }
-
-    // Get the IDs of selected universities
-    const universityIds = selectedUniversities
-      .map(u => u.id || u.unitid)
-      .filter(id => id !== null && id !== undefined);
-
-    // Create a map of selected universities with their courses
-    const selectedUniMap = {};
-    selectedUniversities.forEach(uni => {
-      const id = uni.id || uni.unitid;
-      if (id) {
-        selectedUniMap[String(id).trim()] = uni;
-      }
-    });
-
-    // Find universities by their IDs
-    const universities = [];
-    
-    for (const id of universityIds) {
-      try {
-        const idStr = String(id).trim();
-        let university = null;
-        
-        if (!isNaN(idStr) && /^\d+$/.test(idStr)) {
-          university = await University.findOne({ UNITID: parseInt(idStr, 10) });
-        }
-        
-        if (!university && idStr.length === 24 && /^[0-9a-fA-F]{24}$/.test(idStr)) {
-          university = await University.findById(idStr);
-        }
-        
-        if (!university) {
-          university = await University.findOne({ UNITID: idStr });
-        }
-        
-        if (university) {
-          universities.push(university);
-        }
-      } catch (err) {
-        console.error(`Error finding university for ID ${id}:`, err.message);
-      }
-    }
-
-    // Calculate match score for each university
-    const recommendations = universities.map(uni => {
-      const uniObj = uni.toObject ? uni.toObject() : uni;
-      const uniId = String(uniObj.UNITID || uniObj._id).trim();
-      const selectedUniData = selectedUniMap[uniId] || {};
-      
-      let score = 0;
-      let reasons = [];
-
-      // Program match (40 points)
-      const programMatch = uniObj.metadata?.programs?.some(p => 
-        p.title?.toLowerCase().includes(studentProfile.education?.field?.toLowerCase() || '')
-      );
-      if (programMatch) {
-        score += 40;
-        reasons.push('Programs match your field of study');
-      }
-
-      // Location match (30 points)
-      if (studentProfile.basicInfo?.residence && uniObj.location?.country) {
-        if (studentProfile.basicInfo.residence.toLowerCase().includes(uniObj.location.country.toLowerCase())) {
-          score += 30;
-          reasons.push('Located in your preferred country');
-        }
-      }
-
-      // Program variety (20 points)
-      const programCount = uniObj.stats?.totalPrograms || uniObj.metadata?.programs?.length || 0;
-      if (programCount > 20) {
-        score += 20;
-        reasons.push('Extensive program offerings');
-      } else if (programCount > 10) {
-        score += 15;
-        reasons.push('Good variety of programs');
-      } else if (programCount > 5) {
-        score += 10;
-        reasons.push('Multiple programs available');
-      }
-
-      // Institution type (10 points)
-      if (uniObj.metadata?.iclevel === 1) {
-        score += 5;
-        reasons.push('Primarily undergraduate focused');
-      } else if (uniObj.metadata?.iclevel === 3 || uniObj.metadata?.iclevel === 4) {
-        score += 10;
-        reasons.push('Strong graduate programs');
-      }
-
-      return {
-        UNITID: uniObj.UNITID || uniObj._id.toString(),
-        _id: uniObj._id.toString(),
-        INSTNM: uniObj.INSTNM || 'Unknown University',
-        IALIAS: uniObj.IALIAS || '',
-        CITY: uniObj.location?.city || uniObj.CITY || '',
-        STABBR: uniObj.location?.state || uniObj.STABBR || '',
-        COUNTRY: uniObj.location?.country || 'USA',
-        logo: getUniversityLogo(uniObj.INSTNM || 'University'),
-        fallbackLogo: '/default-university-logo.png',
-        programCount: programCount,
-        matchScore: Math.min(100, score),
-        matchReasons: reasons,
-        isRecommended: score > 50,
-        importedByAdmin: uniObj.importedByAdmin || false,
-        
-        // Include selected courses from profile
-        selectedCourses: selectedUniData.selectedCourses || [],
-        isKansas: selectedUniData.isKansas || false
-      };
-    });
-
-    // Sort by match score
-    recommendations.sort((a, b) => b.matchScore - a.matchScore);
-
-    return res.status(200).json({
-      success: true,
-      count: recommendations.length,
-      recommendations: recommendations,
-      profile: {
-        program: studentProfile.eligibleProgram,
-        field: studentProfile.education?.field,
-        country: studentProfile.basicInfo?.residence,
-        selectedCount: selectedUniversities.length
-      }
-    });
-
-  } catch (error) {
-    console.error("❌ Error getting recommendations:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to get recommendations",
-      error: error.message
-    });
-  }
-};
-
-// 🔍 GET UNIVERSITY PROGRAMS
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/college-search/:id/programs
+// ─────────────────────────────────────────────────────────────────────────────
 export const getUniversityPrograms = async (req, res) => {
   try {
     const { id } = req.params;
+    if (!id) return res.status(400).json({ success: false, message: 'University ID is required' });
 
-    console.log(`🔍 Fetching programs for university ID: ${id}`);
+    const found = await findUniversityAcrossCollections(id.toString());
+    if (!found) return res.status(404).json({ success: false, message: 'University not found' });
 
-    if (!id) {
-      return res.status(400).json({
-        success: false,
-        message: "University ID is required"
-      });
-    }
+    const normUni = normaliseDoc(found.doc, found.source);
+    const programs = normUni.programs;
 
-    // Try to find by UNITID or _id
-    let university;
-    const idStr = id.toString();
-    
-    if (!isNaN(idStr) && /^\d+$/.test(idStr)) {
-      university = await University.findOne({ UNITID: Number(idStr) });
-    }
-    
-    if (!university && idStr.length === 24 && /^[0-9a-fA-F]{24}$/.test(idStr)) {
-      university = await University.findById(idStr);
-    }
-    
-    if (!university) {
-      university = await University.findOne({ UNITID: idStr });
-    }
-
-    if (!university) {
-      return res.status(404).json({
-        success: false,
-        message: "University not found"
-      });
-    }
-
-    const uniObj = university.toObject ? university.toObject() : university;
-    const programs = extractProgramsFromUniversity(uniObj);
-
-    // Get unique major areas
-    const majorAreas = [];
     const majorAreaSet = new Set();
+    const majorAreas = [];
     programs.forEach(p => {
       if (p.majorArea && !majorAreaSet.has(p.majorArea)) {
         majorAreaSet.add(p.majorArea);
@@ -691,87 +478,160 @@ export const getUniversityPrograms = async (req, res) => {
       }
     });
 
-    // Get unique study modes
-    const studyModes = ['All', ...new Set(programs.map(p => p.studyMode).filter(Boolean))];
-
     return res.status(200).json({
       success: true,
       data: {
-        universityId: uniObj.UNITID || uniObj._id.toString(),
-        universityName: uniObj.INSTNM,
-        programs: programs,
-        majorAreas: majorAreas,
-        studyModes: studyModes,
-        programCount: programs.length
-      }
+        universityId:   normUni.UNITID || normUni.universityCode || normUni._id,
+        universityName: normUni.INSTNM,
+        source:         normUni.source,
+        programs,
+        majorAreas,
+        studyModes: ['All', ...new Set(programs.map(p => p.studyMode).filter(Boolean))],
+        programCount: programs.length,
+      },
     });
-
   } catch (error) {
-    console.error("❌ Error fetching university programs:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch university programs",
-      error: error.message
-    });
+    console.error('❌ Error fetching university programs:', error);
+    return res.status(500).json({ success: false, message: 'Failed to fetch university programs', error: error.message });
   }
 };
 
-// 🔍 SEARCH COLLEGES (legacy endpoint)
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/college-search/recommendations
+// ─────────────────────────────────────────────────────────────────────────────
+export const getRecommendedUniversities = async (req, res) => {
+  try {
+    const userId = req.userId;
+    if (!userId) return res.status(401).json({ success: false, message: 'User not authenticated' });
+
+    const studentProfile = await UserProfile.findOne({ userId });
+    if (!studentProfile) {
+      return res.status(404).json({ success: false, message: 'Student profile not found. Please complete your profile first.' });
+    }
+
+    const selectedUniversities = studentProfile.selectedUniversities || [];
+    if (selectedUniversities.length === 0) {
+      return res.status(200).json({
+        success: true, count: 0, recommendations: [],
+        profile: { program: studentProfile.eligibleProgram, field: studentProfile.education?.field, country: studentProfile.basicInfo?.residence },
+        message: 'No universities selected in your profile.',
+      });
+    }
+
+    const selectedUniMap = {};
+    selectedUniversities.forEach(uni => {
+      const key = String(uni.id || uni.unitid || '').trim();
+      if (key) selectedUniMap[key] = uni;
+    });
+
+    const recommendations = [];
+    for (const idStr of Object.keys(selectedUniMap)) {
+      try {
+        const profileUni = selectedUniMap[idStr];
+        const found = await findUniversityAcrossCollections(idStr);
+
+        let normUni;
+        if (found) {
+          normUni = normaliseDoc(found.doc, found.source);
+        } else if (profileUni?.name) {
+          normUni = {
+            UNITID: null, universityCode: idStr, _id: '',
+            INSTNM: profileUni.name, IALIAS: '',
+            CITY: profileUni.city || '', STABBR: profileUni.state || '',
+            COUNTRY: profileUni.country || 'USA', WEBADDR: '',
+            logo: getUniversityLogo(profileUni.name),
+            fallbackLogo: '/default-university-logo.png',
+            programs: [], programCount: 0,
+            location: {}, contact: {}, stats: {}, metadata: {},
+            source: 'profile-fallback', importedByAdmin: false, _raw: profileUni,
+          };
+        } else {
+          continue;
+        }
+
+        const { matchPercentage: score, matchReasons: reasons } = calcMatch(normUni, studentProfile);
+        recommendations.push({
+          UNITID:         normUni.UNITID,
+          universityCode: normUni.universityCode,
+          _id:            normUni._id,
+          INSTNM:   normUni.INSTNM,
+          CITY:     normUni.CITY,
+          STABBR:   normUni.STABBR,
+          COUNTRY:  normUni.COUNTRY,
+          logo:     normUni.logo,
+          fallbackLogo: normUni.fallbackLogo,
+          programCount:    normUni.programCount,
+          matchScore:      Math.min(100, score),
+          matchReasons:    reasons,
+          isRecommended:   score > 50,
+          source:          normUni.source,
+          importedByAdmin: normUni.importedByAdmin,
+          selectedCourses: profileUni?.selectedCourses || [],
+          isKansas:        profileUni?.isKansas        || false,
+        });
+      } catch (err) {
+        console.error(`Error in recommendations for ID ${idStr}:`, err.message);
+      }
+    }
+
+    recommendations.sort((a, b) => b.matchScore - a.matchScore);
+
+    return res.status(200).json({
+      success: true, count: recommendations.length, recommendations,
+      profile: {
+        program:      studentProfile.eligibleProgram,
+        field:        studentProfile.education?.field,
+        country:      studentProfile.basicInfo?.residence,
+        selectedCount: selectedUniversities.length,
+      },
+    });
+  } catch (error) {
+    console.error('❌ Error getting recommendations:', error);
+    return res.status(500).json({ success: false, message: 'Failed to get recommendations', error: error.message });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Legacy college search
+// ─────────────────────────────────────────────────────────────────────────────
 export const searchCollegesLegacy = async (req, res) => {
   try {
     const { query } = req.query;
-    
     let searchQuery = { isVisible: true };
-    
-    if (query && query.trim()) {
-      const searchTerm = query.trim();
+    if (query?.trim()) {
+      const t = query.trim();
       searchQuery.$or = [
-        { INSTNM: { $regex: searchTerm, $options: 'i' } },
-        { 'location.city': { $regex: searchTerm, $options: 'i' } },
-        { 'location.state': { $regex: searchTerm, $options: 'i' } }
+        { INSTNM: { $regex: t, $options: 'i' } },
+        { 'location.city':  { $regex: t, $options: 'i' } },
+        { 'location.state': { $regex: t, $options: 'i' } },
       ];
     }
-
-    const colleges = await College.find(searchQuery)
-      .select('UNITID INSTNM IALIAS location contact importedByAdmin')
-      .limit(50);
-
-    const transformedColleges = colleges.map(col => {
-      const colObj = col.toObject ? col.toObject() : col;
-      return {
-        UNITID: colObj.UNITID || colObj._id.toString(),
-        _id: colObj._id.toString(),
-        INSTNM: colObj.INSTNM || 'Unknown College',
-        IALIAS: colObj.IALIAS || '',
-        CITY: colObj.location?.city || colObj.CITY || '',
-        STABBR: colObj.location?.state || colObj.STABBR || '',
-        ZIP: colObj.location?.zip || colObj.ZIP || '',
-        COUNTRY: colObj.location?.country || 'USA',
-        logo: getUniversityLogo(colObj.INSTNM || 'College'),
-        fallbackLogo: '/default-college-logo.png',
-        isCollege: true,
-        importedByAdmin: colObj.importedByAdmin || false
-      };
-    });
-
+    const colleges = await College.find(searchQuery).select('UNITID INSTNM IALIAS location contact importedByAdmin').limit(50);
     return res.status(200).json({
-      success: true,
-      count: transformedColleges.length,
-      colleges: transformedColleges
+      success: true, count: colleges.length,
+      colleges: colleges.map(col => {
+        const c = col.toObject ? col.toObject() : col;
+        return {
+          UNITID: c.UNITID || c._id.toString(), _id: c._id.toString(),
+          INSTNM: c.INSTNM || 'Unknown College', IALIAS: c.IALIAS || '',
+          CITY:   c.location?.city  || c.CITY   || '',
+          STABBR: c.location?.state || c.STABBR || '',
+          ZIP:    c.location?.zip   || c.ZIP    || '',
+          COUNTRY: c.location?.country || 'USA',
+          logo: getUniversityLogo(c.INSTNM || 'College'),
+          fallbackLogo: '/default-college-logo.png',
+          isCollege: true, importedByAdmin: c.importedByAdmin || false,
+        };
+      }),
     });
-
   } catch (error) {
-    console.error("❌ College search error:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Server Error",
-      error: error.message
-    });
+    console.error('❌ College search error:', error);
+    return res.status(500).json({ success: false, message: 'Server Error', error: error.message });
   }
 };
 
-// Helper function to get university logo
-const getUniversityLogo = (universityName) => {
-  if (!universityName) return '/default-university-logo.png';
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(universityName)}&background=667eea&color=fff&size=128&length=2&font-size=0.5&rounded=true&bold=true`;
+// ─────────────────────────────────────────────────────────────────────────────
+const getUniversityLogo = (name) => {
+  if (!name) return '/default-university-logo.png';
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=667eea&color=fff&size=128&length=2&font-size=0.5&rounded=true&bold=true`;
 };
