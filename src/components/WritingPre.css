@@ -1,0 +1,158 @@
+/* src/components/WritingPreview.css */
+
+.writing-preview {
+  background: white;
+  margin: 20px 40px;
+  padding: 32px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.preview-header {
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.preview-header h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0 0 8px 0;
+}
+
+.preview-header p {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.preview-section {
+  margin-bottom: 32px;
+  padding: 24px;
+  background: #f9fafb;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.preview-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #d1d5db;
+}
+
+.preview-section-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+}
+
+.edit-button {
+  background: #2C5AA0;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.edit-button:hover {
+  background: #1E3D6F;
+}
+
+.preview-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.preview-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.preview-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.preview-field p {
+  font-size: 14px;
+  color: #374151;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.essay-preview-text {
+  background: white;
+  padding: 12px;
+  border-radius: 4px;
+  border: 1px solid #d1d5db;
+  white-space: pre-wrap;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.preview-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 2px solid #e5e7eb;
+}
+
+/* Alert in preview */
+.writing-preview .alert {
+  margin: 0 0 24px 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .writing-preview {
+    margin: 15px 20px;
+    padding: 24px;
+  }
+
+  .preview-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .preview-actions {
+    flex-direction: column-reverse;
+    gap: 12px;
+  }
+
+  .preview-actions button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .writing-preview {
+    margin: 10px 15px;
+    padding: 20px;
+  }
+
+  .preview-header h2 {
+    font-size: 20px;
+  }
+
+  .preview-section {
+    padding: 16px;
+  }
+}

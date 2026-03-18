@@ -1,0 +1,732 @@
+/* processAdminDashboard.css
+   ══════════════════════════════════════════════════════
+   Colour palette — matched to SocialEco purple/amber design
+   ──────────────────────────────────────────────────────
+   Sidebar:     #FFFFFF (pure white)
+   Active row:  #7B61FF (purple)
+   Background:  #F4F2FF (soft lavender)
+   Cards:       #FFFFFF
+   Primary:     #7B61FF
+   Secondary:   #F4A623 (amber/orange)
+   Teal:        #3EBDA0
+   Violet:      #A78BFA
+   Danger:      #EF4444
+   Text dark:   #2D2B55
+   Text mid:    #6B68A0
+   Text light:  #B0ACCF
+   Border:      #ECEAF8
+   ══════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --primary:      #7B61FF;
+  --primary-lt:   #EDE9FF;
+  --primary-dark: #5B4FCF;
+  --secondary:    #F4A623;
+  --secondary-lt: #FFF8EE;
+  --teal:         #3EBDA0;
+  --teal-lt:      #EDFAF6;
+  --violet:       #A78BFA;
+  --violet-lt:    #F0EEFF;
+  --amber:        #F4A623;
+  --amber-lt:     #FFF8EE;
+  --danger:       #EF4444;
+  --orange:       #F4A623;
+  --bg:           #F4F2FF;
+  --surface:      #FFFFFF;
+  --text:         #2D2B55;
+  --text-mid:     #6B68A0;
+  --text-lt:      #B0ACCF;
+  --border:       #ECEAF8;
+  --sb-w:         215px;
+  --sb-closed:    68px;
+  --radius:       14px;
+  --shadow-sm:    0 1px 4px rgba(123,97,255,.07), 0 2px 8px rgba(123,97,255,.04);
+  --shadow-md:    0 4px 20px rgba(123,97,255,.15);
+  --t:            0.22s cubic-bezier(.4,0,.2,1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ════════════════════════════════════
+   LAYOUT
+════════════════════════════════════ */
+.process-admin-dashboard {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+/* Loading */
+.process-admin-dashboard .loading-container {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  height: 100vh; width: 100%;
+  background: linear-gradient(135deg, var(--primary), var(--violet));
+  color: #fff; gap: 18px;
+}
+.process-admin-dashboard .loading-container p {
+  font-size: 1rem; font-weight: 600; opacity: .9;
+}
+.process-admin-dashboard .loading-spinner {
+  width: 46px; height: 46px;
+  border: 4px solid rgba(255,255,255,.25);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .85s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ════════════════════════════════════
+   SIDEBAR
+════════════════════════════════════ */
+.process-admin-dashboard .sidebar {
+  width: var(--sb-w);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  flex-shrink: 0;
+  transition: width var(--t);
+  box-shadow: 2px 0 16px rgba(123,97,255,.08);
+  position: relative; z-index: 100;
+  overflow: hidden;
+}
+.process-admin-dashboard .sidebar.closed { width: var(--sb-closed); }
+
+/* Brand header */
+.process-admin-dashboard .sidebar-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 14px 16px;
+  border-bottom: 1px solid var(--border);
+  min-height: 64px; gap: 8px;
+}
+.process-admin-dashboard .sidebar-logo {
+  display: flex; align-items: center; gap: 10px; min-width: 0;
+}
+.process-admin-dashboard .sidebar-logo-icon {
+  width: 34px; height: 34px;
+  background: var(--primary-lt);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.process-admin-dashboard .sidebar-header h2 {
+  font-size: 15px; font-weight: 800;
+  color: var(--text); white-space: nowrap; letter-spacing: -.3px;
+}
+.process-admin-dashboard .sidebar-header h2 span { color: var(--primary); }
+
+.process-admin-dashboard .sidebar-toggle {
+  background: var(--primary-lt);
+  border: 1px solid var(--border);
+  color: var(--primary);
+  cursor: pointer;
+  width: 28px; height: 28px;
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background var(--t), color var(--t);
+  flex-shrink: 0;
+}
+.process-admin-dashboard .sidebar-toggle:hover {
+  background: var(--primary); color: #fff; border-color: var(--primary);
+}
+
+/* Menu */
+.process-admin-dashboard .sidebar-menu {
+  list-style: none;
+  padding: 14px 10px;
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+}
+.process-admin-dashboard .sidebar-menu::-webkit-scrollbar { width: 0; }
+
+.process-admin-dashboard .sidebar-menu > li {
+  padding: 10px 12px;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 10px;
+  border-radius: 10px; margin-bottom: 3px;
+  transition: background var(--t), color var(--t);
+  color: var(--text-mid);
+  font-weight: 500; font-size: 13.5px;
+  white-space: nowrap; position: relative;
+}
+.process-admin-dashboard .sidebar-menu > li:hover {
+  background: var(--primary-lt); color: var(--primary);
+}
+
+/* Active state — solid purple fill like the image */
+.process-admin-dashboard .sidebar-menu > li.active {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+}
+.process-admin-dashboard .sidebar-menu > li.active .sb-ico {
+  background: rgba(255,255,255,0.18) !important;
+  color: #fff !important;
+}
+
+.process-admin-dashboard .kansas-parent { justify-content: space-between; }
+.process-admin-dashboard .kansas-parent.expanded {
+  background: var(--primary-lt); color: var(--primary); font-weight: 600;
+}
+
+.process-admin-dashboard .dropdown-arrow {
+  margin-left: auto; flex-shrink: 0;
+  display: flex; align-items: center; color: var(--text-lt);
+}
+
+/* Sub-menu */
+.process-admin-dashboard .sub-menu {
+  list-style: none;
+  padding: 3px 0 3px 14px;
+  border-left: 2px solid var(--primary-lt);
+  margin: 2px 0 2px 20px;
+}
+.process-admin-dashboard .sub-menu li {
+  padding: 8px 12px;
+  border-radius: 8px; margin-bottom: 2px;
+  font-size: 12.5px; font-weight: 500;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 9px;
+  color: var(--text-mid);
+  transition: background var(--t), color var(--t);
+  white-space: nowrap; position: relative;
+}
+.process-admin-dashboard .sub-menu li:hover {
+  background: var(--primary-lt); color: var(--primary);
+}
+.process-admin-dashboard .sub-menu li.active {
+  background: var(--primary-lt); color: var(--primary); font-weight: 600;
+}
+.process-admin-dashboard .sub-menu li.active::before {
+  content: '';
+  position: absolute; left: 0; top: 20%; height: 60%;
+  width: 3px; background: var(--primary);
+  border-radius: 0 3px 3px 0;
+}
+
+/* Sidebar icon boxes */
+.process-admin-dashboard .sb-ico {
+  display: flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 7px;
+  flex-shrink: 0; transition: background var(--t), color var(--t);
+}
+.process-admin-dashboard .sb-ico-sm { width: 22px; height: 22px; border-radius: 5px; }
+.process-admin-dashboard .sb-blue   { background: var(--primary-lt); color: var(--primary); }
+.process-admin-dashboard .sb-teal   { background: var(--teal-lt); color: var(--teal); }
+.process-admin-dashboard .sb-amber  { background: var(--amber-lt); color: var(--amber); }
+
+.process-admin-dashboard .sidebar.closed .sub-menu        { display: none; }
+.process-admin-dashboard .sidebar.closed .dropdown-arrow  { display: none; }
+.process-admin-dashboard .sidebar.closed .sidebar-header h2 { display: none; }
+
+/* Logout */
+.process-admin-dashboard .sidebar-footer {
+  padding: 12px 10px;
+  border-top: 1px solid var(--border);
+}
+.process-admin-dashboard .logout-btn-sidebar {
+  width: 100%;
+  background: #FEF2F2; color: var(--danger);
+  border: 1px solid #FECACA;
+  padding: 10px 12px; border-radius: 10px;
+  cursor: pointer;
+  display: flex; align-items: center;
+  justify-content: center; gap: 9px;
+  font-size: 13px; font-weight: 600;
+  transition: all var(--t);
+  white-space: nowrap; overflow: hidden;
+  font-family: 'Inter', sans-serif;
+}
+.process-admin-dashboard .logout-btn-sidebar:hover {
+  background: var(--danger); color: #fff; border-color: var(--danger);
+  box-shadow: 0 4px 14px rgba(239,68,68,.3);
+}
+.process-admin-dashboard .logout-circle {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--danger);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; color: #fff;
+}
+.process-admin-dashboard .logout-btn-sidebar:hover .logout-circle {
+  background: rgba(255,255,255,.25);
+}
+.process-admin-dashboard .sidebar.closed .logout-btn-sidebar span:last-child { display: none; }
+
+/* ════════════════════════════════════
+   MAIN CONTENT
+════════════════════════════════════ */
+.process-admin-dashboard .main-content {
+  flex: 1; display: flex; flex-direction: column;
+  background: var(--bg); min-width: 0;
+}
+
+/* ════════════════════════════════════
+   NAVBAR
+════════════════════════════════════ */
+.process-admin-dashboard .navbar {
+  background: var(--surface);
+  padding: 0 24px; height: 64px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  position: sticky; top: 0; z-index: 90; gap: 16px;
+}
+
+.process-admin-dashboard .navbar-left h1 {
+  font-size: 17px; font-weight: 800;
+  color: var(--primary); letter-spacing: -.4px; white-space: nowrap;
+}
+.process-admin-dashboard .navbar-left h1 span { color: var(--secondary); }
+
+.process-admin-dashboard .navbar-center { flex: 1; max-width: 440px; }
+
+.process-admin-dashboard .search-container {
+  position: relative; display: flex; align-items: center;
+}
+.process-admin-dashboard .search-icon-left {
+  position: absolute; left: 14px;
+  color: var(--primary); display: flex; align-items: center;
+  pointer-events: none;
+}
+.process-admin-dashboard .search-input {
+  width: 100%; padding: 10px 18px 10px 40px;
+  border: 1.5px solid #DDD8FF;
+  border-radius: 40px; font-size: 13px; outline: none;
+  background: var(--primary-lt); color: var(--text);
+  font-family: 'Inter', sans-serif;
+  transition: border-color var(--t), box-shadow var(--t), background var(--t);
+}
+.process-admin-dashboard .search-input::placeholder { color: var(--text-lt); }
+.process-admin-dashboard .search-input:focus {
+  border-color: var(--primary); background: #fff;
+  box-shadow: 0 0 0 3px rgba(123,97,255,.12);
+}
+
+.process-admin-dashboard .navbar-right {
+  display: flex; align-items: center; gap: 10px;
+}
+
+/* Bell — amber bg like image */
+.process-admin-dashboard .notif-btn {
+  position: relative;
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--secondary-lt); border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--secondary);
+  transition: all var(--t);
+}
+.process-admin-dashboard .notif-btn:hover { background: #FFE8B0; }
+.process-admin-dashboard .notif-dot {
+  position: absolute; top: 6px; right: 6px;
+  width: 8px; height: 8px; background: var(--danger);
+  border-radius: 50%; border: 2px solid #fff;
+}
+
+/* Profile chip */
+.process-admin-dashboard .admin-profile {
+  display: flex; align-items: center; gap: 9px;
+  padding: 5px 14px 5px 5px;
+  background: var(--primary-lt); border: 1.5px solid #DDD8FF;
+  border-radius: 40px; cursor: pointer;
+  transition: border-color var(--t);
+}
+.process-admin-dashboard .admin-profile:hover { border-color: var(--primary); }
+.process-admin-dashboard .profile-icon {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--violet));
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; flex-shrink: 0;
+}
+.process-admin-dashboard .profile-name {
+  font-size: 12.5px; font-weight: 600; color: var(--text);
+  white-space: nowrap; max-width: 160px;
+  overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Mail button — gradient purple like image */
+.process-admin-dashboard .mail-btn {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--violet));
+  border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 3px 10px rgba(123,97,255,.35);
+  transition: all var(--t);
+}
+.process-admin-dashboard .mail-btn:hover {
+  filter: brightness(1.1); transform: translateY(-1px);
+}
+
+/* ════════════════════════════════════
+   CONTENT AREA
+════════════════════════════════════ */
+.process-admin-dashboard .content-area {
+  flex: 1; padding: 22px 24px;
+  overflow-y: auto; background: var(--bg);
+}
+
+/* ─── Dashboard ─── */
+.process-admin-dashboard .pad-dash { max-width: 1400px; }
+
+/* ── 5 Stat Cards ── */
+.process-admin-dashboard .pad-stats-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px; margin-bottom: 18px;
+}
+.process-admin-dashboard .pad-stat-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 16px 16px 14px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  display: flex; align-items: center; gap: 13px;
+  transition: transform var(--t), box-shadow var(--t);
+}
+.process-admin-dashboard .pad-stat-card:hover {
+  transform: translateY(-3px); box-shadow: var(--shadow-md);
+}
+.process-admin-dashboard .pad-stat-ico {
+  width: 46px; height: 46px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.process-admin-dashboard .pad-sv {
+  font-size: 28px; font-weight: 800; color: var(--text);
+  line-height: 1; margin-bottom: 4px; letter-spacing: -1px;
+}
+.process-admin-dashboard .pad-sl {
+  font-size: 12px; color: var(--text-mid); font-weight: 500;
+}
+
+/* ── Charts Row ── */
+.process-admin-dashboard .pad-charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px; margin-bottom: 18px;
+}
+.process-admin-dashboard .pad-chart-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.process-admin-dashboard .pad-chart-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px 8px;
+}
+.process-admin-dashboard .pad-chart-title {
+  font-size: 14px; color: var(--text); font-weight: 400;
+}
+.process-admin-dashboard .pad-chart-title strong { font-weight: 700; color: var(--primary); }
+.process-admin-dashboard .pad-pills {
+  display: flex; gap: 4px; flex-wrap: wrap; align-items: center;
+}
+.process-admin-dashboard .pad-pill {
+  font-size: 9px; font-weight: 700; padding: 2px 7px;
+  border-radius: 20px; background: var(--primary-lt); color: var(--text-lt);
+}
+.process-admin-dashboard .pad-pill-blue  { background: var(--primary-lt); color: var(--primary); }
+.process-admin-dashboard .pad-pill-amber { background: var(--amber-lt); color: var(--amber); }
+
+.process-admin-dashboard .pad-chart-body { padding: 0 14px 4px; }
+
+.process-admin-dashboard .pad-chart-xlbls {
+  display: flex; justify-content: space-between;
+  padding: 4px 14px 8px;
+  font-size: 10px; color: var(--text-lt);
+}
+.process-admin-dashboard .pad-bar-xlbls {
+  display: flex; gap: 4px;
+  padding: 4px 14px 10px;
+  font-size: 9px; color: var(--text-lt);
+}
+.process-admin-dashboard .pad-bar-xlbls span {
+  flex: 1; text-align: center;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.process-admin-dashboard .pad-chart-footer {
+  display: flex; align-items: center; gap: 14px;
+  padding: 8px 18px 14px;
+  border-top: 1px solid var(--primary-lt); flex-wrap: wrap;
+}
+.process-admin-dashboard .pad-cfi {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 600; color: var(--text);
+}
+.process-admin-dashboard .pad-cfd {
+  width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0;
+}
+.process-admin-dashboard .pad-view-all-link {
+  margin-left: auto; font-size: 12px; font-weight: 700;
+  color: var(--primary); cursor: pointer;
+}
+.process-admin-dashboard .pad-view-all-link:hover { text-decoration: underline; }
+.process-admin-dashboard .pad-lines-ico {
+  margin-left: auto; color: var(--text-lt);
+  display: flex; align-items: center;
+}
+
+/* ── Bottom Row ── */
+.process-admin-dashboard .pad-bottom-row {
+  display: grid;
+  grid-template-columns: 1fr 290px;
+  gap: 14px;
+}
+
+/* Table card */
+.process-admin-dashboard .pad-table-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.process-admin-dashboard .pad-table-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px;
+}
+.process-admin-dashboard .pad-section-title {
+  font-size: 14.5px; font-weight: 700; color: var(--text);
+}
+.process-admin-dashboard .pad-table {
+  width: 100%; border-collapse: collapse;
+}
+.process-admin-dashboard .pad-table thead tr { background: var(--primary-lt); }
+.process-admin-dashboard .pad-table th {
+  padding: 9px 18px;
+  font-size: 11.5px; font-weight: 700; color: var(--primary); text-align: left;
+}
+.process-admin-dashboard .pad-table td {
+  padding: 12px 18px;
+  font-size: 13px; color: var(--text);
+  border-top: 1px solid var(--border);
+}
+.process-admin-dashboard .pad-table tbody tr:hover { background: #FAFAFF; }
+.process-admin-dashboard .pad-chev { color: var(--text-lt); font-size: 11px; }
+
+/* Status badges */
+.process-admin-dashboard .pad-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 13px; border-radius: 20px;
+  font-size: 12px; font-weight: 700;
+}
+.process-admin-dashboard .pad-pending  { background: var(--secondary-lt); color: #A05A00; }
+.process-admin-dashboard .pad-approved { background: var(--teal); color: #fff; }
+.process-admin-dashboard .pad-review   { background: var(--primary-lt); color: var(--primary); }
+
+.process-admin-dashboard .pad-table-footer {
+  padding: 10px 18px 14px;
+  display: flex; justify-content: flex-end;
+  border-top: 1px solid var(--border);
+}
+.process-admin-dashboard .pad-view-all-btn {
+  display: flex; align-items: center; gap: 5px;
+  padding: 7px 16px; border-radius: 8px;
+  border: 1px solid #DDD8FF; background: var(--primary-lt);
+  font-size: 12px; font-weight: 600; color: var(--primary);
+  cursor: pointer; font-family: 'Inter', sans-serif;
+  transition: all var(--t);
+}
+.process-admin-dashboard .pad-view-all-btn:hover {
+  background: var(--primary); color: #fff; border-color: var(--primary);
+}
+
+/* Activity card */
+.process-admin-dashboard .pad-activity-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.process-admin-dashboard .pad-activity-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.process-admin-dashboard .pad-activity-arrow {
+  font-size: 18px; color: var(--text-lt); cursor: pointer;
+}
+.process-admin-dashboard .pad-activity-list {
+  padding: 10px 16px 14px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.process-admin-dashboard .pad-act-day {
+  font-size: 10.5px; font-weight: 800;
+  color: var(--text-lt); letter-spacing: .5px;
+  text-transform: uppercase; padding: 2px 0;
+}
+.process-admin-dashboard .pad-act-item {
+  display: flex; align-items: flex-start; gap: 9px;
+}
+.process-admin-dashboard .pad-act-dot {
+  width: 20px; height: 20px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+}
+.process-admin-dashboard .pad-dot-teal   { background: #D1FAE5; color: #059669; }
+.process-admin-dashboard .pad-dot-blue   { background: var(--primary-lt); color: var(--primary); }
+.process-admin-dashboard .pad-dot-indigo { background: var(--violet-lt); color: var(--violet); }
+.process-admin-dashboard .pad-act-txt {
+  font-size: 12.5px; color: var(--text-mid); line-height: 1.5;
+}
+.process-admin-dashboard .pad-act-txt strong { color: var(--text); font-weight: 700; }
+
+/* ════════════════════════════════════
+   FOOTER
+════════════════════════════════════ */
+.process-admin-dashboard .dashboard-footer {
+  background: var(--surface);
+  padding: 14px 24px;
+  text-align: center;
+  border-top: 1px solid var(--border);
+  color: var(--text-lt);
+  font-size: 12px; font-weight: 500;
+}
+
+/* ════════════════════════════════════
+   STATUS BADGES (sub-pages)
+════════════════════════════════════ */
+.process-admin-dashboard .status-badge {
+  display: inline-flex; align-items: center;
+  padding: 4px 12px; border-radius: 20px;
+  font-size: 11px; font-weight: 800;
+  letter-spacing: .5px; text-transform: uppercase;
+}
+.process-admin-dashboard .status-badge.completed   { background: var(--teal-lt); color: var(--teal); }
+.process-admin-dashboard .status-badge.incomplete  { background: #FEF2F2; color: var(--danger); }
+.process-admin-dashboard .status-badge.in-progress { background: var(--primary-lt); color: var(--primary); }
+.process-admin-dashboard .status-badge.not-started { background: #F3F4F6; color: var(--text-lt); }
+
+/* ════════════════════════════════════
+   APPLICATION MODAL
+════════════════════════════════════ */
+.process-admin-dashboard .application-id-badge {
+  background: linear-gradient(90deg, var(--primary), var(--violet));
+  color: #fff; padding: 4px 12px; border-radius: 20px;
+  font-size: 11px; font-weight: 800; letter-spacing: .4px;
+  display: inline-block;
+}
+.process-admin-dashboard .days-badge { font-size: 11px; color: var(--text-lt); margin-top: 4px; }
+.process-admin-dashboard .priority-high { margin-left: 5px; color: var(--danger); animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+.process-admin-dashboard .application-details-modal {
+  background: var(--surface); border-radius: 18px;
+  width: 800px; max-width: 90%; max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 70px rgba(123,97,255,.22);
+}
+.process-admin-dashboard .details-section {
+  margin-bottom: 16px; padding: 16px 20px;
+  background: var(--bg); border-radius: 10px;
+  border: 1px solid var(--border);
+}
+.process-admin-dashboard .details-section h4 {
+  margin: 0 0 12px 0; color: var(--primary);
+  font-size: 13.5px; font-weight: 700;
+  border-bottom: 2px solid rgba(123,97,255,.12); padding-bottom: 8px;
+}
+.process-admin-dashboard .info-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;
+}
+.process-admin-dashboard .info-row { display: flex; flex-direction: column; }
+.process-admin-dashboard .info-row.full-width { grid-column: 1/-1; }
+.process-admin-dashboard .info-label {
+  font-size: 10.5px; color: var(--text-lt); margin-bottom: 3px;
+  font-weight: 700; text-transform: uppercase; letter-spacing: .6px;
+}
+.process-admin-dashboard .info-value { font-size: 13.5px; color: var(--text); font-weight: 600; }
+
+.process-admin-dashboard .status-update-controls { display: flex; gap: 10px; flex-wrap: wrap; }
+.process-admin-dashboard .status-btn {
+  padding: 9px 20px; border: none; border-radius: 25px;
+  font-size: 12.5px; font-weight: 700; cursor: pointer;
+  transition: all var(--t); color: #fff;
+  font-family: 'Inter', sans-serif;
+}
+.process-admin-dashboard .status-btn.submitted    { background: var(--primary); }
+.process-admin-dashboard .status-btn.under-review { background: var(--amber); }
+.process-admin-dashboard .status-btn.accepted     { background: var(--teal); }
+.process-admin-dashboard .status-btn.rejected     { background: var(--danger); }
+.process-admin-dashboard .status-btn:hover { filter: brightness(1.08); transform: translateY(-2px); }
+
+.process-admin-dashboard .processadmindashboard-documents-summary {
+  display: flex; gap: 12px; padding: 10px;
+  background: var(--surface); border-radius: 8px; flex-wrap: wrap;
+}
+.process-admin-dashboard .processadmin-document-category {
+  display: flex; align-items: center; gap: 7px;
+  padding: 4px 12px; background: var(--primary-lt); border-radius: 20px;
+}
+.process-admin-dashboard .category-label { font-size: 12.5px; color: var(--primary); font-weight: 600; }
+.process-admin-dashboard .category-count {
+  background: var(--primary); color: #fff;
+  padding: 2px 7px; border-radius: 12px; font-size: 11px; font-weight: 800;
+}
+
+.process-admin-dashboard .modal-actions {
+  display: flex; gap: 10px; justify-content: flex-end;
+  margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border);
+}
+.process-admin-dashboard .download-pdf-btn {
+  padding: 10px 20px;
+  background: linear-gradient(90deg, var(--teal), #7DD4A8);
+  color: #fff; border: none; border-radius: 9px; cursor: pointer;
+  font-weight: 700; font-size: 13px;
+  display: flex; align-items: center; gap: 8px;
+  transition: all var(--t); box-shadow: 0 3px 12px rgba(62,189,160,.3);
+  font-family: 'Inter', sans-serif;
+}
+.process-admin-dashboard .download-pdf-btn:hover { filter: brightness(1.07); transform: translateY(-2px); }
+.process-admin-dashboard .download-pdf-btn:disabled { opacity: .6; cursor: not-allowed; }
+
+.process-admin-dashboard .email-doc-btn {
+  padding: 6px 13px; border: none; border-radius: 7px; cursor: pointer;
+  font-size: 12px; display: flex; align-items: center; gap: 5px;
+  background: linear-gradient(90deg, var(--primary), var(--violet));
+  color: #fff; font-weight: 700; transition: all var(--t);
+  font-family: 'Inter', sans-serif;
+}
+.process-admin-dashboard .email-doc-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.process-admin-dashboard .email-doc-btn:disabled { opacity: .6; cursor: not-allowed; }
+
+.process-admin-dashboard .refresh-btn-small {
+  background: linear-gradient(90deg, var(--primary), var(--teal));
+  color: #fff; border: none; padding: 9px 20px;
+  border-radius: 9px; font-size: 13px; font-weight: 700;
+  cursor: pointer; margin-top: 12px; transition: all var(--t);
+  font-family: 'Inter', sans-serif;
+}
+.process-admin-dashboard .refresh-btn-small:hover { filter: brightness(1.08); transform: translateY(-1px); }
+
+/* ════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════ */
+@media (max-width: 1200px) {
+  .process-admin-dashboard .pad-stats-row { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 960px) {
+  .process-admin-dashboard .navbar-center { display: none; }
+  .process-admin-dashboard .pad-charts-row { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .process-admin-dashboard { flex-direction: column; }
+  .process-admin-dashboard .sidebar { width: 100% !important; }
+  .process-admin-dashboard .navbar { padding: 12px 16px; flex-wrap: wrap; height: auto; }
+  .process-admin-dashboard .content-area { padding: 14px; }
+  .process-admin-dashboard .pad-stats-row { grid-template-columns: 1fr 1fr; }
+  .process-admin-dashboard .pad-bottom-row { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .process-admin-dashboard .pad-stats-row { grid-template-columns: 1fr; }
+}

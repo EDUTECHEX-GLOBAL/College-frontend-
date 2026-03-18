@@ -1,0 +1,345 @@
+/* src/components/testing-sections/TOEFLiBTSection.css */
+.toefl-section {
+  background: white;
+  margin: 16px 24px;
+  border-radius: 6px;
+  border: 1px solid #e1e5e9;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.toefl-section h2 {
+  background: #f8f9fa;
+  margin: 0;
+  padding: 20px 24px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a202c;
+  border-bottom: 1px solid #e8ecef;
+}
+
+.toefl-section .section-status {
+  background: #f0f7ff;
+  padding: 12px 24px;
+  font-size: 14px;
+  color: #2C5AA0;
+  font-weight: 500;
+  border-bottom: 1px solid #e1e5e9;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toefl-section .section-status::before {
+  content: "●";
+  color: #2C5AA0;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.toefl-section .form-content {
+  padding: 24px;
+  max-width: 100%;
+}
+
+.toefl-section .form-group {
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #f1f3f4;
+}
+
+.toefl-section .form-group:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.toefl-section .question-text {
+  font-size: 14px;
+  color: #374151;
+  margin: 0 0 12px 0;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+/* Vertical Radio Groups */
+.radio-group-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.radio-group-vertical .radio-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #4a5568;
+  padding: 10px 12px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  min-height: 44px; /* touch-friendly */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.radio-group-vertical .radio-option:hover {
+  background: #f7fafc;
+}
+
+.radio-group-vertical .radio-option input[type="radio"] {
+  margin: 0;
+  width: 18px;
+  height: 18px;
+  accent-color: #2C5AA0;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* Score Dropdowns */
+.score-dropdown {
+  width: 110px;
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 16px; /* prevents iOS auto-zoom */
+  background: white;
+  color: #374151;
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
+}
+
+.score-dropdown:focus {
+  outline: 2px solid #2C5AA0;
+  outline-offset: 2px;
+  border-color: #2C5AA0;
+  box-shadow: 0 0 0 2px rgba(44, 90, 160, 0.1);
+}
+
+/* Total Score Input */
+.total-score-input {
+  width: 110px;
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 16px; /* prevents iOS auto-zoom */
+  color: #374151;
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
+}
+
+.total-score-input:focus {
+  outline: 2px solid #2C5AA0;
+  outline-offset: 2px;
+  border-color: #2C5AA0;
+  box-shadow: 0 0 0 2px rgba(44, 90, 160, 0.1);
+}
+
+.total-score-input::placeholder {
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+/* Date Inputs */
+.date-input {
+  width: 100%;
+  max-width: 260px;
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 16px; /* prevents iOS auto-zoom */
+  color: #374151;
+  font-family: inherit;
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
+}
+
+.date-input:focus {
+  outline: 2px solid #2C5AA0;
+  outline-offset: 2px;
+  border-color: #2C5AA0;
+  box-shadow: 0 0 0 2px rgba(44, 90, 160, 0.1);
+}
+
+/* Clear Answer Button */
+.clear-answer-button {
+  background: none;
+  border: 1px solid #d1d5db;
+  color: #6b7280;
+  padding: 8px 14px;
+  border-radius: 3px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 36px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  display: inline-flex;
+  align-items: center;
+}
+
+.clear-answer-button:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+/* Detailed Fields Section */
+.detailed-fields {
+  background: #fafbfc;
+  border: 1px solid #e8ecef;
+  border-radius: 6px;
+  padding: 16px;
+  margin: 16px 0;
+}
+
+.detailed-fields h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e8ecef;
+}
+
+/* Score row: score dropdown + date picker side by side */
+.detailed-fields .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e8ecef;
+}
+
+.detailed-fields .form-row:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.detailed-fields .form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Helper Text */
+.form-helper {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+/* ─── Responsive: Tablet ─────────────────────────────────── */
+@media (max-width: 768px) {
+  .toefl-section {
+    margin: 12px 16px;
+  }
+
+  .toefl-section .form-content {
+    padding: 20px 16px;
+  }
+
+  .toefl-section h2 {
+    padding: 16px 20px;
+    font-size: 18px;
+  }
+
+  .toefl-section .section-status {
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+
+  .score-dropdown,
+  .total-score-input {
+    width: 100%;
+    max-width: 160px;
+  }
+
+  .date-input {
+    max-width: 100%;
+  }
+
+  .detailed-fields {
+    padding: 14px;
+    margin: 12px 0;
+  }
+
+  .detailed-fields .form-row {
+    gap: 14px;
+  }
+}
+
+/* ─── Responsive: Mobile Portrait ────────────────────────── */
+@media (max-width: 480px) {
+  .toefl-section {
+    margin: 8px 0;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+
+  .toefl-section .form-content {
+    padding: 16px 14px;
+  }
+
+  .toefl-section h2 {
+    padding: 14px 16px;
+    font-size: 17px;
+  }
+
+  .toefl-section .section-status {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+
+  .toefl-section .form-group {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+  }
+
+  /* Stack score + date vertically on mobile */
+  .detailed-fields .form-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .detailed-fields {
+    padding: 12px 10px;
+  }
+
+  .detailed-fields h3 {
+    font-size: 14px;
+  }
+
+  .score-dropdown,
+  .total-score-input {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .date-input {
+    max-width: 100%;
+  }
+
+  .radio-group-vertical .radio-option {
+    padding: 8px 10px;
+  }
+
+  .clear-answer-button {
+    font-size: 12px;
+    padding: 7px 12px;
+  }
+
+  .form-helper {
+    font-size: 11px;
+  }
+}

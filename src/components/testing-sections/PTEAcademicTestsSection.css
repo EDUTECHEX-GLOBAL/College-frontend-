@@ -1,0 +1,314 @@
+/* src/components/testing-sections/PTEAcademicTestsSection.css */
+
+/* ── Wrapper ── */
+.pte-section {
+  background: white;
+  margin: 20px 40px;
+  padding: 32px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* ── Section Heading ── */
+.pte-section h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0 0 8px 0;
+}
+
+/* ── Status Badge ── */
+.pte-section .section-status {
+  font-size: 13px;
+  color: #2C5AA0;
+  font-weight: 500;
+  background: #e8f0fe;
+  padding: 3px 10px;
+  border-radius: 12px;
+  display: inline-block;
+  margin-bottom: 24px;
+}
+
+/* ── Form Content ── */
+.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* ── Individual Form Group ── */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.question-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Vertical Radio Group ── */
+.radio-group-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.radio-option input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #2C5AA0;
+  flex-shrink: 0;
+}
+
+.radio-label {
+  font-size: 14px;
+  color: #374151;
+}
+
+/* ── Clear Answer Button ── */
+.clear-answer-button {
+  background: none;
+  border: none;
+  color: #2C5AA0;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 0;
+  text-decoration: underline;
+  text-align: left;
+  transition: color 0.2s ease;
+  align-self: flex-start;
+}
+
+.clear-answer-button:hover {
+  color: #1E3D6F;
+}
+
+/* ── Score Details Sub-section ── */
+.detailed-fields {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.detailed-fields h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 4px 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* ── Score / Date Pair Row ── */
+.field-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.field-group:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+/* ── Score Dropdown ── */
+.score-dropdown {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+  background: white;
+  color: #374151;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.score-dropdown:focus {
+  outline: none;
+  border-color: #2C5AA0;
+  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+}
+
+/* ── Date Input ── */
+.date-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+  background: white;
+  color: #374151;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.date-input:focus {
+  outline: none;
+  border-color: #2C5AA0;
+  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+}
+
+/* ── Helper Text ── */
+.form-helper {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 5px;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Tablet  ≤ 1023px
+════════════════════════════════════════ */
+@media (max-width: 1023px) {
+  .pte-section {
+    margin: 20px 24px;
+    padding: 28px;
+  }
+
+  .detailed-fields {
+    padding: 20px;
+  }
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Mobile  ≤ 767px
+════════════════════════════════════════ */
+@media (max-width: 767px) {
+  .pte-section {
+    margin: 15px 16px;
+    padding: 20px;
+    border-radius: 6px;
+  }
+
+  .pte-section h2 {
+    font-size: 18px;
+  }
+
+  .form-content {
+    gap: 22px;
+  }
+
+  /* Stack score + date vertically on mobile */
+  .field-group {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding-bottom: 16px;
+  }
+
+  .detailed-fields {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .detailed-fields h3 {
+    font-size: 15px;
+  }
+
+  .radio-group-vertical {
+    gap: 8px;
+  }
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Small Mobile  ≤ 480px
+════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .pte-section {
+    margin: 10px 12px;
+    padding: 16px;
+  }
+
+  .pte-section h2 {
+    font-size: 17px;
+  }
+
+  .question-text {
+    font-size: 13px;
+  }
+
+  .radio-label {
+    font-size: 13px;
+  }
+
+  .score-dropdown,
+  .date-input {
+    padding: 9px 10px;
+    font-size: 13px;
+  }
+
+  .detailed-fields {
+    padding: 14px;
+    gap: 14px;
+    border-radius: 6px;
+  }
+
+  .detailed-fields h3 {
+    font-size: 14px;
+    padding-bottom: 10px;
+    margin-bottom: 0;
+  }
+
+  .form-helper {
+    font-size: 11px;
+  }
+
+  .form-content {
+    gap: 18px;
+  }
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Very Small  ≤ 360px
+════════════════════════════════════════ */
+@media (max-width: 360px) {
+  .pte-section {
+    margin: 8px;
+    padding: 12px;
+  }
+
+  .pte-section h2 {
+    font-size: 16px;
+  }
+
+  .score-dropdown,
+  .date-input {
+    font-size: 12px;
+    padding: 8px 9px;
+  }
+
+  .question-text {
+    font-size: 12px;
+  }
+
+  .radio-label {
+    font-size: 12px;
+  }
+
+  .detailed-fields {
+    padding: 10px;
+  }
+}

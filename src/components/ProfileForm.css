@@ -1,0 +1,398 @@
+/* ProfileForm.css */
+
+/* ─────────────────────────────────────────
+   BASE (Desktop)
+───────────────────────────────────────── */
+.profile-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #f8f9fa;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ── Fixed Header (Desktop) ── */
+.profile-header {
+  background: white;
+  padding: 0 40px;
+  border-bottom: 1px solid #d1d5db;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  height: 70px;
+}
+
+.back-button {
+  position: absolute;
+  left: 40px;
+  background: #2C5AA0;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s ease;
+  white-space: nowrap;
+}
+
+.back-button:hover {
+  background: #1E3D6F;
+}
+
+.profile-header h1 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0;
+  text-align: center;
+  /* prevent overlap with absolute-positioned siblings */
+  padding: 0 220px;
+}
+
+.progress-section {
+  position: absolute;
+  right: 40px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress-bar {
+  width: 140px;
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #2C5AA0;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: #4b5563;
+  white-space: nowrap;
+}
+
+/* ── Main Content (pushes below fixed header) ── */
+.profile-content {
+  flex: 1;
+  margin-top: 70px;          /* matches fixed header height */
+  padding: 0;
+  background: #f8f9fa;
+  min-height: calc(100vh - 70px);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Alert messages ── */
+.alert {
+  margin: 20px 40px 0;
+  padding: 12px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  border: 1px solid;
+}
+
+.alert-success {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #166534;
+}
+
+.alert-error {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #dc2626;
+}
+
+/* ── Form Actions ── */
+.form-actions {
+  background: white;
+  padding: 20px 24px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 40px 20px;
+  border-radius: 0 0 8px 8px;
+}
+
+.primary-button {
+  background: #2C5AA0;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.primary-button:hover  { background: #1E3D6F; }
+.primary-button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.secondary-button {
+  background: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.secondary-button:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+/* ── Loading State ── */
+.profile-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: #f8f9fa;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e5e7eb;
+  border-top: 3px solid #2C5AA0;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
+/* ─────────────────────────────────────────
+   TABLET  (≤ 1023px)
+───────────────────────────────────────── */
+@media (max-width: 1023px) {
+  .profile-header {
+    padding: 0 24px;
+  }
+  .back-button {
+    left: 24px;
+  }
+  .progress-section {
+    right: 24px;
+  }
+  .profile-header h1 {
+    font-size: 20px;
+    padding: 0 180px;
+  }
+  .alert {
+    margin: 16px 24px 0;
+  }
+  .form-actions {
+    margin: 0 24px 16px;
+  }
+}
+
+
+/* ─────────────────────────────────────────
+   MOBILE  (≤ 767px)
+
+   Key fix: header switches from `position:fixed`
+   (single-row) to `position: sticky` (stacked rows).
+   profile-content gets margin-top: 0 because the
+   sticky header scrolls with the page naturally.
+───────────────────────────────────────── */
+@media (max-width: 767px) {
+
+  /* ── Header: sticky, stacked layout ── */
+  .profile-header {
+    position: sticky;          /* stays at top while scrolling */
+    top: 0;
+    height: auto;              /* no fixed height — content drives it */
+    padding: 12px 16px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    z-index: 200;
+  }
+
+  /* Row 1: Back button (full width) */
+  .back-button {
+    position: static;
+    width: 100%;
+    justify-content: center;
+    padding: 10px 16px;
+    font-size: 14px;
+    order: 1;
+  }
+
+  /* Row 2: Title */
+  .profile-header h1 {
+    order: 2;
+    font-size: 17px;
+    text-align: center;
+    padding: 0;              /* remove desktop padding */
+    line-height: 1.3;
+  }
+
+  /* Row 3: Progress bar (full width, centred) */
+  .progress-section {
+    position: static;
+    order: 3;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .progress-bar {
+    flex: 1;
+    max-width: 200px;
+    width: auto;
+  }
+
+  /* Content starts immediately below sticky header — no margin needed */
+  .profile-content {
+    margin-top: 0;
+  }
+
+  .alert {
+    margin: 12px 16px 0;
+    font-size: 13px;
+  }
+
+  .form-actions {
+    margin: 0 16px 16px;
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+    padding: 16px;
+  }
+
+  .form-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+
+/* ─────────────────────────────────────────
+   SMALL MOBILE  (≤ 480px)
+───────────────────────────────────────── */
+@media (max-width: 480px) {
+  .profile-header {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .back-button {
+    padding: 9px 14px;
+    font-size: 13px;
+  }
+
+  .profile-header h1 {
+    font-size: 15px;
+  }
+
+  .progress-bar {
+    max-width: 160px;
+  }
+
+  .progress-text {
+    font-size: 12px;
+  }
+
+  .alert {
+    margin: 10px 12px 0;
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .form-actions {
+    margin: 0 12px 14px;
+    padding: 14px;
+    gap: 8px;
+  }
+
+  .primary-button,
+  .secondary-button {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+}
+
+
+/* ─────────────────────────────────────────
+   VERY SMALL  (≤ 360px)
+───────────────────────────────────────── */
+@media (max-width: 360px) {
+  .profile-header {
+    padding: 8px 10px;
+    gap: 7px;
+  }
+
+  .back-button {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .profile-header h1 {
+    font-size: 14px;
+  }
+
+  .progress-bar {
+    max-width: 130px;
+  }
+
+  .progress-text {
+    font-size: 11px;
+  }
+
+  .alert {
+    margin: 8px 8px 0;
+    padding: 9px 10px;
+    font-size: 12px;
+  }
+
+  .form-actions {
+    margin: 0 8px 10px;
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .primary-button,
+  .secondary-button {
+    padding: 9px 12px;
+    font-size: 12px;
+  }
+}

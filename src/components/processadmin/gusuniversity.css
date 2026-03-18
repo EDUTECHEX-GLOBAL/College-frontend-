@@ -1,0 +1,961 @@
+/* ════════════════════════════════════════════════════════════
+   GusUniversity.css — Admin Dashboard
+   ════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+/* ── Root Variables ───────────────────────────────────────── */
+.gus-wrap {
+    --purple:     #6C63FF;
+    --purple-dk:  #574fd6;
+    --pink:       #FF6B9D;
+    --pink-dk:    #e8558a;
+    --green:      #10B981;
+    --orange:     #F59E0B;
+    --blue:       #3B82F6;
+    --gray-50:    #F8F9FF;
+    --gray-100:   #F1F2F8;
+    --gray-200:   #E4E6F0;
+    --gray-400:   #9CA3C0;
+    --gray-600:   #6B7394;
+    --gray-800:   #2D3058;
+    --text:       #1e2044;
+    --radius:     12px;
+    --shadow-sm:  0 2px 8px rgba(108,99,255,.10);
+    --shadow-md:  0 6px 24px rgba(108,99,255,.15);
+    --shadow-lg:  0 16px 48px rgba(108,99,255,.20);
+    font-family: 'DM Sans', sans-serif;
+    background: var(--gray-50);
+    min-height: 100vh;
+    padding: 28px 32px 48px;
+    color: var(--text);
+    box-sizing: border-box;
+}
+
+*, *::before, *::after { box-sizing: inherit; }
+
+/* ── Loading ──────────────────────────────────────────────── */
+.gus-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    gap: 16px;
+    color: var(--gray-600);
+    font-family: 'DM Sans', sans-serif;
+}
+
+.gus-spinner {
+    width: 44px; height: 44px;
+    border: 4px solid var(--gray-200);
+    border-top-color: var(--purple);
+    border-radius: 50%;
+    animation: gus-spin 0.8s linear infinite;
+}
+
+@keyframes gus-spin { to { transform: rotate(360deg); } }
+
+/* ── Page Header ──────────────────────────────────────────── */
+.gus-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+}
+
+.gus-page-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 4px;
+    letter-spacing: -0.5px;
+}
+
+.gus-page-sub {
+    font-size: 14px;
+    color: var(--gray-400);
+    margin: 0;
+}
+
+.gus-refresh-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 18px;
+    background: white;
+    border: 1.5px solid var(--gray-200);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-600);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+}
+
+.gus-refresh-btn:hover {
+    border-color: var(--purple);
+    color: var(--purple);
+    background: #f5f4ff;
+}
+
+/* ── Stat Cards ───────────────────────────────────────────── */
+.gus-stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+.gus-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 22px 24px;
+    border-radius: 16px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+.gus-stat-card::after {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 120px; height: 120px;
+    background: rgba(255,255,255,.08);
+    border-radius: 50%;
+}
+
+.gus-stat-total      { background: linear-gradient(135deg, #7B74FF 0%, #6C63FF 50%, #574fd6 100%); }
+.gus-stat-incomplete { background: linear-gradient(135deg, #FF9AC2 0%, #FF6B9D 50%, #e8558a 100%); }
+.gus-stat-completed  { background: linear-gradient(135deg, #34D399 0%, #10B981 50%, #059669 100%); }
+.gus-stat-review     { background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 50%, #2563EB 100%); }
+
+.gus-stat-icon-wrap {
+    width: 52px; height: 52px;
+    background: rgba(255,255,255,.25);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.gus-stat-text { display: flex; flex-direction: column; gap: 4px; }
+
+.gus-stat-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    opacity: 0.85;
+    text-transform: uppercase;
+}
+
+.gus-stat-num {
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -1px;
+}
+
+/* ── Controls ─────────────────────────────────────────────── */
+.gus-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.gus-search-box {
+    flex: 1;
+    min-width: 260px;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.gus-search-ico {
+    position: absolute;
+    left: 14px;
+    width: 17px; height: 17px;
+    color: var(--gray-400);
+    pointer-events: none;
+}
+
+.gus-search-input {
+    width: 100%;
+    padding: 11px 38px 11px 42px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    background: white;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.gus-search-input:focus {
+    border-color: var(--purple);
+    box-shadow: 0 0 0 3px rgba(108,99,255,.12);
+}
+
+.gus-search-input::placeholder { color: var(--gray-400); }
+
+.gus-search-clear {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    color: var(--gray-400);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: color 0.15s;
+}
+
+.gus-search-clear:hover { color: var(--text); }
+
+.gus-filters { display: flex; gap: 8px; }
+
+.gus-filter-btn {
+    padding: 9px 16px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--gray-600);
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.gus-filter-btn:hover { border-color: var(--purple); color: var(--purple); }
+.gus-filter-btn.active { background: var(--purple); border-color: var(--purple); color: white; box-shadow: 0 3px 10px rgba(108,99,255,.30); }
+
+/* ── Table ────────────────────────────────────────────────── */
+.gus-table-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-200);
+    overflow: hidden;
+}
+
+.gus-table { width: 100%; border-collapse: collapse; }
+
+.gus-thead-row th {
+    padding: 14px 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    color: var(--gray-400);
+    text-align: left;
+    background: var(--gray-50);
+    border-bottom: 1px solid var(--gray-200);
+    text-transform: uppercase;
+}
+
+.gus-tbody-row {
+    border-bottom: 1px solid var(--gray-100);
+    transition: background 0.15s;
+    animation: gus-fadeRow 0.35s ease both;
+}
+
+@keyframes gus-fadeRow {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.gus-tbody-row:last-child { border-bottom: none; }
+.gus-tbody-row:hover { background: #fafaff; }
+.gus-tbody-row td { padding: 16px 20px; vertical-align: middle; }
+
+.gus-college-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    background: var(--gray-100);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'DM Mono', monospace;
+    color: var(--gray-800);
+    border: 1px solid var(--gray-200);
+}
+
+.gus-student-cell { display: flex; align-items: center; gap: 14px; }
+
+.gus-avatar {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+    letter-spacing: 0.5px;
+}
+
+.gus-student-details { display: flex; flex-direction: column; gap: 2px; }
+.gus-student-name { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.gus-student-email { font-size: 12px; color: var(--gray-400); }
+.gus-student-phone { font-size: 12px; color: var(--purple); font-weight: 500; }
+
+.gus-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.status-completed  { background: #D1FAE5; color: #065F46; border: 1px solid #A7F3D0; }
+.status-incomplete { background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A; }
+.status-inprogress { background: #EDE9FE; color: #5B21B6; border: 1px solid #DDD6FE; }
+
+.gus-date-text { font-size: 13px; color: var(--gray-600); }
+
+.gus-prog-cell { display: flex; align-items: center; gap: 10px; min-width: 120px; }
+
+.gus-prog-track {
+    flex: 1;
+    height: 6px;
+    background: var(--gray-200);
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.gus-prog-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--purple), var(--pink));
+    border-radius: 99px;
+    transition: width 0.6s ease;
+}
+
+.gus-prog-pct { font-size: 12px; font-weight: 600; color: var(--gray-600); font-family: 'DM Mono', monospace; min-width: 34px; text-align: right; }
+
+.gus-action-group { display: flex; align-items: center; gap: 8px; }
+
+.gus-btn-view {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--purple);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 3px 10px rgba(108,99,255,.30);
+}
+
+.gus-btn-view:hover { background: var(--purple-dk); box-shadow: 0 5px 16px rgba(108,99,255,.40); transform: translateY(-1px); }
+
+.gus-btn-dl {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px; height: 36px;
+    background: white;
+    border: 1.5px solid var(--gray-200);
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--gray-600);
+    transition: all 0.2s;
+}
+
+.gus-btn-dl:hover { border-color: var(--purple); color: var(--purple); background: #f5f4ff; }
+.gus-btn-ico { width: 15px; height: 15px; }
+
+.gus-btn-spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,.4);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: gus-spin 0.7s linear infinite;
+}
+
+.gus-table-footer { padding: 14px 20px; font-size: 13px; color: var(--gray-400); border-top: 1px solid var(--gray-100); text-align: right; }
+
+.gus-empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; color: var(--gray-400); gap: 12px; }
+.gus-empty-icon { opacity: 0.6; }
+
+.gus-error-icon { display: flex; align-items: center; justify-content: center; }
+.gus-error-msg { font-size: 15px; color: #ef4444; font-weight: 500; }
+.gus-error-actions { display: flex; gap: 12px; }
+
+/* ══ Yes/No Indicator ════════════════════════════════════════ */
+.gus-field-yesno {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.gus-yn-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.gus-yn-yes { background: #10B981; }
+.gus-yn-no  { background: #ef4444; }
+
+/* ══ MODAL ════════════════════════════════════════════════════ */
+.gus-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(30,32,68,.55);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: gus-fadeIn 0.2s ease;
+}
+
+@keyframes gus-fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.gus-modal {
+    background: white;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 700px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    animation: gus-slideUp 0.3s cubic-bezier(.34,1.56,.64,1);
+}
+
+@keyframes gus-slideUp {
+    from { opacity: 0; transform: translateY(24px) scale(.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.gus-modal-hdr { display: flex; align-items: center; justify-content: space-between; padding: 24px 28px 20px; border-bottom: 1px solid var(--gray-100); }
+.gus-modal-hdr-left { display: flex; align-items: center; gap: 16px; }
+
+.gus-modal-avatar {
+    width: 52px; height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+}
+
+.gus-modal-title { font-size: 19px; font-weight: 700; color: var(--text); margin: 0 0 4px; }
+.gus-modal-appid { font-size: 12px; color: var(--gray-400); margin: 0; font-family: 'DM Mono', monospace; }
+.gus-modal-hdr-right { display: flex; align-items: center; gap: 14px; }
+
+.gus-modal-x {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: var(--gray-100);
+    border: none;
+    cursor: pointer;
+    color: var(--gray-600);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.gus-modal-x:hover { background: #fee2e2; color: #ef4444; }
+
+.gus-modal-body { padding: 24px 28px; display: flex; flex-direction: column; gap: 24px; }
+
+.gus-modal-sec { border: 1px solid var(--gray-100); border-radius: 12px; overflow: hidden; }
+
+.gus-modal-sec-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--gray-50);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gray-800);
+    border-bottom: 1px solid var(--gray-100);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.gus-sec-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.gus-dot-blue   { background: var(--blue); }
+.gus-dot-purple { background: var(--purple); }
+.gus-dot-pink   { background: var(--pink); }
+.gus-dot-green  { background: var(--green); }
+
+.gus-modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+
+.gus-modal-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 14px 16px;
+    border-right: 1px solid var(--gray-100);
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.gus-modal-field:nth-child(even) { border-right: none; }
+.gus-modal-field:last-child,
+.gus-modal-field:nth-last-child(2):nth-child(odd) { border-bottom: none; }
+.gus-field-full { grid-column: 1 / -1; border-right: none; }
+
+.gus-field-lbl { font-size: 11px; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.5px; }
+.gus-field-val { font-size: 14px; font-weight: 500; color: var(--text); line-height: 1.4; }
+
+.gus-modal-prog-wrap { padding: 16px 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+
+.gus-modal-prog-track { height: 10px; background: var(--gray-100); border-radius: 99px; overflow: hidden; }
+
+.gus-modal-prog-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--purple), var(--pink));
+    border-radius: 99px;
+    transition: width 0.8s ease;
+}
+
+.gus-modal-prog-lbl { font-size: 13px; font-weight: 600; color: var(--gray-600); text-align: right; }
+
+.gus-modal-ftr { display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding: 18px 28px 24px; border-top: 1px solid var(--gray-100); }
+
+.gus-modal-dl-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 20px;
+    background: var(--purple);
+    color: white;
+    border: none;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 3px 12px rgba(108,99,255,.30);
+}
+
+.gus-modal-dl-btn:hover { background: var(--purple-dk); box-shadow: 0 5px 18px rgba(108,99,255,.40); transform: translateY(-1px); }
+
+.gus-modal-close-btn {
+    padding: 10px 20px;
+    background: white;
+    border: 1.5px solid var(--gray-200);
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--gray-600);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.gus-modal-close-btn:hover { border-color: var(--gray-400); color: var(--text); }
+
+/* ══ DOCUMENTS SECTION — Card Layout ═══════════════════════════ */
+
+.gus-doc-progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.gus-doc-progress-track {
+    flex: 1;
+    height: 8px;
+    background: var(--gray-100);
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.gus-doc-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--purple), var(--pink));
+    border-radius: 99px;
+    transition: width 0.5s ease;
+}
+
+.gus-doc-progress-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--purple);
+    white-space: nowrap;
+}
+
+/* Document cards grid */
+.gus-doc-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 14px 16px;
+}
+
+/* Individual document card */
+.gus-doc-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1.5px solid var(--gray-200);
+    background: #fafafa;
+    transition: box-shadow 0.2s;
+}
+
+.gus-doc-card:hover { box-shadow: 0 2px 8px rgba(108,99,255,.08); }
+
+/* Card state variants */
+.doc-card-uploaded { border-color: #ddd6fe; background: #f5f3ff; }
+.doc-card-expected { border-color: #fde68a; background: #fffbeb; }
+.doc-card-missing  { border-color: #fecaca; background: #fff5f5; }
+
+/* Icon */
+.gus-doc-card-icon {
+    flex-shrink: 0;
+    width: 34px; height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid var(--gray-200);
+}
+
+/* Card body */
+.gus-doc-card-body { flex: 1; min-width: 0; }
+
+.gus-doc-card-top {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+    flex-wrap: wrap;
+}
+
+.gus-doc-card-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.gus-doc-required-badge {
+    font-size: 9px;
+    font-weight: 600;
+    color: #7c3aed;
+    background: #ede9fe;
+    border-radius: 99px;
+    padding: 1px 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+/* Status pills */
+.gus-doc-status-pill {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 99px;
+    padding: 2px 8px;
+    margin-bottom: 5px;
+    letter-spacing: 0.3px;
+}
+
+.doc-status-approved { background: #dcfce7; color: #166534; }
+.doc-status-rejected { background: #fee2e2; color: #991b1b; }
+.doc-status-pending  { background: #fef9c3; color: #854d0e; }
+.doc-status-expected { background: #fef3c7; color: #92400e; }
+.doc-status-missing  { background: #fee2e2; color: #991b1b; }
+
+/* File info */
+.gus-doc-file-info { display: flex; flex-direction: column; gap: 1px; }
+
+.gus-doc-filename {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #4b5563;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.gus-doc-filesize  { font-size: 9.5px; color: #9ca3af; font-weight: 500; }
+.gus-doc-uploaddate { font-size: 9.5px; color: #a78bfa; font-weight: 500; }
+
+/* Expected date */
+.gus-doc-expected-info { margin-top: 2px; }
+.gus-doc-expected-label { font-size: 10px; color: #b45309; font-weight: 600; }
+
+/* Portfolio link */
+.gus-doc-portfolio {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--gray-100);
+}
+
+.gus-doc-portfolio-link {
+    font-size: 12px;
+    color: var(--purple);
+    font-weight: 500;
+    text-decoration: underline;
+    word-break: break-all;
+}
+
+.gus-doc-portfolio-link:hover { color: var(--purple-dk); }
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 1024px) { .gus-stats-row { grid-template-columns: repeat(2, 1fr); } }
+
+@media (max-width: 768px) {
+    .gus-wrap { padding: 16px; }
+    .gus-stats-row { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .gus-controls { flex-direction: column; align-items: stretch; }
+    .gus-filters { flex-wrap: wrap; }
+    .gus-table { font-size: 13px; }
+    .gus-modal { border-radius: 14px; }
+    .gus-modal-grid { grid-template-columns: 1fr; }
+    .gus-modal-field { border-right: none !important; }
+    .gus-modal-field:last-child { border-bottom: none; }
+    .gus-doc-cards { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+    .gus-stats-row { grid-template-columns: 1fr; }
+    .gus-stat-num { font-size: 28px; }
+    .gus-page-title { font-size: 20px; }
+}
+
+/* ══ DOCUMENT VIEW BUTTON (on each card) ══════════════════════ */
+.gus-doc-view-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 6px;
+    padding: 4px 10px;
+    background: #ede9fe;
+    color: #6c63ff;
+    border: 1.5px solid #c4b5fd;
+    border-radius: 6px;
+    font-size: 10.5px;
+    font-weight: 700;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.18s;
+    letter-spacing: 0.2px;
+}
+
+.gus-doc-view-btn:hover {
+    background: #6c63ff;
+    color: #fff;
+    border-color: #6c63ff;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(108,99,255,.30);
+}
+
+/* ══ DOCUMENT VIEWER OVERLAY ══════════════════════════════════ */
+.gus-docviewer-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 10, 30, 0.75);
+    backdrop-filter: blur(6px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: gus-fadeIn 0.2s ease;
+}
+
+.gus-docviewer-box {
+    background: #fff;
+    border-radius: 18px;
+    width: 100%;
+    max-width: 860px;
+    height: 88vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 32px 80px rgba(0,0,0,.40);
+    animation: gus-slideUp 0.28s cubic-bezier(.34,1.56,.64,1);
+}
+
+/* Viewer header */
+.gus-docviewer-hdr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #fafafa;
+    flex-shrink: 0;
+    gap: 12px;
+}
+
+.gus-docviewer-hdr-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.gus-docviewer-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: #f3f4f6;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+}
+
+.gus-docviewer-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e2044;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.gus-docviewer-filename {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 420px;
+}
+
+.gus-docviewer-hdr-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.gus-docviewer-open-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    background: #6c63ff;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.18s;
+    white-space: nowrap;
+}
+
+.gus-docviewer-open-btn:hover {
+    background: #574fd6;
+    box-shadow: 0 4px 12px rgba(108,99,255,.35);
+    transform: translateY(-1px);
+}
+
+.gus-docviewer-close {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: #f3f4f6;
+    border: none;
+    cursor: pointer;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
+
+.gus-docviewer-close:hover {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+/* Viewer body */
+.gus-docviewer-body {
+    flex: 1;
+    overflow: hidden;
+    background: #f0f0f0;
+    position: relative;
+}
+
+/* Image preview */
+.gus-docviewer-img-wrap {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: auto;
+    padding: 20px;
+    background: repeating-conic-gradient(#e5e7eb 0% 25%, #f9fafb 0% 50%) 0 0 / 24px 24px;
+}
+
+.gus-docviewer-img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.18);
+}
+
+/* Fallback / unsupported */
+.gus-docviewer-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: #6b7280;
+    font-family: 'DM Sans', sans-serif;
+    text-align: center;
+    padding: 40px;
+}
+
+@media (max-width: 600px) {
+    .gus-docviewer-box { height: 95vh; border-radius: 14px; }
+    .gus-docviewer-filename { max-width: 160px; }
+    .gus-doc-cards { grid-template-columns: 1fr; }
+}

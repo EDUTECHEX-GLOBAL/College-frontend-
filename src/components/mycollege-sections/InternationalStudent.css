@@ -1,0 +1,882 @@
+/* =========================================
+   International Student Form - Exact Common App Style
+   ========================================= */
+
+.international-form-container {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+  color: #1a1a1a;
+}
+
+/* =============================
+   Header - Common App Style
+   ============================= */
+
+.international-form-header {
+  background: white;
+  border-bottom: 1px solid #d1d5db;
+  padding: 0;
+}
+
+.international-header-nav {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px 24px 0 24px;
+}
+
+.international-back-button {
+  background: none;
+  border: none;
+  color: #2563eb;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 0;
+  cursor: pointer;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.international-back-button:hover {
+  color: #1d4ed8;
+}
+
+.international-header-info {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 24px 32px 24px;
+}
+
+.international-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+}
+
+.international-description {
+  font-size: 16px;
+  color: #6b7280;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* =============================
+   Status Indicator
+   ============================= */
+
+.international-status {
+  margin-bottom: 12px;
+}
+
+.status-indicator {
+  color: #2563eb;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-indicator::before {
+  content: '●';
+  color: #2563eb;
+  font-size: 12px;
+}
+
+/* =============================
+   Main Content - Professional Layout
+   ============================= */
+
+.international-form-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+/* =============================
+   Progress Bar - Common App Style
+   ============================= */
+
+.international-progress {
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.international-progress-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.international-progress-bar {
+  flex: 1;
+  height: 8px;
+  background-color: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.international-progress-fill {
+  height: 100%;
+  background: #2563eb;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* =============================
+   Form Content Section
+   ============================= */
+
+.international-form-section {
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.international-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  padding: 24px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* =============================
+   Question Cards - Professional Style
+   ============================= */
+
+.international-question-card {
+  padding: 24px;
+  border-bottom: 1px solid #e5e7eb;
+  background: white;
+}
+
+.international-question-card:last-child {
+  border-bottom: none;
+}
+
+.international-question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.international-question-title {
+  font-size: 16px;
+  font-weight: 400;
+  color: #111827;
+  margin: 0;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.international-question-required {
+  color: #dc2626;
+  font-size: 14px;
+  font-weight: 500;
+  margin-left: 12px;
+  white-space: nowrap;
+}
+
+/* =============================
+   Form Controls - Common App Style
+   ============================= */
+
+.international-form-select {
+  width: 100%;
+  max-width: 500px;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  background: white;
+  color: #111827;
+  transition: all 0.2s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 8px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+}
+
+.international-form-select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.international-form-select:hover {
+  border-color: #9ca3af;
+}
+
+/* =============================
+   Clear Answer Button
+   ============================= */
+
+.clear-answer-button {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-top: 8px;
+  text-decoration: underline;
+}
+
+.clear-answer-button:hover {
+  color: #374151;
+}
+
+/* =============================
+   Action Buttons - Common App Style
+   ============================= */
+
+.international-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+  padding: 24px;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  justify-content: flex-end;
+}
+
+.international-primary-button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+  height: 40px;
+}
+
+.international-primary-button:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.international-primary-button:active {
+  transform: translateY(0);
+}
+
+.international-secondary-button {
+  background: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+  height: 40px;
+}
+
+.international-secondary-button:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+  color: #111827;
+}
+
+/* =============================
+   Loading State
+   ============================= */
+
+.international-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.international-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #f3f4f6;
+  border-top: 3px solid #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* =============================
+   Responsive Design
+   ============================= */
+
+@media (max-width: 768px) {
+  .international-header-nav,
+  .international-header-info {
+    padding: 20px 16px;
+  }
+
+  .international-form-content {
+    padding: 24px 16px;
+  }
+
+  .international-question-card {
+    padding: 20px 16px;
+  }
+
+  .international-section-title {
+    padding: 20px 16px;
+    font-size: 16px;
+  }
+
+  .international-question-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .international-question-required {
+    margin-left: 0;
+  }
+
+  .international-actions {
+    flex-direction: column-reverse;
+    padding: 20px 16px;
+  }
+
+  .international-primary-button,
+  .international-secondary-button {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .international-progress {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .international-progress-bar {
+    width: 100%;
+  }
+
+  .international-form-select {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .international-form-content {
+    padding: 16px;
+  }
+
+  .international-title {
+    font-size: 24px;
+  }
+}
+
+/* =============================
+   Focus States for Accessibility
+   ============================= */
+
+.international-form-select:focus,
+.international-primary-button:focus,
+.international-secondary-button:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* =============================
+   Enhanced Visual Improvements
+   ============================= */
+
+.international-question-card {
+  transition: background-color 0.2s ease;
+}
+
+.international-question-card:hover {
+  background: #fafafa;
+}
+
+/* =============================
+   Button Group Alignment
+   ============================= */
+
+.international-actions {
+  border-radius: 0 0 8px 8px;
+}
+
+/* =============================
+   Professional Spacing
+   ============================= */
+
+.international-form-section {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.international-progress {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* =============================
+   Form Groups - For multiple inputs
+   ============================= */
+
+.international-form-group {
+  margin-bottom: 16px;
+}
+
+.international-form-group:last-child {
+  margin-bottom: 0;
+}
+
+.international-form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.international-form-input {
+  width: 100%;
+  max-width: 500px;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  background: white;
+  color: #111827;
+  transition: all 0.2s ease;
+}
+
+.international-form-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.international-form-input:hover {
+  border-color: #9ca3af;
+}
+
+/* =============================
+   Date Hint
+   ============================= */
+
+.international-date-hint {
+  font-size: 12px;
+  color: #6b7280;
+  font-style: italic;
+  margin-top: 4px;
+}
+
+.react-select-container {
+  font-size: 14px;
+  position: relative;
+  max-width: 500px;
+}
+
+.react-select__control {
+  border: 1px solid #d1d5db !important;
+  border-radius: 6px !important;
+  min-height: 42px !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-select__control:hover {
+  border-color: #9ca3af !important;
+}
+
+.react-select__control--is-focused {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+}
+
+.react-select__value-container {
+  padding: 8px 12px !important;
+}
+
+.react-select__placeholder {
+  color: #6b7280 !important;
+  font-size: 14px !important;
+}
+
+.react-select__single-value {
+  color: #111827 !important;
+  font-size: 14px !important;
+}
+
+.react-select__indicator {
+  padding: 8px !important;
+  color: #6b7280 !important;
+}
+
+.react-select__indicator:hover {
+  color: #374151 !important;
+}
+
+.react-select__indicator-separator {
+  background-color: #e5e7eb !important;
+}
+
+.react-select__menu {
+  position: absolute !important;
+  width: 100% !important;
+  border-radius: 6px !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+  z-index: 9999 !important;
+  margin-top: 4px !important;
+  background: white !important;
+}
+
+.react-select__menu-list {
+  max-height: 200px !important;
+  overflow-y: auto !important;
+}
+
+.react-select__option {
+  font-size: 14px !important;
+  padding: 10px 12px !important;
+  color: #111827 !important;
+  background-color: white !important;
+  cursor: pointer !important;
+}
+
+.react-select__option:hover {
+  background-color: #f0f9ff !important;
+  color: #111827 !important;
+}
+
+.react-select__option--is-focused {
+  background-color: #f0f9ff !important;
+}
+
+.react-select__option--is-selected {
+  background-color: #2563eb !important;
+  color: white !important;
+}
+
+.react-select__clear-indicator {
+  cursor: pointer !important;
+}
+
+.react-select__clear-indicator:hover {
+  color: #dc2626 !important;
+}
+
+/* Ensure dropdowns don't get clipped */
+.international-question-card {
+  position: relative;
+  overflow: visible !important;
+}
+
+.international-form-section {
+  overflow: visible !important;
+}
+
+/* Z-index hierarchy */
+.international-question-card {
+  z-index: 1;
+}
+
+.react-select__menu {
+  z-index: 9999 !important;
+}
+
+/* Radio group styles */
+.international-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.international-radio-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 8px 0;
+}
+
+.international-radio-input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #2563eb;
+}
+
+.international-radio-label {
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+/* Ensure dropdown appears above other elements */
+.international-form-container {
+  position: relative;
+}
+
+/* Responsive adjustments for react-select */
+@media (max-width: 768px) {
+  .react-select-container {
+    max-width: 100% !important;
+  }
+  
+  .react-select__control {
+    min-height: 44px !important;
+  }
+  
+  .react-select__menu {
+    position: fixed !important;
+    width: calc(100vw - 32px) !important;
+    max-width: none !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .react-select__control {
+    min-height: 46px !important;
+  }
+}
+
+.react-select-container {
+  font-size: 14px;
+  position: relative;
+  max-width: 500px;
+  z-index: 1; /* Ensure it creates stacking context */
+}
+
+/* Remove !important from all declarations to allow inline styles to work */
+.react-select__control {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  min-height: 42px;
+  box-shadow: none;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.react-select__control:hover {
+  border-color: #9ca3af;
+}
+
+.react-select__control--is-focused {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.react-select__value-container {
+  padding: 8px 12px;
+}
+
+.react-select__placeholder {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.react-select__single-value {
+  color: #111827;
+  font-size: 14px;
+}
+
+.react-select__indicator {
+  padding: 8px;
+  color: #6b7280;
+}
+
+.react-select__indicator:hover {
+  color: #374151;
+}
+
+.react-select__indicator-separator {
+  background-color: #e5e7eb;
+}
+
+/* CRITICAL FIX: Menu should be rendered to body via menuPortalTarget */
+/* Remove the menu styles since they'll be handled by portal */
+
+.react-select__option {
+  font-size: 14px;
+  padding: 10px 12px;
+  color: #111827;
+  background-color: white;
+  cursor: pointer;
+}
+
+.react-select__option:hover {
+  background-color: #f0f9ff;
+  color: #111827;
+}
+
+.react-select__option--is-focused {
+  background-color: #f0f9ff;
+}
+
+.react-select__option--is-selected {
+  background-color: #2563eb;
+  color: white;
+}
+
+.react-select__clear-indicator {
+  cursor: pointer;
+}
+
+.react-select__clear-indicator:hover {
+  color: #dc2626;
+}
+
+/* =============================
+   Critical Container Fixes
+   ============================= */
+
+/* Remove overflow hidden from all containers that might clip dropdowns */
+.international-form-container,
+.international-form-content,
+.international-form-section,
+.international-question-card {
+  overflow: visible !important;
+}
+
+/* Ensure question cards allow dropdown overflow */
+.international-question-card {
+  position: relative;
+}
+
+/* Make sure the form sections don't clip content */
+.international-form-section {
+  position: relative;
+}
+
+/* =============================
+   Z-index Management
+   ============================= */
+
+/* Create proper stacking context */
+.international-form-container {
+  position: relative;
+  z-index: 1;
+}
+
+/* Form content should be above normal flow */
+.international-form-content {
+  position: relative;
+  z-index: 2;
+}
+
+/* Question cards should be below dropdowns */
+.international-question-card {
+  position: relative;
+  z-index: 1;
+}
+
+/* =============================
+   Alternative Solution: If menuPortalTarget doesn't work
+   ============================= */
+
+/* If you still have issues, try this approach: */
+.international-question-card {
+  overflow: visible !important;
+  position: relative;
+}
+
+/* Force dropdown to appear above everything */
+.react-select__menu {
+  z-index: 9999 !important;
+  position: absolute !important;
+}
+
+.react-select__menu-list {
+  max-height: 200px !important;
+  overflow-y: auto !important;
+}
+
+/* =============================
+   Responsive fixes
+   ============================= */
+
+@media (max-width: 768px) {
+  .react-select-container {
+    max-width: 100%;
+  }
+  
+  .react-select__control {
+    min-height: 44px;
+  }
+  
+  /* Ensure dropdown fits on mobile */
+  .react-select__menu {
+    position: fixed !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 90vw !important;
+    max-width: 400px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .react-select__control {
+    min-height: 46px;
+  }
+  
+  .react-select__menu {
+    width: 95vw !important;
+    max-width: 350px !important;
+  }
+}
+
+/* =============================
+   Prevent body scroll when dropdown is open
+   ============================= */
+
+body.react-select-dropdown-open {
+  overflow: hidden;
+}
+
+/* =============================
+   Ensure select is clickable
+   ============================= */
+
+.react-select__control {
+  cursor: pointer !important;
+}
+
+.react-select__dropdown-indicator {
+  cursor: pointer !important;
+}

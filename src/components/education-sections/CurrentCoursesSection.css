@@ -1,0 +1,301 @@
+/* src/components/education-sections/CurrentCoursesSection.css */
+
+.current-courses-section {
+  background: white;
+  margin: 20px 40px;
+  padding: 32px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* ── Header ── */
+.current-courses-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.current-courses-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a202c;
+  margin-bottom: 8px;
+}
+
+.current-courses-status {
+  font-size: 14px;
+  color: #2C5AA0;
+  font-weight: 500;
+  background: #e8f0fe;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.current-courses-description {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+/* ── Form Groups ── */
+.current-courses-form-group {
+  margin-bottom: 24px;
+}
+
+.current-courses-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.current-courses-required::after {
+  content: " *";
+  color: #dc2626;
+}
+
+/* ── Scheduling System Radio ── */
+.current-courses-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.current-courses-radio-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.current-courses-radio-input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.current-courses-radio-label {
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+}
+
+/* ── Course Items ── */
+.current-courses-array-section {
+  margin-top: 24px;
+}
+
+.current-courses-item {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.current-courses-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.current-courses-item-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+}
+
+.current-courses-remove-btn {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.2s ease;
+  white-space: nowrap;
+}
+
+.current-courses-remove-btn:hover {
+  background: #b91c1c;
+}
+
+/* ── Course Grid ── */
+.current-courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.current-courses-full-width {
+  grid-column: 1 / -1;
+}
+
+/* ── Inputs ── */
+.current-courses-select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+  background: white;
+  box-sizing: border-box;
+}
+
+.current-courses-select:focus {
+  outline: none;
+  border-color: #2C5AA0;
+  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+}
+
+.current-courses-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+  background: white;
+  box-sizing: border-box;
+}
+
+.current-courses-input:focus {
+  outline: none;
+  border-color: #2C5AA0;
+  box-shadow: 0 0 0 2px rgba(44, 90, 160, 0.1);
+}
+
+/* ── Add Button ── */
+.current-courses-add-btn {
+  background: #2C5AA0;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s ease;
+  margin-top: 16px;
+}
+
+.current-courses-add-btn:hover {
+  background: #1E3D6F;
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Tablet  ≤ 1023px
+════════════════════════════════════════ */
+@media (max-width: 1023px) {
+  .current-courses-section {
+    margin: 20px 24px;
+    padding: 28px;
+  }
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Mobile  ≤ 767px
+════════════════════════════════════════ */
+@media (max-width: 767px) {
+  .current-courses-section {
+    margin: 15px 16px;
+    padding: 20px;
+    border-radius: 6px;
+  }
+
+  .current-courses-title {
+    font-size: 18px;
+  }
+
+  /* Scheduling radio becomes horizontal flex-wrap */
+  .current-courses-radio-group {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .current-courses-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .current-courses-full-width {
+    grid-column: 1;
+  }
+
+  .current-courses-item {
+    padding: 16px;
+  }
+
+  .current-courses-item-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Small Mobile  ≤ 480px
+════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .current-courses-section {
+    margin: 10px 12px;
+    padding: 16px;
+  }
+
+  .current-courses-title {
+    font-size: 17px;
+  }
+
+  .current-courses-item {
+    padding: 14px;
+  }
+
+  .current-courses-input,
+  .current-courses-select {
+    padding: 9px 10px;
+    font-size: 13px;
+  }
+
+  .current-courses-form-group {
+    margin-bottom: 16px;
+  }
+
+  .current-courses-add-btn {
+    width: 100%;
+    justify-content: center;
+    font-size: 13px;
+  }
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Very Small  ≤ 360px
+════════════════════════════════════════ */
+@media (max-width: 360px) {
+  .current-courses-section {
+    margin: 8px;
+    padding: 12px;
+  }
+
+  .current-courses-title {
+    font-size: 16px;
+  }
+
+  .current-courses-input,
+  .current-courses-select {
+    font-size: 12px;
+  }
+}

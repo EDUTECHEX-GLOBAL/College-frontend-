@@ -1,0 +1,573 @@
+/* =========================================
+   College Search — Modern Teal/Orange Theme
+   ======================================== */
+
+.college-search-container {
+  padding: 40px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e6f7f0 100%);
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.college-search-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.college-search-title {
+  font-size: 32px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #0b2b8b 0%, #0d9488 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+}
+
+.college-search-count {
+  background: #ccfbf1;
+  color: #466aad;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 6px 14px;
+  border-radius: 30px;
+  border: 1px solid #9e99f6;
+}
+
+.college-search-bar {
+  margin-bottom: 30px;
+}
+
+.college-search-input {
+  width: 100%;
+  padding: 16px 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  outline: none;
+  background: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.college-search-input:focus {
+  border-color: #0d3e94;
+  box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.1);
+}
+
+/* =============================
+   List layout for college items
+   ============================= */
+
+.college-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.college-list-item {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.college-list-item:hover {
+  border-color: #0d9488;
+  box-shadow: 0 10px 25px -5px rgba(13, 148, 136, 0.2);
+  transform: translateY(-2px);
+}
+
+.college-info {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.college-logo-small {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #3f6ccf 0%, #45cfc4 100%);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 6px -1px rgba(13, 85, 148, 0.3);
+}
+
+.college-logo-initials {
+  width: 100%;
+  height: 100%;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.college-logo-small img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.college-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.college-name-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.college-name-link {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  transition: color 0.2s ease;
+}
+
+.college-name-link.kansas-university {
+  color: #334155;
+  cursor: default;
+}
+
+.college-name-link.gus-university {
+  color: #0d1f94;
+  cursor: pointer;
+  position: relative;
+}
+
+.college-name-link.gus-university:hover {
+  color: #200f76;
+  text-decoration: none;
+}
+
+.college-name-link.gus-university::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #0d2694, #f97316);
+  transition: width 0.3s ease;
+}
+
+.college-name-link.gus-university:hover::after {
+  width: 100%;
+}
+
+.college-location-small {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0 0 6px 0;
+}
+
+/* University Type Badge */
+.university-type-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 30px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  box-shadow: 0 2px 4px rgba(249, 115, 22, 0.3);
+}
+
+/* Program Count Badge */
+.college-programs-preview {
+  margin-top: 4px;
+}
+
+.programs-count {
+  font-size: 13px;
+  color: #0d1494;
+  background: #ccfbf1;
+  padding: 4px 12px;
+  border-radius: 30px;
+  display: inline-block;
+  font-weight: 500;
+  border: 1px solid #99f6e4;
+}
+
+/* College Status Badge */
+.college-status-badge {
+  font-size: 12px;
+  color: #0d1f94;
+  font-weight: 600;
+  background: #ccfbf1;
+  padding: 4px 12px;
+  border-radius: 30px;
+  margin-top: 6px;
+  display: inline-block;
+  border: 1px solid #99f6e4;
+}
+
+/* =============================
+   Action Buttons - Teal/Orange Theme
+   ============================= */
+
+/* Add Button */
+.add-circle-button {
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+  color: white;
+  border: none;
+  border-radius: 40px;
+  padding: 10px 24px 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px -1px rgba(13, 148, 136, 0.3);
+}
+
+.add-circle-button:hover {
+  background: linear-gradient(135deg, #0f2076 0%, #115e59 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(42, 13, 148, 0.4);
+}
+
+.add-circle-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.add-icon {
+  background: white;
+  color: #160d94;
+  font-weight: 700;
+  font-size: 16px;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Remove Button */
+.remove-circle-button {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  color: white;
+  border: none;
+  border-radius: 40px;
+  padding: 10px 24px 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.3);
+}
+
+.remove-circle-button:hover {
+  background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.4);
+}
+
+.remove-circle-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.remove-circle-button.small {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+  min-width: unset;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remove-icon {
+  background: white;
+  color: #f97316;
+  font-weight: 700;
+  font-size: 16px;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* View Courses Button */
+.view-courses-button {
+  background: white;
+  color: #2f0d94;
+  border: 2px solid #120d94;
+  padding: 10px 20px;
+  border-radius: 40px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 140px;
+  justify-content: center;
+}
+
+.view-courses-button:hover {
+  background: #ccfbf1;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(56, 13, 148, 0.2);
+}
+
+.view-courses-button.primary {
+  background: linear-gradient(135deg, #210d94 0%, #0f766e 100%);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 6px -1px rgba(13, 148, 136, 0.3);
+}
+
+.view-courses-button.primary:hover {
+  background: linear-gradient(135deg, #0f2076 0%, #11125e 100%);
+  box-shadow: 0 10px 15px -3px rgba(13, 148, 136, 0.4);
+}
+
+.courses-icon {
+  font-size: 16px;
+}
+
+/* Add GUS Button */
+.add-gus-button.secondary {
+  background: white;
+  color: #0d0d94;
+  border: 2px solid #0d1d94;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.add-gus-button.secondary:hover {
+  background: #7173e4;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
+}
+
+.add-gus-button.secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* GUS University Buttons Container */
+.gus-university-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* =============================
+   Loading States
+   ============================= */
+
+.adding-spinner,
+.removing-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-message,
+.empty-message {
+  text-align: center;
+  font-size: 18px;
+  color: #64748b;
+  margin-top: 60px;
+  padding: 40px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* =============================
+   Info Banner
+   ============================= */
+
+.info-banner {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  border: 1px solid #fed7aa;
+  border-radius: 20px;
+  padding: 20px 24px;
+  margin-top: 40px;
+  box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.1);
+}
+
+.info-banner-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.info-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.info-text {
+  color: #7b341e;
+  font-size: 14px;
+  line-height: 1.6;
+  flex: 1;
+}
+
+.info-list {
+  margin: 10px 0 0 20px;
+  padding: 0;
+}
+
+.info-list li {
+  margin-bottom: 8px;
+  color: #9a3412;
+}
+
+.gus-highlight {
+  color: #0d9488;
+  font-weight: 600;
+  background: #ccfbf1;
+  padding: 2px 8px;
+  border-radius: 30px;
+  display: inline-block;
+}
+
+/* =============================
+   Responsive Design
+   ============================= */
+
+@media (max-width: 768px) {
+  .college-search-container {
+    padding: 20px;
+  }
+
+  .college-search-title {
+    font-size: 24px;
+  }
+
+  .college-list-item {
+    padding: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .college-info {
+    width: 100%;
+  }
+
+  .gus-university-buttons {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .view-courses-button {
+    flex: 1;
+  }
+
+  .info-banner-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .college-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .college-logo-small {
+    width: 50px;
+    height: 50px;
+  }
+
+  .college-logo-initials {
+    font-size: 20px;
+  }
+
+  .college-name-link {
+    font-size: 16px;
+  }
+
+  .college-name-wrapper {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .programs-count {
+    font-size: 12px;
+    padding: 3px 10px;
+  }
+
+  .gus-university-buttons {
+    flex-wrap: wrap;
+  }
+
+  .view-courses-button,
+  .add-circle-button,
+  .remove-circle-button {
+    width: 100%;
+  }
+
+  .remove-circle-button.small,
+  .add-gus-button.secondary {
+    width: 100%;
+    height: 44px;
+    border-radius: 40px;
+  }
+}

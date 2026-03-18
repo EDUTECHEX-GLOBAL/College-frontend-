@@ -1,0 +1,208 @@
+/* Background */
+.extended-bg {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #0d1b3f 0%, #1c2b52 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 50px 20px;
+}
+
+/* Card */
+.extended-profile-card {
+  width: 100%;
+  max-width: 800px;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 50px 60px;
+  box-shadow: 0 10px 30px rgba(0, 20, 60, 0.3);
+  font-family: "Inter", sans-serif;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Titles */
+h1 {
+  text-align: center;
+  font-size: 2.2rem;
+  color: #1e2a4a;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.subtitle {
+  text-align: center;
+  color: #5a6275;
+  margin-bottom: 35px;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* Form */
+.extendedprofile-form-section {
+  margin-bottom: 35px;
+  border-bottom: 1px solid #e4e8ee;
+  padding-bottom: 25px;
+}
+
+.extendedproflie-form-section:last-of-type:last-of-type {
+  border-bottom: none;
+}
+
+/* Radio groups */
+.radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+.radio-group.vertical {
+  flex-direction: column;
+  gap: 12px;
+}
+
+label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  background: #f8fafc;
+  color: #222;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  transition: all 0.25s ease;
+}
+
+label:hover {
+  border-color: #0078d4;
+  background: #eef6ff;
+}
+
+input[type="radio"] {
+  accent-color: #005ea0;
+  width: 18px;
+  height: 18px;
+}
+
+/* Buttons */
+.button-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 40px;
+  gap: 15px;
+}
+
+.back-btn {
+  background: #f3f4f8;
+  border: none;
+  color: #333;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  min-width: 150px;
+}
+
+.back-btn:hover {
+  background: #e1e5f0;
+}
+
+.save-btn {
+  background: linear-gradient(90deg, #0078d4, #004aad);
+  color: #fff;
+  border: none;
+  padding: 14px 45px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 4px 12px rgba(0, 120, 212, 0.25);
+}
+
+.save-btn:hover {
+  background: linear-gradient(90deg, #005ea0, #003d82);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 90, 160, 0.35);
+}
+
+/* Popup Modal */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.popup-box {
+  background: white;
+  padding: 40px 60px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  animation: slideUp 0.4s ease;
+}
+
+.popup-box h2 {
+  font-size: 1.6rem;
+  color: #1e2a4a;
+  margin-bottom: 10px;
+}
+
+.popup-box p {
+  color: #555;
+  margin-bottom: 25px;
+  font-size: 1rem;
+}
+
+.popup-btn {
+  background: #0078d4;
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.popup-btn:hover {
+  background: #005ea0;
+}
+
+/* Animations */
+@keyframes extendedprofilefadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.fade-in-once {
+  animation: fadeIn 0.35s ease-out both;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

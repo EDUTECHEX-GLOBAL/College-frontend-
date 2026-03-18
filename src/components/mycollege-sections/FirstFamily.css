@@ -1,0 +1,752 @@
+/* =========================================
+   Family Application Form - Common App Professional Style
+   ========================================= */
+
+.family-form-container {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+  color: #1a1a1a;
+}
+
+/* =============================
+   Header - Common App Style
+   ============================= */
+
+.family-form-header {
+  background: white;
+  border-bottom: 1px solid #d1d5db;
+  padding: 0;
+}
+
+.family-header-nav {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px 24px 0 24px;
+}
+
+.family-back-button {
+  background: none;
+  border: none;
+  color: #2563eb;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 0;
+  cursor: pointer;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.family-back-button:hover {
+  color: #1d4ed8;
+}
+
+.family-header-info {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 24px 32px 24px;
+}
+
+.family-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+}
+
+.family-description {
+  font-size: 16px;
+  color: #6b7280;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* =============================
+   Main Content - Professional Layout
+   ============================= */
+
+.family-form-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+/* =============================
+   Progress Bar - Common App Style
+   ============================= */
+
+.family-progress {
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.family-progress-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.family-progress-bar {
+  flex: 1;
+  height: 8px;
+  background-color: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.family-progress-fill {
+  height: 100%;
+  background: #2563eb;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* =============================
+   Form Content Section
+   ============================= */
+
+.family-form-section {
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.family-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  padding: 24px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* =============================
+   Question Cards - Professional Style
+   ============================= */
+
+.family-question-card {
+  padding: 24px;
+  border-bottom: 1px solid #e5e7eb;
+  background: white;
+}
+
+.family-question-card:last-child {
+  border-bottom: none;
+}
+
+.family-question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.family-question-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.family-question-required {
+  color: #dc2626;
+  font-size: 14px;
+  font-weight: 500;
+  margin-left: 12px;
+  white-space: nowrap;
+}
+
+/* =============================
+   Form Controls - Common App Style
+   ============================= */
+
+.family-form-select,
+.family-form-input {
+  width: 100%;
+  max-width: 400px;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  background: white;
+  color: #111827;
+  transition: all 0.2s ease;
+}
+
+.family-form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 8px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+}
+
+.family-form-select:focus,
+.family-form-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.family-form-select:hover,
+.family-form-input:hover {
+  border-color: #9ca3af;
+}
+
+/* =============================
+   Radio Groups - Professional Style
+   ============================= */
+
+.family-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.family-radio-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 8px 0;
+}
+
+.family-radio-input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #2563eb;
+}
+
+.family-radio-label {
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+/* =============================
+   Checkbox Grid Layout - Professional
+   ============================= */
+
+.family-checkbox-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.family-checkbox-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  padding: 8px 0;
+}
+
+.family-checkbox-input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #2563eb;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.family-checkbox-label {
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+/* =============================
+   Address Form Styles
+   ============================= */
+
+.parent-address-section {
+  margin-top: 16px;
+}
+
+.parent-address-selector {
+  margin-bottom: 20px;
+}
+
+.address-form-fields {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 20px;
+  margin-top: 16px;
+}
+
+.address-form-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 16px 0;
+}
+
+.address-field-group {
+  margin-bottom: 16px;
+}
+
+.address-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.address-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.field-note {
+  display: block;
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 400;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* =============================
+   Dependent Follow-up Sections
+   ============================= */
+
+.dependent-followup {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 20px;
+  margin-top: 16px;
+}
+
+.dependent-followup .address-field-group {
+  margin-bottom: 20px;
+}
+
+.dependent-followup .address-field-group:last-child {
+  margin-bottom: 0;
+}
+
+/* =============================
+   Action Buttons - Common App Style
+   ============================= */
+
+.family-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+  padding: 24px;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  justify-content: flex-end;
+}
+
+.family-primary-button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+  height: 40px;
+}
+
+.family-primary-button:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.family-primary-button:active {
+  transform: translateY(0);
+}
+
+.family-secondary-button {
+  background: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+  height: 40px;
+}
+
+.family-secondary-button:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+  color: #111827;
+}
+
+/* =============================
+   Status Indicator
+   ============================= */
+
+.family-status {
+  margin-bottom: 12px;
+}
+
+.status-indicator {
+  color: #2563eb;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-indicator::before {
+  content: '●';
+  color: #2563eb;
+  font-size: 12px;
+}
+
+/* =============================
+   Clear Answer Button
+   ============================= */
+
+.clear-answer-button {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-top: 8px;
+  text-decoration: underline;
+}
+
+.clear-answer-button:hover {
+  color: #374151;
+}
+
+/* =============================
+   Loading State
+   ============================= */
+
+.family-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.family-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #f3f4f6;
+  border-top: 3px solid #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* =============================
+   Responsive Design
+   ============================= */
+
+@media (max-width: 768px) {
+  .family-header-nav,
+  .family-header-info {
+    padding: 20px 16px;
+  }
+
+  .family-form-content {
+    padding: 24px 16px;
+  }
+
+  .family-question-card {
+    padding: 20px 16px;
+  }
+
+  .family-section-title {
+    padding: 20px 16px;
+    font-size: 16px;
+  }
+
+  .family-question-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .family-question-required {
+    margin-left: 0;
+  }
+
+  .family-actions {
+    flex-direction: column-reverse;
+    padding: 20px 16px;
+  }
+
+  .family-primary-button,
+  .family-secondary-button {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .family-progress {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .family-progress-bar {
+    width: 100%;
+  }
+
+  .address-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .address-form-fields,
+  .dependent-followup {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .family-form-content {
+    padding: 16px;
+  }
+
+  .family-title {
+    font-size: 24px;
+  }
+
+  .family-checkbox-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =============================
+   Focus States for Accessibility
+   ============================= */
+
+.family-radio-input:focus,
+.family-checkbox-input:focus,
+.family-form-select:focus,
+.family-form-input:focus,
+.family-primary-button:focus,
+.family-secondary-button:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* =============================
+   Enhanced Visual Improvements
+   ============================= */
+
+.family-question-card {
+  transition: background-color 0.2s ease;
+}
+
+.family-question-card:hover {
+  background: #fafafa;
+}
+
+.family-form-select option {
+  padding: 8px;
+  font-size: 14px;
+}
+
+/* =============================
+   Button Group Alignment
+   ============================= */
+
+.family-actions {
+  border-radius: 0 0 8px 8px;
+}
+
+/* =============================
+   Improved Typography
+   ============================= */
+
+.family-question-title {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.family-radio-label,
+.family-checkbox-label {
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* =============================
+   Professional Spacing
+   ============================= */
+
+.family-form-section {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.family-progress {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.react-select-container {
+  font-size: 14px;
+  position: relative;
+}
+
+.react-select__control {
+  border: 1px solid #d1d5db !important;
+  border-radius: 6px !important;
+  min-height: 42px !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-select__control:hover {
+  border-color: #9ca3af !important;
+}
+
+.react-select__control--is-focused {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+}
+
+.react-select__value-container {
+  padding: 8px 12px !important;
+}
+
+.react-select__placeholder {
+  color: #6b7280 !important;
+  font-size: 14px !important;
+}
+
+.react-select__single-value {
+  color: #111827 !important;
+  font-size: 14px !important;
+}
+
+.react-select__indicator {
+  padding: 8px !important;
+  color: #6b7280 !important;
+}
+
+.react-select__indicator:hover {
+  color: #374151 !important;
+}
+
+.react-select__indicator-separator {
+  background-color: #e5e7eb !important;
+}
+
+.react-select__menu {
+  position: absolute !important;
+  width: 100% !important;
+  border-radius: 6px !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+  z-index: 9999 !important;
+  margin-top: 4px !important;
+  background: white !important;
+}
+
+.react-select__menu-list {
+  max-height: 200px !important;
+  overflow-y: auto !important;
+}
+
+.react-select__option {
+  font-size: 14px !important;
+  padding: 10px 12px !important;
+  color: #111827 !important;
+  background-color: white !important;
+  cursor: pointer !important;
+}
+
+.react-select__option:hover {
+  background-color: #f0f9ff !important;
+  color: #111827 !important;
+}
+
+.react-select__option--is-focused {
+  background-color: #f0f9ff !important;
+}
+
+.react-select__option--is-selected {
+  background-color: #2563eb !important;
+  color: white !important;
+}
+
+.react-select__clear-indicator {
+  cursor: pointer !important;
+}
+
+.react-select__clear-indicator:hover {
+  color: #dc2626 !important;
+}
+
+/* Ensure dropdowns don't get clipped */
+.address-form-fields,
+.dependent-followup,
+.parent2-address-section {
+  position: relative;
+  overflow: visible !important;
+}
+
+/* Make sure form containers allow dropdown overflow */
+.family-form-section,
+.family-question-card {
+  overflow: visible !important;
+}
+
+/* Z-index hierarchy */
+.family-question-card {
+  position: relative;
+  z-index: 1;
+}
+
+.address-form-fields {
+  z-index: 2;
+}
+
+.react-select__menu {
+  z-index: 9999 !important;
+}

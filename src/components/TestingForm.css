@@ -1,0 +1,364 @@
+/* src/components/TestingForm.css */
+
+.testing-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #f8f9fa;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ── Header ── */
+.testing-header {
+  background: white;
+  padding: 16px 40px;
+  border-bottom: 1px solid #d1d5db;
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  min-height: 70px;
+}
+
+.back-button {
+  position: absolute;
+  left: 40px;
+  background: #2C5AA0;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s ease;
+  white-space: nowrap;
+}
+
+.back-button:hover {
+  background: #1E3D6F;
+}
+
+.testing-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0;
+  text-align: center;
+}
+
+.testingform-progress-section {
+  position: absolute;
+  right: 40px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.progress-bar {
+  width: 150px;
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #2C5AA0;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #4b5563;
+  min-width: 80px;
+  white-space: nowrap;
+}
+
+/* ── Main Content ── */
+.testing-content {
+  flex: 1;
+  padding: 0;
+  background: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Alert Messages ── */
+.alert {
+  margin: 20px 40px 0;
+  padding: 12px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  border: 1px solid;
+}
+
+.alert-success {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #166534;
+}
+
+.alert-error {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #dc2626;
+}
+
+/* ── Form Actions ── */
+.testingform-form-actions {
+  background: white;
+  padding: 20px 24px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin: 0 40px 20px;
+  border-radius: 0 0 8px 8px;
+}
+
+/* ── Buttons ── */
+.primary-button {
+  background: #2C5AA0;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.primary-button:hover:not(:disabled) {
+  background: #1E3D6F;
+}
+
+.primary-button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.secondary-button {
+  background: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.secondary-button:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.secondary-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Loading State ── */
+.testing-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: #f8f9fa;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e5e7eb;
+  border-top: 3px solid #2C5AA0;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Tablet  ≤ 1023px
+════════════════════════════════════════ */
+@media (max-width: 1023px) {
+  .testing-header {
+    padding: 16px 30px;
+  }
+
+  .back-button {
+    left: 30px;
+  }
+
+  .testingform-progress-section {
+    right: 30px;
+  }
+
+  .alert {
+    margin: 16px 30px 0;
+  }
+
+  .testingform-form-actions {
+    margin: 0 30px 20px;
+  }
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Mobile  ≤ 767px
+   Header: sticky 3-row stack
+════════════════════════════════════════ */
+@media (max-width: 767px) {
+  .testing-header {
+    position: sticky;
+    top: 0;
+    min-height: auto;
+    height: auto;
+    padding: 12px 16px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .back-button {
+    position: static;
+    width: 100%;
+    justify-content: center;
+    order: 1;
+    padding: 9px 16px;
+    font-size: 13px;
+  }
+
+  .testing-header h1 {
+    order: 2;
+    font-size: 18px;
+    text-align: center;
+    padding: 0;
+  }
+
+  .testingform-progress-section {
+    position: static;
+    order: 3;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .progress-bar {
+    flex: 1;
+    max-width: 160px;
+  }
+
+  .alert {
+    margin: 12px 16px 0;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .testingform-form-actions {
+    margin: 0 16px 16px;
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .testingform-form-actions .primary-button,
+  .testingform-form-actions .secondary-button {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Small Mobile  ≤ 480px
+════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .testing-header {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .testing-header h1 {
+    font-size: 16px;
+  }
+
+  .back-button {
+    font-size: 12px;
+    padding: 8px 14px;
+  }
+
+  .progress-bar {
+    max-width: 120px;
+  }
+
+  .progress-text {
+    font-size: 12px;
+    min-width: 60px;
+  }
+
+  .alert {
+    margin: 10px 12px 0;
+    font-size: 12px;
+  }
+
+  .testingform-form-actions {
+    margin: 0 12px 12px;
+    padding: 14px;
+    gap: 8px;
+  }
+
+  .primary-button,
+  .secondary-button {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Very Small  ≤ 360px
+════════════════════════════════════════ */
+@media (max-width: 360px) {
+  .testing-header {
+    padding: 8px;
+  }
+
+  .testing-header h1 {
+    font-size: 15px;
+  }
+
+  .alert {
+    margin: 8px 8px 0;
+  }
+
+  .testingform-form-actions {
+    margin: 0 8px 8px;
+    padding: 12px;
+  }
+
+  .primary-button,
+  .secondary-button {
+    font-size: 12px;
+    padding: 9px 12px;
+  }
+}

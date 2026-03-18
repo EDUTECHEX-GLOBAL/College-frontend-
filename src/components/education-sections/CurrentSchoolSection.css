@@ -1,0 +1,228 @@
+/* src/components/education-sections/CurrentSchoolSection.css */
+
+.current-school-section {
+  background: white;
+  margin: 20px 40px;
+  padding: 32px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* ── Header ── */
+.current-school-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.current-school-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a202c;
+  margin-bottom: 8px;
+}
+
+.current-school-status {
+  font-size: 14px;
+  color: #2C5AA0;
+  font-weight: 500;
+  background: #e8f0fe;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.current-school-description {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+/* ── Grid & Form Groups ── */
+.current-school-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.current-school-full-width {
+  grid-column: 1 / -1;
+}
+
+.current-school-form-group {
+  margin-bottom: 24px;
+}
+
+.current-school-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.current-school-required::after {
+  content: " *";
+  color: #dc2626;
+}
+
+/* ── Inputs ── */
+.current-school-input,
+.current-school-select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background: white;
+  box-sizing: border-box;
+}
+
+.current-school-input:focus,
+.current-school-select:focus {
+  outline: none;
+  border-color: #2C5AA0;
+  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+}
+
+.current-school-hint {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* ── Radio Group ── */
+.current-school-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.current-school-radio-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.current-school-radio-input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.current-school-radio-label {
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+}
+
+/* ── Address Sub-section ── */
+.current-school-address-section {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.current-school-address-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 16px;
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Tablet  ≤ 1023px
+════════════════════════════════════════ */
+@media (max-width: 1023px) {
+  .current-school-section {
+    margin: 20px 24px;
+    padding: 28px;
+  }
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Mobile  ≤ 767px
+════════════════════════════════════════ */
+@media (max-width: 767px) {
+  .current-school-section {
+    margin: 15px 16px;
+    padding: 20px;
+    border-radius: 6px;
+  }
+
+  .current-school-title {
+    font-size: 18px;
+  }
+
+  .current-school-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .current-school-full-width {
+    grid-column: 1;
+  }
+
+  .current-school-form-group {
+    margin-bottom: 18px;
+  }
+
+  .current-school-address-section {
+    margin-top: 24px;
+    padding-top: 18px;
+  }
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Small Mobile  ≤ 480px
+════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .current-school-section {
+    margin: 10px 12px;
+    padding: 16px;
+  }
+
+  .current-school-title {
+    font-size: 17px;
+  }
+
+  .current-school-input,
+  .current-school-select {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .current-school-form-group {
+    margin-bottom: 14px;
+  }
+
+  .current-school-radio-group {
+    gap: 10px;
+  }
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Very Small  ≤ 360px
+════════════════════════════════════════ */
+@media (max-width: 360px) {
+  .current-school-section {
+    margin: 8px;
+    padding: 12px;
+  }
+
+  .current-school-title {
+    font-size: 16px;
+  }
+
+  .current-school-input,
+  .current-school-select {
+    padding: 9px 10px;
+    font-size: 12px;
+  }
+}

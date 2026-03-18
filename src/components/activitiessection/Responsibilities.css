@@ -1,0 +1,126 @@
+/* src/components/activities-sections/ResponsibilitiesSection.css */
+
+.responsibilities-section {
+  background: white;
+  margin: 20px 40px;
+  padding: 32px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.responsibilities-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.responsibilities-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0;
+}
+
+.responsibilities-status {
+  font-size: 14px;
+  color: #16a34a;
+  font-weight: 500;
+  background: #dcfce7;
+  padding: 4px 12px;
+  border-radius: 4px;
+}
+
+.responsibilities-description {
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.6;
+  margin-bottom: 32px;
+}
+
+.responsibilities-question {
+  margin-bottom: 32px;
+}
+
+.responsibilities-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 16px;
+}
+
+.error-indicator {
+  color: #dc2626;
+  font-size: 18px;
+}
+
+.checkboxes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.checkbox-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.checkbox-option:hover {
+  background: #f3f4f6;
+  border-color: #2C5AA0;
+}
+
+.checkbox-option input[type="checkbox"]:checked + span {
+  font-weight: 500;
+  color: #1a202c;
+}
+
+.checkbox-input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #2C5AA0;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.checkbox-option span {
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.6;
+}
+
+.error-message {
+  font-size: 13px;
+  color: #dc2626;
+  margin-top: 8px;
+  margin-bottom: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .responsibilities-section {
+    margin: 15px 20px;
+    padding: 24px;
+  }
+
+  .responsibilities-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
