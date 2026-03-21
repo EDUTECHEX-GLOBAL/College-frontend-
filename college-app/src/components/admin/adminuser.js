@@ -8,6 +8,7 @@ const AdminUserManagement = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
+  const [expandedRow, setExpandedRow] = useState(null); // for mobile row expansion
 
   const [userStats, setUserStats] = useState({
     totalUsers: 0,
@@ -75,9 +76,7 @@ const AdminUserManagement = () => {
           joinDate:
             user.joinDate ||
             user.formattedJoinDate ||
-            (user.createdAt
-              ? new Date(user.createdAt).toLocaleDateString()
-              : "N/A"),
+            (user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"),
           avatar: user.avatar || (name[0] ? name[0].toUpperCase() : "?"),
           otpVerified: user.otpVerified || user.isVerified || false,
           signupDate: user.createdAt || new Date().toISOString(),
@@ -89,12 +88,8 @@ const AdminUserManagement = () => {
       if (data.stats) {
         setUserStats({
           totalUsers: data.stats.totalUsers || transformedUsers.length,
-          activeUsers:
-            data.stats.activeUsers ||
-            transformedUsers.filter((u) => u.status === "active").length,
-          adminUsers:
-            data.stats.adminUsers ||
-            transformedUsers.filter((u) => u.role.toLowerCase() === "admin").length,
+          activeUsers: data.stats.activeUsers || transformedUsers.filter((u) => u.status === "active").length,
+          adminUsers: data.stats.adminUsers || transformedUsers.filter((u) => u.role.toLowerCase() === "admin").length,
           inactiveUsers: transformedUsers.filter((u) => u.status === "inactive").length,
         });
       } else {
@@ -116,7 +111,6 @@ const AdminUserManagement = () => {
   // ── Filter Users ──
   const filterUsers = useCallback(() => {
     let filtered = [...users];
-
     if (searchQuery) {
       filtered = filtered.filter(
         (user) =>
@@ -124,19 +118,16 @@ const AdminUserManagement = () => {
           (user.email || "").toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
-
     if (roleFilter !== "all") {
       filtered = filtered.filter(
         (user) => (user.role || "").toLowerCase() === roleFilter.toLowerCase()
       );
     }
-
     if (statusFilter !== "all") {
       filtered = filtered.filter(
         (user) => (user.status || "").toLowerCase() === statusFilter.toLowerCase()
       );
     }
-
     setFilteredUsers(filtered);
   }, [users, searchQuery, roleFilter, statusFilter]);
 
@@ -151,13 +142,9 @@ const AdminUserManagement = () => {
           approvedAt: new Date().toISOString(),
         }),
       });
-
       const data = await response.json();
-
       if (data?.success) {
-        setUsers((prev) =>
-          prev.map((u) => (u.id === userId ? { ...u, status: "active" } : u))
-        );
+        setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, status: "active" } : u)));
         if (data.stats) setUserStats(data.stats);
         alert("User approved successfully!");
       } else {
@@ -172,7 +159,6 @@ const AdminUserManagement = () => {
   // ── Reject ──
   const handleRejectUser = async (userId) => {
     if (!window.confirm("Reject this user? Their status will be set to 'suspended'.")) return;
-
     try {
       const response = await fetch(`${API_BASE_URL}/${userId}/status`, {
         method: "PATCH",
@@ -183,13 +169,9 @@ const AdminUserManagement = () => {
           rejectedAt: new Date().toISOString(),
         }),
       });
-
       const data = await response.json();
-
       if (data?.success) {
-        setUsers((prev) =>
-          prev.map((u) => (u.id === userId ? { ...u, status: "suspended" } : u))
-        );
+        setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, status: "suspended" } : u)));
         if (data.stats) setUserStats(data.stats);
         alert("User rejected successfully!");
       } else {
@@ -201,7 +183,7 @@ const AdminUserManagement = () => {
     }
   };
 
-  // ── Update (status / role) ──
+  // ── Update ──
   const handleUpdateUser = async (userId, field, value) => {
     try {
       let endpoint = `${API_BASE_URL}/${userId}`;
@@ -227,11 +209,8 @@ const AdminUserManagement = () => {
       });
 
       const data = await response.json();
-
       if (data?.success) {
-        setUsers((prev) =>
-          prev.map((u) => (u.id === userId ? { ...u, [field]: value } : u))
-        );
+        setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, [field]: value } : u)));
         if (data.stats) setUserStats(data.stats);
         alert(`User ${field} updated successfully!`);
       } else {
@@ -246,15 +225,12 @@ const AdminUserManagement = () => {
   // ── Delete ──
   const handleDeleteUser = async (userId) => {
     if (!window.confirm("Delete this user permanently?")) return;
-
     try {
       const response = await fetch(`${API_BASE_URL}/${userId}`, {
         method: "DELETE",
         headers: getAdminHeaders(),
       });
-
       const data = await response.json();
-
       if (data?.success) {
         setUsers((prev) => prev.filter((u) => u.id !== userId));
         if (data.stats) setUserStats(data.stats);
@@ -278,16 +254,13 @@ const AdminUserManagement = () => {
       role: "user",
       status: "active",
     };
-
     try {
       const response = await fetch(API_BASE_URL, {
         method: "POST",
         headers: getAdminHeaders(),
         body: JSON.stringify(newUser),
       });
-
       const data = await response.json();
-
       if (data?.success) {
         const transformedUser = {
           id: data.user?._id || data.user?.id || `temp-${Date.now()}`,
@@ -314,15 +287,12 @@ const AdminUserManagement = () => {
   // ── Seed ──
   const handleSeedUsers = async () => {
     if (!window.confirm("This will create sample users. Continue?")) return;
-
     try {
       const response = await fetch(`${API_BASE_URL}/seed`, {
         method: "POST",
         headers: getAdminHeaders(),
       });
-
       const data = await response.json();
-
       if (data?.success) {
         alert(`${data.count || "Sample"} users created successfully!`);
         loadUsersData();
@@ -353,7 +323,10 @@ const AdminUserManagement = () => {
   const needsApproval = (user) =>
     user.status === "inactive" || user.status === "pending";
 
-  // ── Loading State ──
+  const toggleRow = (userId) => {
+    setExpandedRow((prev) => (prev === userId ? null : userId));
+  };
+
   if (loading) {
     return (
       <div className="loading-container">
@@ -373,12 +346,8 @@ const AdminUserManagement = () => {
           <p>Manage accounts and permissions</p>
         </div>
         <div className="header-buttons">
-          <button className="add-user-btn" onClick={handleAddUser}>
-            + Add User
-          </button>
-          <button className="seed-users-btn" onClick={handleSeedUsers}>
-            🔄 Seed
-          </button>
+          <button className="add-user-btn" onClick={handleAddUser}>+ Add User</button>
+          <button className="seed-users-btn" onClick={handleSeedUsers}>🔄 Seed</button>
         </div>
       </div>
 
@@ -410,9 +379,7 @@ const AdminUserManagement = () => {
       <div className="user-management-section">
         <div className="section-header">
           <h2>User Management</h2>
-          <button className="refresh-btn" onClick={loadUsersData}>
-            🔄 Refresh
-          </button>
+          <button className="refresh-btn" onClick={loadUsersData}>🔄 Refresh</button>
         </div>
 
         {/* Controls */}
@@ -426,7 +393,6 @@ const AdminUserManagement = () => {
               className="search-input"
             />
           </div>
-
           <div className="filter-container">
             <div className="filter-group">
               <span className="filter-label">Role</span>
@@ -441,7 +407,6 @@ const AdminUserManagement = () => {
                 <option value="moderator">Moderator</option>
               </select>
             </div>
-
             <div className="filter-group">
               <span className="filter-label">Status</span>
               <select
@@ -456,15 +421,14 @@ const AdminUserManagement = () => {
                 <option value="suspended">Suspended</option>
               </select>
             </div>
-
             <div className="results-count">
               {filteredUsers.length} / {users.length} users
             </div>
           </div>
         </div>
 
-        {/* Table */}
-        <div className="users-table-container">
+        {/* ── Desktop Table ── */}
+        <div className="users-table-container desktop-table">
           <table className="users-table">
             <thead>
               <tr>
@@ -479,11 +443,7 @@ const AdminUserManagement = () => {
             <tbody>
               {filteredUsers.length > 0 ? (
                 filteredUsers.map((user) => (
-                  <tr
-                    key={user.id}
-                    className={user.status === "inactive" ? "user-inactive" : ""}
-                  >
-                    {/* User */}
+                  <tr key={user.id} className={user.status === "inactive" ? "user-inactive" : ""}>
                     <td>
                       <div className="user-info">
                         <div className="user-avatar">{user.avatar}</div>
@@ -496,81 +456,41 @@ const AdminUserManagement = () => {
                         </div>
                       </div>
                     </td>
-
-                    {/* Role */}
                     <td>
                       <select
                         className="role-select"
                         value={user.role.toLowerCase()}
-                        onChange={(e) =>
-                          handleUpdateUser(user.id, "role", e.target.value)
-                        }
+                        onChange={(e) => handleUpdateUser(user.id, "role", e.target.value)}
                       >
                         <option value="user">User</option>
                         <option value="admin">Admin</option>
                         <option value="moderator">Moderator</option>
                       </select>
                     </td>
-
-                    {/* Status */}
                     <td>
                       <span className={`status-badge ${getStatusBadgeClass(user.status)}`}>
                         {getStatusDisplay(user.status)}
                       </span>
                     </td>
-
-                    {/* Last Login */}
                     <td className="last-login">{user.lastLogin}</td>
-
-                    {/* Join Date */}
                     <td className="join-date">{user.joinDate}</td>
-
-                    {/* Actions */}
                     <td>
                       <div className="action-buttons">
                         {needsApproval(user) ? (
                           <>
-                            <button
-                              className="btn-approve"
-                              onClick={() => handleApproveUser(user.id)}
-                              title="Approve user"
-                            >
-                              ✓ Approve
-                            </button>
-                            <button
-                              className="btn-reject"
-                              onClick={() => handleRejectUser(user.id)}
-                              title="Reject user"
-                            >
-                              ✗ Reject
-                            </button>
-                            <button
-                              className="btn-delete"
-                              onClick={() => handleDeleteUser(user.id)}
-                            >
-                              Delete
-                            </button>
+                            <button className="btn-approve" onClick={() => handleApproveUser(user.id)}>✓ Approve</button>
+                            <button className="btn-reject"  onClick={() => handleRejectUser(user.id)}>✗ Reject</button>
+                            <button className="btn-delete"  onClick={() => handleDeleteUser(user.id)}>Delete</button>
                           </>
                         ) : (
                           <>
                             <button
                               className="btn-activate"
-                              onClick={() =>
-                                handleUpdateUser(
-                                  user.id,
-                                  "status",
-                                  user.status === "active" ? "inactive" : "active"
-                                )
-                              }
+                              onClick={() => handleUpdateUser(user.id, "status", user.status === "active" ? "inactive" : "active")}
                             >
                               {user.status === "active" ? "Deactivate" : "Activate"}
                             </button>
-                            <button
-                              className="btn-delete"
-                              onClick={() => handleDeleteUser(user.id)}
-                            >
-                              Delete
-                            </button>
+                            <button className="btn-delete" onClick={() => handleDeleteUser(user.id)}>Delete</button>
                           </>
                         )}
                       </div>
@@ -579,20 +499,100 @@ const AdminUserManagement = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="no-users">
-                    No users found matching your criteria
-                  </td>
+                  <td colSpan="6" className="no-users">No users found matching your criteria</td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
 
+        {/* ── Mobile Cards ── */}
+        <div className="mobile-user-list">
+          {filteredUsers.length > 0 ? (
+            filteredUsers.map((user) => (
+              <div
+                key={user.id}
+                className={`mobile-user-card ${user.status === "inactive" ? "user-inactive" : ""} ${expandedRow === user.id ? "expanded" : ""}`}
+              >
+                {/* Card header — always visible */}
+                <div className="mobile-card-top" onClick={() => toggleRow(user.id)}>
+                  <div className="user-info">
+                    <div className="user-avatar">{user.avatar}</div>
+                    <div className="user-details">
+                      <div className="user-name">{user.name}</div>
+                      <div className="user-email">{user.email}</div>
+                    </div>
+                  </div>
+                  <div className="mobile-card-right">
+                    <span className={`status-badge ${getStatusBadgeClass(user.status)}`}>
+                      {getStatusDisplay(user.status)}
+                    </span>
+                    <span className="mobile-expand-icon">{expandedRow === user.id ? "▲" : "▼"}</span>
+                  </div>
+                </div>
+
+                {/* Expanded details */}
+                {expandedRow === user.id && (
+                  <div className="mobile-card-body">
+                    {user.status === "inactive" && !user.otpVerified && (
+                      <div className="user-note mobile-note">⚠ Needs OTP verification</div>
+                    )}
+
+                    <div className="mobile-meta-row">
+                      <div className="mobile-meta-item">
+                        <span className="mobile-meta-label">Role</span>
+                        <select
+                          className="role-select"
+                          value={user.role.toLowerCase()}
+                          onChange={(e) => handleUpdateUser(user.id, "role", e.target.value)}
+                        >
+                          <option value="user">User</option>
+                          <option value="admin">Admin</option>
+                          <option value="moderator">Moderator</option>
+                        </select>
+                      </div>
+                      <div className="mobile-meta-item">
+                        <span className="mobile-meta-label">Last Login</span>
+                        <span className="mobile-meta-value">{user.lastLogin}</span>
+                      </div>
+                      <div className="mobile-meta-item">
+                        <span className="mobile-meta-label">Joined</span>
+                        <span className="mobile-meta-value">{user.joinDate}</span>
+                      </div>
+                    </div>
+
+                    <div className="mobile-actions">
+                      {needsApproval(user) ? (
+                        <>
+                          <button className="btn-approve" onClick={() => handleApproveUser(user.id)}>✓ Approve</button>
+                          <button className="btn-reject"  onClick={() => handleRejectUser(user.id)}>✗ Reject</button>
+                          <button className="btn-delete"  onClick={() => handleDeleteUser(user.id)}>Delete</button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            className="btn-activate"
+                            onClick={() => handleUpdateUser(user.id, "status", user.status === "active" ? "inactive" : "active")}
+                          >
+                            {user.status === "active" ? "Deactivate" : "Activate"}
+                          </button>
+                          <button className="btn-delete" onClick={() => handleDeleteUser(user.id)}>Delete</button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))
+          ) : (
+            <div className="no-users-mobile">No users found matching your criteria</div>
+          )}
+        </div>
+
         {/* Pagination */}
         <div className="pagination-container">
           <div className="pagination-info">
-            Page 1 of 1 &nbsp;·&nbsp; {filteredUsers.length} result
-            {filteredUsers.length !== 1 ? "s" : ""}
+            Page 1 of 1 &nbsp;·&nbsp; {filteredUsers.length} result{filteredUsers.length !== 1 ? "s" : ""}
           </div>
         </div>
       </div>

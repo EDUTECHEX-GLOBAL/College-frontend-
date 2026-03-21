@@ -10,7 +10,6 @@ import {
   createInitialAdmin,
 } from "../controllers/adminController.js";
 
-// ✅ CORRECT IMPORT (case-sensitive)
 import authenticateAdmin, {
   authorize,
 } from "../middleware/adminAuthMiddleware.js";
@@ -21,8 +20,12 @@ const router = express.Router();
 // ✅ Validation
 // ==============================
 const loginValidation = [
-  body("email").isEmail().normalizeEmail(),
-  body("password").notEmpty(),
+  // ❌ REMOVED: .normalizeEmail() — it transforms the email (strips dots, lowercases
+  //    domain parts) BEFORE your controller sees it, causing a mismatch with the
+  //    hardcoded "admin@edutechex.com" credential.
+  // ✅ Only validate format; let the controller handle normalization itself.
+  body("email").isEmail().withMessage("Please provide a valid email address"),
+  body("password").notEmpty().withMessage("Password is required"),
 ];
 
 // ==============================
@@ -32,7 +35,7 @@ router.post("/login", loginValidation, loginAdmin);
 router.post("/setup", createInitialAdmin);
 
 // ==============================
-// 🔐 Protected Routes
+// 🔐 Protected Routes (require valid JWT)
 // ==============================
 router.use(authenticateAdmin);
 

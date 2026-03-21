@@ -26,13 +26,13 @@ const selectedUniversitySchema = new mongoose.Schema({
 
   // ✅ Both flags stored — isKansas covers Kansas universities,
   //    isDirectApply covers any university with no programs
-  isKansas:     { type: Boolean, default: false },
-  isDirectApply:{ type: Boolean, default: false },
+  isKansas:      { type: Boolean, default: false },
+  isDirectApply: { type: Boolean, default: false },
 
   selectedCourses: {
     type: [selectedCourseSchema],
     validate: {
-      validator: function(courses) { return courses.length <= 2; },
+      validator: function (courses) { return courses.length <= 2; },
       message: 'Maximum 2 courses can be selected per university',
     },
     default: [],
@@ -58,27 +58,39 @@ const educationSchema = new mongoose.Schema({
   cgpa:          { type: String, required: true, trim: true },
 }, { _id: false });
 
+// ── NEW: selectedSegment sub-schema ──────────────────────────────────────────
+const selectedSegmentSchema = new mongoose.Schema({
+  id:   { type: String, required: true, trim: true }, // e.g. "engineering", "law", "ms_tech"
+  name: { type: String, required: true, trim: true }, // e.g. "Engineering & Technology"
+}, { _id: false });
+
 const userProfileSchema = new mongoose.Schema({
-  userId: { type: String, required: true, unique: true, index: true },
+  userId:       { type: String, required: true, unique: true, index: true },
   profileImage: { type: String, default: null },
   basicInfo:    { type: basicInfoSchema,  required: true },
   education:    { type: educationSchema,  required: true },
   eligibleProgram: { type: String, required: true, enum: ['Bachelor', 'Master', 'PhD'] },
+
+  // ── NEW: segment & field of study selection ───────────────────────────────
+  selectedSegment: { type: selectedSegmentSchema, default: null },
+  // education.field already stores the specific field of study (e.g. "B.Sc LLB")
+  // selectedSegment stores the broader category (e.g. { id: "law", name: "Law & Legal Studies" })
+
   selectedUniversities: { type: [selectedUniversitySchema], default: [] },
-  selectedCourses: { type: Map, of: mongoose.Schema.Types.Mixed, default: {} },
-  profileCompleted: { type: Boolean, default: true },
-  completedAt:      { type: Date, default: Date.now },
-  lastUpdated:      { type: Date, default: Date.now },
+  selectedCourses:      { type: Map, of: mongoose.Schema.Types.Mixed, default: {} },
+  profileCompleted:     { type: Boolean, default: true },
+  completedAt:          { type: Date, default: Date.now },
+  lastUpdated:          { type: Date, default: Date.now },
 }, { timestamps: true });
 
-// Update lastUpdated on every save
-userProfileSchema.pre('save', function(next) {
+// ── Update lastUpdated on every save ─────────────────────────────────────────
+userProfileSchema.pre('save', function (next) {
   this.lastUpdated = Date.now();
   next();
 });
 
-// ✅ FIXED: validate universities — exempt both isKansas AND isDirectApply from course requirement
-userProfileSchema.pre('save', function(next) {
+// ── Validate universities on save ─────────────────────────────────────────────
+userProfileSchema.pre('save', function (next) {
   const unis = this.selectedUniversities || [];
 
   if (unis.length < 3 || unis.length > 5) {
@@ -103,6 +115,7 @@ userProfileSchema.pre('save', function(next) {
 userProfileSchema.index({ userId: 1 });
 userProfileSchema.index({ 'basicInfo.email': 1 });
 userProfileSchema.index({ eligibleProgram: 1 });
+userProfileSchema.index({ 'selectedSegment.id': 1 }); // ← NEW: for segment-based queries
 
 const UserProfile = mongoose.model('UserProfile', userProfileSchema);
 export default UserProfile;

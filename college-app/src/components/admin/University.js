@@ -5,27 +5,28 @@ import axios from "axios";
 
 const API_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
+const getAdminToken = () =>
+  localStorage.getItem('adminToken') || localStorage.getItem('token') || '';
+
 /* ─────────────────────────────────────────────
    UNIVERSITY REQUESTS SECTION
 ───────────────────────────────────────────── */
 const UniversityRequests = () => {
-  const [requests, setRequests]           = useState([]);
-  const [loading, setLoading]             = useState(false);
+  const [requests,      setRequests]      = useState([]);
+  const [loading,       setLoading]       = useState(false);
   const [actionLoading, setActionLoading] = useState(null);
-  const [error, setError]                 = useState(null);
-  const [filterStatus, setFilterStatus]   = useState("pending");
-  const [rejectModal, setRejectModal]     = useState(null);
-  const [rejectReason, setRejectReason]   = useState("");
-  const [approveModal, setApproveModal]   = useState(null);
-  const [programType, setProgramType]     = useState("bachelors");
-  const [successMsg, setSuccessMsg]       = useState(null);
-
-  const adminToken = localStorage.getItem("adminToken");
+  const [error,         setError]         = useState(null);
+  const [filterStatus,  setFilterStatus]  = useState("pending");
+  const [rejectModal,   setRejectModal]   = useState(null);
+  const [rejectReason,  setRejectReason]  = useState("");
+  const [approveModal,  setApproveModal]  = useState(null);
+  const [programType,   setProgramType]   = useState("bachelors");
+  const [successMsg,    setSuccessMsg]    = useState(null);
 
   const fetchRequests = useCallback(async () => {
+    const adminToken = getAdminToken();
     if (!adminToken) { setError("Authentication required"); return; }
-    setLoading(true);
-    setError(null);
+    setLoading(true); setError(null);
     try {
       const res = await axios.get(`${API_URL}/api/notifications`, {
         headers: { Authorization: `Bearer ${adminToken}` },
@@ -40,19 +41,32 @@ const UniversityRequests = () => {
     } finally {
       setLoading(false);
     }
-  }, [adminToken]);
+  }, []);
 
   useEffect(() => { fetchRequests(); }, [fetchRequests]);
 
+  // Close modals on Escape
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === 'Escape') {
+        setApproveModal(null);
+        setRejectModal(null);
+        setRejectReason('');
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, []);
+
   const parseRequest = (notification) => {
-    const msg = notification.message || "";
+    const msg          = notification.message || "";
     const uniMatch     = msg.match(/"([^"]+)"/);
     const countryMatch = msg.match(/\(([^)]+)\)/);
     const courseMatch  = msg.match(/Interested courses?:\s*(.+)/i);
     return {
-      universityName : uniMatch?.[1]    || "Unknown University",
-      country        : countryMatch?.[1] || "N/A",
-      courses        : courseMatch?.[1]?.split(",").map(c => c.trim()) || [],
+      universityName: uniMatch?.[1]    || "Unknown University",
+      country:        countryMatch?.[1] || "N/A",
+      courses:        courseMatch?.[1]?.split(",").map(c => c.trim()) || [],
     };
   };
 
@@ -61,172 +75,117 @@ const UniversityRequests = () => {
     setProgramType("bachelors");
   };
 
-  /* ── APPROVE ── */
   const confirmApprove = async () => {
     if (!approveModal) return;
     const { universityName, country, courses } = parseRequest(approveModal);
+    const adminToken = getAdminToken();
     setActionLoading(approveModal._id);
-
     try {
       const endpoint = programType === "bachelors"
         ? `${API_URL}/api/bachelors/universities`
         : `${API_URL}/api/masters/universities`;
 
-      // Generate unique universityCode  e.g. "Harvard University" → "HU-M5X2K9"
-      const codePrefix = universityName
-        .split(' ')
-        .filter(w => w.length > 0)
-        .map(w => w[0])
-        .join('')
-        .substring(0, 4)
-        .toUpperCase();
+      const codePrefix = universityName.split(' ').filter(w => w.length > 0).map(w => w[0]).join('').substring(0, 4).toUpperCase();
       const uniqueCode = `${codePrefix}-${Date.now().toString(36).toUpperCase()}`;
+      const safeName   = universityName.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 20);
 
-      // Safe name slug for placeholder emails / website
-      const safeName = universityName
-        .toLowerCase()
-        .replace(/[^a-z0-9]/g, '')
-        .substring(0, 20);
-
-      // ✅ Complete payload — satisfies every required field in bachelorsUniversityModel.js
       const payload = {
-        // ── Identity ──────────────────────────────────────
         universityName,
-        universityCode  : uniqueCode,
-
-        // ── Required fields (placeholder values) ──────────
-        // Admin can update these later via the university editor
-        establishedYear : 2000,                                   // Number, required
-        universityType  : "Private University",                   // enum, required
-        website         : `https://www.${safeName}.edu`,          // URL regex, required
-
-        // ── Location ──────────────────────────────────────
-        // Model enum only accepts "United States" for bachelors
-        country         : "United States",
-        state           : "California",                           // valid US state enum, required
-        city            : "City",                                 // required
-        address         : "Address to be updated",               // required
-        zipCode         : "00000",                                // required
-
-        // ── Contact ───────────────────────────────────────
-        adminEmail      : `admin@${safeName}.edu`,                // required, email format
-        adminPhone      : "000-000-0000",                         // required
-        admissionEmail  : `admissions@${safeName}.edu`,           // required, email format
-        admissionPhone  : "",
-
-        // ── Tuition ───────────────────────────────────────
-        tuitionFees: {
-          inState       : "0",                                    // required
-          outOfState    : "0",
-          international : "0",
-          roomAndBoard  : "0",
-        },
-
-        // ── Programs (from student request) ───────────────
+        universityCode:   uniqueCode,
+        establishedYear:  2000,
+        universityType:   "Private University",
+        website:          `https://www.${safeName}.edu`,
+        country:          "United States",
+        state:            "California",
+        city:             "City",
+        address:          "Address to be updated",
+        zipCode:          "00000",
+        adminEmail:       `admin@${safeName}.edu`,
+        adminPhone:       "000-000-0000",
+        admissionEmail:   `admissions@${safeName}.edu`,
+        admissionPhone:   "",
+        tuitionFees:      { inState: "0", outOfState: "0", international: "0", roomAndBoard: "0" },
         programs: courses.map(c => ({
-          name         : c,
-          title        : c,
-          program_name : c,
-          level        : programType === "bachelors" ? "Bachelor" : "Master",
-          studyMode    : "On Campus",
-          duration     : programType === "bachelors" ? "4 years" : "2 years",
-          description  : `${c} program at ${universityName}`,
+          name: c, title: c, program_name: c,
+          level: programType === "bachelors" ? "Bachelor" : "Master",
+          studyMode: "On Campus",
+          duration: programType === "bachelors" ? "4 years" : "2 years",
+          description: `${c} program at ${universityName}`,
         })),
-
-        // ── Optional / meta ───────────────────────────────
-        intakes                : [],
-        englishTests           : ["TOEFL iBT", "IELTS Academic"],
+        intakes: [],
+        englishTests:           ["TOEFL iBT", "IELTS Academic"],
         applicationRequirements: [],
-        applicationDeadlines   : { earlyDecision: "", earlyAction: "", regularDecision: "", rolling: "" },
-        satRequirements        : { math: "", reading: "", total: "" },
-        actRequirements        : { composite: "" },
-        minimumGPA             : "",
-        ranking                : "",
-        accreditation          : "",
-
-        // Store the actual requested country as metadata (not lost)
-        requestedCountry    : country,
-        isVisible           : true,
-        isActive            : true,
-        approvedFromRequest : true,
-        requestedByUserId   : approveModal.userId?._id || approveModal.userId,
+        applicationDeadlines:   { earlyDecision: "", earlyAction: "", regularDecision: "", rolling: "" },
+        satRequirements:        { math: "", reading: "", total: "" },
+        actRequirements:        { composite: "" },
+        minimumGPA: "", ranking: "", accreditation: "",
+        requestedCountry:    country,
+        isVisible:           true,
+        isActive:            true,
+        approvedFromRequest: true,
+        requestedByUserId:   approveModal.userId?._id || approveModal.userId,
       };
 
-      await axios.post(endpoint, payload, {
-        headers: { Authorization: `Bearer ${adminToken}` },
-      });
-
-      // Mark notification as read
+      await axios.post(endpoint, payload, { headers: { Authorization: `Bearer ${adminToken}` } });
       await axios.post(
         `${API_URL}/api/notifications/mark-read`,
         { notificationId: approveModal._id },
         { headers: { Authorization: `Bearer ${adminToken}` } }
       );
 
-      // Notify student (non-critical)
       try {
         const studentId = approveModal.userId?._id || approveModal.userId;
-        console.log("📨 Sending approval notification to userId:", studentId);
         await axios.post(
           `${API_URL}/api/notifications/send-to-user`,
           {
-            userId     : studentId,
-            recipientId: studentId,   // some APIs use recipientId instead
-            receiverId : studentId,   // some APIs use receiverId
-            type       : "UNIVERSITY_APPROVED",
-            title      : "University Request Approved",
-            message    : `Your request for "${universityName}" has been approved! You can now select it from your profile.`,
+            userId: studentId, recipientId: studentId, receiverId: studentId,
+            type:    "UNIVERSITY_APPROVED",
+            title:   "University Request Approved",
+            message: `Your request for "${universityName}" has been approved!`,
           },
           { headers: { Authorization: `Bearer ${adminToken}` } }
         );
       } catch (notifyErr) {
-        // Log full error so we can see exactly what field the API rejected
-        console.warn("⚠️ Student notification failed (non-critical):", notifyErr.response?.data || notifyErr.message);
+        console.warn("Student notification failed:", notifyErr.response?.data || notifyErr.message);
       }
 
-      setSuccessMsg(`✅ "${universityName}" created as ${programType === "bachelors" ? "Bachelor's" : "Master's"} university and student notified!`);
+      setSuccessMsg(`✅ "${universityName}" created as ${programType === "bachelors" ? "Bachelor's" : "Master's"} university!`);
       setApproveModal(null);
       fetchRequests();
       setTimeout(() => setSuccessMsg(null), 5000);
     } catch (err) {
-      console.error("❌ Approve failed:", err.response?.data || err.message);
       setError(err.response?.data?.message || "Failed to approve request");
     } finally {
       setActionLoading(null);
     }
   };
 
-  /* ── REJECT ── */
   const confirmReject = async () => {
     if (!rejectModal) return;
-    setActionLoading(rejectModal.id);
+    const adminToken   = getAdminToken();
     const notification = requests.find(r => r._id === rejectModal.id);
-
+    setActionLoading(rejectModal.id);
     try {
       await axios.post(
         `${API_URL}/api/notifications/send-to-user`,
         {
-          userId  : notification?.userId?._id || notification?.userId,
-          type    : "UNIVERSITY_REJECTED",
-          title   : "University Request Rejected",
-          message : `Your request for "${rejectModal.universityName}" was not approved.${rejectReason ? ` Reason: ${rejectReason}` : " Please re-submit with updated details."}`,
+          userId:  notification?.userId?._id || notification?.userId,
+          type:    "UNIVERSITY_REJECTED",
+          title:   "University Request Rejected",
+          message: `Your request for "${rejectModal.universityName}" was not approved.${rejectReason ? ` Reason: ${rejectReason}` : ""}`,
         },
         { headers: { Authorization: `Bearer ${adminToken}` } }
       );
-
       await axios.post(
         `${API_URL}/api/notifications/mark-read`,
         { notificationId: rejectModal.id },
         { headers: { Authorization: `Bearer ${adminToken}` } }
       );
-
-      setSuccessMsg(`❌ "${rejectModal.universityName}" rejected — student has been notified.`);
-      setRejectModal(null);
-      setRejectReason("");
+      setSuccessMsg(`❌ "${rejectModal.universityName}" rejected — student notified.`);
+      setRejectModal(null); setRejectReason("");
       fetchRequests();
       setTimeout(() => setSuccessMsg(null), 5000);
     } catch (err) {
-      console.error("❌ Reject failed:", err.response?.data || err.message);
       setError(err.response?.data?.message || "Failed to reject request");
     } finally {
       setActionLoading(null);
@@ -235,7 +194,7 @@ const UniversityRequests = () => {
 
   const displayed = requests.filter(r => {
     if (filterStatus === "pending")  return !r.isRead;
-    if (filterStatus === "reviewed") return r.isRead;
+    if (filterStatus === "reviewed") return  r.isRead;
     return true;
   });
 
@@ -244,7 +203,7 @@ const UniversityRequests = () => {
     const diffMins = Math.floor(diffMs / 60000);
     const diffHrs  = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
-    if (diffMins < 1)  return "Just now";
+    if (diffMins < 1)  return "Now";
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHrs  < 24) return `${diffHrs}h ago`;
     if (diffDays < 7)  return `${diffDays}d ago`;
@@ -258,56 +217,30 @@ const UniversityRequests = () => {
           <h2 className="requests-title">
             🏛️ University Requests
             {requests.filter(r => !r.isRead).length > 0 && (
-              <span className="requests-badge">
-                {requests.filter(r => !r.isRead).length} pending
-              </span>
+              <span className="requests-badge">{requests.filter(r => !r.isRead).length} pending</span>
             )}
           </h2>
           <p className="requests-subtitle">Review and approve student-requested universities</p>
         </div>
-        <button className="btn-refresh-small" onClick={fetchRequests} disabled={loading}>
+        <button className="btn-refresh-req" onClick={fetchRequests} disabled={loading}>
           {loading ? "🔄" : "↻ Refresh"}
         </button>
       </div>
 
       <div className="requests-filter-tabs">
         {["all", "pending", "reviewed"].map(f => (
-          <button
-            key={f}
-            className={`req-filter-btn ${filterStatus === f ? "active" : ""}`}
-            onClick={() => setFilterStatus(f)}
-          >
+          <button key={f} className={`req-filter-btn ${filterStatus === f ? "active" : ""}`} onClick={() => setFilterStatus(f)}>
             {f === "all" ? "All" : f === "pending" ? "⏳ Pending" : "✅ Reviewed"}
             <span className="req-filter-count">
-              {f === "all"
-                ? requests.length
-                : f === "pending"
-                  ? requests.filter(r => !r.isRead).length
-                  : requests.filter(r => r.isRead).length}
+              {f === "all" ? requests.length : f === "pending" ? requests.filter(r => !r.isRead).length : requests.filter(r => r.isRead).length}
             </span>
           </button>
         ))}
       </div>
 
-      {successMsg && (
-        <div className="req-alert success">
-          <span>{successMsg}</span>
-          <button onClick={() => setSuccessMsg(null)}>×</button>
-        </div>
-      )}
-      {error && (
-        <div className="req-alert error">
-          <span>⚠️ {error}</span>
-          <button onClick={() => setError(null)}>×</button>
-        </div>
-      )}
-
-      {loading && (
-        <div className="req-loading">
-          <div className="spinner"></div>
-          <p>Loading requests...</p>
-        </div>
-      )}
+      {successMsg && <div className="req-alert success"><span>{successMsg}</span><button onClick={() => setSuccessMsg(null)}>×</button></div>}
+      {error      && <div className="req-alert error"><span>⚠️ {error}</span><button onClick={() => setError(null)}>×</button></div>}
+      {loading    && <div className="req-loading"><div className="spinner"></div><p>Loading requests...</p></div>}
 
       {!loading && displayed.length === 0 && (
         <div className="req-empty">
@@ -322,12 +255,8 @@ const UniversityRequests = () => {
           {displayed.map(notification => {
             const { universityName, country, courses } = parseRequest(notification);
             const isProcessing = actionLoading === notification._id;
-
             return (
-              <div
-                key={notification._id}
-                className={`request-card ${notification.isRead ? "reviewed" : "pending"}`}
-              >
+              <div key={notification._id} className={`request-card ${notification.isRead ? "reviewed" : "pending"}`}>
                 <div className={`request-status-strip ${notification.isRead ? "reviewed" : "pending"}`} />
                 <div className="request-card-body">
                   <div className="request-student">
@@ -341,40 +270,24 @@ const UniversityRequests = () => {
                           ? `${notification.userId.firstName} ${notification.userId.lastName || ""}`
                           : "Student"}
                       </div>
-                      <div className="request-student-email">
-                        {notification.userId?.email || `User ID: ${notification.userId}`}
-                      </div>
+                      <div className="request-student-email">{notification.userId?.email || `User ID: ${notification.userId}`}</div>
                       <div className="request-time">{formatTime(notification.createdAt)}</div>
                     </div>
                   </div>
-
                   <div className="request-details">
                     <div className="request-uni-name">🏛️ {universityName}</div>
-                    <div className="request-meta-row">
-                      <span className="request-country">📍 {country}</span>
-                    </div>
+                    <div className="request-meta-row"><span className="request-country">📍 {country}</span></div>
                     <div className="request-courses">
-                      {courses.map(c => (
-                        <span key={c} className="request-course-tag">{c}</span>
-                      ))}
+                      {courses.map(c => <span key={c} className="request-course-tag">{c}</span>)}
                     </div>
                   </div>
-
                   <div className="request-actions">
                     {!notification.isRead ? (
                       <>
-                        <button
-                          className="req-btn approve"
-                          onClick={() => openApproveModal(notification)}
-                          disabled={isProcessing}
-                        >
+                        <button className="req-btn approve" onClick={() => openApproveModal(notification)} disabled={isProcessing}>
                           {isProcessing ? "..." : "✓ Approve"}
                         </button>
-                        <button
-                          className="req-btn reject"
-                          onClick={() => setRejectModal({ id: notification._id, universityName })}
-                          disabled={isProcessing}
-                        >
+                        <button className="req-btn reject" onClick={() => setRejectModal({ id: notification._id, universityName })} disabled={isProcessing}>
                           ✕ Reject
                         </button>
                       </>
@@ -397,60 +310,37 @@ const UniversityRequests = () => {
             <div className="req-modal" onClick={e => e.stopPropagation()}>
               <div className="req-modal-header approve">
                 <span>✅ Approve University Request</span>
-                <button onClick={() => setApproveModal(null)}>×</button>
+                <button className="req-modal-close" onClick={() => setApproveModal(null)}>×</button>
               </div>
               <div className="req-modal-body">
                 <div className="req-modal-uni-card">
                   <div className="req-modal-uni-name">🏛️ {universityName}</div>
-                  <div className="req-modal-uni-meta">
-                    <span>📍 {country}</span>
-                  </div>
+                  <div className="req-modal-uni-meta"><span>📍 {country}</span></div>
                   <div className="req-modal-courses">
-                    {courses.map(c => (
-                      <span key={c} className="request-course-tag">{c}</span>
-                    ))}
+                    {courses.map(c => <span key={c} className="request-course-tag">{c}</span>)}
                   </div>
                 </div>
-
                 <div className="req-modal-field">
                   <label className="req-modal-label">Select Program Type to Create:</label>
                   <div className="req-program-type-toggle">
-                    <button
-                      className={`req-type-btn ${programType === "bachelors" ? "active" : ""}`}
-                      onClick={() => setProgramType("bachelors")}
-                    >
-                      🎓 Bachelor's
-                    </button>
-                    <button
-                      className={`req-type-btn ${programType === "masters" ? "active" : ""}`}
-                      onClick={() => setProgramType("masters")}
-                    >
-                      📘 Master's
-                    </button>
+                    <button className={`req-type-btn ${programType === "bachelors" ? "active bachelor" : ""}`} onClick={() => setProgramType("bachelors")}>🎓 Bachelor's</button>
+                    <button className={`req-type-btn ${programType === "masters"   ? "active master"   : ""}`} onClick={() => setProgramType("masters")}>📘 Master's</button>
                   </div>
                 </div>
-
-                <div className="req-modal-info-box">
+                <div className="req-modal-info-box approve">
                   <strong>What will happen:</strong>
                   <ul>
                     <li>"{universityName}" will be created as a <strong>{programType === "bachelors" ? "Bachelor's" : "Master's"}</strong> university</li>
                     <li>Courses ({courses.join(", ")}) will be added as programs</li>
                     <li>Student will be notified instantly</li>
                     <li>University will appear in student's profile dropdown</li>
-                    <li>Placeholder details (address, contact) can be updated later</li>
                   </ul>
                 </div>
               </div>
               <div className="req-modal-footer">
-                <button className="req-modal-cancel" onClick={() => setApproveModal(null)}>
-                  Cancel
-                </button>
-                <button
-                  className="req-modal-confirm approve"
-                  onClick={confirmApprove}
-                  disabled={actionLoading === approveModal._id}
-                >
-                  {actionLoading === approveModal._id ? "Creating..." : "✓ Confirm & Create University"}
+                <button className="req-modal-cancel" onClick={() => setApproveModal(null)}>Cancel</button>
+                <button className="req-modal-confirm approve" onClick={confirmApprove} disabled={actionLoading === approveModal._id}>
+                  {actionLoading === approveModal._id ? "Creating..." : "✓ Confirm & Create"}
                 </button>
               </div>
             </div>
@@ -460,11 +350,11 @@ const UniversityRequests = () => {
 
       {/* REJECT MODAL */}
       {rejectModal && (
-        <div className="req-modal-overlay" onClick={() => setRejectModal(null)}>
+        <div className="req-modal-overlay" onClick={() => { setRejectModal(null); setRejectReason(''); }}>
           <div className="req-modal" onClick={e => e.stopPropagation()}>
             <div className="req-modal-header reject">
               <span>✕ Reject University Request</span>
-              <button onClick={() => setRejectModal(null)}>×</button>
+              <button className="req-modal-close" onClick={() => { setRejectModal(null); setRejectReason(''); }}>×</button>
             </div>
             <div className="req-modal-body">
               <div className="req-modal-uni-card">
@@ -472,8 +362,7 @@ const UniversityRequests = () => {
               </div>
               <div className="req-modal-field">
                 <label className="req-modal-label">
-                  Rejection Reason{" "}
-                  <span style={{ color: "#94a3b8", fontWeight: 400 }}>(optional — sent to student)</span>
+                  Rejection Reason <span className="req-modal-label-hint">(optional — sent to student)</span>
                 </label>
                 <textarea
                   className="req-reject-textarea"
@@ -493,17 +382,8 @@ const UniversityRequests = () => {
               </div>
             </div>
             <div className="req-modal-footer">
-              <button
-                className="req-modal-cancel"
-                onClick={() => { setRejectModal(null); setRejectReason(""); }}
-              >
-                Cancel
-              </button>
-              <button
-                className="req-modal-confirm reject"
-                onClick={confirmReject}
-                disabled={actionLoading === rejectModal.id}
-              >
+              <button className="req-modal-cancel" onClick={() => { setRejectModal(null); setRejectReason(""); }}>Cancel</button>
+              <button className="req-modal-confirm reject" onClick={confirmReject} disabled={actionLoading === rejectModal.id}>
                 {actionLoading === rejectModal.id ? "Rejecting..." : "✕ Confirm Rejection"}
               </button>
             </div>
@@ -518,26 +398,27 @@ const UniversityRequests = () => {
    MAIN UNIVERSITY COMPONENT
 ═══════════════════════════════════════════════ */
 const University = () => {
-  const [universities, setUniversities]             = useState([]);
-  const [loading, setLoading]                       = useState(false);
-  const [error, setError]                           = useState(null);
-  const [importStats, setImportStats]               = useState(null);
-  const [importing, setImporting]                   = useState(false);
-  const [importSuccess, setImportSuccess]           = useState(null);
-  const [activeTab, setActiveTab]                   = useState('universities');
-  const [searchTerm, setSearchTerm]                 = useState('');
-  const [searchResults, setSearchResults]           = useState([]);
-  const [searching, setSearching]                   = useState(false);
-  const [selectedUniversity, setSelectedUniversity] = useState(null);
-  const [showDetailsModal, setShowDetailsModal]     = useState(false);
-  const [sortBy, setSortBy]                         = useState('name');
-  const [filterType, setFilterType]                 = useState('all');
-  const [programLevel, setProgramLevel]             = useState('all');
-  const [viewMode, setViewMode]                     = useState('grid');
-  const [selectedProgram, setSelectedProgram]       = useState(null);
-  const [showProgramDetails, setShowProgramDetails] = useState(false);
-  const [loadingPrograms, setLoadingPrograms]       = useState(false);
+  const [universities,        setUniversities]        = useState([]);
+  const [loading,             setLoading]             = useState(false);
+  const [error,               setError]               = useState(null);
+  const [importStats,         setImportStats]         = useState(null);
+  const [importing,           setImporting]           = useState(false);
+  const [importSuccess,       setImportSuccess]       = useState(null);
+  const [activeTab,           setActiveTab]           = useState('universities');
+  const [searchTerm,          setSearchTerm]          = useState('');
+  const [searchResults,       setSearchResults]       = useState([]);
+  const [searching,           setSearching]           = useState(false);
+  const [selectedUniversity,  setSelectedUniversity]  = useState(null);
+  const [showDetailsModal,    setShowDetailsModal]    = useState(false);
+  const [sortBy,              setSortBy]              = useState('name');
+  const [filterType,          setFilterType]          = useState('all');
+  const [programLevel,        setProgramLevel]        = useState('all');
+  const [viewMode,            setViewMode]            = useState('grid');
+  const [selectedProgram,     setSelectedProgram]     = useState(null);
+  const [showProgramDetails,  setShowProgramDetails]  = useState(false);
+  const [loadingPrograms,     setLoadingPrograms]     = useState(false);
   const [pendingRequestCount, setPendingRequestCount] = useState(0);
+  const [filtersOpen,         setFiltersOpen]         = useState(false); // mobile filter panel toggle
 
   useEffect(() => {
     fetchAllUniversities();
@@ -551,41 +432,41 @@ const University = () => {
     return () => clearTimeout(delayDebounce);
   }, [searchTerm]);
 
+  // Close modal on Escape
+  useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') closeModal(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, []);
+
   const fetchPendingRequestCount = async () => {
+    const adminToken = getAdminToken();
+    if (!adminToken) return;
     try {
-      const adminToken = localStorage.getItem("adminToken");
-      if (!adminToken) return;
-      const res = await axios.get(`${API_URL}/api/notifications`, {
-        headers: { Authorization: `Bearer ${adminToken}` },
-      });
+      const res = await axios.get(`${API_URL}/api/notifications`, { headers: { Authorization: `Bearer ${adminToken}` } });
       const all = res.data?.data || [];
-      const pending = all.filter(n => n.type === "UNIVERSITY_REQUEST" && !n.isRead).length;
-      setPendingRequestCount(pending);
+      setPendingRequestCount(all.filter(n => n.type === "UNIVERSITY_REQUEST" && !n.isRead).length);
     } catch (_) {}
   };
 
   const fetchImportStats = async () => {
+    const token = getAdminToken();
+    if (!token) return;
     try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-      const response = await axios.get(`${API_URL}/api/admin/import-stats`, {
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
-      });
+      const response = await axios.get(`${API_URL}/api/admin/import-stats`, { headers: { Authorization: `Bearer ${token}` } });
       if (response.data.success) setImportStats(response.data.data);
     } catch (err) { console.error("Failed to fetch import stats:", err); }
   };
 
   const importUniversities = async () => {
+    const token = getAdminToken();
+    if (!token) { setError("No authentication token found."); return; }
     setImporting(true); setError(null); setImportSuccess(null);
     try {
-      const token = localStorage.getItem('token');
-      if (!token) { setError("No authentication token found."); setImporting(false); return; }
-      const response = await axios.post(`${API_URL}/api/admin/import-universities`, {}, {
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
-      });
+      const response = await axios.post(`${API_URL}/api/admin/import-universities`, {}, { headers: { Authorization: `Bearer ${token}` } });
       if (response.data.success) {
         const { importedUniversities, updatedUniversities, importedColleges, updatedColleges } = response.data.data;
-        setImportSuccess(`Import completed: ${importedUniversities} new universities, ${updatedUniversities} updated, ${importedColleges} new colleges, ${updatedColleges} updated`);
+        setImportSuccess(`Import completed: ${importedUniversities} new, ${updatedUniversities} updated, ${importedColleges} colleges`);
         setImportStats(response.data.data);
         fetchAllUniversities();
       } else { setError(response.data.message || "Import failed"); }
@@ -596,11 +477,13 @@ const University = () => {
 
   const mapUniFields = (uni, source) => ({
     ...uni,
-    INSTNM: uni.universityName, UNITID: uni.universityCode, CITY: uni.city, STABBR: uni.state,
-    ADDR: uni.address, ZIP: uni.zipCode, WEBADDR: uni.website,
+    INSTNM: uni.universityName, UNITID: uni.universityCode,
+    CITY: uni.city, STABBR: uni.state, ADDR: uni.address, ZIP: uni.zipCode, WEBADDR: uni.website,
     location: { city: uni.city, state: uni.state, country: uni.country },
-    programs: uni.programs || [], programCount: uni.programs?.length || 0,
-    importedByAdmin: false, lastUpdated: uni.updatedAt || uni.createdAt,
+    programs: uni.programs || [],
+    programCount: uni.programs?.length || 0,
+    importedByAdmin: false,
+    lastUpdated: uni.updatedAt || uni.createdAt,
     logo: uni.universityLogo,
     contact: { website: uni.website, adminEmail: uni.adminEmail, adminPhone: uni.adminPhone, admissionEmail: uni.admissionEmail, admissionPhone: uni.admissionPhone },
     source,
@@ -608,14 +491,14 @@ const University = () => {
 
   const searchUniversities = async () => {
     if (!searchTerm.trim()) return;
+    const token = getAdminToken();
+    if (!token) { setError("No authentication token found."); return; }
     setSearching(true); setError(null);
     try {
-      const token = localStorage.getItem('token');
-      if (!token) { setError("No authentication token found."); setSearching(false); return; }
       const [adminResponse, bachelorsResponse, mastersResponse] = await Promise.all([
-        axios.get(`${API_URL}/api/admin/universities/search`, { params: { q: searchTerm }, headers: { 'Authorization': `Bearer ${token}` } }).catch(() => ({ data: { success: false, data: [] } })),
-        axios.get(`${API_URL}/api/bachelors/universities`, { params: { search: searchTerm, limit: 50 }, headers: { 'Authorization': `Bearer ${token}` } }).catch(() => ({ data: { success: false, data: [] } })),
-        axios.get(`${API_URL}/api/masters/universities`, { params: { search: searchTerm, limit: 50 }, headers: { 'Authorization': `Bearer ${token}` } }).catch(() => ({ data: { success: false, data: [] } }))
+        axios.get(`${API_URL}/api/admin/universities/search`, { params: { q: searchTerm }, headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: { success: false, data: [] } })),
+        axios.get(`${API_URL}/api/bachelors/universities`, { params: { search: searchTerm, limit: 50 }, headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: { success: false, data: [] } })),
+        axios.get(`${API_URL}/api/masters/universities`, { params: { search: searchTerm, limit: 50 }, headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: { success: false, data: [] } })),
       ]);
       let combinedResults = [];
       if (adminResponse.data.success)     combinedResults = [...combinedResults, ...adminResponse.data.data.map(u => ({ ...u, source: 'admin', importedByAdmin: true }))];
@@ -627,14 +510,14 @@ const University = () => {
   };
 
   const fetchAllUniversities = async () => {
+    const token = getAdminToken();
+    if (!token) { setError("No authentication token found."); return; }
     setLoading(true); setError(null);
     try {
-      const token = localStorage.getItem('token');
-      if (!token) { setError("No authentication token found."); setLoading(false); return; }
       const [adminResponse, bachelorsResponse, mastersResponse] = await Promise.all([
-        axios.get(`${API_URL}/api/admin/universities`, { headers: { 'Authorization': `Bearer ${token}` } }).catch(() => ({ data: { success: false, data: [] } })),
-        axios.get(`${API_URL}/api/bachelors/universities`, { params: { limit: 100, sortBy: 'createdAt', sortOrder: 'desc' }, headers: { 'Authorization': `Bearer ${token}` } }).catch(() => ({ data: { success: false, data: [] } })),
-        axios.get(`${API_URL}/api/masters/universities`, { params: { limit: 100, sortBy: 'createdAt', sortOrder: 'desc' }, headers: { 'Authorization': `Bearer ${token}` } }).catch(() => ({ data: { success: false, data: [] } }))
+        axios.get(`${API_URL}/api/admin/universities`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: { success: false, data: [] } })),
+        axios.get(`${API_URL}/api/bachelors/universities`, { params: { limit: 100, sortBy: 'createdAt', sortOrder: 'desc' }, headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: { success: false, data: [] } })),
+        axios.get(`${API_URL}/api/masters/universities`, { params: { limit: 100, sortBy: 'createdAt', sortOrder: 'desc' }, headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: { success: false, data: [] } })),
       ]);
       let combined = [];
       if (adminResponse.data.success)     combined = [...combined, ...adminResponse.data.data.map(u => ({ ...u, source: 'admin', importedByAdmin: true }))];
@@ -642,13 +525,17 @@ const University = () => {
       if (mastersResponse.data.success)   combined = [...combined, ...mastersResponse.data.data.map(u => mapUniFields(u, 'masters'))];
       setUniversities(combined);
     } catch (err) {
-      if (err.response?.status === 401) { setError("Authentication failed."); setTimeout(() => { window.location.href = '/login'; }, 2000); }
-      else setError(err.response?.data?.message || err.message || "Failed to fetch universities");
+      if (err.response?.status === 401) {
+        setError("Authentication failed. Please log in again.");
+        setTimeout(() => { window.location.href = '/admin-login'; }, 2000);
+      } else {
+        setError(err.response?.data?.message || err.message || "Failed to fetch universities");
+      }
     } finally { setLoading(false); }
   };
 
   const getProgramCount = (university) => {
-    if (university.programs?.length) return university.programs.length;
+    if (university.programs?.length)        return university.programs.length;
     if (university.GUS_DATA?.programs_data) return university.GUS_DATA.programs_data.length;
     if (university.GUS_DATA?.major_areas) {
       let count = 0;
@@ -660,7 +547,7 @@ const University = () => {
   };
 
   const getPrograms = (university) => {
-    if (university.programs?.length) return university.programs;
+    if (university.programs?.length)           return university.programs;
     if (university.GUS_DATA?.programs_data?.length) return university.GUS_DATA.programs_data;
     if (university.GUS_DATA?.major_areas?.length) {
       const programs = [];
@@ -677,13 +564,14 @@ const University = () => {
 
   const isBachelorLevel = (l) => { const s = (l||'').toLowerCase().trim(); return s === 'bachelor' || s === 'bachelors' || s === 'undergraduate' || s.startsWith('bachelor') || /\bb\.?a\.?\b/.test(s) || /\bb\.?s\.?(c\.?)?\b/.test(s); };
   const isMasterLevel   = (l) => { const s = (l||'').toLowerCase().trim(); return s === 'master' || s === 'masters' || s === 'graduate' || s === 'mba' || s.startsWith('master') || /\bm\.?s\.?(c\.?)?\b/.test(s) || /\bm\.?a\.?\b/.test(s); };
+
   const hasBachelorsPrograms = (u) => { if (u.source === 'bachelors') return true; if (u.source === 'masters') return false; return getPrograms(u).some(p => isBachelorLevel(typeof p === 'string' ? '' : (p.level || p.type || ''))); };
-  const hasMastersPrograms   = (u) => { if (u.source === 'masters') return true; if (u.source === 'bachelors') return false; return getPrograms(u).some(p => isMasterLevel(typeof p === 'string' ? '' : (p.level || p.type || ''))); };
-  const getBachelorsCount = (u) => { if (u.source === 'bachelors') return getProgramCount(u); if (u.source === 'masters') return 0; return getPrograms(u).filter(p => isBachelorLevel(typeof p === 'string' ? '' : (p.level || p.type || ''))).length; };
-  const getMastersCount   = (u) => { if (u.source === 'masters') return getProgramCount(u); if (u.source === 'bachelors') return 0; return getPrograms(u).filter(p => isMasterLevel(typeof p === 'string' ? '' : (p.level || p.type || ''))).length; };
+  const hasMastersPrograms   = (u) => { if (u.source === 'masters')   return true; if (u.source === 'bachelors') return false; return getPrograms(u).some(p => isMasterLevel(typeof p === 'string' ? '' : (p.level || p.type || ''))); };
+  const getBachelorsCount    = (u) => { if (u.source === 'bachelors') return getProgramCount(u); if (u.source === 'masters') return 0; return getPrograms(u).filter(p => isBachelorLevel(typeof p === 'string' ? '' : (p.level || p.type || ''))).length; };
+  const getMastersCount      = (u) => { if (u.source === 'masters')   return getProgramCount(u); if (u.source === 'bachelors') return 0; return getPrograms(u).filter(p => isMasterLevel(typeof p === 'string' ? '' : (p.level || p.type || ''))).length; };
 
   const getLocationString = (u) => {
-    const parts = [];
+    const parts   = [];
     const city    = u.city    || u.location?.city    || u.CITY;
     const state   = u.state   || u.location?.state   || u.STABBR;
     const country = u.country || u.location?.country || u.GUS_DATA?.country || 'USA';
@@ -719,17 +607,17 @@ const University = () => {
   };
 
   const handleViewDetails = async (university) => {
+    const token = getAdminToken();
+    if (!token) { setError("No authentication token found."); return; }
     setLoadingPrograms(true);
     try {
-      const token = localStorage.getItem('token');
-      if (!token) { setError("No authentication token found."); setLoadingPrograms(false); return; }
       let details = university;
       if (university.source === 'bachelors' && university._id) {
-        try { const r = await axios.get(`${API_URL}/api/bachelors/universities/${university._id}`, { headers: { 'Authorization': `Bearer ${token}` } }); if (r.data.success) details = r.data.data; } catch (_) {}
+        try { const r = await axios.get(`${API_URL}/api/bachelors/universities/${university._id}`, { headers: { Authorization: `Bearer ${token}` } }); if (r.data.success) details = r.data.data; } catch (_) {}
       } else if (university.source === 'masters' && university._id) {
-        try { const r = await axios.get(`${API_URL}/api/masters/universities/${university._id}`, { headers: { 'Authorization': `Bearer ${token}` } }); if (r.data.success) details = r.data.data; } catch (_) {}
+        try { const r = await axios.get(`${API_URL}/api/masters/universities/${university._id}`, { headers: { Authorization: `Bearer ${token}` } }); if (r.data.success) details = r.data.data; } catch (_) {}
       } else if (university.UNITID) {
-        try { const r = await axios.get(`${API_URL}/api/admin/universities/${university.UNITID}`, { headers: { 'Authorization': `Bearer ${token}` } }); if (r.data.success) details = r.data.data; } catch (_) {}
+        try { const r = await axios.get(`${API_URL}/api/admin/universities/${university.UNITID}`, { headers: { Authorization: `Bearer ${token}` } }); if (r.data.success) details = r.data.data; } catch (_) {}
       }
       setSelectedUniversity(details); setSelectedProgram(null); setShowDetailsModal(true); setShowProgramDetails(false);
     } catch (_) { setError("Failed to load university details."); }
@@ -743,9 +631,9 @@ const University = () => {
     return [...data].sort((a, b) => {
       if (sortBy === 'name')      return (a.INSTNM || a.universityName || '').localeCompare(b.INSTNM || b.universityName || '');
       if (sortBy === 'location')  return getLocationString(a).localeCompare(getLocationString(b));
-      if (sortBy === 'programs')  return getProgramCount(b) - getProgramCount(a);
+      if (sortBy === 'programs')  return getProgramCount(b)   - getProgramCount(a);
       if (sortBy === 'bachelors') return getBachelorsCount(b) - getBachelorsCount(a);
-      if (sortBy === 'masters')   return getMastersCount(b) - getMastersCount(a);
+      if (sortBy === 'masters')   return getMastersCount(b)   - getMastersCount(a);
       return 0;
     });
   };
@@ -756,8 +644,8 @@ const University = () => {
     if (filterType === 'hasPrograms') filtered = filtered.filter(u => getProgramCount(u) > 0);
     else if (filterType === 'imported') filtered = filtered.filter(u => u.source === 'admin');
     else if (filterType === 'custom')   filtered = filtered.filter(u => u.source === 'bachelors' || u.source === 'masters');
-    if (programLevel === 'bachelors') filtered = filtered.filter(u => u.source === 'bachelors' || (u.source !== 'masters' && hasBachelorsPrograms(u)));
-    else if (programLevel === 'masters') filtered = filtered.filter(u => u.source === 'masters' || (u.source !== 'bachelors' && hasMastersPrograms(u)));
+    if (programLevel === 'bachelors')   filtered = filtered.filter(u => u.source === 'bachelors' || (u.source !== 'masters' && hasBachelorsPrograms(u)));
+    else if (programLevel === 'masters') filtered = filtered.filter(u => u.source === 'masters'  || (u.source !== 'bachelors' && hasMastersPrograms(u)));
     return filtered;
   };
 
@@ -766,9 +654,11 @@ const University = () => {
   displayData = sortUniversities(displayData);
 
   const getCustomCount = () => universities.filter(u => u.source === 'bachelors' || u.source === 'masters').length;
+  const hasActiveFilters = programLevel !== 'all' || filterType !== 'all' || sortBy !== 'name';
 
   return (
     <div className="university-container">
+      {/* ── Header ── */}
       <div className="university-header">
         <div className="header-top">
           <div className="header-left">
@@ -784,19 +674,17 @@ const University = () => {
         </div>
       </div>
 
+      {/* ── Category tabs ── */}
       <div className="category-tags">
         <button className={`category-tag ${activeTab === 'universities' ? 'active' : ''}`} onClick={() => setActiveTab('universities')}>Universities</button>
-        <button className={`category-tag ${activeTab === 'colleges' ? 'active' : ''}`} onClick={() => setActiveTab('colleges')}>Colleges</button>
-        <button className="category-tag">Research</button>
-        <button className="category-tag">Technical</button>
+        <button className={`category-tag ${activeTab === 'colleges'     ? 'active' : ''}`} onClick={() => setActiveTab('colleges')}>Colleges</button>
+        
         <button
           className={`category-tag requests-tab ${activeTab === 'requests' ? 'active' : ''}`}
           onClick={() => { setActiveTab('requests'); fetchPendingRequestCount(); }}
         >
           🏛️ Requests
-          {pendingRequestCount > 0 && (
-            <span className="requests-tab-badge">{pendingRequestCount}</span>
-          )}
+          {pendingRequestCount > 0 && <span className="requests-tab-badge">{pendingRequestCount}</span>}
         </button>
       </div>
 
@@ -804,6 +692,7 @@ const University = () => {
 
       {activeTab === 'universities' && (
         <>
+          {/* Stats */}
           {importStats && (
             <div className="stats-grid">
               <div className="stat-card">
@@ -811,7 +700,7 @@ const University = () => {
                 <div className="stat-details">
                   <h3>Universities</h3>
                   <p className="stat-value">{universities.length}</p>
-                  <p className="stat-sub">{universities.filter(u => u.source === 'admin').length} Imported • {getCustomCount()} Custom</p>
+                  <p className="stat-sub">{universities.filter(u => u.source === 'admin').length} Imported · {getCustomCount()} Custom</p>
                 </div>
               </div>
               <div className="stat-card">
@@ -833,25 +722,43 @@ const University = () => {
             </div>
           )}
 
+          {/* ── Action bar ── */}
           <div className="action-bar">
-            <div className="action-left">
+            {/* Primary actions always visible */}
+            <div className="action-primary">
               <button className="btn-import" onClick={importUniversities} disabled={importing}>
-                {importing ? (<><span className="spinner-small"></span>Importing...</>) : (<><span className="btn-icon">📥</span>Import Universities</>)}
+                {importing ? (<><span className="spinner-small"></span>Importing...</>) : (<><span className="btn-icon">📥</span>Import</>)}
               </button>
               <button className="btn-refresh" onClick={fetchAllUniversities}><span className="btn-icon">🔄</span>Refresh</button>
+
+              {/* Mobile: filter toggle button */}
+              <button
+                className={`btn-filter-toggle ${filtersOpen ? 'active' : ''} ${hasActiveFilters ? 'has-active' : ''}`}
+                onClick={() => setFiltersOpen(f => !f)}
+              >
+                ⚙️ Filters {hasActiveFilters && <span className="filter-active-dot" />}
+              </button>
+
+              {/* View toggle — always visible */}
+              <div className="view-toggle">
+                <button className={`toggle-btn ${viewMode === 'grid' ? 'active' : ''}`} onClick={() => setViewMode('grid')} title="Grid view">▦</button>
+                <button className={`toggle-btn ${viewMode === 'list' ? 'active' : ''}`} onClick={() => setViewMode('list')} title="List view">☰</button>
+              </div>
             </div>
-            <div className="action-right">
+
+            {/* Filters — collapsible on mobile */}
+            <div className={`action-filters ${filtersOpen ? 'filters-open' : ''}`}>
               <div className="program-level-filter">
-                <button className={`level-btn ${programLevel === 'all' ? 'active' : ''}`} onClick={() => setProgramLevel('all')}>All Programs</button>
-                <button className={`level-btn bachelor ${programLevel === 'bachelors' ? 'active' : ''}`} onClick={() => setProgramLevel('bachelors')}>🎓 Bachelor's</button>
-                <button className={`level-btn master ${programLevel === 'masters' ? 'active' : ''}`} onClick={() => setProgramLevel('masters')}>📘 Master's</button>
+                <button className={`level-btn ${programLevel === 'all'       ? 'active' : ''}`} onClick={() => setProgramLevel('all')}>All</button>
+                <button className={`level-btn bachelor ${programLevel === 'bachelors' ? 'active' : ''}`} onClick={() => setProgramLevel('bachelors')}>🎓 Bachelors</button>
+                <button className={`level-btn master   ${programLevel === 'masters'   ? 'active' : ''}`} onClick={() => setProgramLevel('masters')}>📘 Masters</button>
               </div>
               <select className="sort-select" value={sortBy} onChange={e => setSortBy(e.target.value)}>
-                <option value="name">Sort by Name</option>
-                <option value="location">Sort by Location</option>
-                <option value="programs">Sort by Total Programs</option>
-                <option value="bachelors">Sort by Bachelor's Programs</option>
-                <option value="masters">Sort by Master's Programs</option>
+                <option value="name">Sort: Name</option>
+                <option value="location">Sort: Location</option>
+                <option value="programs">Sort: Programs</option>
+                <option value="bachelors">Sort: Bachelor's</option>
+                <option value="masters">Sort: Master's</option>
               </select>
               <select className="filter-select" value={filterType} onChange={e => setFilterType(e.target.value)}>
                 <option value="all">All Universities</option>
@@ -859,32 +766,37 @@ const University = () => {
                 <option value="imported">Imported Only</option>
                 <option value="custom">Custom Created</option>
               </select>
-              <div className="view-toggle">
-                <button className={`toggle-btn ${viewMode === 'grid' ? 'active' : ''}`} onClick={() => setViewMode('grid')}>▦</button>
-                <button className={`toggle-btn ${viewMode === 'list' ? 'active' : ''}`} onClick={() => setViewMode('list')}>☰</button>
-              </div>
             </div>
           </div>
 
           {programLevel !== 'all' && (
             <div className="active-filter-indicator">
-              <span className="filter-label">Active Filter:</span>
-              <span className="filter-value">{programLevel === 'bachelors' ? "🎓 Bachelor's Programs Only" : "📘 Master's Programs Only"}</span>
+              <span className="filter-label">Filter:</span>
+              <span className="filter-value">{programLevel === 'bachelors' ? "🎓 Bachelor's" : "📘 Master's"}</span>
               <button className="clear-filter" onClick={() => setProgramLevel('all')}>× Clear</button>
             </div>
           )}
 
           {importSuccess && <div className="alert alert-success"><span className="alert-icon">✓</span><span>{importSuccess}</span><button className="alert-close" onClick={() => setImportSuccess(null)}>×</button></div>}
-          {error && <div className="alert alert-error"><span className="alert-icon">⚠</span><span>{error}</span><button className="alert-close" onClick={() => setError(null)}>×</button></div>}
+          {error         && <div className="alert alert-error"><span className="alert-icon">⚠</span><span>{error}</span><button className="alert-close" onClick={() => setError(null)}>×</button></div>}
 
+          {/* Search */}
           <div className="search-section">
             <div className="search-container">
               <span className="search-icon">🔍</span>
-              <input type="text" className="search-input" placeholder="Search universities by name, location, or program..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+              <input
+                type="text"
+                className="search-input"
+                placeholder="Search universities..."
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+              />
               {searching && <div className="search-spinner"></div>}
               {searchTerm && <button className="search-clear" onClick={() => setSearchTerm('')}>×</button>}
             </div>
-            {searchTerm && searchResults.length > 0 && <div className="search-results-count">Found {searchResults.length} results</div>}
+            {searchTerm && searchResults.length > 0 && (
+              <div className="search-results-count">Found {searchResults.length} results</div>
+            )}
           </div>
 
           {loading && <div className="loading-state"><div className="spinner"></div><p>Loading universities...</p></div>}
@@ -893,7 +805,7 @@ const University = () => {
             <div className="empty-state">
               <div className="empty-icon">🏛️</div>
               <h3>No universities found</h3>
-              <p>{programLevel !== 'all' ? `No universities with ${programLevel === 'bachelors' ? "Bachelor's" : "Master's"} programs found.` : 'Click "Import Universities" to load data or create one in the Bachelors or Masters section.'}</p>
+              <p>{programLevel !== 'all' ? `No ${programLevel === 'bachelors' ? "Bachelor's" : "Master's"} universities found.` : 'Click "Import" to load data.'}</p>
               <button className="btn-import" onClick={importUniversities} disabled={importing}>Import Now</button>
             </div>
           )}
@@ -914,7 +826,7 @@ const University = () => {
                     <div className="item-header">
                       <div className="item-logo">
                         {uni.logo || uni.universityLogo
-                          ? <img src={uni.logo || uni.universityLogo} alt={uni.INSTNM || uni.universityName} onError={e => { e.target.style.display='none'; e.target.parentNode.innerHTML = `<span class="logo-fallback">${uniCode}</span>`; }} />
+                          ? <img src={uni.logo || uni.universityLogo} alt={uni.INSTNM || uni.universityName} onError={e => { e.target.style.display='none'; e.target.parentNode.innerHTML=`<span class="logo-fallback">${uniCode}</span>`; }} />
                           : <span className="logo-fallback">{uniCode}</span>}
                       </div>
                       <div className="item-info">
@@ -931,7 +843,7 @@ const University = () => {
                         </div>
                       )}
                       {uni.source === 'bachelors' ? <span className="item-badge custom">✨ Bachelor's</span>
-                       : uni.source === 'masters'  ? <span className="item-badge custom">📘 Master's</span>
+                       : uni.source === 'masters' ? <span className="item-badge custom">📘 Master's</span>
                        : <span className="item-badge imported">📥 Imported</span>}
                     </div>
                     <div className="item-footer">
@@ -961,11 +873,12 @@ const University = () => {
             </div>
           )}
 
+          {/* Details Modal */}
           {showDetailsModal && selectedUniversity && (
             <div className="modal-overlay" onClick={closeModal}>
               <div className="modal-content" onClick={e => e.stopPropagation()}>
                 {loadingPrograms ? (
-                  <div className="modal-loading"><div className="spinner"></div><p>Loading university details...</p></div>
+                  <div className="modal-loading"><div className="spinner"></div><p>Loading details...</p></div>
                 ) : (
                   <>
                     <div className="modal-header">
@@ -980,7 +893,7 @@ const University = () => {
                           <p className="modal-location">{getLocationString(selectedUniversity)}</p>
                           {selectedUniversity.source && (
                             <span className={`source-badge ${selectedUniversity.source}`}>
-                              {selectedUniversity.source === 'bachelors' ? "✨ Bachelor's University" : selectedUniversity.source === 'masters' ? "📘 Master's University" : '📥 Imported'}
+                              {selectedUniversity.source === 'bachelors' ? "✨ Bachelor's" : selectedUniversity.source === 'masters' ? "📘 Master's" : '📥 Imported'}
                             </span>
                           )}
                         </div>
@@ -1015,8 +928,8 @@ const University = () => {
                           <div className="modal-section">
                             <h4>Tuition Fees (Annual)</h4>
                             <div className="info-grid">
-                              {selectedUniversity.tuitionFees.inState      && <div className="info-item"><span className="info-label">In-State:</span><span className="info-value">${selectedUniversity.tuitionFees.inState}</span></div>}
-                              {selectedUniversity.tuitionFees.outOfState   && <div className="info-item"><span className="info-label">Out-of-State:</span><span className="info-value">${selectedUniversity.tuitionFees.outOfState}</span></div>}
+                              {selectedUniversity.tuitionFees.inState       && <div className="info-item"><span className="info-label">In-State:</span><span className="info-value">${selectedUniversity.tuitionFees.inState}</span></div>}
+                              {selectedUniversity.tuitionFees.outOfState    && <div className="info-item"><span className="info-label">Out-of-State:</span><span className="info-value">${selectedUniversity.tuitionFees.outOfState}</span></div>}
                               {selectedUniversity.tuitionFees.international && <div className="info-item"><span className="info-label">International:</span><span className="info-value">${selectedUniversity.tuitionFees.international}</span></div>}
                             </div>
                           </div>
@@ -1039,7 +952,9 @@ const University = () => {
                             </div>
                           </div>
                         )}
-                        {getPrograms(selectedUniversity).length === 0 && <div className="modal-section"><p className="no-programs-message">No programs available for this university.</p></div>}
+                        {getPrograms(selectedUniversity).length === 0 && (
+                          <div className="modal-section"><p className="no-programs-message">No programs available for this university.</p></div>
+                        )}
                       </div>
                     ) : (
                       <div className="modal-body">

@@ -34,7 +34,7 @@
   max-width: 1280px;
   margin: 0 auto;
   background: var(--bg);
-  min-height: 100vh;
+  min-height: 100%;
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
@@ -78,9 +78,9 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: 14px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   background: var(--card);
-  padding: 20px 24px;
+  padding: 18px 20px;
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border);
@@ -88,9 +88,9 @@
 
 .header-left h1 {
   font-family: 'Sora', sans-serif;
-  font-size: 1.35rem;
+  font-size: 1.3rem;
   color: var(--text);
-  margin-bottom: 4px;
+  margin-bottom: 3px;
   font-weight: 700;
   letter-spacing: -0.3px;
 }
@@ -163,12 +163,12 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 14px;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .user-stat-card {
   border-radius: var(--radius);
-  padding: 20px;
+  padding: 18px;
   position: relative;
   overflow: hidden;
   transition: var(--transition);
@@ -187,31 +187,31 @@
   box-shadow: var(--shadow-md);
 }
 
-.user-stat-card.total-users  { background: linear-gradient(135deg, #eff6ff, #dbeafe); border-top: 3px solid var(--blue); animation-delay: 0.05s; }
-.user-stat-card.active-users { background: linear-gradient(135deg, #f0fdf4, #dcfce7); border-top: 3px solid var(--green); animation-delay: 0.1s; }
+.user-stat-card.total-users  { background: linear-gradient(135deg, #eff6ff, #dbeafe); border-top: 3px solid var(--blue);   animation-delay: 0.05s; }
+.user-stat-card.active-users { background: linear-gradient(135deg, #f0fdf4, #dcfce7); border-top: 3px solid var(--green);  animation-delay: 0.1s; }
 .user-stat-card.admin-users  { background: linear-gradient(135deg, #faf5ff, #ede9fe); border-top: 3px solid var(--purple); animation-delay: 0.15s; }
-.user-stat-card.pending-users{ background: linear-gradient(135deg, #fffbeb, #fef3c7); border-top: 3px solid var(--amber); animation-delay: 0.2s; }
+.user-stat-card.pending-users{ background: linear-gradient(135deg, #fffbeb, #fef3c7); border-top: 3px solid var(--amber);  animation-delay: 0.2s; }
 
 .stat-content { position: relative; z-index: 2; }
 
 .stat-content h3 {
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   color: var(--text-muted);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.7px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .stat-value {
-  font-size: 2rem;
+  font-size: 1.9rem;
   font-weight: 800;
   color: var(--text);
   line-height: 1;
 }
 
 .stat-subtext {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
   margin-top: 4px;
   font-weight: 500;
@@ -223,7 +223,7 @@
 .divider {
   height: 1px;
   background: var(--border);
-  margin: 20px 0;
+  margin: 18px 0;
 }
 
 /* ══════════════════════════════
@@ -231,7 +231,7 @@
 ══════════════════════════════ */
 .user-management-section {
   background: var(--card);
-  padding: 20px;
+  padding: 18px;
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border);
@@ -241,7 +241,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
   gap: 10px;
 }
 
@@ -274,7 +274,7 @@
 
 /* ── Controls ── */
 .controls-container {
-  margin-bottom: 18px;
+  margin-bottom: 16px;
   background: var(--bg);
   padding: 14px;
   border-radius: var(--radius-sm);
@@ -335,7 +335,7 @@
 }
 
 .filter-label {
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   color: var(--text-muted);
   font-weight: 700;
   text-transform: uppercase;
@@ -374,13 +374,17 @@
 }
 
 /* ══════════════════════════════
-   TABLE
+   DESKTOP TABLE
+   (hidden on mobile, shown on ≥ 641px)
 ══════════════════════════════ */
+.desktop-table { display: block; }
+.mobile-user-list { display: none; }
+
 .users-table-container {
   overflow-x: auto;
   border-radius: var(--radius-sm);
   border: 1.5px solid var(--border);
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .users-table-container::-webkit-scrollbar { height: 5px; }
@@ -399,9 +403,9 @@
 }
 
 .users-table th {
-  padding: 14px 18px;
+  padding: 13px 16px;
   text-align: left;
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   color: var(--text-muted);
   font-weight: 700;
   text-transform: uppercase;
@@ -410,7 +414,7 @@
 }
 
 .users-table td {
-  padding: 16px 18px;
+  padding: 14px 16px;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
 }
@@ -438,44 +442,47 @@
 .adminuser-user-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .user-avatar {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
   color: #fff;
-  font-size: 1rem;
+  font-size: 0.95rem;
   flex-shrink: 0;
   transition: var(--transition);
   box-shadow: 0 3px 8px rgba(0,0,0,0.12);
 }
 
-.user-avatar:hover {
-  transform: scale(1.1) rotate(4deg);
-}
+.user-avatar:hover { transform: scale(1.1) rotate(4deg); }
 
 .users-table tbody tr:nth-child(3n+1) .user-avatar { background: linear-gradient(135deg, #4d7cfe, #6b9bff); }
 .users-table tbody tr:nth-child(3n+2) .user-avatar { background: linear-gradient(135deg, #36d389, #5ae0a5); }
 .users-table tbody tr:nth-child(3n+3) .user-avatar { background: linear-gradient(135deg, #9f7aea, #b794f4); }
+
+/* Mobile cards also need avatar colors */
+.mobile-user-card:nth-child(3n+1) .user-avatar { background: linear-gradient(135deg, #4d7cfe, #6b9bff); }
+.mobile-user-card:nth-child(3n+2) .user-avatar { background: linear-gradient(135deg, #36d389, #5ae0a5); }
+.mobile-user-card:nth-child(3n+3) .user-avatar { background: linear-gradient(135deg, #9f7aea, #b794f4); }
 
 .user-details { display: flex; flex-direction: column; gap: 2px; }
 
 .user-name {
   font-weight: 700;
   color: var(--text);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   letter-spacing: -0.1px;
 }
 
 .user-email {
   color: var(--text-muted);
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 500;
 }
 
@@ -507,16 +514,17 @@
 
 /* ── Status Badges ── */
 .status-badge {
-  padding: 5px 12px;
-  border-radius: 16px;
-  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 0.73rem;
   font-weight: 700;
   text-transform: capitalize;
   display: inline-block;
-  min-width: 72px;
+  min-width: 68px;
   text-align: center;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
   border: 1.5px solid transparent;
+  white-space: nowrap;
 }
 
 .status-active    { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
@@ -527,7 +535,7 @@
 
 /* ── Table Text Columns ── */
 .last-login, .join-date {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--text-muted);
   font-weight: 500;
   white-space: nowrap;
@@ -547,9 +555,9 @@
 .btn-reject,
 .btn-activate,
 .btn-delete {
-  padding: 6px 12px;
+  padding: 6px 11px;
   border-radius: 6px;
-  font-size: 0.75rem;
+  font-size: 0.73rem;
   font-weight: 700;
   font-family: 'Plus Jakarta Sans', sans-serif;
   cursor: pointer;
@@ -568,16 +576,12 @@
 .btn-activate:hover { background: var(--blue); color: #fff; border-color: var(--blue); transform: translateY(-1px); }
 .btn-delete:hover   { background: var(--gray); color: #fff; border-color: var(--gray); transform: translateY(-1px); }
 
-.btn-approve:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-  transform: none;
-}
+.btn-approve:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 
-/* ── No Users ── */
+/* ── No Users (desktop) ── */
 .no-users {
   text-align: center;
-  padding: 60px 20px !important;
+  padding: 50px 20px !important;
   color: var(--text-muted);
   font-size: 0.9rem;
   font-weight: 600;
@@ -588,34 +592,151 @@
 .pagination-container {
   display: flex;
   justify-content: center;
-  padding: 14px;
+  padding: 12px;
   background: var(--bg);
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
-  margin-top: 16px;
+  margin-top: 14px;
 }
 
 .pagination-info {
   color: var(--text-muted);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  padding: 6px 16px;
+  padding: 6px 14px;
   background: var(--card);
   border-radius: 6px;
   border: 1px solid var(--border);
 }
 
 /* ══════════════════════════════
-   MISCELLANEOUS
+   MOBILE CARD LAYOUT
+   (shown on ≤ 640px)
 ══════════════════════════════ */
-.pending-badge {
-  background: #fef3c7;
-  color: #92400e;
-  padding: 5px 12px;
-  border-radius: 16px;
-  font-size: 0.78rem;
+.mobile-user-card {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  overflow: hidden;
+  transition: var(--transition);
+  border-left: 3px solid var(--border);
+}
+
+.mobile-user-card.user-inactive {
+  border-left-color: #93c5fd;
+}
+
+.mobile-user-card.expanded {
+  border-left-color: var(--blue);
+  box-shadow: var(--shadow-md);
+}
+
+/* Tappable top row */
+.mobile-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px;
+  cursor: pointer;
+  gap: 10px;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-card-top:active {
+  background: #f8fbff;
+}
+
+.mobile-card-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.mobile-expand-icon {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  transition: var(--transition);
+}
+
+/* Expanded body */
+.mobile-card-body {
+  padding: 0 14px 14px;
+  border-top: 1px solid var(--border);
+  animation: slideDown 0.18s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.mobile-note {
+  margin: 10px 0 8px;
+  font-size: 0.72rem;
+  color: var(--red);
   font-weight: 600;
-  border: 1px solid #fde68a;
+}
+
+.mobile-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 0 10px;
+}
+
+.mobile-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 90px;
+}
+
+.mobile-meta-label {
+  font-size: 0.63rem;
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mobile-meta-value {
+  font-size: 0.8rem;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.mobile-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.mobile-actions .btn-approve,
+.mobile-actions .btn-reject,
+.mobile-actions .btn-activate,
+.mobile-actions .btn-delete {
+  flex: 1;
+  min-width: 80px;
+  text-align: center;
+  padding: 8px 10px;
+  font-size: 0.78rem;
+  border-radius: var(--radius-sm);
+}
+
+/* No users in mobile list */
+.no-users-mobile {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1.5px dashed var(--border);
 }
 
 /* ══════════════════════════════
@@ -625,20 +746,20 @@
   .admin-users-container { padding: 18px; }
   .users-stats-grid { gap: 12px; }
   .stat-value { font-size: 1.7rem; }
-  .user-management-section { padding: 18px; }
+  .user-management-section { padding: 16px; }
 }
 
 /* ══════════════════════════════
-   RESPONSIVE — Mobile (≤ 768px)
+   RESPONSIVE — Tablet (≤ 768px)
 ══════════════════════════════ */
 @media (max-width: 768px) {
   .admin-users-container { padding: 12px; }
 
-  /* Header: stack vertically */
   .users-header {
     flex-direction: column;
-    padding: 16px;
+    padding: 14px;
     gap: 12px;
+    margin-bottom: 14px;
   }
 
   .header-left h1 { font-size: 1.1rem; }
@@ -652,25 +773,24 @@
   .seed-users-btn,
   .bulk-approve-btn {
     flex: 1;
-    min-width: 120px;
+    min-width: 100px;
     text-align: center;
-    padding: 9px 10px;
-    font-size: 0.8rem;
+    padding: 9px 8px;
+    font-size: 0.78rem;
   }
 
   /* Stats: 2 columns */
   .users-stats-grid {
     grid-template-columns: 1fr 1fr;
     gap: 10px;
+    margin-bottom: 14px;
   }
 
   .user-stat-card { padding: 14px; }
   .stat-value { font-size: 1.5rem; }
-  .stat-content h3 { font-size: 0.63rem; }
+  .stat-content h3 { font-size: 0.62rem; }
 
-  /* Controls */
   .controls-container { padding: 12px; }
-
   .search-box { max-width: 100%; }
 
   .filter-container {
@@ -683,86 +803,83 @@
   .filter-select { width: 100%; }
   .results-count { margin-left: 0; text-align: center; }
 
-  /* Section header */
-  .section-header {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  /* Table */
   .user-management-section { padding: 14px; }
 
-  .users-table th,
-  .users-table td { padding: 12px 12px; }
-
-  .user-avatar { width: 36px; height: 36px; font-size: 0.875rem; border-radius: 8px; }
-  .user-name { font-size: 0.85rem; }
-  .user-email { font-size: 0.73rem; }
-
-  /* Action buttons: stack */
-  .action-buttons {
-    flex-direction: column;
-    gap: 5px;
-  }
-
-  .btn-approve,
-  .btn-reject,
-  .btn-activate,
-  .btn-delete {
-    width: 100%;
-    text-align: center;
-    padding: 7px 10px;
-  }
+  .section-header { flex-wrap: wrap; gap: 8px; }
 }
 
 /* ══════════════════════════════
-   RESPONSIVE — Small Mobile (≤ 480px)
+   RESPONSIVE — Mobile (≤ 640px)
+   Switch to card layout
 ══════════════════════════════ */
-@media (max-width: 480px) {
+@media (max-width: 640px) {
+  /* Hide desktop table, show mobile cards */
+  .desktop-table { display: none !important; }
+  .mobile-user-list { display: block; }
+
   .admin-users-container { padding: 10px; }
 
-  /* Stats: 1 column */
-  .users-stats-grid { grid-template-columns: 1fr; gap: 8px; }
+  .users-stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
 
-  .user-stat-card { padding: 12px 14px; }
+  .user-stat-card { padding: 12px 10px; border-radius: 10px; }
   .stat-value { font-size: 1.4rem; }
+  .stat-content h3 { font-size: 0.6rem; letter-spacing: 0.4px; }
 
-  .users-header { padding: 12px; }
+  .users-header {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
   .header-left h1 { font-size: 1rem; }
 
   .header-buttons { gap: 6px; }
   .add-user-btn,
-  .seed-users-btn,
-  .bulk-approve-btn { font-size: 0.75rem; padding: 8px; }
-
-  .user-management-section { padding: 10px; }
-
-  .users-table th { padding: 10px 10px; font-size: 0.63rem; }
-  .users-table td { padding: 10px 10px; }
-
-  .user-avatar { width: 32px; height: 32px; font-size: 0.8rem; border-radius: 7px; }
-
-  .status-badge { padding: 4px 8px; font-size: 0.7rem; min-width: 60px; }
-
-  .role-select { padding: 5px 8px; font-size: 0.75rem; }
-
-  .btn-approve,
-  .btn-reject,
-  .btn-activate,
-  .btn-delete { padding: 6px 8px; font-size: 0.72rem; }
+  .seed-users-btn { font-size: 0.75rem; padding: 8px 10px; }
 
   .controls-container { padding: 10px; }
-  .search-input { padding: 9px 36px 9px 12px; font-size: 0.82rem; }
+  .search-input { font-size: 0.82rem; padding: 9px 36px 9px 12px; }
+
+  .user-management-section { padding: 12px; border-radius: 10px; }
 
   .pagination-container { padding: 10px; margin-top: 10px; }
-  .pagination-info { font-size: 0.75rem; }
+  .pagination-info { font-size: 0.73rem; }
+}
 
-  /* Hide less-important table columns on very small screens */
-  .users-table th:nth-child(4),
-  .users-table td:nth-child(4),
-  .users-table th:nth-child(5),
-  .users-table td:nth-child(5) {
-    display: none;
+/* ══════════════════════════════
+   RESPONSIVE — Small (≤ 480px)
+══════════════════════════════ */
+@media (max-width: 480px) {
+  .admin-users-container { padding: 8px; }
+
+  /* Stats: 1 row, all 3 squeezed */
+  .users-stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .user-stat-card { padding: 10px 8px; }
+  .stat-value { font-size: 1.25rem; }
+  .stat-content h3 { font-size: 0.55rem; }
+
+  .users-header { padding: 10px; }
+  .header-left h1 { font-size: 0.95rem; }
+  .header-left p  { font-size: 0.75rem; }
+
+  .add-user-btn,
+  .seed-users-btn { font-size: 0.72rem; padding: 7px 8px; }
+
+  .mobile-card-top { padding: 12px; }
+
+  .mobile-actions .btn-approve,
+  .mobile-actions .btn-reject,
+  .mobile-actions .btn-activate,
+  .mobile-actions .btn-delete {
+    font-size: 0.72rem;
+    padding: 7px 8px;
   }
 }
 
@@ -770,18 +887,43 @@
    RESPONSIVE — Very Small (≤ 360px)
 ══════════════════════════════ */
 @media (max-width: 360px) {
-  /* Also hide Role column on tiny screens, keep User/Status/Actions */
-  .users-table th:nth-child(2),
-  .users-table td:nth-child(2) {
-    display: none;
+  .admin-users-container { padding: 6px; }
+
+  .users-stats-grid { gap: 5px; }
+  .user-stat-card { padding: 8px 6px; }
+  .stat-value { font-size: 1.1rem; }
+  .stat-content h3 { font-size: 0.5rem; }
+
+  .header-buttons { flex-direction: column; }
+  .add-user-btn,
+  .seed-users-btn { width: 100%; text-align: center; }
+
+  .mobile-card-top { padding: 10px; }
+  .mobile-card-body { padding: 0 10px 12px; }
+
+  .mobile-actions {
+    flex-direction: column;
+    gap: 6px;
   }
 
-  .users-table { min-width: unset; }
+  .mobile-actions .btn-approve,
+  .mobile-actions .btn-reject,
+  .mobile-actions .btn-activate,
+  .mobile-actions .btn-delete {
+    width: 100%;
+    font-size: 0.78rem;
+  }
+}
 
-  .action-buttons { gap: 4px; }
-
-  .btn-approve,
-  .btn-reject,
-  .btn-activate,
-  .btn-delete { font-size: 0.7rem; padding: 5px 7px; }
+/* ══════════════════════════════
+   MISC
+══════════════════════════════ */
+.pending-badge {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  border: 1px solid #fde68a;
 }

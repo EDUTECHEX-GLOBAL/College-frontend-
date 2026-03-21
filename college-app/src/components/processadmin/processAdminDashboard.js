@@ -1,5 +1,5 @@
-// ProcessAdminDashboard.js — Purple/Amber Theme (matched to SocialEco design)
-import React, { useState, useEffect } from "react";
+// ProcessAdminDashboard.js — Purple/Amber Theme + Mobile Compact
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./processAdminDashboard.css";
@@ -29,21 +29,11 @@ const getStatusBadgeClass = (status) => {
   if (s.includes('completed') || s === 'validated')        return 'status-badge completed';
   if (s.includes('incomplete'))                            return 'status-badge incomplete';
   if (s.includes('in progress') || s.includes('pending')) return 'status-badge in-progress';
-  if (s.includes('not started'))                          return 'status-badge not-started';
+  if (s.includes('not started'))                           return 'status-badge not-started';
   return 'status-badge';
 };
 
-const getStatusText = (status) => {
-  const s = (status || '').toLowerCase();
-  if (s.includes('completed') || s === 'validated') return 'COMPLETED';
-  if (s.includes('incomplete'))   return 'INCOMPLETE';
-  if (s.includes('in progress'))  return 'IN PROGRESS';
-  if (s.includes('pending'))      return 'PENDING';
-  if (s.includes('not started'))  return 'NOT STARTED';
-  return status?.toUpperCase() || 'PENDING';
-};
-
-/* ─── SVG Icon Components ─── */
+/* ─── SVG Icons ─── */
 const IcoPlay = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="#7B61FF">
     <polygon points="5 3 19 12 5 21 5 3"/>
@@ -137,6 +127,23 @@ const IcoLines = () => (
   </svg>
 );
 
+/* ── Hamburger icon ── */
+const IcoHamburger = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+    <line x1="3" y1="6"  x2="21" y2="6"/>
+    <line x1="3" y1="12" x2="21" y2="12"/>
+    <line x1="3" y1="18" x2="21" y2="18"/>
+  </svg>
+);
+
+/* ── Close icon ── */
+const IcoClose = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+    <line x1="18" y1="6" x2="6" y2="18"/>
+    <line x1="6"  y1="6" x2="18" y2="18"/>
+  </svg>
+);
+
 /* ─── Stat icon wrapper ─── */
 const StatIcon = ({ bg, stroke, children }) => (
   <div className="pad-stat-ico" style={{ background: bg }}>
@@ -153,6 +160,7 @@ const ProcessAdminDashboard = () => {
   const navigate = useNavigate();
 
   const [sidebarOpen,         setSidebarOpen]         = useState(true);
+  const [mobileSidebarOpen,   setMobileSidebarOpen]   = useState(false); // ← mobile drawer
   const [activeTab,           setActiveTab]           = useState("dashboard");
   const [processAdminData,    setProcessAdminData]    = useState(null);
   const [loading,             setLoading]             = useState(true);
@@ -162,6 +170,28 @@ const ProcessAdminDashboard = () => {
   const [applications,        setApplications]        = useState([]);
   const [applicationsLoading, setApplicationsLoading] = useState(false);
   const [selectedApplication, setSelectedApplication] = useState(null);
+  const [isMobile,            setIsMobile]            = useState(false);
+
+  /* ── Detect mobile ── */
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
+  /* ── Close mobile sidebar on route/tab change ── */
+  const closeMobileSidebar = () => setMobileSidebarOpen(false);
+
+  /* ── Lock body scroll when mobile sidebar open ── */
+  useEffect(() => {
+    if (mobileSidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileSidebarOpen]);
 
   /* ── Auth check ── */
   useEffect(() => {
@@ -184,6 +214,12 @@ const ProcessAdminDashboard = () => {
     localStorage.removeItem('processAdminEmail');
     delete axios.defaults.headers.common['Authorization'];
     navigate("/process-admin-login");
+  };
+
+  /* ── Tab change: also close mobile sidebar ── */
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    closeMobileSidebar();
   };
 
   const fetchApplications = async () => {
@@ -235,9 +271,8 @@ const ProcessAdminDashboard = () => {
   const renderDashboard = () => (
     <div className="pad-dash">
 
-      {/* ── 5 Stat Cards ── */}
+      {/* 5 Stat Cards */}
       <div className="pad-stats-row">
-
         <div className="pad-stat-card">
           <StatIcon bg="#EDE9FF" stroke="#7B61FF">
             <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
@@ -278,7 +313,7 @@ const ProcessAdminDashboard = () => {
           </StatIcon>
           <div>
             <div className="pad-sv">6</div>
-            <div className="pad-sl">Universities</div>
+            <div className="pad-sl">Courses</div>
           </div>
         </div>
 
@@ -292,13 +327,12 @@ const ProcessAdminDashboard = () => {
             <div className="pad-sl">Pending Reviews</div>
           </div>
         </div>
-
       </div>
 
-      {/* ── Charts Row ── */}
+      {/* Charts Row */}
       <div className="pad-charts-row">
 
-        {/* Applications Per Day — Line Chart */}
+        {/* Applications Per Day */}
         <div className="pad-chart-card">
           <div className="pad-chart-hdr">
             <span className="pad-chart-title"><strong>Applications</strong> Per Day</span>
@@ -323,21 +357,12 @@ const ProcessAdminDashboard = () => {
               {['30','25','20','5'].map((t, i) => (
                 <text key={i} x="2" y={[13,38,63,88][i]} fontSize="8" fill="#C0BCDC">{t}</text>
               ))}
-              <path
-                d="M28,105 L98,80 L170,65 L244,63 L318,38 L393,50 L468,34 L468,112 L28,112Z"
-                fill="url(#lineGrad)"
-              />
-              <path
-                d="M28,105 L98,80 L170,65 L244,63 L318,38 L393,50 L468,34"
-                stroke="#7B61FF" strokeWidth="2.2" fill="none"
-                strokeLinecap="round" strokeLinejoin="round"
-              />
+              <path d="M28,105 L98,80 L170,65 L244,63 L318,38 L393,50 L468,34 L468,112 L28,112Z" fill="url(#lineGrad)"/>
+              <path d="M28,105 L98,80 L170,65 L244,63 L318,38 L393,50 L468,34"
+                stroke="#7B61FF" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
               {[[28,105],[98,80],[170,65],[244,63],[318,38],[393,50],[468,34]].map(([cx, cy], i) => (
-                <circle key={i} cx={cx} cy={cy}
-                  r={i === 4 ? 5 : 3.5}
-                  fill={i === 4 ? "#7B61FF" : "white"}
-                  stroke="#7B61FF" strokeWidth="2"
-                />
+                <circle key={i} cx={cx} cy={cy} r={i === 4 ? 5 : 3.5}
+                  fill={i === 4 ? "#7B61FF" : "white"} stroke="#7B61FF" strokeWidth="2"/>
               ))}
             </svg>
           </div>
@@ -349,12 +374,12 @@ const ProcessAdminDashboard = () => {
           <div className="pad-chart-footer">
             <span className="pad-cfi"><span className="pad-cfd" style={{background:'#7B61FF'}}></span><strong>120</strong> Total</span>
             <span className="pad-cfi"><span className="pad-cfd" style={{background:'#3EBDA0'}}></span><strong>38</strong> this week</span>
-            <span className="pad-cfi"><span className="pad-cfd" style={{background:'#F4A623'}}></span><strong>12</strong> feedetts</span>
+            <span className="pad-cfi"><span className="pad-cfd" style={{background:'#F4A623'}}></span><strong>12</strong> pending</span>
             <span className="pad-lines-ico"><IcoLines /></span>
           </div>
         </div>
 
-        {/* Documents Uploaded — Bar Chart */}
+        {/* Documents Uploaded */}
         <div className="pad-chart-card">
           <div className="pad-chart-hdr">
             <span className="pad-chart-title"><strong>Documents</strong> Uploaded</span>
@@ -362,9 +387,6 @@ const ProcessAdminDashboard = () => {
               <span className="pad-pill pad-pill-blue">5.35</span>
               <span className="pad-pill">TOTAL</span>
               <span className="pad-pill pad-pill-amber">5S</span>
-              <span className="pad-pill">2.4</span>
-              <span className="pad-pill">MOOM</span>
-              <span className="pad-pill">MAW</span>
             </div>
           </div>
           <div className="pad-chart-body">
@@ -375,15 +397,15 @@ const ProcessAdminDashboard = () => {
               {['50','40','30','20'].map((t, i) => (
                 <text key={i} x="0" y={[13,38,63,88][i]} fontSize="8" fill="#C0BCDC">{t}</text>
               ))}
-              <rect x="32"  y="10"  width="48" height="95" rx="5" fill="#7B61FF" opacity="0.80"/>
-              <rect x="100" y="34"  width="48" height="71" rx="5" fill="#A78BFA" opacity="0.78"/>
-              <rect x="168" y="50"  width="48" height="55" rx="5" fill="#F4A623" opacity="0.78"/>
-              <rect x="236" y="60"  width="48" height="45" rx="5" fill="#3EBDA0" opacity="0.78"/>
-              <rect x="304" y="70"  width="48" height="35" rx="5" fill="#FCD34D" opacity="0.88"/>
+              <rect x="32"  y="10" width="48" height="95" rx="5" fill="#7B61FF" opacity="0.80"/>
+              <rect x="100" y="34" width="48" height="71" rx="5" fill="#A78BFA" opacity="0.78"/>
+              <rect x="168" y="50" width="48" height="55" rx="5" fill="#F4A623" opacity="0.78"/>
+              <rect x="236" y="60" width="48" height="45" rx="5" fill="#3EBDA0" opacity="0.78"/>
+              <rect x="304" y="70" width="48" height="35" rx="5" fill="#FCD34D" opacity="0.88"/>
             </svg>
           </div>
           <div className="pad-bar-xlbls">
-            {['Kansas University','Stanford Uni','MIT','GUS University','GUS University'].map((l, i) => (
+            {['Kansas','Stanford','MIT','GUS','GUS'].map((l, i) => (
               <span key={i}>{l}</span>
             ))}
           </div>
@@ -393,10 +415,9 @@ const ProcessAdminDashboard = () => {
             <span className="pad-view-all-link">View All</span>
           </div>
         </div>
-
       </div>
 
-      {/* ── Bottom Row ── */}
+      {/* Bottom Row */}
       <div className="pad-bottom-row">
 
         {/* Recent Applications Table */}
@@ -418,28 +439,19 @@ const ProcessAdminDashboard = () => {
             </thead>
             <tbody>
               <tr>
-                <td>Aravind</td>
-                <td>Kansas University</td>
-                <td>BSc</td>
+                <td>Aravind</td><td>Kansas University</td><td>BSc</td>
                 <td><span className="pad-badge pad-pending">● Pending</span></td>
-                <td>Apr 11</td>
-                <td className="pad-chev">∨</td>
+                <td>Apr 11</td><td className="pad-chev">∨</td>
               </tr>
               <tr>
-                <td>Rahul</td>
-                <td>GUS University</td>
-                <td>MBA</td>
+                <td>Rahul</td><td>GUS University</td><td>MBA</td>
                 <td><span className="pad-badge pad-approved">✓ Approved</span></td>
-                <td>Apr 10</td>
-                <td className="pad-chev">∨</td>
+                <td>Apr 10</td><td className="pad-chev">∨</td>
               </tr>
               <tr>
-                <td>Krishna</td>
-                <td>Stanford University</td>
-                <td>MSc</td>
+                <td>Krishna</td><td>Stanford University</td><td>MSc</td>
                 <td><span className="pad-badge pad-review">● Review</span></td>
-                <td>Apr 9</td>
-                <td className="pad-chev">∨</td>
+                <td>Apr 9</td><td className="pad-chev">∨</td>
               </tr>
             </tbody>
           </table>
@@ -455,7 +467,6 @@ const ProcessAdminDashboard = () => {
             <span className="pad-activity-arrow">‹</span>
           </div>
           <div className="pad-activity-list">
-
             <div className="pad-act-day">Today</div>
             <div className="pad-act-item">
               <span className="pad-act-dot pad-dot-teal"><IcoCheck /></span>
@@ -463,9 +474,8 @@ const ProcessAdminDashboard = () => {
             </div>
             <div className="pad-act-item">
               <span className="pad-act-dot pad-dot-teal"><IcoCheck /></span>
-              <span className="pad-act-txt"><strong>Aravind:</strong> Submitted application to Kansas University</span>
+              <span className="pad-act-txt"><strong>Aravind:</strong> Submitted to Kansas University</span>
             </div>
-
             <div className="pad-act-day" style={{ marginTop: 10 }}>Yesterday</div>
             <div className="pad-act-item">
               <span className="pad-act-dot pad-dot-blue"><IcoCheck /></span>
@@ -473,12 +483,10 @@ const ProcessAdminDashboard = () => {
             </div>
             <div className="pad-act-item">
               <span className="pad-act-dot pad-dot-indigo"><IcoCheck /></span>
-              <span className="pad-act-txt"><strong>New university</strong> MIT added to the system</span>
+              <span className="pad-act-txt"><strong>New university</strong> MIT added to system</span>
             </div>
-
           </div>
         </div>
-
       </div>
     </div>
   );
@@ -486,8 +494,8 @@ const ProcessAdminDashboard = () => {
   /* ── Content router ── */
   const renderContent = () => {
     switch (activeTab) {
-      case "dashboard":        return renderDashboard();
-      case "applications":     return (
+      case "dashboard":    return renderDashboard();
+      case "applications": return (
         <Applications
           applications={applications}
           applicationsLoading={applicationsLoading}
@@ -515,24 +523,45 @@ const ProcessAdminDashboard = () => {
     </div>
   );
 
-  /* ════════════════════════════════════════
-     RENDER
-  ════════════════════════════════════════ */
+  /* ── Sidebar class: desktop uses open/closed, mobile uses mobile-open ── */
+  const sidebarClass = [
+    'sidebar',
+    !isMobile && (sidebarOpen ? 'open' : 'closed'),
+    isMobile  && mobileSidebarOpen && 'mobile-open',
+  ].filter(Boolean).join(' ');
+
   return (
     <div className="process-admin-dashboard">
 
+      {/* ── Mobile overlay backdrop ── */}
+      {isMobile && (
+        <div
+          className={`pad-mob-overlay ${mobileSidebarOpen ? 'show' : ''}`}
+          onClick={closeMobileSidebar}
+        />
+      )}
+
       {/* ══ SIDEBAR ══ */}
-      <div className={`sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
+      <div className={sidebarClass}>
 
         {/* Brand */}
         <div className="sidebar-header">
           <div className="sidebar-logo">
             <div className="sidebar-logo-icon"><IcoPlay /></div>
-            {sidebarOpen && <h2>Process <span>Panel</span></h2>}
+            {(sidebarOpen || isMobile) && <h2>Process <span>Panel</span></h2>}
           </div>
-          <button className="sidebar-toggle" onClick={() => setSidebarOpen(p => !p)}>
-            {sidebarOpen ? <IcoChevLeft /> : <IcoChevRight />}
-          </button>
+          {/* Desktop toggle */}
+          {!isMobile && (
+            <button className="sidebar-toggle" onClick={() => setSidebarOpen(p => !p)}>
+              {sidebarOpen ? <IcoChevLeft /> : <IcoChevRight />}
+            </button>
+          )}
+          {/* Mobile close button */}
+          {isMobile && (
+            <button className="sidebar-toggle" onClick={closeMobileSidebar}>
+              <IcoClose />
+            </button>
+          )}
         </div>
 
         {/* Nav */}
@@ -541,10 +570,10 @@ const ProcessAdminDashboard = () => {
           {/* Dashboard */}
           <li
             className={activeTab === "dashboard" ? "active" : ""}
-            onClick={() => setActiveTab("dashboard")}
+            onClick={() => handleTabChange("dashboard")}
           >
             <span className="sb-ico sb-blue"><IcoGrid /></span>
-            {sidebarOpen && <span>Dashboard</span>}
+            {(sidebarOpen || isMobile) && <span>Dashboard</span>}
           </li>
 
           {/* Kansas University */}
@@ -553,7 +582,7 @@ const ProcessAdminDashboard = () => {
             onClick={() => setKansasExpanded(p => !p)}
           >
             <span className="sb-ico sb-blue"><IcoBuilding /></span>
-            {sidebarOpen && (
+            {(sidebarOpen || isMobile) && (
               <>
                 <span>Kansas University</span>
                 <span className="dropdown-arrow">
@@ -563,18 +592,18 @@ const ProcessAdminDashboard = () => {
             )}
           </li>
 
-          {kansasExpanded && sidebarOpen && (
+          {kansasExpanded && (sidebarOpen || isMobile) && (
             <ul className="sub-menu">
               <li
                 className={activeTab === "applications" ? "active" : ""}
-                onClick={() => setActiveTab("applications")}
+                onClick={() => handleTabChange("applications")}
               >
                 <span className="sb-ico sb-ico-sm sb-blue"><IcoFileText /></span>
                 <span>Applications</span>
               </li>
               <li
                 className={activeTab === "documents" ? "active" : ""}
-                onClick={() => setActiveTab("documents")}
+                onClick={() => handleTabChange("documents")}
               >
                 <span className="sb-ico sb-ico-sm sb-amber"><IcoFolder /></span>
                 <span>Documents</span>
@@ -588,7 +617,7 @@ const ProcessAdminDashboard = () => {
             onClick={() => setGusExpanded(p => !p)}
           >
             <span className="sb-ico sb-teal"><IcoGradCap /></span>
-            {sidebarOpen && (
+            {(sidebarOpen || isMobile) && (
               <>
                 <span>GUS University</span>
                 <span className="dropdown-arrow">
@@ -598,11 +627,11 @@ const ProcessAdminDashboard = () => {
             )}
           </li>
 
-          {gusExpanded && sidebarOpen && (
+          {gusExpanded && (sidebarOpen || isMobile) && (
             <ul className="sub-menu">
               <li
                 className={activeTab === "gus-applications" ? "active" : ""}
-                onClick={() => setActiveTab("gus-applications")}
+                onClick={() => handleTabChange("gus-applications")}
               >
                 <span className="sb-ico sb-ico-sm sb-blue"><IcoFileText /></span>
                 <span>Applications</span>
@@ -615,7 +644,7 @@ const ProcessAdminDashboard = () => {
         <div className="sidebar-footer">
           <button className="logout-btn-sidebar" onClick={handleLogout}>
             <span className="logout-circle"><IcoLogout /></span>
-            {sidebarOpen && <span>Logout</span>}
+            {(sidebarOpen || isMobile) && <span>Logout</span>}
           </button>
         </div>
       </div>
@@ -625,7 +654,15 @@ const ProcessAdminDashboard = () => {
 
         {/* Navbar */}
         <nav className="navbar">
-          <div className="navbar-left">
+          <div className="navbar-left" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {/* Hamburger — only visible on mobile via CSS */}
+            <button
+              className="pad-hamburger"
+              onClick={() => setMobileSidebarOpen(p => !p)}
+              aria-label="Toggle menu"
+            >
+              <IcoHamburger />
+            </button>
             <h1>Process Admin <span>Dashboard</span></h1>
           </div>
 

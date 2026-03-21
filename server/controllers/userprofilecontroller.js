@@ -3,15 +3,42 @@ import UserProfile from '../models/userprofilemodel.js';
 import { createUniversityRequestNotification } from './notificationController.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
+// SHARED HELPER: fix Map → plain object for selectedCourses at ALL levels
+// Used by every GET handler so the frontend always receives plain arrays/objects.
+// Fixes both:
+//   • top-level selectedCourses (stored as Map in the schema)
+//   • nested selectedCourses inside each selectedUniversities entry
+// ─────────────────────────────────────────────────────────────────────────────
+export const fixCoursesOnProfile = (profileObj) => {
+  // Top-level selectedCourses Map → plain object
+  if (profileObj.selectedCourses) {
+    try { profileObj.selectedCourses = Object.fromEntries(profileObj.selectedCourses); }
+    catch { profileObj.selectedCourses = {}; }
+  }
+
+  // Nested selectedCourses inside each university entry
+  if (Array.isArray(profileObj.selectedUniversities)) {
+    profileObj.selectedUniversities = profileObj.selectedUniversities.map((uni) => {
+      if (uni.selectedCourses && !Array.isArray(uni.selectedCourses)) {
+        try {
+          uni.selectedCourses = Object.values(Object.fromEntries(uni.selectedCourses));
+        } catch {
+          uni.selectedCourses = [];
+        }
+      }
+      return uni;
+    });
+  }
+
+  return profileObj;
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 // HELPER: process a single university from the request body
 // ─────────────────────────────────────────────────────────────────────────────
 const processUniversityData = (uniData) => {
   if (!uniData) return null;
 
-  // ✅ A university needs NO courses when ANY of these is true:
-  //    1. isKansas flag set explicitly
-  //    2. isDirectApply flag set explicitly  ← was missing before
-  //    3. Name contains "kansas"
   const isKansas = (
     uniData.isKansas      === true ||
     uniData.isDirectApply === true ||
@@ -42,34 +69,49 @@ const processUniversityData = (uniData) => {
   }));
 
   return {
-    id:           uniData.id     || uniData.UNITID?.toString() || uniData._id?.toString() || '',
-    unitid:       uniData.unitid || uniData.UNITID || null,
-    name:         uniData.name   || uniData.INSTNM || 'Unknown University',
-    location:     locationStr    || 'Location not specified',
+    id:            uniData.id     || uniData.UNITID?.toString() || uniData._id?.toString() || '',
+    unitid:        uniData.unitid || uniData.UNITID || null,
+    name:          uniData.name   || uniData.INSTNM || 'Unknown University',
+    location:      locationStr    || 'Location not specified',
     city,
     state,
-    country:      uniData.country || uniData.COUNTRY || uniData.location?.country || 'USA',
-    isKansas,          // ✅ true for Kansas AND any direct-apply university
-    isDirectApply: isKansas,  // keep both flags in sync
+    country:       uniData.country || uniData.COUNTRY || uniData.location?.country || 'USA',
+    isKansas,
+    isDirectApply: isKansas,
     selectedCourses: processedCourses,
   };
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// HELPER: validate and sanitise selectedSegment from request body
+// ─────────────────────────────────────────────────────────────────────────────
+const processSegmentData = (segmentData) => {
+  if (!segmentData) return null;
+
+  const id   = (segmentData.id   || '').toString().trim();
+  const name = (segmentData.name || '').toString().trim();
+
+  if (!id || !name) return null;
+
+  return { id, name };
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 // CREATE OR UPDATE PROFILE
+// POST /api/user/profile
 // ─────────────────────────────────────────────────────────────────────────────
 export const createOrUpdateProfile = async (req, res) => {
   try {
-    const userId = req.userId;
+    const userId      = req.userId;
     const profileData = req.body;
 
-    if (!userId) {
+    if (!userId)
       return res.status(401).json({ success: false, message: 'User ID not found in token' });
-    }
 
     console.log('📝 Creating/Updating profile for userId:', userId);
     console.log('📦 Profile data keys:', Object.keys(profileData));
 
+    // ── Required field checks ──────────────────────────────────────────────
     if (!profileData.basicInfo)
       return res.status(400).json({ success: false, message: 'basicInfo is required' });
     if (!profileData.education)
@@ -83,6 +125,7 @@ export const createOrUpdateProfile = async (req, res) => {
     if (profileData.selectedUniversities.length < 3 || profileData.selectedUniversities.length > 5)
       return res.status(400).json({ success: false, message: `Please select between 3 and 5 universities (received ${profileData.selectedUniversities.length})` });
 
+    // ── Process universities ───────────────────────────────────────────────
     const processedUniversities = [];
     for (const uni of profileData.selectedUniversities) {
       const processed = processUniversityData(uni);
@@ -93,33 +136,39 @@ export const createOrUpdateProfile = async (req, res) => {
         return res.status(400).json({ success: false, message: `University "${processed.name}" is missing an id` });
       if (!processed.name || processed.name === 'Unknown University')
         return res.status(400).json({ success: false, message: 'University name is required' });
-
-      // ✅ Only require courses for non-direct-apply universities
-      if (!processed.isKansas && processed.selectedCourses.length === 0) {
-        return res.status(400).json({
-          success: false,
-          message: `Please select at least one course for ${processed.name}`,
-        });
-      }
-      if (processed.selectedCourses.length > 2) {
-        return res.status(400).json({
-          success: false,
-          message: `Maximum 2 courses can be selected for ${processed.name}`,
-        });
-      }
+      if (!processed.isKansas && processed.selectedCourses.length === 0)
+        return res.status(400).json({ success: false, message: `Please select at least one course for ${processed.name}` });
+      if (processed.selectedCourses.length > 2)
+        return res.status(400).json({ success: false, message: `Maximum 2 courses can be selected for ${processed.name}` });
 
       processedUniversities.push(processed);
     }
 
     profileData.selectedUniversities = processedUniversities;
+
+    // ── Process selectedSegment (optional) ────────────────────────────────
+    const processedSegment = processSegmentData(profileData.selectedSegment);
+    profileData.selectedSegment = processedSegment;
+
+    if (processedSegment) {
+      console.log(`🎯 Segment saved: [${processedSegment.id}] ${processedSegment.name}`);
+      console.log(`📖 Field of study: ${profileData.education?.field || 'N/A'}`);
+    }
+
+    // ── Cleanup ───────────────────────────────────────────────────────────
     delete profileData.fullData;
 
-    if (profileData.selectedCourses && typeof profileData.selectedCourses === 'object' && !Array.isArray(profileData.selectedCourses)) {
+    if (
+      profileData.selectedCourses &&
+      typeof profileData.selectedCourses === 'object' &&
+      !Array.isArray(profileData.selectedCourses)
+    ) {
       profileData.selectedCourses = new Map(Object.entries(profileData.selectedCourses));
     } else {
       profileData.selectedCourses = new Map();
     }
 
+    // ── Upsert ────────────────────────────────────────────────────────────
     let profile = await UserProfile.findOne({ userId });
 
     if (profile) {
@@ -151,7 +200,8 @@ export const createOrUpdateProfile = async (req, res) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// GET PROFILE
+// GET PROFILE  (student — own profile)
+// GET /api/user/profile
 // ─────────────────────────────────────────────────────────────────────────────
 export const getProfile = async (req, res) => {
   try {
@@ -163,14 +213,13 @@ export const getProfile = async (req, res) => {
     if (!profile)
       return res.status(404).json({ success: false, message: 'Profile not found' });
 
-    const profileObj = profile.toObject();
-    if (profileObj.selectedCourses instanceof Map || profileObj.selectedCourses) {
-      try { profileObj.selectedCourses = Object.fromEntries(profileObj.selectedCourses); }
-      catch { profileObj.selectedCourses = {}; }
-    }
+    const profileObj = fixCoursesOnProfile(profile.toObject());
 
     console.log(`✅ Profile fetched for user: ${userId}`);
     console.log(`📚 Selected universities: ${profileObj.selectedUniversities?.length || 0}`);
+    console.log(`🎯 Segment: ${profileObj.selectedSegment?.name || 'None'}`);
+    console.log(`📖 Field: ${profileObj.education?.field || 'None'}`);
+
     return res.status(200).json({ success: true, data: profileObj });
   } catch (error) {
     console.error('❌ Error in getProfile:', error);
@@ -180,6 +229,7 @@ export const getProfile = async (req, res) => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GET PROFILE BY EMAIL
+// GET /api/user/profile/email/:email
 // ─────────────────────────────────────────────────────────────────────────────
 export const getProfileByEmail = async (req, res) => {
   try {
@@ -188,12 +238,7 @@ export const getProfileByEmail = async (req, res) => {
     if (!profile)
       return res.status(404).json({ success: false, message: 'Profile not found' });
 
-    const profileObj = profile.toObject();
-    if (profileObj.selectedCourses) {
-      try { profileObj.selectedCourses = Object.fromEntries(profileObj.selectedCourses); }
-      catch { profileObj.selectedCourses = {}; }
-    }
-    return res.status(200).json({ success: true, data: profileObj });
+    return res.status(200).json({ success: true, data: fixCoursesOnProfile(profile.toObject()) });
   } catch (error) {
     console.error('❌ Error in getProfileByEmail:', error);
     return res.status(500).json({ success: false, message: 'Failed to fetch profile', error: error.message });
@@ -202,6 +247,7 @@ export const getProfileByEmail = async (req, res) => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // UPDATE PROFILE IMAGE
+// PATCH /api/user/profile/image
 // ─────────────────────────────────────────────────────────────────────────────
 export const updateProfileImage = async (req, res) => {
   try {
@@ -211,7 +257,9 @@ export const updateProfileImage = async (req, res) => {
     if (!profileImage) return res.status(400).json({ success: false, message: 'profileImage is required' });
 
     const profile = await UserProfile.findOneAndUpdate(
-      { userId }, { profileImage, lastUpdated: Date.now() }, { new: true }
+      { userId },
+      { profileImage, lastUpdated: Date.now() },
+      { new: true }
     );
     if (!profile) return res.status(404).json({ success: false, message: 'Profile not found' });
     return res.status(200).json({ success: true, message: 'Profile image updated successfully', data: profile });
@@ -223,6 +271,7 @@ export const updateProfileImage = async (req, res) => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CHECK PROFILE STATUS
+// GET /api/user/profile/status
 // ─────────────────────────────────────────────────────────────────────────────
 export const checkProfileStatus = async (req, res) => {
   try {
@@ -231,7 +280,7 @@ export const checkProfileStatus = async (req, res) => {
 
     const profile = await UserProfile.findOne({ userId });
     return res.status(200).json({
-      success: true,
+      success:   true,
       exists:    !!profile,
       completed: profile ? profile.profileCompleted : false,
       data: profile ? {
@@ -239,6 +288,8 @@ export const checkProfileStatus = async (req, res) => {
         completedAt:               profile.completedAt,
         lastUpdated:               profile.lastUpdated,
         selectedUniversitiesCount: profile.selectedUniversities?.length || 0,
+        selectedSegment:           profile.selectedSegment || null,
+        fieldOfStudy:              profile.education?.field || null,
       } : null,
     });
   } catch (error) {
@@ -249,6 +300,7 @@ export const checkProfileStatus = async (req, res) => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DELETE PROFILE
+// DELETE /api/user/profile
 // ─────────────────────────────────────────────────────────────────────────────
 export const deleteProfile = async (req, res) => {
   try {
@@ -265,27 +317,36 @@ export const deleteProfile = async (req, res) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// GET ALL PROFILES (admin)
+// GET ALL PROFILES  (admin)
+// GET /api/user/admin/profiles
+// FIX: was running find() then countDocuments() sequentially —
+//      now uses Promise.all() so both queries run in parallel.
 // ─────────────────────────────────────────────────────────────────────────────
 export const getAllProfiles = async (req, res) => {
   try {
-    const page  = parseInt(req.query.page)  || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const page  = Math.max(1, parseInt(req.query.page)  || 1);
+    const limit = Math.min(100, parseInt(req.query.limit) || 10);
     const skip  = (page - 1) * limit;
 
-    const profiles = await UserProfile.find().skip(skip).limit(limit).sort({ createdAt: -1 });
-    const profilesObj = profiles.map(p => {
-      const prof = p.toObject();
-      if (prof.selectedCourses) {
-        try { prof.selectedCourses = Object.fromEntries(prof.selectedCourses); }
-        catch { prof.selectedCourses = {}; }
-      }
-      return prof;
-    });
+    const query = {};
+    if (req.query.segment) query['selectedSegment.id'] = req.query.segment;
+    if (req.query.program) {
+      if (!['Bachelor', 'Master', 'PhD'].includes(req.query.program))
+        return res.status(400).json({ success: false, message: 'Invalid program. Use Bachelor, Master or PhD.' });
+      query.eligibleProgram = req.query.program;
+    }
 
-    const total = await UserProfile.countDocuments();
+    // FIX: parallel queries instead of sequential
+    const [profiles, total] = await Promise.all([
+      UserProfile.find(query).skip(skip).limit(limit).sort({ createdAt: -1 }).lean(),
+      UserProfile.countDocuments(query),
+    ]);
+
+    const profilesObj = profiles.map(fixCoursesOnProfile);
+
     return res.status(200).json({
-      success: true, data: profilesObj,
+      success: true,
+      data: profilesObj,
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
   } catch (error) {
@@ -295,7 +356,8 @@ export const getAllProfiles = async (req, res) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// GET PROFILES BY PROGRAM (admin)
+// GET PROFILES BY PROGRAM  (admin)
+// GET /api/user/admin/profiles/program/:program
 // ─────────────────────────────────────────────────────────────────────────────
 export const getProfilesByProgram = async (req, res) => {
   try {
@@ -303,16 +365,12 @@ export const getProfilesByProgram = async (req, res) => {
     if (!['Bachelor', 'Master', 'PhD'].includes(program))
       return res.status(400).json({ success: false, message: 'Invalid program' });
 
-    const profiles = await UserProfile.find({ eligibleProgram: program });
-    const profilesObj = profiles.map(p => {
-      const prof = p.toObject();
-      if (prof.selectedCourses) {
-        try { prof.selectedCourses = Object.fromEntries(prof.selectedCourses); }
-        catch { prof.selectedCourses = {}; }
-      }
-      return prof;
+    const profiles = await UserProfile.find({ eligibleProgram: program }).lean();
+    return res.status(200).json({
+      success: true,
+      count: profiles.length,
+      data: profiles.map(fixCoursesOnProfile),
     });
-    return res.status(200).json({ success: true, count: profiles.length, data: profilesObj });
   } catch (error) {
     console.error('❌ Error in getProfilesByProgram:', error);
     return res.status(500).json({ success: false, message: 'Failed to fetch profiles', error: error.message });
@@ -320,30 +378,110 @@ export const getProfilesByProgram = async (req, res) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// GET PROFILE STATS (admin)
+// GET PROFILES BY SEGMENT  (admin)
+// GET /api/user/admin/profiles/segment/:segmentId
+// ─────────────────────────────────────────────────────────────────────────────
+export const getProfilesBySegment = async (req, res) => {
+  try {
+    const { segmentId } = req.params;
+    if (!segmentId)
+      return res.status(400).json({ success: false, message: 'segmentId is required' });
+
+    const profiles = await UserProfile.find({ 'selectedSegment.id': segmentId }).lean();
+    return res.status(200).json({
+      success: true,
+      count: profiles.length,
+      data: profiles.map(fixCoursesOnProfile),
+    });
+  } catch (error) {
+    console.error('❌ Error in getProfilesBySegment:', error);
+    return res.status(500).json({ success: false, message: 'Failed to fetch profiles by segment', error: error.message });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GET PROFILE STATS  (admin)
+// GET /api/user/admin/stats
+// FIX: was running 6 aggregations sequentially — now all run in parallel
+//      via Promise.all(), matching the pattern in studentanalyticscontroller.
 // ─────────────────────────────────────────────────────────────────────────────
 export const getProfileStats = async (req, res) => {
   try {
-    const totalProfiles = await UserProfile.countDocuments();
-    const programStats = await UserProfile.aggregate([{ $group: { _id: '$eligibleProgram', count: { $sum: 1 } } }]);
-    const universitySelectionStats = await UserProfile.aggregate([
-      { $unwind: '$selectedUniversities' },
-      { $group: { _id: '$selectedUniversities.name', count: { $sum: 1 } } },
-      { $sort: { count: -1 } }, { $limit: 10 },
+    const [
+      totalProfiles,
+      programStats,
+      segmentStats,
+      fieldStats,
+      universitySelectionStats,
+      courseSelectionStats,
+      recentProfiles,
+    ] = await Promise.all([
+
+      UserProfile.countDocuments(),
+
+      UserProfile.aggregate([
+        { $group: { _id: '$eligibleProgram', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+      ]),
+
+      UserProfile.aggregate([
+        { $match: { selectedSegment: { $ne: null } } },
+        {
+          $group: {
+            _id:   '$selectedSegment.id',
+            name:  { $first: '$selectedSegment.name' },
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { count: -1 } },
+      ]),
+
+      UserProfile.aggregate([
+        { $match: { 'education.field': { $exists: true, $ne: '' } } },
+        { $group: { _id: '$education.field', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 20 },
+      ]),
+
+      UserProfile.aggregate([
+        { $unwind: '$selectedUniversities' },
+        { $group: { _id: '$selectedUniversities.name', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 10 },
+      ]),
+
+      UserProfile.aggregate([
+        { $unwind: '$selectedUniversities' },
+        { $unwind: '$selectedUniversities.selectedCourses' },
+        {
+          $group: {
+            _id:        '$selectedUniversities.selectedCourses.title',
+            university: { $first: '$selectedUniversities.name' },
+            count:      { $sum: 1 },
+          },
+        },
+        { $sort: { count: -1 } },
+        { $limit: 10 },
+      ]),
+
+      UserProfile.find()
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .select('basicInfo.fullName basicInfo.email eligibleProgram selectedSegment education.field selectedUniversities createdAt')
+        .lean(),
     ]);
-    const courseSelectionStats = await UserProfile.aggregate([
-      { $unwind: '$selectedUniversities' },
-      { $unwind: '$selectedUniversities.selectedCourses' },
-      { $group: { _id: '$selectedUniversities.selectedCourses.title', university: { $first: '$selectedUniversities.name' }, count: { $sum: 1 } } },
-      { $sort: { count: -1 } }, { $limit: 10 },
-    ]);
-    const recentProfiles = await UserProfile.find()
-      .sort({ createdAt: -1 }).limit(5)
-      .select('basicInfo.fullName basicInfo.email eligibleProgram selectedUniversities createdAt');
 
     return res.status(200).json({
       success: true,
-      data: { total: totalProfiles, programStats, universitySelectionStats, courseSelectionStats, recentProfiles },
+      data: {
+        total: totalProfiles,
+        programStats,
+        segmentStats,
+        fieldStats,
+        universitySelectionStats,
+        courseSelectionStats,
+        recentProfiles,
+      },
     });
   } catch (error) {
     console.error('❌ Error in getProfileStats:', error);
@@ -352,7 +490,8 @@ export const getProfileStats = async (req, res) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// BULK UPDATE PROFILES (admin)
+// BULK UPDATE PROFILES  (admin)
+// PUT /api/user/admin/profiles/bulk
 // ─────────────────────────────────────────────────────────────────────────────
 export const bulkUpdateProfiles = async (req, res) => {
   try {
@@ -360,14 +499,17 @@ export const bulkUpdateProfiles = async (req, res) => {
     if (!Array.isArray(updates))
       return res.status(400).json({ success: false, message: 'Updates must be an array' });
 
-    const results = [];
-    for (const update of updates) {
-      const { userId, ...updateData } = update;
-      const profile = await UserProfile.findOneAndUpdate(
-        { userId }, { ...updateData, lastUpdated: Date.now() }, { new: true }
-      );
-      results.push({ userId, success: !!profile, data: profile });
-    }
+    const results = await Promise.all(
+      updates.map(async ({ userId, ...updateData }) => {
+        const profile = await UserProfile.findOneAndUpdate(
+          { userId },
+          { ...updateData, lastUpdated: Date.now() },
+          { new: true }
+        );
+        return { userId, success: !!profile, data: profile };
+      })
+    );
+
     return res.status(200).json({ success: true, message: 'Bulk update completed', data: results });
   } catch (error) {
     console.error('❌ Error in bulkUpdateProfiles:', error);
@@ -377,6 +519,7 @@ export const bulkUpdateProfiles = async (req, res) => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GET PROFILE WITH COURSES
+// GET /api/user/profile/courses
 // ─────────────────────────────────────────────────────────────────────────────
 export const getProfileWithCourses = async (req, res) => {
   try {
@@ -386,19 +529,19 @@ export const getProfileWithCourses = async (req, res) => {
     const profile = await UserProfile.findOne({ userId });
     if (!profile) return res.status(404).json({ success: false, message: 'Profile not found' });
 
-    const profileObj = profile.toObject();
-    if (profileObj.selectedCourses) {
-      try { profileObj.selectedCourses = Object.fromEntries(profileObj.selectedCourses); }
-      catch { profileObj.selectedCourses = {}; }
-    }
+    const profileObj = fixCoursesOnProfile(profile.toObject());
 
+    // Build a convenience map: { universityName: [course, course] }
     const coursesByUniversity = {};
     for (const uni of profileObj.selectedUniversities || []) {
       if (uni.selectedCourses?.length > 0)
         coursesByUniversity[uni.name] = uni.selectedCourses;
     }
 
-    return res.status(200).json({ success: true, data: { ...profileObj, coursesByUniversity } });
+    return res.status(200).json({
+      success: true,
+      data: { ...profileObj, coursesByUniversity },
+    });
   } catch (error) {
     console.error('❌ Error in getProfileWithCourses:', error);
     return res.status(500).json({ success: false, message: 'Failed to fetch profile with courses', error: error.message });
@@ -406,14 +549,40 @@ export const getProfileWithCourses = async (req, res) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// GET PROFILE FOR ANALYTICS  (admin — called by studentanalyticscontroller)
+// GET /api/user/analytics/profile/:userId
+// Returns a single clean profile by userId string for the analytics detail view.
+// The studentanalyticscontroller can call this directly or use its own DB query;
+// this endpoint exists so the admin frontend can also fetch a clean profile
+// without going through the analytics route.
+// ─────────────────────────────────────────────────────────────────────────────
+export const getProfileForAnalytics = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    if (!userId)
+      return res.status(400).json({ success: false, message: 'userId param is required' });
+
+    const profile = await UserProfile.findOne({ userId }).lean();
+    if (!profile)
+      return res.status(404).json({ success: false, message: 'Profile not found' });
+
+    return res.status(200).json({ success: true, data: fixCoursesOnProfile(profile) });
+  } catch (error) {
+    console.error('❌ Error in getProfileForAnalytics:', error);
+    return res.status(500).json({ success: false, message: 'Failed to fetch profile', error: error.message });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 // SUBMIT UNIVERSITY REQUEST
+// POST /api/user/university/request
 // ─────────────────────────────────────────────────────────────────────────────
 export const submitUniversityRequest = async (req, res) => {
   try {
     const userId = req.userId;
     const { universityName, country, interestedCourses } = req.body;
 
-    if (!userId)                return res.status(401).json({ success: false, message: 'User ID not found in token' });
+    if (!userId)                 return res.status(401).json({ success: false, message: 'User ID not found in token' });
     if (!universityName?.trim()) return res.status(400).json({ success: false, message: 'University name is required' });
     if (!country?.trim())        return res.status(400).json({ success: false, message: 'Country is required' });
     if (!Array.isArray(interestedCourses) || interestedCourses.length === 0)
@@ -447,8 +616,11 @@ export default {
   deleteProfile,
   getAllProfiles,
   getProfilesByProgram,
+  getProfilesBySegment,
   getProfileStats,
   bulkUpdateProfiles,
   getProfileWithCourses,
+  getProfileForAnalytics,
   submitUniversityRequest,
+  fixCoursesOnProfile,      // exported so studentanalyticscontroller can import it
 };

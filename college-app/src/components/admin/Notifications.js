@@ -45,18 +45,12 @@ const Notifications = ({ fullView = false, onUnreadCountChange }) => {
   useEffect(() => {
     fetchNotifications();
 
-    // ✅ FIX: Skip polling when browser tab is hidden to prevent ERR_NETWORK_IO_SUSPENDED
     const interval = setInterval(() => {
-      if (!document.hidden) {
-        fetchNotifications();
-      }
+      if (!document.hidden) fetchNotifications();
     }, 30000);
 
-    // ✅ FIX: Also re-fetch when tab becomes visible again after being hidden
     const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        fetchNotifications();
-      }
+      if (!document.hidden) fetchNotifications();
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
@@ -66,10 +60,17 @@ const Notifications = ({ fullView = false, onUnreadCountChange }) => {
     };
   }, [fetchNotifications]);
 
+  // Close dropdown on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && open) setOpen(false);
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [open]);
+
   const markAsRead = async (id) => {
     const originalNotifications = [...notifications];
-
-    // Optimistic update
     setNotifications((prev) =>
       prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
     );
@@ -83,7 +84,6 @@ const Notifications = ({ fullView = false, onUnreadCountChange }) => {
         { headers: { Authorization: `Bearer ${adminToken}` } }
       );
     } catch {
-      // Revert on error
       setNotifications(originalNotifications);
       fetchNotifications();
     }
@@ -91,13 +91,8 @@ const Notifications = ({ fullView = false, onUnreadCountChange }) => {
 
   const markAllAsRead = async () => {
     if (unreadCount === 0) return;
-
     const originalNotifications = [...notifications];
-
-    // Optimistic update
-    setNotifications((prev) =>
-      prev.map((n) => ({ ...n, isRead: true }))
-    );
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     const previousUnread = unreadCount;
     setUnreadCount(0);
     onUnreadCountChange?.(0);
@@ -109,7 +104,6 @@ const Notifications = ({ fullView = false, onUnreadCountChange }) => {
         { headers: { Authorization: `Bearer ${adminToken}` } }
       );
     } catch {
-      // Revert on error
       setNotifications(originalNotifications);
       setUnreadCount(previousUnread);
       onUnreadCountChange?.(previousUnread);
@@ -118,9 +112,7 @@ const Notifications = ({ fullView = false, onUnreadCountChange }) => {
 
   const deleteNotification = async (id) => {
     const originalNotifications = [...notifications];
-    const notificationToDelete = notifications.find(n => n._id === id);
-
-    // Optimistic update
+    const notificationToDelete = notifications.find((n) => n._id === id);
     setNotifications((prev) => prev.filter((n) => n._id !== id));
     if (!notificationToDelete?.isRead) {
       setUnreadCount((prev) => Math.max(prev - 1, 0));
@@ -128,12 +120,10 @@ const Notifications = ({ fullView = false, onUnreadCountChange }) => {
     }
 
     try {
-      await axios.delete(
-        `${API_URL}/api/notifications/${id}`,
-        { headers: { Authorization: `Bearer ${adminToken}` } }
-      );
+      await axios.delete(`${API_URL}/api/notifications/${id}`, {
+        headers: { Authorization: `Bearer ${adminToken}` },
+      });
     } catch {
-      // Revert on error
       setNotifications(originalNotifications);
       if (!notificationToDelete?.isRead) {
         setUnreadCount((prev) => prev + 1);
@@ -144,12 +134,12 @@ const Notifications = ({ fullView = false, onUnreadCountChange }) => {
 
   const getNotificationIcon = (type) => {
     switch (type?.toLowerCase()) {
-      case 'warning':
-      case 'alert':
+      case "warning":
+      case "alert":
         return <span className="notification-icon warning">⚠️</span>;
-      case 'success':
+      case "success":
         return <span className="notification-icon success">✅</span>;
-      case 'info':
+      case "info":
       default:
         return <span className="notification-icon info">ℹ️</span>;
     }
@@ -163,81 +153,78 @@ const Notifications = ({ fullView = false, onUnreadCountChange }) => {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
+    if (diffMins < 1) return "Now";
+    if (diffMins < 60) return `${diffMins}m`;
+    if (diffHours < 24) return `${diffHours}h`;
+    if (diffDays < 7) return `${diffDays}d`;
     return notificationDate.toLocaleDateString();
   };
 
   const getFilteredNotifications = () => {
     switch (filter) {
-      case 'unread':
-        return notifications.filter(n => !n.isRead);
-      case 'read':
-        return notifications.filter(n => n.isRead);
-      default:
-        return notifications;
+      case "unread": return notifications.filter((n) => !n.isRead);
+      case "read":   return notifications.filter((n) => n.isRead);
+      default:       return notifications;
     }
   };
 
   const filteredNotifications = getFilteredNotifications();
 
-  // Full panel view
+  // ── Full Panel View ──────────────────────────────────────────────────────
   if (fullView) {
     return (
       <div className="notifications-full-view">
-        <div className="notifications-header">
-          <h2>
-            🔔 Notifications
+        <div className="notifications-full-header">
+          <div className="notifications-full-title">
+            <span className="title-bell">🔔</span>
+            <h2>Notifications</h2>
             {unreadCount > 0 && (
               <span className="unread-counter">{unreadCount} unread</span>
             )}
-          </h2>
+          </div>
+
           <div className="header-actions">
             <div className="filter-tabs">
+              {["all", "unread", "read"].map((f) => (
+                <button
+                  key={f}
+                  className={`filter-btn ${filter === f ? "active" : ""}`}
+                  onClick={() => setFilter(f)}
+                >
+                  {f.charAt(0).toUpperCase() + f.slice(1)}
+                  {f === "unread" && unreadCount > 0 && (
+                    <span className="filter-count">{unreadCount}</span>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            <div className="header-btn-group">
               <button
-                className={`filter-btn ${filter === "all" ? "active" : ""}`}
-                onClick={() => setFilter("all")}
+                className="icon-btn"
+                onClick={fetchNotifications}
+                disabled={loading}
+                title="Refresh"
               >
-                All
+                <span className={loading ? "spinning" : ""}>↻</span>
               </button>
               <button
-                className={`filter-btn ${filter === "unread" ? "active" : ""}`}
-                onClick={() => setFilter("unread")}
+                className="mark-all-read-btn"
+                onClick={markAllAsRead}
+                disabled={unreadCount === 0}
               >
-                Unread
-              </button>
-              <button
-                className={`filter-btn ${filter === "read" ? "active" : ""}`}
-                onClick={() => setFilter("read")}
-              >
-                Read
+                <span className="mark-all-icon">✓</span>
+                <span className="mark-all-label">Mark all read</span>
               </button>
             </div>
-            <button
-              className="icon-btn"
-              onClick={fetchNotifications}
-              disabled={loading}
-              title="Refresh"
-            >
-              {loading ? "🔄" : "↻"}
-            </button>
-            <button
-              className="mark-all-read-btn"
-              onClick={markAllAsRead}
-              disabled={unreadCount === 0}
-            >
-              ✓ Mark all as read
-            </button>
           </div>
         </div>
 
         <div className="notifications-list">
           {loading && (
             <div className="loading-state">
-              <div className="spinner">🔄</div>
-              <p>Loading notifications...</p>
+              <div className="spinner" />
+              <p>Loading notifications…</p>
             </div>
           )}
 
@@ -302,7 +289,7 @@ const Notifications = ({ fullView = false, onUnreadCountChange }) => {
                   <button
                     className="action-btn delete-btn"
                     onClick={() => deleteNotification(n._id)}
-                    title="Delete notification"
+                    title="Delete"
                   >
                     ×
                   </button>
@@ -314,19 +301,21 @@ const Notifications = ({ fullView = false, onUnreadCountChange }) => {
     );
   }
 
-  // Navbar/dropdown view
+  // ── Navbar / Dropdown View ───────────────────────────────────────────────
   return (
     <div className="notifications-navbar">
-      <div className="bell-container" onClick={() => setOpen(!open)}>
+      <button
+        className="bell-container"
+        onClick={() => setOpen(!open)}
+        aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
+      >
         <div className="bell-icon">
           🔔
           {unreadCount > 0 && (
-            <span className="badge">
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </span>
+            <span className="badge">{unreadCount > 9 ? "9+" : unreadCount}</span>
           )}
         </div>
-      </div>
+      </button>
 
       {open && (
         <>
@@ -356,8 +345,8 @@ const Notifications = ({ fullView = false, onUnreadCountChange }) => {
             <div className="dropdown-content">
               {loading && (
                 <div className="dropdown-loading">
-                  <span className="spinner-small">🔄</span>
-                  <span>Loading...</span>
+                  <span className="spinner-small spinning">↻</span>
+                  <span>Loading…</span>
                 </div>
               )}
 
@@ -383,15 +372,11 @@ const Notifications = ({ fullView = false, onUnreadCountChange }) => {
                     className={`notification-item ${n.isRead ? "read" : "unread"}`}
                     onClick={() => !n.isRead && markAsRead(n._id)}
                   >
-                    <div className="item-icon">
-                      {getNotificationIcon(n.type)}
-                    </div>
+                    <div className="item-icon">{getNotificationIcon(n.type)}</div>
                     <div className="item-content">
                       <p className="item-message">{n.message}</p>
                       <div className="item-meta">
-                        <span className="item-time">
-                          {formatTime(n.createdAt)}
-                        </span>
+                        <span className="item-time">{formatTime(n.createdAt)}</span>
                         {!n.isRead && <span className="unread-dot" />}
                       </div>
                     </div>
@@ -401,6 +386,7 @@ const Notifications = ({ fullView = false, onUnreadCountChange }) => {
                         e.stopPropagation();
                         deleteNotification(n._id);
                       }}
+                      aria-label="Delete notification"
                     >
                       ×
                     </button>

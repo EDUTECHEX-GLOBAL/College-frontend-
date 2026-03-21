@@ -25,7 +25,7 @@ import transferActivitiesRoutes from "./routes/activitiestestRoutes.js";
 import firstYearActivitiesRoutes from "./routes/activitiesRoutes.js";
 import responsibilitiesRoutes from "./routes/responsibilitiesRoutes.js";
 import writingRoutes from "./routes/writingRoutes.js";
-import adminRoutes from "./routes/adminRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";           // ✅ Handles ALL /api/admin/* routes
 import transferRoutes from "./routes/transferRoutes.js";
 import extendedProfileRoutes from "./routes/extendedProfileRoutes.js";
 import familyRoutes from "./routes/familytestRoutes.js";
@@ -55,6 +55,7 @@ import resumeRoutes from "./routes/resumeRoutes.js";
 import previewRoutes from './routes/applicationPreviewRoutes.js';
 import applicationScoreRoutes from "./routes/applicationscoreroutes.js";
 import gusUniversityRoutes from "./routes/gusuniversityroutes.js";
+import analyticsRoutes from './routes/studentanalyticsroutes.js';
 
 dotenv.config();
 
@@ -62,7 +63,6 @@ dotenv.config();
 // INITIALIZE
 // =====================================================
 const app = express();
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -79,9 +79,6 @@ const s3 = new S3Client({
 
 const BUCKET_NAME = process.env.AWS_BUCKET_NAME;
 
-// =====================================================
-// CHECK S3 BUCKET CONNECTIVITY
-// =====================================================
 const checkS3Connection = async () => {
   try {
     await s3.send(new HeadBucketCommand({ Bucket: BUCKET_NAME }));
@@ -105,7 +102,7 @@ const checkS3Connection = async () => {
 connectDB();
 
 // =====================================================
-// CORS CONFIGURATION
+// CORS
 // =====================================================
 const corsOptions = {
   origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:4200"],
@@ -122,7 +119,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // =====================================================
-// REQUEST LOGGING MIDDLEWARE
+// REQUEST LOGGING
 // =====================================================
 app.use((req, res, next) => {
   console.log(`\n📨 ${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
@@ -134,154 +131,102 @@ app.use((req, res, next) => {
 });
 
 // =====================================================
-// SERVE /uploads/* — LOCAL FILES FIRST, FALLBACK TO S3
-// Works for both:
-//   - Old files: stored locally in /uploads folder on disk
-//   - New files: stored in S3 (redirects to S3 URL)
+// STATIC: /uploads — local first, S3 fallback
 // =====================================================
 const uploadsLocalPath = path.join(__dirname, 'uploads');
 const uploadsAltPath   = path.join(process.cwd(), 'uploads');
 const uploadsDir       = fs.existsSync(uploadsLocalPath)
   ? uploadsLocalPath
-  : fs.existsSync(uploadsAltPath)
-    ? uploadsAltPath
-    : null;
+  : fs.existsSync(uploadsAltPath) ? uploadsAltPath : null;
 
 if (uploadsDir) {
   console.log('📁 Local uploads folder found at:', uploadsDir);
-  // Serve local files statically
   app.use('/uploads', express.static(uploadsDir));
   console.log('✅ Serving local uploads from disk');
 } else {
-  console.log('⚠️  No local uploads folder found — all /uploads requests will redirect to S3');
+  console.log('⚠️  No local uploads folder — /uploads requests will redirect to S3');
 }
 
-// Fallback: if file not found locally, redirect to S3
 app.use('/uploads', (req, res) => {
   const s3Key = req.path.replace(/^\//, '');
-  const s3Url = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
-  console.log(`🔀 File not found locally, redirecting to S3: /uploads${req.path} → ${s3Url}`);
+  const s3Url = `https://${BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
+  console.log(`🔀 Redirecting to S3: /uploads${req.path} → ${s3Url}`);
   return res.redirect(302, s3Url);
 });
 
 // =====================================================
-// FILE PROXY — Stream S3 files privately through server
-// Browser calls: GET /api/files/documents/cv/filename.pdf
-// Server fetches from S3 privately and streams back
-// S3 bucket stays completely PRIVATE ✅
+// S3 FILE PROXY
 // =====================================================
 app.use('/api/files', async (req, res) => {
   try {
-    const s3Key = req.path.replace(/^\//, ''); // e.g. documents/cv/filename.pdf
+    const s3Key = req.path.replace(/^\//, '');
     if (!s3Key) return res.status(400).json({ success: false, message: 'No file key provided' });
 
     console.log(`📥 Proxying S3 file: ${s3Key}`);
-
-    const command = new GetObjectCommand({
-      Bucket: BUCKET_NAME,
-      Key: s3Key,
-    });
-
+    const command = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: s3Key });
     const s3Response = await s3.send(command);
 
-    // ✅ Detect correct content type from S3 or file extension
     const fileName = s3Key.split('/').pop();
     const ext = fileName.split('.').pop().toLowerCase();
-
     const mimeTypes = {
-      'pdf':  'application/pdf',
-      'jpg':  'image/jpeg',
-      'jpeg': 'image/jpeg',
-      'png':  'image/png',
-      'webp': 'image/webp',
-      'gif':  'image/gif',
-      'doc':  'application/msword',
+      'pdf': 'application/pdf', 'jpg': 'image/jpeg', 'jpeg': 'image/jpeg',
+      'png': 'image/png', 'webp': 'image/webp', 'gif': 'image/gif',
+      'doc': 'application/msword',
       'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     };
-
     const contentType = s3Response.ContentType && s3Response.ContentType !== 'application/octet-stream'
-      ? s3Response.ContentType
-      : mimeTypes[ext] || 'application/octet-stream';
+      ? s3Response.ContentType : (mimeTypes[ext] || 'application/octet-stream');
 
     res.setHeader('Content-Type', contentType);
-
-    // ✅ inline = browser previews it (not download)
-    // Use attachment only for doc/docx since browsers can't preview them
     const isPreviewable = ['pdf','jpg','jpeg','png','webp','gif'].includes(ext);
     res.setHeader('Content-Disposition', isPreviewable
-      ? `inline; filename="${fileName}"`
-      : `attachment; filename="${fileName}"`
-    );
-
-    if (s3Response.ContentLength) {
-      res.setHeader('Content-Length', s3Response.ContentLength);
-    }
-
-    // ✅ Allow iframe embedding (needed for PDF preview)
+      ? `inline; filename="${fileName}"` : `attachment; filename="${fileName}"`);
+    if (s3Response.ContentLength) res.setHeader('Content-Length', s3Response.ContentLength);
     res.removeHeader('X-Frame-Options');
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET');
     res.setHeader('Cache-Control', 'no-cache');
-
-    // Stream the file body to the response
     s3Response.Body.pipe(res);
-
   } catch (err) {
     console.error('❌ S3 file proxy error:', err.message);
-    if (err.name === 'NoSuchKey' || err.$metadata?.httpStatusCode === 404) {
+    if (err.name === 'NoSuchKey' || err.$metadata?.httpStatusCode === 404)
       return res.status(404).json({ success: false, message: 'File not found' });
-    }
     return res.status(500).json({ success: false, message: 'Failed to load file' });
   }
 });
 
 // =====================================================
-// SERVE STATIC FILES (logos only — uploads now on S3)
+// STATIC: /logos
 // =====================================================
 const logosPath = path.join(__dirname, "public", "logos");
-if (!fs.existsSync(logosPath)) {
-  const altLogosPath = path.join(process.cwd(), "public", "logos");
-  if (fs.existsSync(altLogosPath)) {
-    app.use("/logos", express.static(altLogosPath));
-    console.log('📁 Logos found at:', altLogosPath);
-  }
-} else {
+const altLogosPath = path.join(process.cwd(), "public", "logos");
+if (fs.existsSync(logosPath)) {
   app.use("/logos", express.static(logosPath));
-  console.log('📁 Logos found at:', logosPath);
+} else if (fs.existsSync(altLogosPath)) {
+  app.use("/logos", express.static(altLogosPath));
 }
 
 // =====================================================
 // DEBUG ENDPOINTS
 // =====================================================
-app.get('/api/test', (req, res) => {
-  res.json({
-    success: true,
-    message: '✅ API is working',
-    timestamp: new Date().toISOString()
-  });
-});
+app.get('/api/test', (req, res) =>
+  res.json({ success: true, message: '✅ API is working', timestamp: new Date().toISOString() })
+);
 
-// ✅ S3 connection check endpoint — visit this to verify S3 works
 app.get('/api/debug/s3', async (req, res) => {
   const connected = await checkS3Connection();
   res.json({
-    connected,
-    bucket: BUCKET_NAME,
-    region: process.env.AWS_REGION,
+    connected, bucket: BUCKET_NAME, region: process.env.AWS_REGION,
     accessKeySet: !!process.env.AWS_ACCESS_KEY_ID,
     secretKeySet: !!process.env.AWS_SECRET_ACCESS_KEY,
-    message: connected
-      ? '✅ S3 is working correctly'
-      : '❌ S3 connection failed — check your .env keys and bucket name',
+    message: connected ? '✅ S3 is working correctly' : '❌ S3 connection failed',
   });
 });
 
-// S3 file URL lookup
-app.get('/api/debug/s3/:key', async (req, res) => {
-  const key = req.params.key;
-  const s3Url = `https://${BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
-  res.json({ key, bucket: BUCKET_NAME, region: process.env.AWS_REGION, s3Url });
+app.get('/api/debug/s3/:key', (req, res) => {
+  const s3Url = `https://${BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${req.params.key}`;
+  res.json({ key: req.params.key, bucket: BUCKET_NAME, region: process.env.AWS_REGION, s3Url });
 });
 
 app.get('/api/routes', (req, res) => {
@@ -289,53 +234,67 @@ app.get('/api/routes', (req, res) => {
   const extractRoutes = (stack, basePath = '') => {
     stack.forEach(layer => {
       if (layer.route) {
-        const methods = Object.keys(layer.route.methods).join(', ').toUpperCase();
-        routes.push({ path: basePath + layer.route.path, methods });
+        routes.push({ path: basePath + layer.route.path, methods: Object.keys(layer.route.methods).join(', ').toUpperCase() });
       } else if (layer.name === 'router' && layer.handle.stack) {
         const routerPath = basePath + (layer.regexp.source
-          .replace('\\/?(?=\\/|$)', '')
-          .replace(/\\\//g, '/')
-          .replace(/\^/g, '')
-          .replace(/\?/g, '')
+          .replace('\\/?(?=\\/|$)', '').replace(/\\\//g, '/').replace(/\^/g, '').replace(/\?/g, '')
           .replace(/\(\?:\(\[\^\\\/\]\+\?\)\)/g, ':param'));
         extractRoutes(layer.handle.stack, routerPath);
       }
     });
   };
   extractRoutes(app._router.stack);
-  const filteredRoutes = routes.filter(r =>
-    r.path.includes('/api/user') ||
-    r.path === '/' ||
-    r.path === '/api/test' ||
-    r.path === '/api/routes'
-  );
   res.json({
     success: true,
-    message: 'Registered routes',
-    routes: filteredRoutes.sort((a, b) => a.path.localeCompare(b.path))
+    routes: routes.filter(r =>
+      r.path.includes('/api/admin') || r.path.includes('/api/user') ||
+      r.path.includes('/api/analytics') || r.path === '/api/test' || r.path === '/api/routes'
+    ).sort((a, b) => a.path.localeCompare(b.path))
   });
 });
 
-/* ======================================================
-   MOUNT USER ROUTES FIRST
-   ====================================================== */
+// =====================================================
+// ✅ ADMIN ROUTES — mounted FIRST, before everything else
+//
+// ❌ WHAT WAS BROKEN (old code had this):
+//      app.post('/api/admin/login', adminLogin);
+//    `adminLogin` was NEVER imported → calling undefined as
+//    middleware crashed every login request with 401/500.
+//
+// ✅ THE FIX: Just mount adminRoutes here. The /login route
+//    is already defined as PUBLIC inside adminRoutes.js
+//    (it appears before authenticateAdmin middleware in that file).
+// =====================================================
+app.use("/api/admin", adminRoutes);
+app.use("/api/admin/users", adminUserRoutes);
+app.use("/api/admin", adminUniversityRoutes);
+console.log('✅ Admin routes mounted at /api/admin');
+
+// =====================================================
+// USER ROUTES
+// =====================================================
 console.log('📌 Mounting user routes at /api/user...');
 app.use("/api/user", userProfileRoutes);
-console.log('✅ User routes mounted successfully');
+console.log('✅ User routes mounted');
 
-/* ======================================================
-   MOUNT PROCESS ADMIN ROUTES
-   ====================================================== */
+// =====================================================
+// PROCESS ADMIN ROUTES
+// =====================================================
 console.log('📌 Mounting process admin routes...');
 app.use("/api/process-admin/documents", processAdminDocumentRoutes);
-console.log('✅ Process admin document routes mounted at /api/process-admin/documents');
 app.use("/api/process-admin", processAdminRoutes);
-console.log('✅ Process admin routes mounted at /api/process-admin');
+console.log('✅ Process admin routes mounted');
 
-/* ======================================================
-   MOUNT ALL OTHER API ROUTES
-   ====================================================== */
-console.log('📌 Mounting other API routes...');
+// =====================================================
+// ANALYTICS
+// =====================================================
+app.use('/api/analytics', analyticsRoutes);
+console.log('✅ Analytics routes mounted at /api/analytics');
+
+// =====================================================
+// ALL OTHER API ROUTES
+// =====================================================
+console.log('📌 Mounting remaining API routes...');
 
 app.use("/api/students", accountRoutes);
 app.use("/api/education", educationRoutes);
@@ -344,21 +303,22 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/application/education", applicationEducationRoutes);
 app.use("/api/application/language", applicationLanguageRoutes);
 app.use("/api/application/documents", applicationDocumentRoutes);
-app.use("/api/admin", adminUniversityRoutes);
+app.use("/api/application/special-needs", applicationSpecialNeedRoutes);
+app.use("/api/application/resume", resumeRoutes);
+app.use("/api/application/personal", applicationPersonalRoutes);
+app.use("/api/application/address", applicationAddressRoutes);
+app.use('/api/application/preview', previewRoutes);
+app.use("/api/application/score", applicationScoreRoutes);
+app.use("/api/application/process-admin/gus-university", gusUniversityRoutes);
 app.use("/api/bachelors", bachelorsRoutes);
 app.use('/api/masters/universities', mastersRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/documents", documentRoutes);
-app.use('/api/application/preview', previewRoutes);
-app.use("/api/application/score", applicationScoreRoutes);
-app.use("/api/application/process-admin/gus-university", gusUniversityRoutes);
 app.use("/api/colleges", collegeRoutes);
 app.use("/api/general", generalRoutes);
 app.use("/api/academics", firstAcademicRoutes);
 app.use("/api/high-school-curriculum", highSchoolCurriculumRoutes);
 app.use("/api/first-activities", firstactivitiesRoutes);
-app.use("/api/application/special-needs", applicationSpecialNeedRoutes);
-app.use("/api/application/resume", resumeRoutes);
 app.use("/api/contacts", firstContactsRoutes);
 app.use("/api/family", firstFamilyRoutes);
 app.use("/api/residency", firstResidencyRoutes);
@@ -370,8 +330,6 @@ app.use("/api/students", firstYearActivitiesRoutes);
 app.use("/api/transfer", transferActivitiesRoutes);
 app.use("/api/students", responsibilitiesRoutes);
 app.use("/api/overview", overviewRoutes);
-app.use("/api/application/personal", applicationPersonalRoutes);
-app.use("/api/application/address", applicationAddressRoutes);
 app.use("/api/writing", writingRoutes);
 app.use("/api/students/family-dashb", firstfamilydashbRoutes);
 app.use("/api/transfer", transferRoutes);
@@ -380,35 +338,40 @@ app.use("/api/family-background", familyRoutes);
 app.use("/api/education-transfer", educationtestRoutes);
 app.use("/api/testing", testRoutes);
 app.use("/api/writingtest", writingtestRoutes);
-app.use("/api/admin", adminRoutes);
-app.use("/api/admin/users", adminUserRoutes);
 
 console.log('✅ All API routes mounted successfully');
 
-/* ======================================================
-   ROOT AND HEALTH ENDPOINTS
-   ====================================================== */
+// =====================================================
+// ROOT & HEALTH ENDPOINTS
+// =====================================================
 app.get("/", (req, res) => {
   res.json({
     success: true,
     message: "EduTechEx API is running...",
     version: "1.0.0",
     timestamp: new Date().toISOString(),
-    storage: {
-      type: "AWS S3",
-      bucket: BUCKET_NAME,
-      region: process.env.AWS_REGION,
+    storage: { type: "AWS S3", bucket: BUCKET_NAME, region: process.env.AWS_REGION },
+    adminRoutes: {
+      login:          "POST /api/admin/login            (public)",
+      profile:        "GET  /api/admin/profile          (protected)",
+      logout:         "POST /api/admin/logout           (protected)",
+      changePassword: "PUT  /api/admin/change-password  (protected)",
+    },
+    analyticsRoutes: {
+      stats:    "GET /api/analytics/stats",
+      profiles: "GET /api/analytics/profiles",
+      detail:   "GET /api/analytics/profiles/:userId",
     },
     processAdminRoutes: {
-      documents: "/api/process-admin/documents/all",
-      stats: "/api/process-admin/stats",
-      generatePDF: "/api/process-admin/generate-pdf/:studentId"
+      documents:   "/api/process-admin/documents/all",
+      stats:       "/api/process-admin/stats",
+      generatePDF: "/api/process-admin/generate-pdf/:studentId",
     },
     userRoutes: {
-      test: "/api/user/test",
+      test:    "/api/user/test",
       profile: "/api/user/profile",
-      status: "/api/user/profile/status",
-      image: "/api/user/profile/image"
+      status:  "/api/user/profile/status",
+      image:   "/api/user/profile/image",
     }
   });
 });
@@ -416,36 +379,25 @@ app.get("/", (req, res) => {
 app.get("/api/health", async (req, res) => {
   const s3Connected = await checkS3Connection();
   res.status(200).json({
-    success: true,
-    message: "Server is healthy",
-    uptime: process.uptime(),
-    timestamp: new Date().toISOString(),
-    services: {
-      api: "Running",
-      s3: s3Connected ? `Connected (${BUCKET_NAME})` : "❌ Disconnected",
-    }
+    success: true, message: "Server is healthy",
+    uptime: process.uptime(), timestamp: new Date().toISOString(),
+    services: { api: "Running", s3: s3Connected ? `Connected (${BUCKET_NAME})` : "❌ Disconnected" }
   });
 });
 
-app.get("/api/status", (req, res) => {
+app.get("/api/status", (req, res) =>
   res.status(200).json({
-    success: true,
-    message: "All systems operational",
-    services: {
-      database: "Connected",
-      api: "Running",
-      cors: "Enabled",
-      storage: `AWS S3 (${BUCKET_NAME})`,
-    },
+    success: true, message: "All systems operational",
+    services: { database: "Connected", api: "Running", cors: "Enabled", storage: `AWS S3 (${BUCKET_NAME})` },
     timestamp: new Date().toISOString(),
-  });
-});
+  })
+);
 
 // =====================================================
 // 404 HANDLER
 // =====================================================
 app.use((req, res) => {
-  console.log(`❌ 404 - Route not found: ${req.method} ${req.originalUrl}`);
+  console.log(`❌ 404 - ${req.method} ${req.originalUrl}`);
   res.status(404).json({
     success: false,
     message: `Route ${req.method} ${req.originalUrl} not found`,
@@ -454,68 +406,41 @@ app.use((req, res) => {
 });
 
 // =====================================================
-// GLOBAL ERROR HANDLER ✅ FULL S3 ERROR LOGGING
+// GLOBAL ERROR HANDLER
 // =====================================================
 app.use((err, req, res, next) => {
-
-  // ✅ Always print the full error to terminal for debugging
   console.error("\n🔴 GLOBAL ERROR CAUGHT:");
-  console.error("   Message      :", err.message);
-  console.error("   Name         :", err.name);
-  console.error("   Code         :", err.code || err.Code);
-  console.error("   HTTP Status  :", err.$metadata?.httpStatusCode || err.status);
-  if (err.storageErrors?.length) {
+  console.error("   Message     :", err.message);
+  console.error("   Name        :", err.name);
+  console.error("   Code        :", err.code || err.Code);
+  console.error("   HTTP Status :", err.$metadata?.httpStatusCode || err.status);
+  if (err.storageErrors?.length)
     console.error("   StorageErrors:", JSON.stringify(err.storageErrors, null, 2));
-  }
-  console.error("   Stack        :", err.stack);
+  console.error("   Stack       :", err.stack);
 
-  // JWT
-  if (err.name === "JsonWebTokenError") {
+  if (err.name === "JsonWebTokenError")
     return res.status(401).json({ success: false, message: "Invalid token" });
-  }
-  if (err.name === "TokenExpiredError") {
+  if (err.name === "TokenExpiredError")
     return res.status(401).json({ success: false, message: "Token expired" });
-  }
-
-  // Mongoose validation
   if (err.name === "ValidationError") {
     const messages = Object.values(err.errors).map((e) => e.message);
     return res.status(400).json({ success: false, message: "Validation Error", errors: messages });
   }
-
-  // Mongo duplicate key
   if (err.code === 11000) {
     const field = Object.keys(err.keyPattern)[0];
-    return res.status(409).json({
-      success: false,
-      message: `${field.charAt(0).toUpperCase() + field.slice(1)} already exists`,
-    });
+    return res.status(409).json({ success: false, message: `${field.charAt(0).toUpperCase() + field.slice(1)} already exists` });
   }
-
-  // Multer file size
-  if (err.code === "LIMIT_FILE_SIZE") {
+  if (err.code === "LIMIT_FILE_SIZE")
     return res.status(400).json({ success: false, message: "File too large. Max size is 10MB." });
-  }
-
-  // Multer general
-  if (err.name === "MulterError") {
+  if (err.name === "MulterError")
     return res.status(400).json({ success: false, message: `Upload error: ${err.message}` });
-  }
-
-  // ✅ S3 errors — show real detail in development
-  if (err.storageErrors || err.$metadata || err.Code) {
+  if (err.storageErrors || err.$metadata || err.Code)
     return res.status(500).json({
       success: false,
       message: "S3 upload failed. Please try again.",
-      ...(process.env.NODE_ENV === "development" && {
-        detail: err.message,
-        code: err.Code || err.code,
-        httpStatus: err.$metadata?.httpStatusCode,
-      }),
+      ...(process.env.NODE_ENV === "development" && { detail: err.message, code: err.Code || err.code }),
     });
-  }
 
-  // Generic fallback
   res.status(err.status || 500).json({
     success: false,
     message: err.message || "Something went wrong!",
@@ -529,7 +454,6 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, async () => {
   const s3Connected = await checkS3Connection();
-
   console.log(`
 ╔════════════════════════════════════════════╗
 ║          🚀 EduTechEx API Server           ║
@@ -543,40 +467,29 @@ app.listen(PORT, async () => {
 ☁️  Storage (AWS S3):
    ${s3Connected ? '✅' : '❌'} Bucket : ${BUCKET_NAME}
    ${s3Connected ? '✅' : '❌'} Region : ${process.env.AWS_REGION}
-   ${s3Connected ? '✅' : '❌'} Key Set: ${!!process.env.AWS_ACCESS_KEY_ID}
-   ${s3Connected ? '✅' : '❌'} Secret : ${!!process.env.AWS_SECRET_ACCESS_KEY}
    ${s3Connected ? '✅' : '❌'} Status : ${s3Connected ? 'Connected ✅' : 'FAILED ❌ — Check .env!'}
 
-📁 S3 Folders:
-   ✅ passport/
-   ✅ photograph/
-   ✅ education/
-   ✅ nationalId/
-   ✅ documents/
+🔐 Admin:
+   ✅ POST /api/admin/login           (public)
+   ✅ GET  /api/admin/profile         (protected)
+   ✅ POST /api/admin/logout          (protected)
+   ✅ PUT  /api/admin/change-password (protected)
 
-🔧 Debug Endpoints:
-   ✅ GET  /api/test
-   ✅ GET  /api/routes
-   ✅ GET  /api/debug/s3        ← S3 connection check
-   ✅ GET  /api/debug/s3/:key   ← S3 file URL lookup
-   ✅ GET  /api/health
+📊 Analytics:
+   ✅ GET /api/analytics/stats
+   ✅ GET /api/analytics/profiles
+   ✅ GET /api/analytics/profiles/:userId
+
+🔧 Debug:
+   ✅ GET /api/test
+   ✅ GET /api/routes
+   ✅ GET /api/debug/s3
+   ✅ GET /api/health
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 `);
-
   if (!s3Connected) {
-    console.error(`
-⚠️  WARNING: S3 is NOT connected!
-    File uploads will FAIL.
-    Fix your .env file:
-
-    AWS_ACCESS_KEY_ID=AKIAxxxxxxxxxxxx
-    AWS_SECRET_ACCESS_KEY=xxxxxxxxxxxxxxxxxxxxxxxx
-    AWS_REGION=ap-south-1
-    AWS_BUCKET_NAME=ups-bucket-s3
-
-    Then restart the server.
-`);
+    console.error(`⚠️  WARNING: S3 NOT connected! File uploads will FAIL. Check your .env.`);
   }
 });
 

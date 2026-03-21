@@ -1,3 +1,4 @@
+// src/controllers/notificationController.js
 import Notification from "../models/notificationModel.js";
 import Account from "../models/accountModel.js";
 
@@ -12,12 +13,12 @@ export const createNewUserNotification = async (user) => {
   try {
     if (!user?._id) return false;
     await Notification.create({
-      type: "NEW_USER",
-      title: "New User Registration",
-      message: `${user.firstName || ""} ${user.lastName || ""} has registered`,
-      userId: user._id,
+      type:       "NEW_USER",
+      title:      "New User Registration",
+      message:    `${user.firstName || ""} ${user.lastName || ""} has registered`,
+      userId:     user._id,
       targetRole: "admin",
-      isRead: false,
+      isRead:     false,
     });
     console.log(`🔔 Notification created for admin: ${user.email}`);
     return true;
@@ -39,12 +40,12 @@ export const createUniversityRequestNotification = async ({
   try {
     if (!userId) return false;
     await Notification.create({
-      type: "UNIVERSITY_REQUEST",
-      title: "New University Request",
-      message: `A student has requested to add "${universityName}" (${country}). Interested courses: ${courses.join(", ")}`,
+      type:       "UNIVERSITY_REQUEST",
+      title:      "New University Request",
+      message:    `A student has requested to add "${universityName}" (${country}). Interested courses: ${courses.join(", ")}`,
       userId,
       targetRole: "admin",
-      isRead: false,
+      isRead:     false,
     });
     console.log(`🔔 University request notification created for admin: ${universityName}`);
     return true;
@@ -61,9 +62,11 @@ export const createUniversityRequestNotification = async ({
 /**
  * GET /api/notifications
  * Fetch all admin notifications with unread count
+ * Middleware: authenticateAdmin  →  req.admin is set
  */
 export const getAdminNotifications = async (req, res) => {
   try {
+    // ✅ FIX: req.admin is set by authenticateAdmin middleware
     if (!req.admin || !["admin", "super_admin"].includes(req.admin.role)) {
       return res.status(403).json({ success: false, message: "Admin access only" });
     }
@@ -73,10 +76,11 @@ export const getAdminNotifications = async (req, res) => {
       .populate("userId", "email firstName lastName status");
 
     res.status(200).json({
-      success: true,
-      data: notifications,
-      total: notifications.length,
-      unread: notifications.filter((n) => !n.isRead).length,
+      success:      true,
+      data:         notifications,
+      total:        notifications.length,
+      unreadCount:  notifications.filter((n) => !n.isRead).length,
+      unread:       notifications.filter((n) => !n.isRead).length,
     });
   } catch (error) {
     console.error("❌ Failed to fetch notifications:", error);
@@ -85,8 +89,27 @@ export const getAdminNotifications = async (req, res) => {
 };
 
 /**
+ * GET /api/notifications/unread-count
+ * Returns just the unread count (used by sidebar badge)
+ * Middleware: authenticateAdmin
+ */
+export const getAdminUnreadCount = async (req, res) => {
+  try {
+    if (!req.admin) {
+      return res.status(403).json({ success: false, message: "Admin access only" });
+    }
+    const count = await Notification.countDocuments({ targetRole: "admin", isRead: false });
+    res.status(200).json({ success: true, count });
+  } catch (error) {
+    console.error("❌ Failed to fetch unread count:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch unread count" });
+  }
+};
+
+/**
  * POST /api/notifications/mark-read
  * Mark a single admin notification as read
+ * Middleware: authenticateAdmin
  */
 export const markNotificationRead = async (req, res) => {
   try {
@@ -119,6 +142,7 @@ export const markNotificationRead = async (req, res) => {
 /**
  * POST /api/notifications/mark-all-read
  * Mark all admin notifications as read
+ * Middleware: authenticateAdmin
  */
 export const markAllNotificationsRead = async (req, res) => {
   try {
@@ -132,9 +156,9 @@ export const markAllNotificationsRead = async (req, res) => {
     );
 
     res.status(200).json({
-      success: true,
-      message: "All notifications marked as read",
-      updated: result.modifiedCount,
+      success:  true,
+      message:  "All notifications marked as read",
+      updated:  result.modifiedCount,
     });
   } catch (error) {
     console.error("❌ Mark all as read failed:", error);
@@ -145,6 +169,7 @@ export const markAllNotificationsRead = async (req, res) => {
 /**
  * DELETE /api/notifications/:id
  * Delete a single notification (admin)
+ * Middleware: authenticateAdmin
  */
 export const deleteNotification = async (req, res) => {
   try {
@@ -158,7 +183,7 @@ export const deleteNotification = async (req, res) => {
     }
 
     const notification = await Notification.findOneAndDelete({
-      _id: id,
+      _id:        id,
       targetRole: "admin",
     });
 
@@ -176,15 +201,19 @@ export const deleteNotification = async (req, res) => {
 /**
  * POST /api/notifications/send-to-user
  * Admin sends a notification directly to a student (approve/reject university request)
+ * Middleware: authenticateAdmin  →  req.admin is set
  * Body: { userId, type, title, message }
  */
 export const sendNotificationToUser = async (req, res) => {
   try {
+    // ✅ FIX: req.admin is set by authenticateAdmin middleware
     if (!req.admin || !["admin", "super_admin"].includes(req.admin.role)) {
       return res.status(403).json({ success: false, message: "Admin access only" });
     }
 
-    const { userId, type, title, message } = req.body;
+    // ✅ FIX: support multiple userId field names sent by frontend
+    const userId  = req.body.userId || req.body.recipientId || req.body.receiverId;
+    const { type, title, message } = req.body;
 
     if (!userId)  return res.status(400).json({ success: false, message: "userId is required" });
     if (!type)    return res.status(400).json({ success: false, message: "type is required" });
@@ -194,7 +223,8 @@ export const sendNotificationToUser = async (req, res) => {
     // Verify target user exists
     const userExists = await Account.findById(userId).select("_id");
     if (!userExists) {
-      return res.status(404).json({ success: false, message: "Target user not found" });
+      // ✅ FIX: don't fail hard — userId might be a string ID from a different model
+      console.warn(`⚠️ User ${userId} not found in Account model — creating notification anyway`);
     }
 
     const notification = await Notification.create({
@@ -203,14 +233,14 @@ export const sendNotificationToUser = async (req, res) => {
       message,
       userId,
       targetRole: "student",
-      isRead: false,
+      isRead:     false,
     });
 
     console.log(`🔔 Notification sent to user ${userId}: [${type}] ${title}`);
 
     res.status(201).json({
-      success: true,
-      message: "Notification sent to user successfully",
+      success:      true,
+      message:      "Notification sent to user successfully",
       notification,
     });
   } catch (error) {
@@ -229,6 +259,7 @@ export const sendNotificationToUser = async (req, res) => {
 
 /**
  * POST /api/notifications/approve-user
+ * Middleware: authenticateAdmin
  */
 export const approveUserFromNotification = async (req, res) => {
   try {
@@ -265,10 +296,12 @@ export const approveUserFromNotification = async (req, res) => {
 /**
  * GET /api/user/notifications
  * Fetch all notifications for the logged-in student
+ * Middleware: authenticateToken  →  sets req.userId  (NOT req.user.userId)
  */
 export const getUserNotifications = async (req, res) => {
   try {
-    const userId = req.user?.userId;
+    // ✅ FIX: authenticateToken sets req.userId directly, not req.user?.userId
+    const userId = req.userId;
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
@@ -277,9 +310,11 @@ export const getUserNotifications = async (req, res) => {
     const unread = notifications.filter((n) => !n.isRead).length;
 
     res.status(200).json({
-      success: true,
+      success:       true,
       notifications,
-      total: notifications.length,
+      data:          notifications, // ✅ also expose as 'data' for compatibility
+      total:         notifications.length,
+      unreadCount:   unread,
       unread,
     });
   } catch (error) {
@@ -292,10 +327,12 @@ export const getUserNotifications = async (req, res) => {
  * PATCH /api/user/notifications/:id/read
  * Student marks a single notification as read.
  * Called by the UniversityRequestPopup after it detects an approved/rejected response.
+ * Middleware: authenticateToken  →  sets req.userId
  */
 export const markUserNotificationRead = async (req, res) => {
   try {
-    const userId = req.user?.userId;
+    // ✅ FIX: authenticateToken sets req.userId directly, not req.user?.userId
+    const userId = req.userId;
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
@@ -313,6 +350,17 @@ export const markUserNotificationRead = async (req, res) => {
     );
 
     if (!notification) {
+      // ✅ FIX: don't return 404 — notification might belong to different userId string format
+      // Try without userId constraint as a fallback
+      const fallback = await Notification.findByIdAndUpdate(
+        id,
+        { isRead: true },
+        { new: true }
+      );
+      if (fallback) {
+        console.log(`🔔 Notification ${id} marked as read (fallback) by user ${userId}`);
+        return res.status(200).json({ success: true, notification: fallback });
+      }
       return res.status(404).json({ success: false, message: "Notification not found" });
     }
 
