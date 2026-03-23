@@ -1,4 +1,4 @@
-// Applications.js – INTERNATIONAL APPLICATIONS (ADMIN) — Purple/Amber Theme + Mobile Cards
+// Applications.js – INTERNATIONAL APPLICATIONS — Navy Blue Design System
 import axios from "axios";
 import React, { useEffect, useState, useCallback } from "react";
 import jsPDF from "jspdf";
@@ -12,9 +12,11 @@ const Applications = () => {
   const [selectedApp, setSelectedApp]   = useState(null);
   const [searchQuery, setSearchQuery]   = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [activeTab, setActiveTab]       = useState("applications");
 
   const [stats, setStats] = useState({
-    total: 0, pending: 0, accepted: 0, rejected: 0, incomplete: 0,
+    total: 0, pending: 0, accepted: 0, rejected: 0,
+    incomplete: 0, completed: 0, inProgress: 0,
   });
 
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
@@ -22,8 +24,7 @@ const Applications = () => {
 
   const getAuthToken = () =>
     localStorage.getItem("processAdminToken") ||
-    localStorage.getItem("token") ;
-    
+    localStorage.getItem("token");
 
   api.interceptors.request.use(
     (config) => {
@@ -61,11 +62,12 @@ const Applications = () => {
     return map[status] || status;
   };
 
-  const getProgressClass = (progress) => {
-    if (progress >= 90) return "complete";
-    if (progress >= 70) return "high";
-    if (progress >= 40) return "medium";
-    return "low";
+  /* Progress bar color — navy blue palette */
+  const getProgressColor = (progress) => {
+    if (progress >= 90) return "pf-blue-nav";
+    if (progress >= 70) return "pf-blue";
+    if (progress >= 40) return "pf-amber";
+    return "pf-red";
   };
 
   const formatFieldName = (key) => {
@@ -113,6 +115,14 @@ const Applications = () => {
       return "N/A";
     }
     return String(value);
+  };
+
+  /* Avatar color — blue palette */
+  const getAvatarColor = (name = "") => {
+    const colors = ["av-teal", "av-blue", "av-purple", "av-amber", "av-coral"];
+    let h = 0;
+    for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+    return colors[Math.abs(h) % colors.length];
   };
 
   const downloadPDF = (app) => {
@@ -278,11 +288,13 @@ const Applications = () => {
       const grouped = groupByStudent(combined);
       setApplications(grouped);
       setStats({
-        total: grouped.length,
+        total:      grouped.length,
         pending:    grouped.filter((a) => a.latestStatus === "pending").length,
         accepted:   grouped.filter((a) => a.latestStatus === "accepted").length,
         rejected:   grouped.filter((a) => a.latestStatus === "rejected").length,
         incomplete: grouped.filter((a) => a.latestStatus === "not-started" || a.latestStatus === "in-progress").length,
+        completed:  grouped.filter((a) => a.latestStatus === "completed").length,
+        inProgress: grouped.filter((a) => a.latestStatus === "in-progress").length,
       });
     } catch (err) {
       console.error("Error loading applications:", err);
@@ -294,159 +306,233 @@ const Applications = () => {
 
   useEffect(() => { loadApplications(); }, [loadApplications]);
 
-  /* ── Lock body scroll when modal is open ── */
   useEffect(() => {
     if (selectedApp) {
-      document.body.style.overflow = 'hidden';
-      document.body.style.touchAction = 'none';
+      document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
     } else {
-      document.body.style.overflow = '';
-      document.body.style.touchAction = '';
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
     }
     return () => {
-      document.body.style.overflow = '';
-      document.body.style.touchAction = '';
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
     };
   }, [selectedApp]);
 
+  /* ── SVG Icons ── */
+  const IcoRefresh = () => (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+    </svg>
+  );
+  const IcoSearch = () => (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+  );
+  const IcoEye = () => (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+    </svg>
+  );
+  const IcoDl = () => (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+      <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+    </svg>
+  );
+  const IcoDoc = () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+    </svg>
+  );
+  const IcoFolder = () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+    </svg>
+  );
+  const IcoRequests = () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+  );
+  const IcoCheck = () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  );
+  const IcoClock = () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+    </svg>
+  );
+  const IcoApps = () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+      <line x1="16" y1="13" x2="8" y2="13"/>
+      <line x1="16" y1="17" x2="8" y2="17"/>
+    </svg>
+  );
+
   if (loading) return (
-    <div className="applications-container">
-      <div className="loading-state">
-        <div className="loading-spinner"></div>
-        <p>Loading Applications...</p>
+    <div className="ap-container">
+      <div className="ap-loading">
+        <div className="ap-spinner"/>
+        <p>Loading Applications…</p>
       </div>
     </div>
   );
 
   if (error) return (
-    <div className="applications-container">
-      <div className="empty-state">
+    <div className="ap-container">
+      <div className="ap-empty-state">
         <h3>Error</h3>
         <p>{error}</p>
-        <div className="error-actions">
-          <button onClick={loadApplications} className="retry-btn">Retry</button>
-          <button onClick={() => (window.location.href = "/process-admin-login")} className="login-btn">
-            Go to Login
+        <div className="ap-error-actions">
+          <button onClick={loadApplications} className="ap-retry-btn">Retry</button>
+          <button onClick={() => (window.location.href = "/process-admin-login")} className="ap-login-btn">Go to Login</button>
+        </div>
+      </div>
+    </div>
+  );
+
+  /* ── Mobile Card ── */
+  const renderMobileCard = (app) => (
+    <div className="ap-mob-card" key={app.studentId}>
+      <div className="ap-mob-card-top">
+        <span className="ap-cid-badge">{app.collegeId}</span>
+        <span className={`ap-status-badge ap-s-${app.latestStatus}`}>{formatStatus(app.latestStatus)}</span>
+      </div>
+      <div className="ap-mob-card-body">
+        <div className="ap-mob-student">
+          <div className={`ap-avatar ${getAvatarColor(app.student.name)}`}>
+            {app.student.name.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <div className="ap-mob-name">{app.student.name}</div>
+            <div className="ap-mob-email">{app.student.email}</div>
+          </div>
+        </div>
+        <div className="ap-mob-details">
+          <div className="ap-mob-detail-item">
+            <span className="ap-mob-detail-lbl">Submitted</span>
+            <span className="ap-mob-detail-val">{formatDate(app.submittedAt)}</span>
+          </div>
+          <div className="ap-mob-detail-item">
+            <span className="ap-mob-detail-lbl">Status</span>
+            <span className="ap-mob-detail-val">{formatStatus(app.latestStatus)}</span>
+          </div>
+          <div className="ap-mob-detail-item ap-mob-full">
+            <span className="ap-mob-detail-lbl">Progress</span>
+            <div className="ap-prog-wrap">
+              <div className="ap-prog-bar">
+                <div className={`ap-prog-fill ${getProgressColor(app.latestProgress)}`} style={{ width: `${app.latestProgress}%` }}/>
+              </div>
+              <span className="ap-prog-pct">{app.latestProgress}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="ap-mob-card-footer">
+        <button className="ap-view-btn" onClick={() => setSelectedApp(app)}>
+          <IcoEye /> View Details
+        </button>
+        <button className="ap-dl-btn" onClick={() => downloadPDF(app)} title="Download PDF">
+          <IcoDl />
+        </button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="ap-container">
+
+      {/* ── Hero header — University Directory style ── */}
+      <div className="ap-hero">
+        <div className="ap-hero-accent"/>
+        <div className="ap-hero-left">
+          <div className="ap-hero-title">International<br/>Applications</div>
+          <div className="ap-hero-sub">Manage and review all student applications</div>
+        </div>
+        <div className="ap-hero-right">
+          <div className="ap-hero-badge">
+            <div className="ap-hero-badge-num">{stats.total}</div>
+            <div className="ap-hero-badge-lbl">Applications</div>
+          </div>
+          <button className="ap-refresh-btn" onClick={loadApplications}>
+            <IcoRefresh /> Refresh
           </button>
         </div>
       </div>
-    </div>
-  );
 
-  /* ══════════════════════════════════════
-     MOBILE CARD — renders all fields
-  ══════════════════════════════════════ */
-  const renderMobileCard = (app) => (
-    <div className="app-card" key={app.studentId}>
-
-      {/* Top strip — college ID + status badge */}
-      <div className="app-card-top">
-        <span className="app-card-id">{app.collegeId}</span>
-        <span className={`status-badge status-${app.latestStatus}`}>
-          {formatStatus(app.latestStatus)}
-        </span>
+      {/* ── Tabs ── */}
+      <div className="ap-tabs">
+        {[
+          { key: "applications", label: "Applications", Icon: IcoDoc },
+          { key: "documents",    label: "Documents",    Icon: IcoFolder },
+          { key: "requests",     label: "Requests",     Icon: IcoRequests },
+        ].map(({ key, label, Icon }) => (
+          <button
+            key={key}
+            className={`ap-tab ${activeTab === key ? "active" : ""}`}
+            onClick={() => setActiveTab(key)}
+          >
+            <Icon /> {label}
+          </button>
+        ))}
       </div>
 
-      <div className="app-card-body">
-
-        {/* Student info row */}
-        <div className="app-card-student">
-          <div className="app-card-avatar">
-            {app.student.name.charAt(0).toUpperCase()}
-          </div>
-          <div className="app-card-name-block">
-            <span className="app-card-name">{app.student.name}</span>
-            <span className="app-card-email">{app.student.email}</span>
+      {/* ── Stat cards ── */}
+      <div className="ap-stats-grid">
+        <div className="ap-sc">
+          <div className="ap-sc-icon ap-ic-teal"><IcoApps /></div>
+          <div>
+            <div className="ap-sc-lbl">Total Applications</div>
+            <div className="ap-sc-val">{stats.total}</div>
+            <div className="ap-sc-sub">{stats.completed} Completed · {stats.incomplete} Pending</div>
           </div>
         </div>
-
-        {/* Detail fields — 2-col grid */}
-        <div className="app-card-details">
-
-          {/* Submitted */}
-          <div className="app-card-detail-item">
-            <span className="app-card-detail-label">Submitted</span>
-            <span className="app-card-detail-value">{formatDate(app.submittedAt)}</span>
+        <div className="ap-sc">
+          <div className="ap-sc-icon ap-ic-coral"><IcoClock /></div>
+          <div>
+            <div className="ap-sc-lbl">In Progress</div>
+            <div className="ap-sc-val">{stats.inProgress}</div>
+            <div className="ap-sc-sub">Needs attention</div>
           </div>
-
-          {/* Status text (for readability) */}
-          <div className="app-card-detail-item">
-            <span className="app-card-detail-label">Status</span>
-            <span className="app-card-detail-value">{formatStatus(app.latestStatus)}</span>
+        </div>
+        <div className="ap-sc">
+          <div className="ap-sc-icon ap-ic-blue"><IcoCheck /></div>
+          <div>
+            <div className="ap-sc-lbl">Completed</div>
+            <div className="ap-sc-val">{stats.completed}</div>
+            <div className="ap-sc-sub">100% profile done</div>
           </div>
-
-          {/* Progress — full width */}
-          <div className="app-card-detail-item full-width">
-            <span className="app-card-detail-label">Progress</span>
-            <div className="app-card-progress-wrap">
-              <div className="app-card-progress-track">
-                <div
-                  className={`app-card-progress-fill progress-${getProgressClass(app.latestProgress)}`}
-                  style={{ width: `${app.latestProgress}%` }}
-                />
-              </div>
-              <span className="app-card-pct">{app.latestProgress}%</span>
-            </div>
-          </div>
-
         </div>
       </div>
 
-      {/* Action buttons */}
-      <div className="app-card-actions">
-        <button
-          className="app-card-btn-view"
-          onClick={() => setSelectedApp(app)}
-        >
-          <span>👁️</span> View Details
-        </button>
-        <button
-          className="app-card-btn-download"
-          onClick={() => downloadPDF(app)}
-          title="Download PDF"
-        >
-          📥
-        </button>
-      </div>
+      {/* ── Table card ── */}
+      <div className="ap-table-card">
 
-    </div>
-  );
-
-  /* ══════════════════════════════════════
-     MAIN RENDER
-  ══════════════════════════════════════ */
-  return (
-    <div className="applications-container">
-
-      {/* Header */}
-      <div className="applications-header">
-        <div>
-          <h1>International Applications</h1>
-          <div className="header-subtitle">
-            <p>Manage and review all student applications</p>
+        {/* Toolbar */}
+        <div className="ap-toolbar">
+          <div className="ap-search-wrap">
+            <span className="ap-search-ico"><IcoSearch /></span>
+            <input
+              type="text"
+              className="ap-search-input"
+              placeholder="Search by name, email, college ID..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
-        </div>
-        <button onClick={loadApplications} className="refresh-btn">
-          🔄 Refresh
-        </button>
-      </div>
-
-      {/* Search + Filter */}
-      <div className="applications-controls">
-        <div className="search-box">
-          <input
-            type="text"
-            placeholder="Search by name, email, college ID..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-input"
-          />
-        </div>
-        <div className="filter-controls">
           <select
+            className="ap-filter-sel"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="status-filter"
           >
             <option value="all">All Status</option>
             <option value="completed">Completed</option>
@@ -457,165 +543,141 @@ const Applications = () => {
             <option value="accepted">Accepted</option>
             <option value="rejected">Rejected</option>
           </select>
+          <button className="ap-refresh-btn" onClick={loadApplications}>
+            <IcoRefresh /> Refresh
+          </button>
         </div>
-      </div>
 
-      {/* Stat Cards */}
-      <div className="applications-overview">
-        <div className="stat-card total">
-          <div className="stat-icon">📋</div>
-          <div className="stat-content">
-            <h3>Total Applications</h3>
-            <span className="stat-number">{stats.total}</span>
-          </div>
-        </div>
-        <div className="stat-card incomplete">
-          <div className="stat-icon">⏳</div>
-          <div className="stat-content">
-            <h3>Incomplete</h3>
-            <span className="stat-number">{stats.incomplete}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* ── DESKTOP: Table view ── */}
-      <div className="applications-table-container">
-        <table className="applications-table">
-          <thead>
-            <tr>
-              <th>College ID</th>
-              <th>Student</th>
-              <th>Status</th>
-              <th>Submitted</th>
-              <th>Progress</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredApplications.length === 0 ? (
-              <tr>
-                <td colSpan="6" className="no-results">
-                  <div className="empty-table-state"><p>No applications found</p></div>
-                </td>
-              </tr>
-            ) : (
-              filteredApplications.map((app) => (
-                <tr key={app.studentId}>
-                  <td><span className="college-id-badge">{app.collegeId}</span></td>
-                  <td className="student-info">
-                    <div className="student-avatar">{app.student.name.charAt(0).toUpperCase()}</div>
-                    <div className="student-details">
-                      <strong>{app.student.name}</strong>
-                      <small>{app.student.email}</small>
-                      {app.student.phone && app.student.phone !== "N/A" && (
-                        <small className="student-phone">{app.student.phone}</small>
-                      )}
-                    </div>
-                  </td>
-                  <td>
-                    <span className={`status-badge status-${app.latestStatus}`}>
-                      {formatStatus(app.latestStatus)}
-                    </span>
-                  </td>
-                  <td className="submission-date">{formatDate(app.submittedAt)}</td>
-                  <td>
-                    <div className="progress-container">
-                      <div className="progress-info">
-                        <span className="progress-percentage">{app.latestProgress}%</span>
-                      </div>
-                      <div className="progress-track">
-                        <div
-                          className={`progress-fill progress-${getProgressClass(app.latestProgress)}`}
-                          style={{ width: `${app.latestProgress}%` }}
-                        />
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <div className="action-buttons">
-                      <button className="btn-view" onClick={() => setSelectedApp(app)}>
-                        <span className="btn-icon">👁️</span> View
-                      </button>
-                      <button className="btn-download" onClick={() => downloadPDF(app)}>
-                        <span className="btn-icon">📥</span>
-                      </button>
-                    </div>
-                  </td>
+        {/* ── Desktop table ── */}
+        <div className="ap-desktop-table">
+          <div className="ap-table-wrap">
+            <table className="ap-table">
+              <thead>
+                <tr>
+                  <th>College ID</th>
+                  <th>Student</th>
+                  <th>Status</th>
+                  <th>Submitted</th>
+                  <th>Progress</th>
+                  <th>Action</th>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-
-        {/* Desktop footer */}
-        {filteredApplications.length > 0 && (
-          <div className="table-footer">
-            <span className="table-footer-count">
-              Showing {filteredApplications.length} of {stats.total} applications
-            </span>
-            <button onClick={loadApplications} className="refresh-btn">
-              🔄 Refresh
-            </button>
+              </thead>
+              <tbody>
+                {filteredApplications.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="ap-no-results">
+                      <div className="ap-empty-table"><p>No applications found</p></div>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredApplications.map((app) => (
+                    <tr key={app.studentId}>
+                      <td><span className="ap-cid-badge">{app.collegeId}</span></td>
+                      <td>
+                        <div className="ap-student-cell">
+                          <div className={`ap-avatar ${getAvatarColor(app.student.name)}`}>
+                            {app.student.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="ap-student-info">
+                            <strong>{app.student.name}</strong>
+                            <small>{app.student.email}</small>
+                            {app.student.phone && app.student.phone !== "N/A" && (
+                              <small className="ap-phone">{app.student.phone}</small>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span className={`ap-status-badge ap-s-${app.latestStatus}`}>
+                          {formatStatus(app.latestStatus)}
+                        </span>
+                      </td>
+                      <td className="ap-date">{formatDate(app.submittedAt)}</td>
+                      <td>
+                        <div className="ap-prog-wrap">
+                          <div className="ap-prog-bar">
+                            <div
+                              className={`ap-prog-fill ${getProgressColor(app.latestProgress)}`}
+                              style={{ width: `${app.latestProgress}%` }}
+                            />
+                          </div>
+                          <span className="ap-prog-pct">{app.latestProgress}%</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="ap-action-btns">
+                          <button className="ap-view-btn" onClick={() => setSelectedApp(app)}>
+                            <IcoEye /> View
+                          </button>
+                          <button className="ap-dl-btn" onClick={() => downloadPDF(app)} title="Download PDF">
+                            <IcoDl />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-        )}
-      </div>
 
-      {/* ── MOBILE: Card list view ── */}
-      <div className="applications-card-list">
-        {filteredApplications.length === 0 ? (
-          <div className="empty-table-state" style={{ padding: "2rem", background: "#fff", borderRadius: 16 }}>
-            <p>No applications found</p>
-          </div>
-        ) : (
-          <>
-            {filteredApplications.map((app) => renderMobileCard(app))}
-            <div className="app-card-list-footer">
-              <span>Showing {filteredApplications.length} of {stats.total} applications</span>
-              <button onClick={loadApplications} className="refresh-btn">🔄 Refresh</button>
+          {filteredApplications.length > 0 && (
+            <div className="ap-table-footer">
+              <span className="ap-footer-count">
+                Showing {filteredApplications.length} of {stats.total} applications
+              </span>
+              <button className="ap-refresh-btn" onClick={loadApplications}>
+                <IcoRefresh /> Refresh
+              </button>
             </div>
-          </>
-        )}
+          )}
+        </div>
+
+        {/* ── Mobile card list ── */}
+        <div className="ap-mobile-list">
+          {filteredApplications.length === 0 ? (
+            <div className="ap-empty-table" style={{ padding: "2rem" }}>
+              <p>No applications found</p>
+            </div>
+          ) : (
+            <>
+              {filteredApplications.map((app) => renderMobileCard(app))}
+              <div className="ap-mob-list-footer">
+                <span>Showing {filteredApplications.length} of {stats.total} applications</span>
+                <button className="ap-refresh-btn" onClick={loadApplications}><IcoRefresh /> Refresh</button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
-      {/* ══════════════════════════════════════
-          VIEW DETAILS MODAL
-          shared by desktop + mobile
-          header = pinned, modal-content = scrolls
-      ══════════════════════════════════════ */}
+      {/* ── View Details Modal ── */}
       {selectedApp && (
-        <div
-          className="modal-overlay"
-          onClick={(e) => { if (e.target === e.currentTarget) setSelectedApp(null); }}
-        >
-          <div className="modal-box">
-
-            {/* ── Pinned header ── */}
-            <div className="modal-header">
-              <div className="modal-title-section">
+        <div className="ap-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setSelectedApp(null); }}>
+          <div className="ap-modal-box">
+            <div className="ap-modal-header">
+              <div className="ap-modal-title-wrap">
                 <h2>Application Details</h2>
-                <div className="modal-subtitle">
-                  <span className="student-name">{selectedApp.student.name}</span>
-                  <span className="college-id">{selectedApp.collegeId}</span>
+                <div className="ap-modal-subtitle">
+                  <span className="ap-modal-student-name">{selectedApp.student.name}</span>
+                  <span className="ap-modal-cid">{selectedApp.collegeId}</span>
                 </div>
               </div>
-              <button className="modal-close-btn" onClick={() => setSelectedApp(null)}>×</button>
+              <button className="ap-modal-close" onClick={() => setSelectedApp(null)}>×</button>
             </div>
 
-            {/* ── Scrollable content area ── */}
-            <div className="modal-content">
-
-              {/* Student Info */}
-              <div className="info-section">
-                <div className="section-header">
+            <div className="ap-modal-content">
+              <div className="ap-info-section">
+                <div className="ap-section-hdr">
                   <h3>Student Information</h3>
-                  <div className="status-display">
-                    <span className={`status-badge status-${selectedApp.latestStatus}`}>
+                  <div className="ap-status-display">
+                    <span className={`ap-status-badge ap-s-${selectedApp.latestStatus}`}>
                       {formatStatus(selectedApp.latestStatus)}
                     </span>
-                    <span className="progress-display">{selectedApp.latestProgress}% Complete</span>
+                    <span className="ap-prog-display">{selectedApp.latestProgress}% Complete</span>
                   </div>
                 </div>
-                <div className="info-grid">
+                <div className="ap-info-grid">
                   {[
                     ["Student Name",   selectedApp.student.name],
                     ["Email",          selectedApp.student.email],
@@ -626,12 +688,9 @@ const Applications = () => {
                   ]
                     .filter(([, v]) => v && v !== "N/A")
                     .map(([label, value]) => (
-                      <div className="info-row" key={label}>
-                        <span className="info-label">{label}:</span>
-                        <span className={`info-value${
-                          label === "Email" ? " email-value" :
-                          label === "Phone" ? " phone-value" : ""
-                        }`}>
+                      <div className="ap-info-row" key={label}>
+                        <span className="ap-info-label">{label}</span>
+                        <span className={`ap-info-value ${label === "Email" ? "ap-email-val" : label === "Phone" ? "ap-phone-val" : ""}`}>
                           {value}
                         </span>
                       </div>
@@ -639,66 +698,53 @@ const Applications = () => {
                 </div>
               </div>
 
-              {/* Application detail sections */}
               {selectedApp.applications.map((app, index) => (
-                <div className="info-section" key={index}>
-                  <h3 className="section-title">{app.type.toUpperCase()} DETAILS</h3>
-                  <div className="info-grid">
+                <div className="ap-info-section" key={index}>
+                  <h3 className="ap-section-title">{app.type.toUpperCase()} Details</h3>
+                  <div className="ap-info-grid">
                     {Object.entries(app.details || {})
                       .filter(([key]) =>
                         !["_id","collegeId","status","progress","createdAt","updatedAt","__v","studentId"].includes(key)
                       )
                       .map(([key, value]) => (
-                        <div className="info-row" key={key}>
-                          <span className="info-label">{formatFieldName(key)}:</span>
-                          <span className="info-value">{formatFieldValue(key, value)}</span>
+                        <div className="ap-info-row" key={key}>
+                          <span className="ap-info-label">{formatFieldName(key)}</span>
+                          <span className="ap-info-value">{formatFieldValue(key, value)}</span>
                         </div>
                       ))}
                   </div>
                 </div>
               ))}
 
-              {/* System info */}
-              <div className="info-section system-info">
+              <div className="ap-info-section ap-system-info">
                 <h3>System Information</h3>
-                <div className="info-grid">
-                  <div className="info-row">
-                    <span className="info-label">Created At:</span>
-                    <span className="info-value">
-                      {formatDate(selectedApp.applications[0]?.details?.createdAt)}
+                <div className="ap-info-grid">
+                  <div className="ap-info-row">
+                    <span className="ap-info-label">Created At</span>
+                    <span className="ap-info-value">{formatDate(selectedApp.applications[0]?.details?.createdAt)}</span>
+                  </div>
+                  <div className="ap-info-row">
+                    <span className="ap-info-label">Last Updated</span>
+                    <span className="ap-info-value">
+                      {formatDate(selectedApp.applications[0]?.details?.updatedAt || selectedApp.applications[0]?.details?.lastSaved)}
                     </span>
                   </div>
-                  <div className="info-row">
-                    <span className="info-label">Last Updated:</span>
-                    <span className="info-value">
-                      {formatDate(
-                        selectedApp.applications[0]?.details?.updatedAt ||
-                        selectedApp.applications[0]?.details?.lastSaved
-                      )}
-                    </span>
-                  </div>
-                  <div className="info-row">
-                    <span className="info-label">Document Version:</span>
-                    <span className="info-value">
-                      {selectedApp.applications[0]?.details?._v || "0"}
-                    </span>
+                  <div className="ap-info-row">
+                    <span className="ap-info-label">Document Version</span>
+                    <span className="ap-info-value">{selectedApp.applications[0]?.details?._v || "0"}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Actions — inside modal-content so they scroll with content */}
-              <div className="modal-actions">
-                <button className="btn-secondary" onClick={() => setSelectedApp(null)}>
-                  Close
-                </button>
-                <button className="btn-primary" onClick={() => downloadPDF(selectedApp)}>
-                  <span className="btn-icon">📥</span> Download PDF
+              <div className="ap-modal-actions">
+                <button className="ap-btn-secondary" onClick={() => setSelectedApp(null)}>Close</button>
+                <button className="ap-btn-primary" onClick={() => downloadPDF(selectedApp)}>
+                  <IcoDl /> Download PDF
                 </button>
               </div>
-
-            </div>{/* end modal-content */}
-          </div>{/* end modal-box */}
-        </div>/* end modal-overlay */
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

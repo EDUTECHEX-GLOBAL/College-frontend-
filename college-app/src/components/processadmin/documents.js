@@ -1,4 +1,4 @@
-// Documents.js
+// Documents.js — Navy Blue Design System (matches Applications page)
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./documents.css";
@@ -15,30 +15,22 @@ const Documents = () => {
   const [stats, setStats] = useState({ totalApplications: 0, incomplete: 0 });
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('documents');
 
-  // Get token - ONLY process-admin token
   const getToken = () => {
     const token = localStorage.getItem('processAdminToken');
-    if (!token) {
-      console.error('❌ No process-admin token found');
-    } else {
-      console.log('✅ Using processAdminToken:', token.substring(0, 20) + '...');
-    }
+    if (!token) console.error('❌ No process-admin token found');
+    else console.log('✅ Using processAdminToken:', token.substring(0, 20) + '...');
     return token;
   };
 
-  // Format date
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric', month: 'short', day: 'numeric'
     });
   };
 
-  // Format file size
   const formatFileSize = (bytes) => {
     if (!bytes) return '0 KB';
     if (bytes < 1024) return bytes + ' Bytes';
@@ -46,60 +38,53 @@ const Documents = () => {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
-  // Get document type display name
-// Get document type display name - FIXED to handle marksheet types correctly
-const getDocumentTypeDisplay = (type) => {
-  const typeMap = {
-    'transcript': 'Transcript',
-    'diploma': 'Diploma/Certificate',
-    'test_scores': 'Test Scores',
-    'language_proficiency': 'Language Proficiency',
-    'recommendation_letter': 'Recommendation Letter',
-    'resume': 'Resume/CV',
-    'marksheet_9th': '9th Marksheet',
-    'marksheet_10th': '10th Marksheet',
-    'marksheet_12th': '12th Marksheet',
-    'id_proof': 'ID Proof',
-    'passport': 'Passport',
-    'other': 'Other'
+  const getDocumentTypeDisplay = (type) => {
+    const typeMap = {
+      'transcript': 'Transcript', 'diploma': 'Diploma/Certificate',
+      'test_scores': 'Test Scores', 'language_proficiency': 'Language Proficiency',
+      'recommendation_letter': 'Recommendation Letter', 'resume': 'Resume/CV',
+      'marksheet_9th': '9th Marksheet', 'marksheet_10th': '10th Marksheet',
+      'marksheet_12th': '12th Marksheet', 'id_proof': 'ID Proof',
+      'passport': 'Passport', 'other': 'Other'
+    };
+    if (typeof type === 'string' && type.includes('MARKSHEET')) return type;
+    return typeMap[type] || type?.replace(/_/g, ' ')?.toUpperCase() || 'Unknown';
   };
-  
-  // If type is already formatted (like "9TH MARKSHEET"), return as is
-  if (typeof type === 'string' && type.includes('MARKSHEET')) {
-    return type;
-  }
-  
-  return typeMap[type] || type?.replace(/_/g, ' ')?.toUpperCase() || 'Unknown';
-};
 
-  // Get status badge class
   const getStatusBadgeClass = (status) => {
-    const statusLower = (status || '').toLowerCase();
-    if (statusLower.includes('completed') || statusLower === 'validated' || statusLower === 'approved') {
-      return 'status-badge completed';
-    } else if (statusLower.includes('rejected') || statusLower.includes('incomplete')) {
-      return 'status-badge incomplete';
-    } else if (statusLower.includes('in progress') || statusLower.includes('pending')) {
-      return 'status-badge in-progress';
-    } else if (statusLower.includes('not started')) {
-      return 'status-badge not-started';
-    }
-    return 'status-badge';
+    const s = (status || '').toLowerCase();
+    if (s.includes('completed') || s === 'validated' || s === 'approved') return 'doc-badge doc-badge-completed';
+    if (s.includes('rejected') || s.includes('incomplete')) return 'doc-badge doc-badge-incomplete';
+    if (s.includes('in progress') || s.includes('pending')) return 'doc-badge doc-badge-progress';
+    if (s.includes('not started')) return 'doc-badge doc-badge-notstarted';
+    return 'doc-badge';
   };
 
-  // Get status text
   const getStatusText = (status) => {
-    const statusLower = (status || '').toLowerCase();
-    if (statusLower.includes('completed') || statusLower === 'validated' || statusLower === 'approved') return 'COMPLETED';
-    if (statusLower.includes('rejected')) return 'REJECTED';
-    if (statusLower.includes('incomplete')) return 'INCOMPLETE';
-    if (statusLower.includes('in progress')) return 'IN PROGRESS';
-    if (statusLower.includes('pending')) return 'PENDING';
-    if (statusLower.includes('not started')) return 'NOT STARTED';
-    return status?.toUpperCase() || 'PENDING';
+    const s = (status || '').toLowerCase();
+    if (s.includes('completed') || s === 'validated' || s === 'approved') return 'Completed';
+    if (s.includes('rejected')) return 'Rejected';
+    if (s.includes('incomplete')) return 'Incomplete';
+    if (s.includes('in progress')) return 'In Progress';
+    if (s.includes('pending')) return 'Pending';
+    if (s.includes('not started')) return 'Not Started';
+    return status || 'Pending';
   };
 
-  // Group documents by student
+  const getAvatarColor = (name = '') => {
+    const colors = ['av-blue', 'av-purple', 'av-teal', 'av-amber', 'av-coral'];
+    let h = 0;
+    for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+    return colors[Math.abs(h) % colors.length];
+  };
+
+  const getProgressBarClass = (pct) => {
+    if (pct >= 90) return 'doc-pf-blue';
+    if (pct >= 70) return 'doc-pf-indigo';
+    if (pct >= 40) return 'doc-pf-amber';
+    return 'doc-pf-red';
+  };
+
   const groupDocumentsByStudent = (docs) => {
     const groups = {};
     let totalApplications = 0;
@@ -108,30 +93,21 @@ const getDocumentTypeDisplay = (type) => {
     docs.forEach(doc => {
       const studentId = doc.studentId || doc.userId;
       if (!studentId) return;
-
       if (!groups[studentId]) {
         groups[studentId] = {
-          studentId,
-          collegeId: doc.collegeId || 'N/A',
+          studentId, collegeId: doc.collegeId || 'N/A',
           studentName: doc.studentName || doc.userName || 'Unknown Student',
           studentEmail: doc.studentEmail || doc.userEmail || 'No email',
           applicationId: doc.applicationId || doc._id,
-          documents: [],
-          totalDocuments: 0,
-          completedCount: 0,
-          incompleteCount: 0,
-          rejectedCount: 0,
-          progressPercentage: 0,
-          latestSubmission: null,
-          status: 'NOT STARTED',
+          documents: [], totalDocuments: 0,
+          completedCount: 0, incompleteCount: 0, rejectedCount: 0,
+          progressPercentage: 0, latestSubmission: null, status: 'NOT STARTED',
           profilePic: (doc.studentName || 'U').charAt(0).toUpperCase()
         };
         totalApplications++;
       }
-
       groups[studentId].documents.push(doc);
       groups[studentId].totalDocuments++;
-
       const docStatus = (doc.reviewStatus || doc.status || '').toLowerCase();
       if (docStatus.includes('approved') || docStatus === 'validated' || docStatus === 'completed') {
         groups[studentId].completedCount++;
@@ -141,7 +117,6 @@ const getDocumentTypeDisplay = (type) => {
       } else if (docStatus.includes('incomplete')) {
         groups[studentId].incompleteCount++;
       }
-
       const docDate = new Date(doc.createdAt || doc.uploadDate || doc.submittedAt || Date.now());
       if (!groups[studentId].latestSubmission || docDate > new Date(groups[studentId].latestSubmission)) {
         groups[studentId].latestSubmission = doc.createdAt || doc.uploadDate || doc.submittedAt;
@@ -149,15 +124,12 @@ const getDocumentTypeDisplay = (type) => {
     });
 
     Object.values(groups).forEach(group => {
-      group.progressPercentage = group.totalDocuments > 0 
-        ? Math.round((group.completedCount / group.totalDocuments) * 100) 
-        : 0;
-      
+      group.progressPercentage = group.totalDocuments > 0
+        ? Math.round((group.completedCount / group.totalDocuments) * 100) : 0;
       if (group.progressPercentage === 100 && group.rejectedCount === 0) {
         group.status = 'COMPLETED';
       } else if (group.rejectedCount > 0 || group.incompleteCount > 0) {
-        group.status = 'INCOMPLETE';
-        incomplete++;
+        group.status = 'INCOMPLETE'; incomplete++;
       } else if (group.progressPercentage > 0) {
         group.status = 'IN PROGRESS';
       } else {
@@ -169,700 +141,568 @@ const getDocumentTypeDisplay = (type) => {
     return Object.values(groups);
   };
 
-  // Fetch documents
   const fetchDocuments = async () => {
     try {
-      setLoading(true);
-      setError('');
-      
+      setLoading(true); setError('');
       const token = getToken();
-      if (!token) {
-        setError('No authentication token found. Please login again.');
-        setLoading(false);
-        return;
-      }
-
-      console.log('📄 Fetching documents with process-admin token...');
-      
+      if (!token) { setError('No authentication token found. Please login again.'); setLoading(false); return; }
       const response = await axios.get(`${API_BASE_URL}/process-admin/documents/all`, {
-        headers: { 
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         params: { limit: 1000 }
       });
-
-      console.log('📊 Documents response:', response.data);
-
       let documentsList = [];
-      if (Array.isArray(response.data)) {
-        documentsList = response.data;
-      } else if (response.data.documents && Array.isArray(response.data.documents)) {
-        documentsList = response.data.documents;
-      } else if (response.data.data && Array.isArray(response.data.data)) {
-        documentsList = response.data.data;
-      }
-
-      console.log(`📦 Found ${documentsList.length} documents`);
+      if (Array.isArray(response.data)) documentsList = response.data;
+      else if (response.data.documents && Array.isArray(response.data.documents)) documentsList = response.data.documents;
+      else if (response.data.data && Array.isArray(response.data.data)) documentsList = response.data.data;
       setDocuments(documentsList);
-      
       if (documentsList.length > 0) {
-        const grouped = groupDocumentsByStudent(documentsList);
-        console.log(`👥 Grouped into ${grouped.length} applications`);
-        setGroupedApplications(grouped);
+        setGroupedApplications(groupDocumentsByStudent(documentsList));
       } else {
         setGroupedApplications([]);
       }
-      
     } catch (err) {
-      console.error('❌ Error fetching documents:', err);
-      if (err.response?.status === 401) {
-        setError('Session expired. Please login again.');
-      } else if (err.response?.status === 403) {
-        setError('Access forbidden. You don\'t have permission.');
-      } else if (err.response?.status === 404) {
-        setError('Documents endpoint not found.');
-      } else {
-        setError('Failed to load documents. Please try again.');
-      }
+      if (err.response?.status === 401) setError('Session expired. Please login again.');
+      else if (err.response?.status === 403) setError("Access forbidden. You don't have permission.");
+      else if (err.response?.status === 404) setError('Documents endpoint not found.');
+      else setError('Failed to load documents. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle view document
-  const handleViewDocument = async (document) => {
-    try {
-      const fileUrl = document.downloadUrl || document.fileUrl || document.url;
-      if (!fileUrl) {
-        alert('Document URL not available');
-        return;
-      }
-      window.open(fileUrl, '_blank');
-    } catch (error) {
-      console.error('Error viewing document:', error);
-      alert('Unable to open document.');
-    }
+  const handleViewDocument = async (doc) => {
+    const fileUrl = doc.downloadUrl || doc.fileUrl || doc.url;
+    if (!fileUrl) { alert('Document URL not available'); return; }
+    window.open(fileUrl, '_blank');
   };
 
-  // Handle download document
   const handleDownloadDocument = async (documentItem) => {
     try {
       const fileUrl = documentItem.downloadUrl || documentItem.fileUrl || documentItem.url;
-      if (!fileUrl) {
-        alert('Document URL not available');
-        return;
-      }
-
+      if (!fileUrl) { alert('Document URL not available'); return; }
       const token = getToken();
-      
-      // If it's a local file, fetch it with authentication
       if (fileUrl.includes('/uploads/')) {
-        try {
-          const response = await fetch(fileUrl, {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
-
-          if (response.ok) {
-            const blob = await response.blob();
-            
-            // Get filename from Content-Disposition header or use the document name
-            const contentDisposition = response.headers.get('Content-Disposition');
-            let filename = documentItem.documentName || documentItem.fileName || 'document';
-            
-            if (contentDisposition && contentDisposition.includes('filename=')) {
-              const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-              if (match && match[1]) {
-                filename = match[1].replace(/['"]/g, '');
-              }
-            }
-            
-            // Add extension if missing
-            if (!filename.includes('.')) {
-              const ext = blob.type.split('/')[1] || 'pdf';
-              filename += '.' + ext;
-            }
-
-            // Create download link
-            const link = document.createElement('a');
-            link.href = window.URL.createObjectURL(blob);
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            setTimeout(() => {
-              window.URL.revokeObjectURL(link.href);
-            }, 100);
-          } else {
-            alert('Failed to download document. Please try again.');
+        const response = await fetch(fileUrl, { method: 'GET', headers: { 'Authorization': `Bearer ${token}` } });
+        if (response.ok) {
+          const blob = await response.blob();
+          const contentDisposition = response.headers.get('Content-Disposition');
+          let filename = documentItem.documentName || documentItem.fileName || 'document';
+          if (contentDisposition && contentDisposition.includes('filename=')) {
+            const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+            if (match && match[1]) filename = match[1].replace(/['"]/g, '');
           }
-        } catch (error) {
-          console.error('Error downloading document:', error);
-          alert('Failed to download document. Please try again.');
-        }
-      } else {
-        // For external URLs, open in new tab
-        window.open(fileUrl, '_blank');
-      }
-    } catch (error) {
-      console.error('Error downloading document:', error);
-      alert('Unable to download document. Please try again.');
-    }
+          if (!filename.includes('.')) filename += '.' + (blob.type.split('/')[1] || 'pdf');
+          const link = document.createElement('a');
+          link.href = window.URL.createObjectURL(blob);
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          setTimeout(() => window.URL.revokeObjectURL(link.href), 100);
+        } else { alert('Failed to download document.'); }
+      } else { window.open(fileUrl, '_blank'); }
+    } catch (error) { alert('Unable to download document. Please try again.'); }
   };
 
-  // Handle send document email for correction
-  const sendDocumentEmail = async (document, student, event) => {
+  const sendDocumentEmail = async (doc, student, event) => {
     try {
       const token = getToken();
-      if (!token) {
-        alert('Authentication required. Please login.');
-        return;
-      }
-
-      // Show sending indicator
+      if (!token) { alert('Authentication required. Please login.'); return; }
       const emailBtn = event?.target;
       if (emailBtn) {
         const originalText = emailBtn.innerHTML;
-        emailBtn.innerHTML = '⏳ Sending...';
-        emailBtn.disabled = true;
-
-        // Determine the reason based on document status
-        let reason = 'incorrect_format';
-        let expectedType = '';
-        
-        // If document is wrong type (like 10th marksheet labeled as 9th)
-        if (document.documentType === 'marksheet_10th') {
-          reason = 'wrong_document';
-          expectedType = '10th Marksheet';
-        } else if (document.reviewStatus === 'rejected') {
-          // If document is already rejected, use the rejection reason
-          reason = document.rejectionReason || 'incorrect_format';
-        }
-        
-        // Get the correct expected type based on the file name
-        const fileName = document.documentName || document.fileName || '';
-        if (fileName.toLowerCase().includes('10th')) {
-          expectedType = '10th Marksheet';
-        } else if (fileName.toLowerCase().includes('9th')) {
-          expectedType = '9th Marksheet';
-        } else if (fileName.toLowerCase().includes('12th')) {
-          expectedType = '12th Marksheet';
-        }
-
-        // Call the correction request endpoint
+        emailBtn.innerHTML = 'Sending…'; emailBtn.disabled = true;
+        let reason = 'incorrect_format', expectedType = '';
+        if (doc.documentType === 'marksheet_10th') { reason = 'wrong_document'; expectedType = '10th Marksheet'; }
+        else if (doc.reviewStatus === 'rejected') { reason = doc.rejectionReason || 'incorrect_format'; }
+        const fileName = doc.documentName || doc.fileName || '';
+        if (fileName.toLowerCase().includes('10th')) expectedType = '10th Marksheet';
+        else if (fileName.toLowerCase().includes('9th')) expectedType = '9th Marksheet';
+        else if (fileName.toLowerCase().includes('12th')) expectedType = '12th Marksheet';
         const response = await axios.post(
-          `${API_BASE_URL}/process-admin/documents/${document._id || document.id}/send-correction`,
-          {
-            reason: reason,
-            adminNotes: `The document you uploaded ("${fileName}") was labeled as a "${getDocumentTypeDisplay(document.documentType)}", which is incorrect or inconsistent. This may be due to an incorrect file, mislabeling, or a suspicious/fake document.`,
-            uploadedType: document.documentType,
-            expectedType: expectedType
-          },
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
+          `${API_BASE_URL}/process-admin/documents/${doc._id || doc.id}/send-correction`,
+          { reason, adminNotes: `The document you uploaded ("${fileName}") was labeled as a "${getDocumentTypeDisplay(doc.documentType)}", which is incorrect or inconsistent.`, uploadedType: doc.documentType, expectedType },
+          { headers: { 'Authorization': `Bearer ${token}` } }
         );
-
-        if (response.data.success) {
-          alert(`✓ Correction email sent successfully to ${student.studentEmail}\n\nSubject: Action Required: Document Correction Needed for Your Application`);
-          
-          // Refresh the documents list to show updated status
-          fetchDocuments();
-        } else {
-          alert('Failed to send email: ' + (response.data.message || 'Please try again.'));
-        }
-
-        // Restore button
-        setTimeout(() => {
-          emailBtn.innerHTML = originalText;
-          emailBtn.disabled = false;
-        }, 1000);
+        if (response.data.success) { alert(`✓ Correction email sent to ${student.studentEmail}`); fetchDocuments(); }
+        else alert('Failed to send email: ' + (response.data.message || 'Please try again.'));
+        setTimeout(() => { emailBtn.innerHTML = originalText; emailBtn.disabled = false; }, 1000);
       }
     } catch (error) {
-      console.error('Error sending email:', error);
-      const errorMessage = error.response?.data?.message || 
-                          error.message || 
-                          'Failed to send email. Please check the backend connection.';
-      alert(`Error: ${errorMessage}`);
-      
-      // Restore button
+      alert(`Error: ${error.response?.data?.message || error.message || 'Failed to send email.'}`);
       const emailBtn = event?.target;
-      if (emailBtn) {
-        emailBtn.innerHTML = '📧 Email';
-        emailBtn.disabled = false;
-      }
+      if (emailBtn) { emailBtn.innerHTML = 'Email'; emailBtn.disabled = false; }
     }
   };
 
-  // Handle download all documents as single PDF
   const handleDownloadAllPDF = async (student) => {
     try {
       const token = getToken();
-      if (!token) {
-        alert('Authentication required. Please login.');
-        return;
-      }
-
-      // Show loading indicator on the button
-      const downloadBtn = document.querySelector('.download-pdf-btn');
+      if (!token) { alert('Authentication required.'); return; }
+      const downloadBtn = document.querySelector('.doc-dl-pdf-btn');
       const originalText = downloadBtn?.innerHTML;
-      if (downloadBtn) {
-        downloadBtn.innerHTML = '⏳ Generating PDF...';
-        downloadBtn.disabled = true;
-      }
-
-      console.log('📑 Generating combined PDF for student:', student.studentName);
-
-      // Call the PDF generation endpoint
+      if (downloadBtn) { downloadBtn.innerHTML = 'Generating PDF…'; downloadBtn.disabled = true; }
       const response = await axios.get(
         `${API_BASE_URL}/process-admin/documents/generate-pdf/${student.studentId}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
-          responseType: 'blob',
-          timeout: 120000 // 2 minutes timeout
-        }
+        { headers: { 'Authorization': `Bearer ${token}` }, responseType: 'blob', timeout: 120000 }
       );
-
       if (response.data) {
-        // Create blob from response
         const blob = new Blob([response.data], { type: 'application/pdf' });
         const fileURL = window.URL.createObjectURL(blob);
-        
-        // Create download link
         const link = document.createElement('a');
         const timestamp = new Date().toISOString().split('T')[0];
-        const fileName = `${student.studentName.replace(/\s+/g, '_')}_Complete_Application_${timestamp}.pdf`;
-        
         link.href = fileURL;
-        link.download = fileName;
+        link.download = `${student.studentName.replace(/\s+/g, '_')}_Complete_Application_${timestamp}.pdf`;
         link.style.display = 'none';
-        
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
-        // Clean up the object URL
-        setTimeout(() => {
-          window.URL.revokeObjectURL(fileURL);
-        }, 100);
-
-        // Show success message
-        setTimeout(() => {
-          alert(`✓ Combined PDF downloaded successfully!\n\nStudent: ${student.studentName}\nFile: ${fileName}\n\nAll ${student.documents.length} documents have been compiled into a single PDF file.`);
-        }, 300);
+        setTimeout(() => window.URL.revokeObjectURL(fileURL), 100);
       }
-
     } catch (error) {
-      console.error('Error downloading PDF:', error);
-      
-      // Handle specific error cases
-      if (error.code === 'ECONNABORTED') {
-        alert('PDF generation timeout. The document may be large. Please try again.');
-      } else if (error.response?.status === 404) {
-        alert('No documents found for this student.');
-      } else if (error.response?.status === 403) {
-        alert('Access denied. Please check your admin permissions.');
-      } else if (error.response?.status === 400) {
-        alert('Invalid student ID or request.');
-      } else if (error.message?.includes('Network Error')) {
-        alert('Network error. Please check your connection and try again.');
-      } else {
-        alert('Failed to generate PDF. Please try again or contact support.');
-      }
+      if (error.code === 'ECONNABORTED') alert('PDF generation timeout. Please try again.');
+      else if (error.response?.status === 404) alert('No documents found for this student.');
+      else alert('Failed to generate PDF. Please try again.');
     } finally {
-      // Restore button state
-      const downloadBtn = document.querySelector('.download-pdf-btn');
-      if (downloadBtn) {
-        downloadBtn.innerHTML = '📄 Download Complete PDF';
-        downloadBtn.disabled = false;
-      }
+      const downloadBtn = document.querySelector('.doc-dl-pdf-btn');
+      if (downloadBtn) { downloadBtn.innerHTML = 'Download Complete PDF'; downloadBtn.disabled = false; }
     }
   };
 
-  // Handle view student details
-  const handleViewStudent = (student) => {
-    console.log('Viewing student:', student);
-    setSelectedStudent(student);
-    setShowStudentModal(true);
-  };
+  const handleViewStudent = (student) => { setSelectedStudent(student); setShowStudentModal(true); };
 
-  // Handle search
-  const handleSearch = (e) => {
-    setSearchQuery(e.target.value);
-  };
+  useEffect(() => { fetchDocuments(); }, []);
 
-  // Handle filter change
-  const handleFilterChange = (e) => {
-    setStatusFilter(e.target.value);
-  };
-
-  // Reset filters
-  const handleResetFilters = () => {
-    setSearchQuery('');
-    setStatusFilter('all');
-    fetchDocuments();
-  };
-
-  // Load on mount
-  useEffect(() => {
-    fetchDocuments();
-  }, []);
-
-  // Filter applications
   const filteredApplications = groupedApplications.filter(app => {
-    const matchesSearch = searchQuery === '' || 
+    const matchesSearch = searchQuery === '' ||
       app.studentName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       app.studentEmail?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       app.collegeId?.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesStatus = statusFilter === 'all' || 
-      app.status?.toLowerCase() === statusFilter.toLowerCase();
-    
+    const matchesStatus = statusFilter === 'all' || app.status?.toLowerCase() === statusFilter.toLowerCase();
     return matchesSearch && matchesStatus;
   });
 
-  // Render
+  /* ── Icons ── */
+  const IcoRefresh = () => (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+    </svg>
+  );
+  const IcoSearch = () => (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+  );
+  const IcoEye = () => (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+    </svg>
+  );
+  const IcoDl = () => (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+      <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+    </svg>
+  );
+  const IcoMail = () => (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+      <polyline points="22,6 12,13 2,6"/>
+    </svg>
+  );
+  const IcoDoc = () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+    </svg>
+  );
+  const IcoApps = () => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+      <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+    </svg>
+  );
+  const IcoWarn = () => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+    </svg>
+  );
+  const IcoCheck = () => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  );
+  const IcoFolder = () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+    </svg>
+  );
+
+  const completedCount = stats.totalApplications - stats.incomplete;
+
   return (
-    <div className="documents-container">
-      {/* Header */}
-      <div className="documents-header">
-        <div className="header-left">
-          <h2>Documents Management</h2>
-          <p className="header-subtitle">Manage and track all student documents</p>
+    <div className="doc-container">
+
+      {/* ── Hero header — University Directory style ── */}
+      <div className="doc-hero">
+        <div className="doc-hero-accent"/>
+        <div className="doc-hero-left">
+          <div className="doc-hero-title">Documents<br/>Management</div>
+          <div className="doc-hero-sub">Manage and track all student documents</div>
         </div>
-        <div className="header-actions">
-          <button onClick={fetchDocuments} className="refresh-btn" title="Refresh">
-            🔄 Refresh
-          </button>
+        <div className="doc-hero-right">
+          <div className="doc-hero-badge">
+            <div className="doc-hero-badge-num">{stats.totalApplications}</div>
+            <div className="doc-hero-badge-lbl">Documents</div>
+          </div>
+          <button className="doc-refresh-btn" onClick={fetchDocuments}><IcoRefresh /> Refresh</button>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="stats-grid">
-        <div className="stat-card total">
-          <div className="stat-icon">📋</div>
-          <div className="stat-content">
-            <h3>TOTAL APPLICATIONS</h3>
-            <div className="stat-value">{stats.totalApplications}</div>
-          </div>
-        </div>
-        
-        <div className="stat-card incomplete">
-          <div className="stat-icon">⚠️</div>
-          <div className="stat-content">
-            <h3>INCOMPLETE</h3>
-            <div className="stat-value">{stats.incomplete}</div>
-          </div>
-        </div>
-
-        <div className="stat-card completed">
-          <div className="stat-icon">✅</div>
-          <div className="stat-content">
-            <h3>COMPLETED</h3>
-            <div className="stat-value">{stats.totalApplications - stats.incomplete}</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters Section */}
-      <div className="filters-section">
-        <div className="search-box">
-          <input
-            type="text"
-            placeholder="Search by name, email, or college ID..."
-            value={searchQuery}
-            onChange={handleSearch}
-            className="search-input"
-          />
-          {searchQuery && (
-            <button className="clear-search" onClick={() => setSearchQuery('')}>
-              ✕
-            </button>
-          )}
-        </div>
-        
-        <div className="filter-controls">
-          <select 
-            value={statusFilter} 
-            onChange={handleFilterChange}
-            className="filter-select"
+      {/* ── Tabs ── */}
+      <div className="doc-tabs">
+        {[
+          { key: 'applications', label: 'Applications', Icon: IcoApps },
+          { key: 'documents',    label: 'Documents',    Icon: IcoDoc },
+          { key: 'requests',     label: 'Requests',     Icon: IcoFolder },
+        ].map(({ key, label, Icon }) => (
+          <button
+            key={key}
+            className={`doc-tab ${activeTab === key ? 'active' : ''}`}
+            onClick={() => setActiveTab(key)}
           >
+            <Icon /> {label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Stat cards — University Directory style ── */}
+      <div className="doc-stats-grid">
+        <div className="doc-sc">
+          <div className="doc-sc-icon doc-ic-blue"><IcoApps /></div>
+          <div>
+            <div className="doc-sc-lbl">Total Applications</div>
+            <div className="doc-sc-val">{stats.totalApplications}</div>
+            <div className="doc-sc-sub">{completedCount} Completed · {stats.incomplete} Incomplete</div>
+          </div>
+        </div>
+        <div className="doc-sc">
+          <div className="doc-sc-icon doc-ic-coral"><IcoWarn /></div>
+          <div>
+            <div className="doc-sc-lbl">Incomplete</div>
+            <div className="doc-sc-val">{stats.incomplete}</div>
+            <div className="doc-sc-sub">Needs attention</div>
+          </div>
+        </div>
+        <div className="doc-sc">
+          <div className="doc-sc-icon doc-ic-green"><IcoCheck /></div>
+          <div>
+            <div className="doc-sc-lbl">Completed</div>
+            <div className="doc-sc-val">{completedCount}</div>
+            <div className="doc-sc-sub">All docs uploaded</div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Table card ── */}
+      <div className="doc-table-card">
+
+        {/* Toolbar */}
+        <div className="doc-toolbar">
+          <div className="doc-search-wrap">
+            <span className="doc-search-ico"><IcoSearch /></span>
+            <input
+              type="text"
+              className="doc-search-input"
+              placeholder="Search by name, email, or college ID..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
+              <button className="doc-clear-search" onClick={() => setSearchQuery('')}>✕</button>
+            )}
+          </div>
+          <select className="doc-filter-sel" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
             <option value="all">All Status</option>
             <option value="completed">Completed</option>
             <option value="in progress">In Progress</option>
             <option value="incomplete">Incomplete</option>
             <option value="not started">Not Started</option>
           </select>
-          
-          <button 
-            onClick={handleResetFilters}
-            className="reset-btn"
-            title="Reset Filters"
-          >
+          <button className="doc-reset-btn" onClick={() => { setSearchQuery(''); setStatusFilter('all'); }}>
             ↺ Reset
           </button>
+          <button className="doc-refresh-btn" onClick={fetchDocuments}><IcoRefresh /> Refresh</button>
         </div>
+
+        {/* Error */}
+        {error && (
+          <div className="doc-error">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}>
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span>{error}</span>
+            {error.includes('login') && (
+              <button onClick={() => window.location.href = '/process-admin-login'} className="doc-error-login">Go to Login</button>
+            )}
+          </div>
+        )}
+
+        {/* Loading */}
+        {loading && (
+          <div className="doc-loading">
+            <div className="doc-spinner"/>
+            <p>Loading documents…</p>
+          </div>
+        )}
+
+        {/* Desktop table */}
+        {!loading && !error && (
+          <div className="doc-desktop-table">
+            <div className="doc-table-wrap">
+              <table className="doc-table">
+                <thead>
+                  <tr>
+                    <th>College ID</th>
+                    <th>Student</th>
+                    <th>Status</th>
+                    <th>Submitted</th>
+                    <th>Progress</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredApplications.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="doc-no-results">
+                        <div className="doc-empty-table">
+                          <p>No applications found</p>
+                          <button onClick={fetchDocuments} className="doc-retry-btn">Refresh</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredApplications.map((app) => (
+                      <tr key={app.studentId}>
+                        <td><span className="doc-cid-badge">{app.collegeId}</span></td>
+                        <td>
+                          <div className="doc-student-cell">
+                            <div className={`doc-avatar ${getAvatarColor(app.studentName)}`}>
+                              {app.profilePic}
+                            </div>
+                            <div className="doc-student-info">
+                              <strong>{app.studentName}</strong>
+                              <small>{app.studentEmail}</small>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <span className={getStatusBadgeClass(app.status)}>
+                            {getStatusText(app.status)}
+                          </span>
+                        </td>
+                        <td className="doc-date">
+                          {app.latestSubmission ? formatDate(app.latestSubmission) : 'Not submitted'}
+                        </td>
+                        <td>
+                          <div className="doc-prog-wrap">
+                            <div className="doc-prog-bar">
+                              <div
+                                className={`doc-prog-fill ${getProgressBarClass(app.progressPercentage)}`}
+                                style={{ width: `${app.progressPercentage}%` }}
+                              />
+                            </div>
+                            <span className="doc-prog-pct">{app.progressPercentage}%</span>
+                          </div>
+                        </td>
+                        <td>
+                          <button className="doc-view-btn" onClick={() => handleViewStudent(app)}>
+                            <IcoEye /> View Details
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {filteredApplications.length > 0 && (
+              <div className="doc-table-footer">
+                <span className="doc-footer-count">
+                  Showing {filteredApplications.length} of {groupedApplications.length} applications
+                </span>
+                <button className="doc-refresh-btn" onClick={fetchDocuments}><IcoRefresh /> Refresh</button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Mobile card list */}
+        {!loading && !error && (
+          <div className="doc-mobile-list">
+            {filteredApplications.length === 0 ? (
+              <div className="doc-empty-table" style={{padding:'2rem'}}>
+                <p>No applications found</p>
+              </div>
+            ) : (
+              <>
+                {filteredApplications.map((app) => (
+                  <div className="doc-mob-card" key={app.studentId}>
+                    <div className="doc-mob-card-top">
+                      <span className="doc-cid-badge">{app.collegeId}</span>
+                      <span className={getStatusBadgeClass(app.status)}>{getStatusText(app.status)}</span>
+                    </div>
+                    <div className="doc-mob-card-body">
+                      <div className="doc-mob-student">
+                        <div className={`doc-avatar ${getAvatarColor(app.studentName)}`}>{app.profilePic}</div>
+                        <div>
+                          <div className="doc-mob-name">{app.studentName}</div>
+                          <div className="doc-mob-email">{app.studentEmail}</div>
+                        </div>
+                      </div>
+                      <div className="doc-mob-details">
+                        <div className="doc-mob-detail-item">
+                          <span className="doc-mob-detail-lbl">Submitted</span>
+                          <span className="doc-mob-detail-val">{app.latestSubmission ? formatDate(app.latestSubmission) : 'N/A'}</span>
+                        </div>
+                        <div className="doc-mob-detail-item">
+                          <span className="doc-mob-detail-lbl">Docs</span>
+                          <span className="doc-mob-detail-val">{app.completedCount}/{app.totalDocuments}</span>
+                        </div>
+                        <div className="doc-mob-detail-item doc-mob-full">
+                          <span className="doc-mob-detail-lbl">Progress</span>
+                          <div className="doc-prog-wrap">
+                            <div className="doc-prog-bar">
+                              <div className={`doc-prog-fill ${getProgressBarClass(app.progressPercentage)}`} style={{width:`${app.progressPercentage}%`}}/>
+                            </div>
+                            <span className="doc-prog-pct">{app.progressPercentage}%</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="doc-mob-card-footer">
+                      <button className="doc-view-btn" style={{flex:1,justifyContent:'center'}} onClick={() => handleViewStudent(app)}>
+                        <IcoEye /> View Details
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                <div className="doc-mob-list-footer">
+                  <span>Showing {filteredApplications.length} of {groupedApplications.length} applications</span>
+                  <button className="doc-refresh-btn" onClick={fetchDocuments}><IcoRefresh /> Refresh</button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Error Message */}
-      {error && (
-        <div className="error-message">
-          <span className="error-icon">⚠️</span>
-          {error}
-          {error.includes('login') && (
-            <button onClick={() => window.location.href = '/process-admin-login'} className="login-redirect">
-              Go to Login
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* Loading State */}
-      {loading && (
-        <div className="loading-state">
-          <div className="loading-spinner"></div>
-          <p>Loading documents...</p>
-        </div>
-      )}
-
-      {/* Applications Table */}
-      {!loading && !error && (
-        <div className="table-container">
-          <table className="applications-table">
-            <thead>
-              <tr>
-                <th>COLLEGE ID</th>
-                <th>STUDENT</th>
-                <th>STATUS</th>
-                <th>SUBMITTED</th>
-                <th>PROGRESS</th>
-                <th>ACTION</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredApplications.length === 0 ? (
-                <tr>
-                  <td colSpan="6" className="no-data">
-                    <div className="empty-state">
-                      <span className="empty-icon">📭</span>
-                      <p>No applications found</p>
-                      <button onClick={fetchDocuments} className="retry-btn">
-                        Refresh
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                filteredApplications.map((app) => (
-                  <tr key={app.studentId}>
-                    <td>
-                      <span className="college-id">{app.collegeId}</span>
-                    </td>
-                    <td>
-                      <div className="student-info">
-                        <div className="student-avatar">
-                          {app.profilePic}
-                        </div>
-                        <div className="student-details">
-                          <div className="student-name">{app.studentName}</div>
-                          <div className="student-email">{app.studentEmail}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <span className={getStatusBadgeClass(app.status)}>
-                        {getStatusText(app.status)}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="submission-date">
-                        {app.latestSubmission ? formatDate(app.latestSubmission) : 'Not submitted'}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="progress-container">
-                        <div className="progress-percentage">{app.progressPercentage}%</div>
-                        <div className="progress-bar-bg">
-                          <div 
-                            className={`progress-bar ${app.status.toLowerCase().replace(' ', '-')}`}
-                            style={{ width: `${app.progressPercentage}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <button 
-                        className="view-btn"
-                        onClick={() => handleViewStudent(app)}
-                      >
-                        View Details
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* Table Footer */}
-      {!loading && !error && (
-        <div className="table-footer">
-          <div className="footer-info">
-            <span>Showing {filteredApplications.length} of {groupedApplications.length} applications</span>
-          </div>
-          <div className="footer-actions">
-            <button onClick={fetchDocuments} className="refresh-small">
-              ↻ Refresh
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* STUDENT DETAILS MODAL */}
+      {/* ── Student Details Modal ── */}
       {showStudentModal && selectedStudent && (
-        <div className="modal-overlay" onClick={() => setShowStudentModal(false)}>
-          <div className="student-details-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <div className="modal-title-section">
-                <h3>Application Details</h3>
-                <p className="modal-subtitle">{selectedStudent.studentName}</p>
+        <div className="doc-modal-overlay" onClick={() => setShowStudentModal(false)}>
+          <div className="doc-modal-box" onClick={(e) => e.stopPropagation()}>
+
+            <div className="doc-modal-header">
+              <div className="doc-modal-title-wrap">
+                <h2>Application Details</h2>
+                <div className="doc-modal-subtitle">
+                  <span className="doc-modal-student-name">{selectedStudent.studentName}</span>
+                  <span className="doc-modal-cid">{selectedStudent.collegeId}</span>
+                </div>
               </div>
-              <button className="modal-close" onClick={() => setShowStudentModal(false)}>×</button>
+              <button className="doc-modal-close" onClick={() => setShowStudentModal(false)}>×</button>
             </div>
-            
-            <div className="modal-content">
-              {/* Student Info Header */}
-              <div className="student-info-header">
-                <div className="student-profile-large">
-                  {selectedStudent.profilePic}
-                </div>
-                <div className="student-header-details">
-                  <h2>{selectedStudent.studentName}</h2>
-                  <div className="college-id-badge">{selectedStudent.collegeId}</div>
-                  <div className="email-large">{selectedStudent.studentEmail}</div>
-                  <div className="meta-info">
-                    <span className="meta-item">
-                      <span className="meta-label">Application ID:</span>
-                      <span className="meta-value">{selectedStudent.applicationId}</span>
-                    </span>
-                    <span className="meta-item">
-                      <span className="meta-label">Submitted:</span>
-                      <span className="meta-value">
-                        {selectedStudent.latestSubmission ? formatDate(selectedStudent.latestSubmission) : 'Not submitted'}
-                      </span>
-                    </span>
-                  </div>
-                </div>
-              </div>
 
-              {/* Application Status */}
-              <div className="application-status-section">
-                <div className="status-card">
-                  <div className="status-header">
-                    <span className="status-label">Overall Status</span>
-                    <span className={`status-value ${selectedStudent.status.toLowerCase()}`}>
-                      {getStatusText(selectedStudent.status)}
-                    </span>
+            <div className="doc-modal-content">
+
+              {/* Student info */}
+              <div className="doc-info-section">
+                <div className="doc-student-info-header">
+                  <div className={`doc-avatar-lg ${getAvatarColor(selectedStudent.studentName)}`}>
+                    {selectedStudent.profilePic}
                   </div>
-                  <div className="progress-summary">
-                    <div className="progress-summary-text">
-                      <span className="completed-count">{selectedStudent.completedCount}</span>
-                      <span className="total-count"> of {selectedStudent.totalDocuments} documents uploaded</span>
-                    </div>
-                    <div className="progress-bar-summary">
-                      <div 
-                        className="progress-fill-summary"
-                        style={{ width: `${selectedStudent.progressPercentage}%` }}
-                      ></div>
+                  <div className="doc-student-header-details">
+                    <h3>{selectedStudent.studentName}</h3>
+                    <span className="doc-cid-badge">{selectedStudent.collegeId}</span>
+                    <div className="doc-email-lg">{selectedStudent.studentEmail}</div>
+                    <div className="doc-meta-row">
+                      <span className="doc-meta-item"><span className="doc-meta-lbl">App ID:</span><span className="doc-meta-val">{selectedStudent.applicationId}</span></span>
+                      <span className="doc-meta-item"><span className="doc-meta-lbl">Submitted:</span><span className="doc-meta-val">{selectedStudent.latestSubmission ? formatDate(selectedStudent.latestSubmission) : 'Not submitted'}</span></span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Documents Section */}
-              <div className="documents-section">
-                <h4>Uploaded Documents</h4>
-                <div className="documents-list">
-                  {selectedStudent.documents.length === 0 ? (
-                    <div className="no-documents">
-                      <span className="empty-icon">📭</span>
-                      <p>No documents uploaded yet</p>
-                    </div>
-                  ) : (
-                    selectedStudent.documents.map((doc, index) => (
-                      <div key={index} className="document-item">
-                        <div className="document-icon">
-                          📄
+              {/* Status + progress */}
+              <div className="doc-info-section">
+                <h3>Overall Status</h3>
+                <div className="doc-status-card">
+                  <div className="doc-status-card-hdr">
+                    <span className="doc-status-card-lbl">Status</span>
+                    <span className={getStatusBadgeClass(selectedStudent.status)}>{getStatusText(selectedStudent.status)}</span>
+                  </div>
+                  <div className="doc-progress-summary-txt">
+                    <strong>{selectedStudent.completedCount}</strong> of {selectedStudent.totalDocuments} documents uploaded
+                  </div>
+                  <div className="doc-prog-bar doc-prog-bar-lg">
+                    <div className={`doc-prog-fill ${getProgressBarClass(selectedStudent.progressPercentage)}`} style={{width:`${selectedStudent.progressPercentage}%`}}/>
+                  </div>
+                </div>
+              </div>
+
+              {/* Documents list */}
+              <div className="doc-info-section">
+                <h3>Uploaded Documents</h3>
+                {selectedStudent.documents.length === 0 ? (
+                  <div className="doc-no-docs"><p>No documents uploaded yet</p></div>
+                ) : (
+                  <div className="doc-doc-list">
+                    {selectedStudent.documents.map((doc, index) => (
+                      <div key={index} className="doc-doc-item">
+                        <div className="doc-doc-file-icon">
+                          <IcoDoc />
                         </div>
-                        <div className="document-info">
-                          <div className="document-name">{doc.documentName || doc.fileName || 'Document'}</div>
-                          <div className="document-meta">
-                            <span className="document-type">{getDocumentTypeDisplay(doc.documentType)}</span>
-                            <span className="document-size">{formatFileSize(doc.fileSizeBytes || doc.fileSize)}</span>
-                            <span className="document-date">{formatDate(doc.uploadDate || doc.createdAt)}</span>
+                        <div className="doc-doc-info">
+                          <div className="doc-doc-name">{doc.documentName || doc.fileName || 'Document'}</div>
+                          <div className="doc-doc-meta">
+                            <span className="doc-doc-type">{getDocumentTypeDisplay(doc.documentType)}</span>
+                            <span className="doc-doc-size">{formatFileSize(doc.fileSizeBytes || doc.fileSize)}</span>
+                            <span className="doc-doc-date">{formatDate(doc.uploadDate || doc.createdAt)}</span>
                           </div>
-                          <div className="document-status">
+                          <div className="doc-doc-status">
                             <span className={getStatusBadgeClass(doc.reviewStatus || doc.status)}>
                               {getStatusText(doc.reviewStatus || doc.status)}
                             </span>
                           </div>
                         </div>
-                        <div className="document-actions">
-                          <button 
-                            className="action-btn view"
-                            onClick={() => handleViewDocument(doc)}
-                            title="View Document"
-                          >
-                            👁️ View
+                        <div className="doc-doc-actions">
+                          <button className="doc-act-btn doc-act-view" onClick={() => handleViewDocument(doc)}>
+                            <IcoEye /> View
                           </button>
-                          <button 
-                            className="action-btn download"
-                            onClick={() => handleDownloadDocument(doc)}
-                            title="Download Document"
-                          >
-                            📥 Download
+                          <button className="doc-act-btn doc-act-dl" onClick={() => handleDownloadDocument(doc)}>
+                            <IcoDl /> Download
                           </button>
-                          <button 
-                            className="action-btn email"
-                            onClick={(e) => sendDocumentEmail(doc, selectedStudent, e)}
-                            title="Send correction email"
-                          >
-                            📧 Email
+                          <button className="doc-act-btn doc-act-email" onClick={(e) => sendDocumentEmail(doc, selectedStudent, e)}>
+                            <IcoMail /> Email
                           </button>
                         </div>
                       </div>
-                    ))
-                  )}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {/* Action Buttons */}
-              <div className="modal-actions">
-                <button 
-                  className="download-pdf-btn"
-                  onClick={() => handleDownloadAllPDF(selectedStudent)}
-                  title="Download all documents as a single PDF file"
-                >
-                  <span className="btn-icon">📄</span>
-                  Download Complete PDF
-                </button>
-                <button 
-                  className="close-modal-btn"
-                  onClick={() => setShowStudentModal(false)}
-                >
-                  Close
+              {/* Modal actions */}
+              <div className="doc-modal-actions">
+                <button className="doc-btn-secondary" onClick={() => setShowStudentModal(false)}>Close</button>
+                <button className="doc-dl-pdf-btn doc-btn-primary" onClick={() => handleDownloadAllPDF(selectedStudent)}>
+                  <IcoDl /> Download Complete PDF
                 </button>
               </div>
+
             </div>
           </div>
         </div>

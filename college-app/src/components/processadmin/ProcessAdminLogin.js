@@ -10,44 +10,37 @@ const ProcessAdminLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
-  // Hardcoded credentials for single Process Admin
-  const VALID_EMAIL = "process-admin@edutechex.com";
-  const VALID_PASSWORD = "process-admin@edutechex123";
+  const [emailFocused, setEmailFocused] = useState(false);
+  const [passFocused, setPassFocused] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
-
-    console.log('Attempting login with:', email);
+    console.log("Attempting login with:", email);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/process-admin/login', {
-        email,
-        password
-      });
-
-      console.log('Login response:', response.data);
+      const response = await axios.post(
+        "http://localhost:5000/api/process-admin/login",
+        { email, password }
+      );
+      console.log("Login response:", response.data);
 
       if (response.data.success && response.data.token) {
-        localStorage.setItem('processAdminToken', response.data.token);
-        localStorage.setItem('processAdminData', JSON.stringify(response.data.processAdmin));
-        localStorage.setItem('processAdminEmail', email);
-        
-        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
-        
-        console.log('✅ Login successful! Token stored');
+        localStorage.setItem("processAdminToken", response.data.token);
+        localStorage.setItem("processAdminData", JSON.stringify(response.data.processAdmin));
+        localStorage.setItem("processAdminEmail", email);
+        axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.token}`;
+        console.log("✅ Login successful! Token stored");
         navigate("/process-admin-dashboard");
       } else {
         setError(response.data.message || "Login failed");
       }
     } catch (err) {
-      console.error('Login error:', err.response || err);
-      
+      console.error("Login error:", err.response || err);
       if (err.response?.status === 401) {
         setError("Invalid email or password. Please try again.");
-      } else if (err.code === 'ECONNREFUSED') {
+      } else if (err.code === "ECONNREFUSED") {
         setError("Cannot connect to server. Please ensure backend is running.");
       } else {
         setError("Login failed. Please try again.");
@@ -62,157 +55,225 @@ const ProcessAdminLogin = () => {
   };
 
   return (
-    <div className="process-admin-login-wrapper">
-      <div className="centered-container">
-        <div className="login-card">
-          {/* Left Side - Login Form */}
-          <div className="login-form-side">
-            <div className="brand-section">
-              <h1 className="brand-title">EdutechEX</h1>
-              <span className="brand-tag">PROCESS ADMIN</span>
+    <div className="pal-wrapper">
+      <div className="pal-container">
+        <div className="pal-card">
+
+          {/* ── LEFT — Login Form ── */}
+          <div className="pal-form-side">
+
+            {/* Brand block */}
+            <div className="pal-brand-block">
+              <h1 className="pal-brand-title">EdutechEX</h1>
+              <span className="pal-brand-tag">PROCESS ADMIN</span>
             </div>
 
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label>Email Address</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="process-admin@edutechex.com"
-                  required
-                  disabled={isLoading}
-                />
+            <form onSubmit={handleSubmit} noValidate>
+
+              {/* Email */}
+              <div className="pal-field-group">
+                <label className="pal-label">Email Address</label>
+                <div className={`pal-input-wrap ${emailFocused ? "pal-focused" : ""}`}>
+                  <span className="pal-input-icon">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                      <polyline points="22,6 12,13 2,6"/>
+                    </svg>
+                  </span>
+                  <input
+                    className="pal-input"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onFocus={() => setEmailFocused(true)}
+                    onBlur={() => setEmailFocused(false)}
+                    placeholder="process-admin@edutechex.com"
+                    required
+                    disabled={isLoading}
+                    autoComplete="email"
+                  />
+                </div>
               </div>
 
-              <div className="form-group">
-                <label>Password</label>
-                <div className="password-input-wrapper">
+              {/* Password */}
+              <div className="pal-field-group">
+                <label className="pal-label">Password</label>
+                <div className={`pal-input-wrap ${passFocused ? "pal-focused" : ""}`}>
+                  <span className="pal-input-icon">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                  </span>
                   <input
+                    className="pal-input pal-input-pass"
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="*********"
+                    onFocus={() => setPassFocused(true)}
+                    onBlur={() => setPassFocused(false)}
+                    placeholder="••••••••••"
                     required
                     disabled={isLoading}
+                    autoComplete="current-password"
                   />
                   <button
                     type="button"
-                    className="show-password-btn"
+                    className="pal-show-btn"
                     onClick={() => setShowPassword(!showPassword)}
                     disabled={isLoading}
+                    tabIndex={-1}
                   >
-                    {showPassword ? "Hide" : "Show"}
+                    {showPassword ? (
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                        <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                        <line x1="1" y1="1" x2="23" y2="23"/>
+                      </svg>
+                    ) : (
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                    )}
                   </button>
                 </div>
               </div>
 
+              {/* Error */}
               {error && (
-                <div className="error-message">
-                  <span>⚠️</span> {error}
+                <div className="pal-error">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                  <span>{error}</span>
+                  <button type="button" className="pal-error-close" onClick={() => setError("")}>✕</button>
                 </div>
               )}
 
-              <button 
-                type="submit" 
-                className="login-btn" 
+              {/* Submit */}
+              <button
+                type="submit"
+                className={`pal-submit-btn ${isLoading ? "pal-loading" : ""}`}
                 disabled={isLoading}
               >
-                {isLoading ? "Logging in..." : "Login to Dashboard"}
+                {isLoading ? (
+                  <>
+                    <span className="pal-spinner" />
+                    Signing in…
+                  </>
+                ) : (
+                  "Login to Dashboard"
+                )}
               </button>
             </form>
 
-            <button 
-              onClick={handleBackToDashboard} 
-              className="back-link"
+            <button
+              onClick={handleBackToDashboard}
+              className="pal-back-btn"
               disabled={isLoading}
+              type="button"
             >
-              ← Back to Dashboard
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"/>
+                <polyline points="12 19 5 12 12 5"/>
+              </svg>
+              Back to Dashboard
             </button>
           </div>
 
-          {/* Right Side - Professional University Illustration */}
-          <div className="info-side">
-            <div className="illustration-container">
-              <svg className="university-illustration" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="120" y="100" width="160" height="130" rx="8" fill="#1E3A8A" opacity="0.9" />
-                <rect x="140" y="120" width="20" height="35" rx="2" fill="#FBBF24" />
-                <rect x="170" y="120" width="20" height="35" rx="2" fill="#FBBF24" />
-                <rect x="200" y="120" width="20" height="35" rx="2" fill="#FBBF24" />
-                <rect x="230" y="120" width="20" height="35" rx="2" fill="#FBBF24" />
-                <rect x="110" y="80" width="180" height="25" rx="6" fill="#FBBF24" />
-                <circle cx="200" cy="65" r="12" fill="#FBBF24" />
-                <rect x="185" y="190" width="30" height="40" rx="4" fill="#92400E" />
-                <rect x="40" y="120" width="60" height="100" rx="6" fill="#2563EB" opacity="0.8" />
-                <rect x="55" y="140" width="12" height="25" rx="2" fill="#FBBF24" />
-                <rect x="75" y="140" width="12" height="25" rx="2" fill="#FBBF24" />
-                <rect x="300" y="110" width="60" height="110" rx="6" fill="#2563EB" opacity="0.8" />
-                <rect x="315" y="130" width="30" height="18" rx="2" fill="#FBBF24" />
-                <rect x="315" y="160" width="30" height="18" rx="2" fill="#FBBF24" />
-                
-                {/* Students Group */}
-                <g className="students-group">
-                  <circle cx="90" cy="240" r="9" fill="#FBBF24" />
-                  <rect x="86" y="249" width="8" height="18" fill="#374151" />
-                  <rect x="82" y="254" width="4" height="6" fill="#FBBF24" />
-                  
-                  <circle cx="135" cy="245" r="9" fill="#FBBF24" />
-                  <rect x="131" y="254" width="8" height="18" fill="#374151" />
-                  <rect x="137" y="245" width="6" height="10" fill="#92400E" />
-                  
-                  <circle cx="180" cy="242" r="9" fill="#FBBF24" />
-                  <rect x="176" y="251" width="8" height="18" fill="#374151" />
-                  <path d="M176 233 L184 233 L180 226 L176 233" fill="#FBBF24" />
-                  
-                  <circle cx="225" cy="243" r="9" fill="#FBBF24" />
-                  <rect x="221" y="252" width="8" height="18" fill="#374151" />
-                  <rect x="227" y="243" width="6" height="8" fill="#374151" />
-                  
-                  <circle cx="270" cy="241" r="9" fill="#FBBF24" />
-                  <rect x="266" y="250" width="8" height="18" fill="#374151" />
-                  <rect x="270" y="241" width="6" height="10" fill="white" />
-                  
-                  <circle cx="315" cy="238" r="9" fill="#FBBF24" />
-                  <rect x="311" y="247" width="8" height="18" fill="#374151" />
-                </g>
-                
-                {/* Admin/Professor Figure */}
-                <g className="admin-figure">
-                  <circle cx="200" cy="190" r="10" fill="#FBBF24" />
-                  <rect x="196" y="200" width="8" height="20" fill="#1E3A8A" />
-                  <path d="M192 208 L208 208 L200 218 L192 208" fill="#1E3A8A" opacity="0.7" />
-                  <circle cx="195" cy="187" r="2.5" fill="white" />
-                  <circle cx="205" cy="187" r="2.5" fill="white" />
-                  <line x1="197.5" y1="187" x2="202.5" y2="187" stroke="black" strokeWidth="1" />
-                  <rect x="210" y="185" width="10" height="12" fill="white" rx="1" />
-                  <line x1="212" y1="188" x2="218" y2="188" stroke="#374151" strokeWidth="1" />
-                </g>
-                
-                {/* Floating Elements */}
-                <g className="floating-books">
-                  <rect x="50" y="40" width="14" height="18" rx="1" fill="#FBBF24" opacity="0.7" transform="rotate(-8)" />
-                  <rect x="340" y="50" width="12" height="16" rx="1" fill="#FBBF24" opacity="0.7" transform="rotate(12)" />
-                  <rect x="20" y="180" width="10" height="14" rx="1" fill="#FBBF24" opacity="0.5" transform="rotate(20)" />
-                </g>
-                
-                <path d="M360 150 L380 140" stroke="#FBBF24" strokeWidth="2" strokeDasharray="4 4" opacity="0.5" />
-                <path d="M30 160 L50 150" stroke="#FBBF24" strokeWidth="2" strokeDasharray="4 4" opacity="0.5" />
-                <line x1="20" y1="270" x2="380" y2="270" stroke="#A7B8C9" strokeWidth="2" />
+          {/* ── RIGHT — Illustration ── */}
+          <div className="pal-info-side">
+            <div className="pal-illustration-wrap">
+              <svg
+                className="pal-illustration-svg"
+                viewBox="0 0 400 300"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                {/* Ground */}
+                <line x1="20" y1="270" x2="380" y2="270" stroke="#e2e8f0" strokeWidth="2"/>
+
+                {/* Main building */}
+                <rect x="120" y="100" width="160" height="130" rx="6" fill="#2563eb" opacity="0.92"/>
+                {/* Roof */}
+                <rect x="110" y="82" width="180" height="22" rx="5" fill="#f59e0b"/>
+                {/* Roof top orb */}
+                <circle cx="200" cy="68" r="11" fill="#f59e0b"/>
+
+                {/* Windows row */}
+                <rect x="140" y="118" width="22" height="30" rx="3" fill="#fbbf24"/>
+                <rect x="170" y="118" width="22" height="30" rx="3" fill="#fbbf24"/>
+                <rect x="200" y="118" width="22" height="30" rx="3" fill="#fbbf24"/>
+                <rect x="230" y="118" width="22" height="30" rx="3" fill="#fbbf24"/>
+
+                {/* Door */}
+                <rect x="184" y="188" width="32" height="42" rx="3" fill="#1d4ed8"/>
+                <circle cx="212" cy="210" r="2.5" fill="#93c5fd"/>
+
+                {/* Admin figure */}
+                <circle cx="200" cy="178" r="9" fill="#f59e0b"/>
+                <rect x="195" y="187" width="10" height="18" rx="2" fill="#7c3aed"/>
+                {/* Clipboard */}
+                <rect x="207" y="182" width="10" height="13" rx="1.5" fill="#fff"/>
+                <line x1="209" y1="185" x2="215" y2="185" stroke="#94a3b8" strokeWidth="1.2"/>
+                <line x1="209" y1="188" x2="215" y2="188" stroke="#94a3b8" strokeWidth="1.2"/>
+                <line x1="209" y1="191" x2="213" y2="191" stroke="#94a3b8" strokeWidth="1.2"/>
+
+                {/* Left building */}
+                <rect x="35" y="128" width="60" height="100" rx="4" fill="#3b82f6" opacity="0.85"/>
+                <rect x="48" y="144" width="14" height="20" rx="2" fill="#fbbf24"/>
+                <rect x="68" y="144" width="14" height="20" rx="2" fill="#fbbf24"/>
+                <rect x="48" y="172" width="14" height="20" rx="2" fill="#fbbf24"/>
+                <rect x="68" y="172" width="14" height="20" rx="2" fill="#fbbf24"/>
+
+                {/* Right building */}
+                <rect x="305" y="138" width="60" height="90" rx="4" fill="#3b82f6" opacity="0.85"/>
+                <rect x="318" y="152" width="14" height="18" rx="2" fill="#fbbf24"/>
+                <rect x="338" y="152" width="14" height="18" rx="2" fill="#fbbf24"/>
+                <rect x="318" y="178" width="14" height="18" rx="2" fill="#fbbf24"/>
+                <rect x="338" y="178" width="14" height="18" rx="2" fill="#fbbf24"/>
+
+                {/* Students */}
+                {[85, 125, 165, 235, 280, 320].map((x, i) => (
+                  <g key={i}>
+                    <circle cx={x} cy={248} r={8} fill="#f59e0b"/>
+                    <rect x={x - 5} y={256} width={10} height={16} rx={2} fill="#374151"/>
+                  </g>
+                ))}
+
+                {/* Lamp posts */}
+                {[58, 100, 305, 345].map((x, i) => (
+                  <g key={i}>
+                    <rect x={x - 1.5} y={230} width={3} height={14} rx={1.5} fill="#94a3b8"/>
+                    <circle cx={x} cy={228} r={4} fill="#fbbf24" opacity="0.9"/>
+                  </g>
+                ))}
+
+                {/* Floating accents */}
+                <rect x="345" y="44" width="14" height="14" rx="3" fill="#f59e0b" opacity="0.7" transform="rotate(15 352 51)"/>
+                <circle cx="60" cy="52" r="7" fill="#f59e0b" opacity="0.8"/>
+                <rect x="30" y="100" width="10" height="10" rx="2" fill="#93c5fd" opacity="0.6" transform="rotate(-10 35 105)"/>
+
+                {/* Dashed lines */}
+                <path d="M360 148 L382 136" stroke="#fbbf24" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.45"/>
+                <path d="M28 158 L50 146" stroke="#fbbf24" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.45"/>
               </svg>
             </div>
 
-            <h2 className="info-title">Empower Education Through Innovation</h2>
-            
-            <p className="info-description">
-              Streamline academic processes, manage workflows efficiently, and create an exceptional learning environment for future leaders.
+            <h2 className="pal-info-title">
+              Empower Education Through Innovation
+            </h2>
+            <p className="pal-info-desc">
+              Streamline academic processes, manage workflows efficiently, and
+              create an exceptional learning environment for future leaders.
             </p>
           </div>
         </div>
 
-        {/* Copyright */}
-        <div className="copyright">
-          © 2026 EdutechEX. All rights reserved.
-        </div>
+        <div className="pal-copyright">© 2026 EdutechEX. All rights reserved.</div>
       </div>
     </div>
   );
