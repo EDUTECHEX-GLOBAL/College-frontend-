@@ -505,7 +505,7 @@
 .users-table tbody tr:last-child td { border-bottom: none; }
 
 /* ── User Info Cell ── */
-.user-info {
+.adminuser-user-info {
   display: flex;
   align-items: center;
   gap: 10px;

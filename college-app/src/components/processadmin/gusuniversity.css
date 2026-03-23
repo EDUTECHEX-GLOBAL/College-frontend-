@@ -743,3 +743,262 @@
   .gus-modal-ftr  { padding: 10px 14px 14px; }
   .gus-docviewer-hdr { padding: 9px 12px; }
 }
+
+/* ═══════════════════════════════════════════════════════
+   MOBILE COMPACT — NEW ADDITIONS
+   All new classes for mobile card list + page header
+═══════════════════════════════════════════════════════ */
+
+/* ── Page Header (hero style with accent) ── */
+.gus-page-header {
+  position: relative;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 18px; gap: 12px; flex-wrap: wrap;
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 18px 20px 18px 0;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.gus-page-header-accent {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 5px; background: var(--primary);
+  border-radius: var(--radius) 0 0 var(--radius);
+}
+
+.gus-page-header-left { padding-left: 22px; flex: 1; min-width: 0; }
+.gus-page-header-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; padding-right: 4px; }
+
+.gus-page-title { font-size: 22px; font-weight: 800; color: var(--text); margin: 0 0 3px; letter-spacing: -0.4px; }
+.gus-page-sub   { font-size: 13px; color: var(--text-lt); margin: 0; }
+
+/* Hero badge inside header */
+.gus-hero-badge {
+  background: var(--primary-lt);
+  border: 1.5px solid var(--primary-bd);
+  border-radius: 12px; padding: 10px 16px; text-align: center; flex-shrink: 0;
+}
+.gus-hero-badge-num { font-size: 24px; font-weight: 800; color: var(--text); line-height: 1; letter-spacing: -0.5px; }
+.gus-hero-badge-lbl { font-size: 9px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px; }
+
+/* ── Stat emoji (replaces img filter hack) ── */
+.gus-stat-emoji { font-size: 20px; line-height: 1; }
+
+/* ── Desktop table visible, mobile cards hidden ── */
+.gus-desktop-table  { display: block; }
+.gus-mobile-cards   { display: none; }
+
+/* ── Mobile Application Cards ── */
+.gus-mob-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow);
+  transition: box-shadow var(--t), border-color var(--t);
+  animation: gus-fadeRow 0.3s ease both;
+}
+.gus-mob-card:hover { box-shadow: var(--shadow-md); border-color: var(--primary-bd); }
+
+/* Card top bar */
+.gus-mob-card-top {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 9px 13px;
+  background: var(--primary-lt);
+  border-bottom: 1px solid var(--border-lt);
+  gap: 8px;
+}
+
+/* Card body */
+.gus-mob-card-body { padding: 12px 13px 10px; }
+
+/* Student row */
+.gus-mob-student {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 10px;
+}
+.gus-avatar-md { width: 38px; height: 38px; font-size: 13px; }
+
+.gus-mob-student-info { flex: 1; min-width: 0; }
+.gus-mob-name  { font-size: 13.5px; font-weight: 700; color: var(--text); line-height: 1.3; }
+.gus-mob-email { font-size: 11px; color: var(--text-lt); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gus-mob-phone { font-size: 11px; color: var(--primary); font-weight: 600; margin-top: 1px; }
+
+/* 2-col meta grid */
+.gus-mob-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+.gus-mob-meta-item {
+  display: flex; flex-direction: column; gap: 3px;
+  background: #f8fafc;
+  border: 1px solid var(--border-lt);
+  border-radius: 8px; padding: 8px 10px;
+}
+.gus-mob-full { grid-column: 1 / -1; }
+.gus-mob-meta-lbl { font-size: 9.5px; font-weight: 700; color: var(--text-lt); text-transform: uppercase; letter-spacing: 0.07em; }
+.gus-mob-meta-val { font-size: 12.5px; font-weight: 600; color: var(--text); }
+
+/* Progress row inside meta */
+.gus-mob-prog-row {
+  display: flex; align-items: center; gap: 8px; margin-top: 2px;
+}
+.gus-mob-prog-row .gus-prog-track { flex: 1; }
+
+/* Card footer */
+.gus-mob-card-footer {
+  display: flex; gap: 8px; align-items: center;
+  padding: 9px 13px;
+  border-top: 1px solid var(--border-lt);
+  background: #f8fafc;
+}
+.gus-mob-btn-full {
+  flex: 1;
+  justify-content: center;
+}
+
+/* Mobile list footer */
+.gus-mob-list-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--surface);
+  border-radius: 12px; border: 1px solid var(--border);
+  margin-top: 4px; flex-wrap: wrap; gap: 8px;
+  box-shadow: var(--shadow);
+}
+.gus-mob-list-footer span { font-size: 12px; color: var(--text-lt); font-weight: 500; }
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE OVERRIDES — Updated breakpoints
+═══════════════════════════════════════════════════════ */
+
+/* ── Tablet 1100px ── */
+@media (max-width: 1100px) {
+  .gus-stats-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── Tablet 768px ── */
+@media (max-width: 768px) {
+  .gus-wrap { padding: 12px 10px 28px; }
+
+  /* Page header compact */
+  .gus-page-header { padding: 14px 14px 14px 0; margin-bottom: 14px; }
+  .gus-page-header-left { padding-left: 18px; }
+  .gus-page-title  { font-size: 18px; }
+  .gus-page-sub    { font-size: 12px; }
+  .gus-hero-badge  { padding: 8px 12px; }
+  .gus-hero-badge-num { font-size: 20px; }
+
+  /* Stats 2x2 */
+  .gus-stats-row { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .gus-stat-card { padding: 13px; gap: 10px; border-radius: 12px; }
+  .gus-stat-icon-wrap { width: 40px; height: 40px; border-radius: 10px; }
+  .gus-stat-emoji { font-size: 18px; }
+  .gus-stat-num   { font-size: 24px; }
+  .gus-stat-label { font-size: 9px; }
+
+  /* Controls stack */
+  .gus-controls   { flex-direction: column; align-items: stretch; gap: 9px; margin-bottom: 14px; }
+  .gus-search-box { min-width: unset; }
+  .gus-filters    { gap: 6px; }
+  .gus-filter-btn { flex: 1; min-width: 60px; font-size: 11px; padding: 7px 8px; justify-content: center; text-align: center; }
+
+  /* Switch desktop→mobile */
+  .gus-desktop-table { display: none !important; }
+  .gus-mobile-cards  { display: block; }
+
+  /* Modal bottom sheet */
+  .gus-overlay { align-items: flex-end; padding: 0; }
+  .gus-modal   { border-radius: 20px 20px 0 0; max-height: 92dvh; max-width: 100%; }
+  .gus-modal-hdr  { padding: 14px 16px 12px; }
+  .gus-modal-body { padding: 14px 16px; gap: 12px; }
+  .gus-modal-ftr  { padding: 12px 16px 16px; }
+  .gus-modal-grid { grid-template-columns: 1fr; }
+  .gus-modal-field { border-right: none !important; }
+  .gus-modal-field:last-child { border-bottom: none; }
+  .gus-modal-title { font-size: 15px; }
+  .gus-modal-avatar { width: 38px; height: 38px; font-size: 13px; }
+  .gus-modal-appid  { font-size: 10px; }
+
+  /* Doc cards 1 col in modal */
+  .gus-doc-cards { grid-template-columns: 1fr; gap: 7px; }
+
+  /* Doc viewer bottom sheet */
+  .gus-docviewer-overlay { padding: 0; align-items: flex-end; }
+  .gus-docviewer-box     { height: 92dvh; border-radius: 16px 16px 0 0; max-width: 100%; }
+  .gus-docviewer-hdr     { padding: 11px 13px; gap: 8px; }
+  .gus-docviewer-open-btn { padding: 5px 9px; font-size: 10px; }
+  .gus-docviewer-filename { max-width: 150px; }
+}
+
+/* ── Small mobile 540px ── */
+@media (max-width: 540px) {
+  .gus-wrap { padding: 10px 8px 24px; }
+
+  /* Page header stacks */
+  .gus-page-header { flex-direction: column; align-items: flex-start; padding: 14px 14px 14px 18px; gap: 10px; }
+  .gus-page-header-accent { border-radius: 0; }
+  .gus-page-header-right  { width: 100%; justify-content: space-between; padding-right: 0; }
+  .gus-hero-badge { flex: 1; text-align: center; }
+
+  /* Stats tighter */
+  .gus-stats-row { gap: 7px; }
+  .gus-stat-card { padding: 11px 10px; gap: 8px; }
+  .gus-stat-icon-wrap { width: 34px; height: 34px; border-radius: 9px; }
+  .gus-stat-emoji { font-size: 16px; }
+  .gus-stat-num   { font-size: 22px; }
+  .gus-stat-label { font-size: 8.5px; }
+
+  /* Filter pills scroll */
+  .gus-filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .gus-filters::-webkit-scrollbar { display: none; }
+  .gus-filter-btn { flex-shrink: 0; min-width: unset; }
+
+  /* Mobile cards tighter */
+  .gus-mob-card-top   { padding: 8px 11px; }
+  .gus-mob-card-body  { padding: 10px 11px 9px; }
+  .gus-mob-card-footer { padding: 8px 11px; }
+  .gus-mob-name  { font-size: 13px; }
+  .gus-mob-email { font-size: 10.5px; }
+  .gus-avatar-md { width: 34px; height: 34px; font-size: 12px; }
+
+  /* Modal footer stack */
+  .gus-modal-ftr { flex-direction: column-reverse; gap: 8px; }
+  .gus-modal-dl-btn, .gus-modal-close-btn { width: 100%; justify-content: center; text-align: center; }
+
+  /* Doc viewer header stacks */
+  .gus-docviewer-hdr { flex-direction: column; align-items: flex-start; }
+  .gus-docviewer-hdr-right { width: 100%; justify-content: flex-end; }
+}
+
+/* ── Very small 360px ── */
+@media (max-width: 360px) {
+  .gus-wrap { padding: 8px 6px 20px; }
+  .gus-stats-row { gap: 5px; }
+  .gus-stat-card { padding: 9px 8px; border-radius: 10px; }
+  .gus-stat-icon-wrap { width: 30px; height: 30px; border-radius: 8px; }
+  .gus-stat-emoji { font-size: 14px; }
+  .gus-stat-num   { font-size: 19px; }
+  .gus-stat-label { font-size: 8px; }
+  .gus-page-title { font-size: 16px; }
+  .gus-refresh-btn { padding: 7px 12px; font-size: 11px; }
+  .gus-mob-meta-grid { grid-template-columns: 1fr; }
+  .gus-mob-meta-item { padding: 6px 8px; }
+  .gus-mob-card-top { padding: 7px 10px; }
+  .gus-mob-card-body { padding: 9px 10px 8px; }
+  .gus-mob-card-footer { padding: 7px 10px; }
+  .gus-mob-list-footer { padding: 10px 12px; }
+  .gus-modal-hdr  { padding: 12px 13px 10px; }
+  .gus-modal-body { padding: 12px 13px; }
+  .gus-modal-ftr  { padding: 10px 13px 13px; }
+}
