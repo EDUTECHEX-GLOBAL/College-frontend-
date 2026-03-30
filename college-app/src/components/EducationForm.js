@@ -16,13 +16,12 @@ import FuturePlansSection from './education-sections/FuturePlansSection';
 import DocumentsUploadSection from './education-sections/DocumentsUploadSection';
 import EducationPreview from './EducationPreview';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL
-;
+const API_URL = process.env.REACT_APP_API_BASE_URL;
 
 // Section name mapping - URL names to database field names
 const SECTION_NAME_MAP = {
   'current-school': 'currentSchool',
-  'other-schools': 'otherSchools', 
+  'other-schools': 'otherSchools',
   'colleges': 'colleges',
   'grades': 'grades',
   'current-courses': 'currentCourses',
@@ -35,7 +34,7 @@ const SECTION_NAME_MAP = {
 // Reverse mapping - database field names to URL names
 const REVERSE_SECTION_MAP = {
   'currentSchool': 'current-school',
-  'otherSchools': 'other-schools', 
+  'otherSchools': 'other-schools',
   'colleges': 'colleges',
   'grades': 'grades',
   'currentCourses': 'current-courses',
@@ -45,13 +44,25 @@ const REVERSE_SECTION_MAP = {
   'documents': 'documents'
 };
 
+// All sections the CV fill saves to (documents excluded — not in parsedData)
+const CV_SECTIONS = [
+  'currentSchool',
+  'otherSchools',
+  'colleges',
+  'grades',
+  'currentCourses',
+  'honors',
+  'communityOrganizations',
+  'futurePlans',
+];
+
 const EducationForm = () => {
   const navigate = useNavigate();
   const { '*': urlSection } = useParams();
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState({ type: '', text: '' });
-  const [progress, setProgress] = useState(0);
+  const [loading, setLoading]     = useState(true);
+  const [saving, setSaving]       = useState(false);
+  const [message, setMessage]     = useState({ type: '', text: '' });
+  const [progress, setProgress]   = useState(0);
   const [showPreview, setShowPreview] = useState(false);
 
   // Convert URL section to database section name
@@ -60,7 +71,7 @@ const EducationForm = () => {
   // Define all education sections in database field names
   const sections = [
     'currentSchool',
-    'otherSchools', 
+    'otherSchools',
     'colleges',
     'grades',
     'currentCourses',
@@ -144,7 +155,7 @@ const EducationForm = () => {
     overallProgress: 0
   });
 
-  // Load education data from API
+  // ── Load education data from API ───────────────────────────────────────────
   useEffect(() => {
     const fetchEducationData = async () => {
       try {
@@ -180,14 +191,14 @@ const EducationForm = () => {
     fetchEducationData();
   }, [navigate]);
 
-  // Set active section based on URL
+  // ── Redirect to default section if no URL section ──────────────────────────
   useEffect(() => {
     if (!urlSection) {
       navigate('/firstyear/dashboard/education/current-school', { replace: true });
     }
   }, [urlSection, navigate]);
 
-  // Save section data to backend
+  // ── Save a single section to the backend ───────────────────────────────────
   const saveSectionToBackend = async (sectionName, sectionData) => {
     try {
       const token = localStorage.getItem('token');
@@ -198,10 +209,7 @@ const EducationForm = () => {
 
       const response = await axios.put(
         `${API_URL}/api/education/update`,
-        {
-          section: sectionName,  // Use database field name directly
-          data: sectionData
-        },
+        { section: sectionName, data: sectionData },
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -211,28 +219,92 @@ const EducationForm = () => {
       );
 
       if (response.data.success) {
-        setProgress(response.data.progress);
-        // Update education completion data
+        setProgress(response.data.education?.overallProgress ?? 0);
         setEducationData(prev => ({
           ...prev,
-          educationCompletion: response.data.education.educationCompletion,
-          overallProgress: response.data.progress
+          educationCompletion: response.data.education?.educationCompletion ?? prev.educationCompletion,
+          overallProgress:     response.data.education?.overallProgress     ?? prev.overallProgress,
         }));
         return true;
       }
       return false;
     } catch (error) {
       console.error(`Error saving ${sectionName}:`, error);
-      setMessage({ 
-        type: 'error', 
-        text: `Failed to save ${sectionName.replace(/([A-Z])/g, ' $1').toLowerCase()}` 
+      setMessage({
+        type: 'error',
+        text: `Failed to save ${sectionName.replace(/([A-Z])/g, ' $1').toLowerCase()}`
       });
       return false;
     }
   };
 
-  // Handler functions
-  const handleInputChange = async (section, field, value) => {
+  // ── CV auto-fill handler ───────────────────────────────────────────────────
+  // Called by CurrentSchoolSection after the backend returns parsedData.
+  // Merges all parsed sections into local state then saves each to the backend.
+  const handleCVFilled = async (parsedData) => {
+    if (!parsedData) return;
+
+    // 1. Merge every parsed section into local state immediately
+    //    so the UI reflects the auto-filled values right away.
+    setEducationData(prev => ({
+      ...prev,
+      currentSchool: {
+        ...prev.currentSchool,
+        ...(parsedData.currentSchool ?? {}),
+      },
+      otherSchools: {
+        ...prev.otherSchools,
+        ...(parsedData.otherSchools ?? {}),
+      },
+      colleges: {
+        ...prev.colleges,
+        ...(parsedData.colleges ?? {}),
+      },
+      grades: {
+        ...prev.grades,
+        ...(parsedData.grades ?? {}),
+      },
+      currentCourses: {
+        ...prev.currentCourses,
+        ...(parsedData.currentCourses ?? {}),
+      },
+      honors: {
+        ...prev.honors,
+        ...(parsedData.honors ?? {}),
+      },
+      communityOrganizations: {
+        ...prev.communityOrganizations,
+        ...(parsedData.communityOrganizations ?? {}),
+      },
+      futurePlans: {
+        ...prev.futurePlans,
+        ...(parsedData.futurePlans ?? {}),
+      },
+    }));
+
+    // 2. Auto-save every section that has data to the backend sequentially
+    setSaving(true);
+    setMessage({ type: '', text: '' });
+
+    let savedCount = 0;
+    for (const section of CV_SECTIONS) {
+      if (parsedData[section]) {
+        const ok = await saveSectionToBackend(section, parsedData[section]);
+        if (ok) savedCount++;
+      }
+    }
+
+    setSaving(false);
+    setMessage({
+      type: savedCount > 0 ? 'success' : 'error',
+      text: savedCount > 0
+        ? `✅ CV auto-filled and saved ${savedCount} section(s). Please review each section carefully.`
+        : '⚠️ CV was parsed but could not be saved. Please try saving each section manually.',
+    });
+  };
+
+  // ── Field-level change handlers (with 1 s debounce auto-save) ─────────────
+  const handleInputChange = (section, field, value) => {
     const updatedData = {
       ...educationData,
       [section]: {
@@ -240,16 +312,14 @@ const EducationForm = () => {
         [field]: value
       }
     };
-    
     setEducationData(updatedData);
-    
-    // Auto-save after change with debounce
+
     setTimeout(async () => {
       await saveSectionToBackend(section, updatedData[section]);
     }, 1000);
   };
 
-  const handleNestedChange = async (section, subSection, field, value) => {
+  const handleNestedChange = (section, subSection, field, value) => {
     const updatedData = {
       ...educationData,
       [section]: {
@@ -260,21 +330,17 @@ const EducationForm = () => {
         }
       }
     };
-    
     setEducationData(updatedData);
-    
+
     setTimeout(async () => {
       await saveSectionToBackend(section, updatedData[section]);
     }, 1000);
   };
 
-  const handleArrayChange = async (section, arrayField, index, field, value) => {
+  const handleArrayChange = (section, arrayField, index, field, value) => {
     const updatedArray = [...educationData[section][arrayField]];
-    updatedArray[index] = {
-      ...updatedArray[index],
-      [field]: value
-    };
-    
+    updatedArray[index] = { ...updatedArray[index], [field]: value };
+
     const updatedData = {
       ...educationData,
       [section]: {
@@ -282,9 +348,8 @@ const EducationForm = () => {
         [arrayField]: updatedArray
       }
     };
-    
     setEducationData(updatedData);
-    
+
     setTimeout(async () => {
       await saveSectionToBackend(section, updatedData[section]);
     }, 1000);
@@ -296,17 +361,14 @@ const EducationForm = () => {
       [section]: {
         ...educationData[section],
         [arrayField]: [...educationData[section][arrayField], newItem],
-        [`numberOf${arrayField.charAt(0).toUpperCase() + arrayField.slice(1)}`]: 
+        [`numberOf${arrayField.charAt(0).toUpperCase() + arrayField.slice(1)}`]:
           educationData[section][arrayField].length + 1
       }
     };
-    
     setEducationData(updatedData);
-    
+
     const success = await saveSectionToBackend(section, updatedData[section]);
-    if (success) {
-      setMessage({ type: 'success', text: 'Item added successfully' });
-    }
+    if (success) setMessage({ type: 'success', text: 'Item added successfully' });
   };
 
   const removeArrayItem = async (section, arrayField, index) => {
@@ -319,166 +381,110 @@ const EducationForm = () => {
         [`numberOf${arrayField.charAt(0).toUpperCase() + arrayField.slice(1)}`]: updatedArray.length
       }
     };
-    
     setEducationData(updatedData);
-    
+
     const success = await saveSectionToBackend(section, updatedData[section]);
-    if (success) {
-      setMessage({ type: 'success', text: 'Item removed successfully' });
-    }
+    if (success) setMessage({ type: 'success', text: 'Item removed successfully' });
   };
 
-  // Validation for each section
+  // ── Section validation ─────────────────────────────────────────────────────
   const validateSection = (sectionName) => {
     const section = educationData[sectionName];
-    
     switch (sectionName) {
       case 'currentSchool':
-        return section.schoolName && section.dateOfEntry;
-      
+        return !!(section.schoolName && section.dateOfEntry);
       case 'grades':
-        return section.cumulativeGPA && section.gpaScale;
-      
+        return !!(section.cumulativeGPA && section.gpaScale);
       case 'futurePlans':
-        return section.highestDegree && section.careerInterest;
-      
+        return !!(section.highestDegree && section.careerInterest);
       case 'documents':
-        return section.passport && section.tenthMarksheet;
-      
+        return !!(section.passport && section.tenthMarksheet);
       default:
-        return true; // Other sections are optional or have different validation
+        return true;
     }
   };
 
+  // ── Save current section (manual) ─────────────────────────────────────────
   const handleSaveSection = async () => {
     setSaving(true);
     setMessage({ type: '', text: '' });
 
-    // Validate current section
     if (!validateSection(activeSection)) {
-      setMessage({ 
-        type: 'error', 
-        text: 'Please fill all required fields before continuing' 
-      });
+      setMessage({ type: 'error', text: 'Please fill all required fields before continuing' });
       setSaving(false);
       return;
     }
 
-    // Save current section
     const success = await saveSectionToBackend(activeSection, educationData[activeSection]);
-    
-    if (success) {
-      setMessage({ type: 'success', text: 'Section saved successfully' });
-    }
-    
+    if (success) setMessage({ type: 'success', text: 'Section saved successfully' });
     setSaving(false);
   };
 
+  // ── Save & continue to next section ───────────────────────────────────────
   const handleSaveAndContinue = async () => {
     setSaving(true);
     setMessage({ type: '', text: '' });
 
-    // Validate current section
     if (!validateSection(activeSection)) {
-      setMessage({ 
-        type: 'error', 
-        text: 'Please fill all required fields before continuing' 
-      });
+      setMessage({ type: 'error', text: 'Please fill all required fields before continuing' });
       setSaving(false);
       return;
     }
 
-    // Save current section
     const success = await saveSectionToBackend(activeSection, educationData[activeSection]);
-    
     if (success) {
       setMessage({ type: 'success', text: 'Section saved successfully' });
-      
-      // Navigate to next section or show preview
       const currentIndex = sections.indexOf(activeSection);
       if (currentIndex < sections.length - 1) {
-        const nextSection = sections[currentIndex + 1];
+        const nextSection    = sections[currentIndex + 1];
         const nextUrlSection = REVERSE_SECTION_MAP[nextSection];
         navigate(`/firstyear/dashboard/education/${nextUrlSection}`);
       } else {
         setShowPreview(true);
       }
     }
-    
     setSaving(false);
   };
 
+  // ── Final submit ───────────────────────────────────────────────────────────
   const handleFinalSubmit = async () => {
     setSaving(true);
     setMessage({ type: '', text: '' });
 
     try {
       const token = localStorage.getItem('token');
-      if (!token) {
-        navigate('/sign-in');
-        return;
-      }
+      if (!token) { navigate('/sign-in'); return; }
 
-      // Check if all sections are completed
-      const allCompleted = educationData.educationCompletion && 
+      const allCompleted = educationData.educationCompletion &&
         Object.values(educationData.educationCompletion).every(Boolean);
-      
+
       if (!allCompleted) {
-        setMessage({ 
-          type: 'error', 
-          text: 'Please complete all sections before submitting' 
-        });
+        setMessage({ type: 'error', text: 'Please complete all sections before submitting' });
         setSaving(false);
         return;
       }
 
-      // Here you can add any final submission logic
-      // For now, we'll just show a success message and update the progress
-      setMessage({ 
-        type: 'success', 
-        text: 'Education information submitted successfully! You can now proceed with your college applications.' 
+      setMessage({
+        type: 'success',
+        text: 'Education information submitted successfully! You can now proceed with your college applications.'
       });
 
-      // Update the education data to mark as submitted
-      const updatedData = {
-        ...educationData,
-        submitted: true,
-        submittedAt: new Date().toISOString()
-      };
-      
-      setEducationData(updatedData);
-
-      // Optionally navigate back to dashboard after successful submission
-      setTimeout(() => {
-        navigate('/firstyear/dashboard');
-      }, 3000);
-
+      setTimeout(() => navigate('/firstyear/dashboard'), 3000);
     } catch (error) {
       console.error('Error submitting education information:', error);
-      setMessage({ 
-        type: 'error', 
-        text: 'Failed to submit education information. Please try again.' 
-      });
+      setMessage({ type: 'error', text: 'Failed to submit education information. Please try again.' });
     } finally {
       setSaving(false);
     }
   };
 
-  const handleBackToDashboard = () => {
-    navigate('/firstyear/dashboard');
-  };
-
-  const handleEditSection = (section) => {
+  const handleBackToDashboard = () => navigate('/firstyear/dashboard');
+  const handleEditSection     = (section) => {
     setShowPreview(false);
-    const urlSection = REVERSE_SECTION_MAP[section];
-    navigate(`/firstyear/dashboard/education/${urlSection}`);
+    navigate(`/firstyear/dashboard/education/${REVERSE_SECTION_MAP[section]}`);
   };
+  const handleBackToForm = () => setShowPreview(false);
 
-  const handleBackToForm = () => {
-    setShowPreview(false);
-  };
-
-  // Check if current section is the last one
   const isLastSection = activeSection === sections[sections.length - 1];
 
   if (loading) {
@@ -490,7 +496,7 @@ const EducationForm = () => {
     );
   }
 
-  // Render the active section component
+  // ── Render active section ──────────────────────────────────────────────────
   const renderActiveSection = () => {
     const commonProps = {
       educationData,
@@ -498,12 +504,18 @@ const EducationForm = () => {
       handleNestedChange,
       handleArrayChange,
       addArrayItem,
-      removeArrayItem
+      removeArrayItem,
     };
 
     switch (activeSection) {
       case 'currentSchool':
-        return <CurrentSchoolSection {...commonProps} />;
+        return (
+          <CurrentSchoolSection
+            {...commonProps}
+            onCVFilled={handleCVFilled}               // ✅ THE FIX — was missing before
+            onSave={handleSaveSection}
+          />
+        );
       case 'otherSchools':
         return <OtherSchoolsSection {...commonProps} />;
       case 'colleges':
@@ -525,9 +537,10 @@ const EducationForm = () => {
     }
   };
 
+  // ── Main render ────────────────────────────────────────────────────────────
   return (
     <div className="education-container">
-      {/* Header with Back Button and Centered Title */}
+      {/* Header */}
       <div className="education-header">
         <button className="back-button" onClick={handleBackToDashboard}>
           ← Back to Dashboard
@@ -535,16 +548,13 @@ const EducationForm = () => {
         <h1>Complete your Education Information</h1>
         <div className="progress-section">
           <div className="progress-bar">
-            <div 
-              className="progress-fill" 
-              style={{ width: `${progress}%` }}
-            ></div>
+            <div className="progress-fill" style={{ width: `${progress}%` }}></div>
           </div>
           <span className="progress-text">{progress}% Complete</span>
         </div>
       </div>
 
-      {/* Main Form Content */}
+      {/* Content */}
       <div className="education-content">
         {message.text && (
           <div className={`alert ${message.type === 'error' ? 'alert-error' : 'alert-success'}`}>
@@ -552,8 +562,35 @@ const EducationForm = () => {
           </div>
         )}
 
+        {/* Saving overlay indicator */}
+        {saving && (
+          <div style={{
+            padding: '10px 16px',
+            background: '#eff6ff',
+            border: '1px solid #bfdbfe',
+            borderRadius: '6px',
+            marginBottom: '16px',
+            fontSize: '14px',
+            color: '#1d4ed8',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}>
+            <span style={{
+              display: 'inline-block',
+              width: '14px',
+              height: '14px',
+              border: '2px solid #1d4ed8',
+              borderTop: '2px solid transparent',
+              borderRadius: '50%',
+              animation: 'spin 0.8s linear infinite',
+            }} />
+            Saving your data…
+          </div>
+        )}
+
         {showPreview ? (
-          <EducationPreview 
+          <EducationPreview
             educationData={educationData}
             onEditSection={handleEditSection}
             onBackToForm={handleBackToForm}
@@ -567,17 +604,17 @@ const EducationForm = () => {
 
             {/* Action Buttons */}
             <div className="form-actions">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="secondary-button"
                 onClick={handleSaveSection}
                 disabled={saving}
               >
                 {saving ? 'Saving...' : 'Save Section'}
               </button>
-              
-              <button 
-                type="button" 
+
+              <button
+                type="button"
                 className="primary-button"
                 onClick={handleSaveAndContinue}
                 disabled={saving}
@@ -588,6 +625,13 @@ const EducationForm = () => {
           </>
         )}
       </div>
+
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };

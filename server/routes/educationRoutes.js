@@ -6,24 +6,34 @@ import {
   updateEducationSection,
   getEducationSummary,
   uploadDocument,
-  removeDocument
+  removeDocument,
+  uploadCVAndExtract,
 } from "../controllers/educationController.js";
 
 import { createUploader } from "../middleware/uploadMiddleware.js";
 
-// Create education uploader instance (uploads to S3 -> education/ folder)
 const upload = createUploader("education", 10);
 
 const router = express.Router();
 
-router.get("/", authMiddleware, getEducation);
+router.get("/",        authMiddleware, getEducation);
 router.get("/summary", authMiddleware, getEducationSummary);
-router.put("/update", authMiddleware, updateEducationSection);
+router.put("/update",  authMiddleware, updateEducationSection);
 
-// Upload single file: query param 'field' required (passport | tenthMarksheet | twelfthMarksheet | additional)
-router.post("/documents/upload", authMiddleware, upload.single("file"), uploadDocument);
+router.post(
+  "/documents/upload",
+  authMiddleware,
+  upload.single("file"),
+  uploadDocument
+);
 
-// Remove document: query params field and optionally id (for additional)
 router.delete("/documents", authMiddleware, removeDocument);
+
+router.post(
+  "/upload-cv",
+  authMiddleware,
+  upload.single("cv"),
+  uploadCVAndExtract
+);
 
 export default router;

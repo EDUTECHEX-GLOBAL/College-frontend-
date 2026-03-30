@@ -7,6 +7,7 @@ import {
   getFirstTesting,
   getDetailedFirstTesting,
   deleteFirstTesting,
+  parseCV, // Add this import
 } from "../controllers/firstTestingController.js";
 
 const router = express.Router();
@@ -16,5 +17,8 @@ router.get("/", authMiddleware, getFirstTesting);
 router.get("/detailed", authMiddleware, getDetailedFirstTesting);
 router.put("/", authMiddleware, createOrUpdateFirstTesting);
 router.delete("/", authMiddleware, deleteFirstTesting);
+
+// CV Parser Route
+router.post("/parse-cv", authMiddleware, parseCV); // Add this route
 
 export default router;
