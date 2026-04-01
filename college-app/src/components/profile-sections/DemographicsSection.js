@@ -1,205 +1,202 @@
-import React from 'react';
-import './DemographicsSection.css'; // Add this import
+// src/components/DemographicsSection.js
+import React, { useState, useEffect } from 'react';
+import './DemographicsSection.css';
 
-const DemographicsSection = ({ formData, handleInputChange, handleArrayChange }) => (
-  <div className="demographics-section"> {/* Changed class name */}
-    <h2>Demographics</h2>
-    <div className="section-status">
-      {formData.profileCompletion.demographics ? 'Complete' : 'In Progress'}
-    </div>
-    <div className="form-content">
-      <div className="form-group">
-        <label>Gender</label>
-        <div className="radio-group">
-          <label>
-            <input
-              type="radio"
-              name="gender"
-              value="female"
-              checked={formData.gender === 'female'}
-              onChange={handleInputChange}
-            />
-            Female
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="gender"
-              value="male"
-              checked={formData.gender === 'male'}
-              onChange={handleInputChange}
-            />
-            Male
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="gender"
-              value="nonbinary"
-              checked={formData.gender === 'nonbinary'}
-              onChange={handleInputChange}
-            />
-            Nonbinary
-          </label>
+const DemographicsSection = ({ 
+  formData = {}, 
+  handleInputChange,
+  handleArrayChange,
+  clearAnswer,
+  clearRelatedFields 
+}) => {
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  // Ethnicity options
+  const ethnicityOptions = [
+    { value: 'american-indian-alaska-native', label: 'American Indian or Alaska Native' },
+    { value: 'asian', label: 'Asian' },
+    { value: 'black-african-american', label: 'Black or African American' },
+    { value: 'native-hawaiian-pacific-islander', label: 'Native Hawaiian or Other Pacific Islander' },
+    { value: 'white', label: 'White' },
+    { value: 'hispanic-latino', label: 'Hispanic or Latino' },
+    { value: 'prefer-not-to-say', label: 'Prefer not to say' }
+  ];
+
+  // Validate form completion
+  useEffect(() => {
+    const hasGender = formData.gender && formData.gender !== '';
+    const hasEthnicity = formData.ethnicity && formData.ethnicity.length > 0;
+    setIsFormValid(hasGender && hasEthnicity);
+  }, [formData.gender, formData.ethnicity]);
+
+  // Handle checkbox change
+  const handleCheckboxChange = (value) => {
+    if (handleArrayChange) {
+      handleArrayChange('ethnicity', value);
+    }
+  };
+
+  // Handle clear gender
+  const handleClearGender = () => {
+    if (clearAnswer) {
+      clearAnswer('gender');
+    }
+  };
+
+  // Handle clear pronouns
+  const handleClearPronouns = () => {
+    if (clearAnswer) {
+      clearAnswer('pronouns');
+    }
+  };
+
+  // Handle clear ethnicity
+  const handleClearEthnicity = () => {
+    if (clearRelatedFields) {
+      clearRelatedFields('ethnicity', ['ethnicity']);
+    } else if (clearAnswer) {
+      clearAnswer('ethnicity');
+    }
+  };
+
+  // Handle clear all demographics
+  const handleClearAll = () => {
+    const fieldsToClear = ['gender', 'pronouns', 'ethnicity'];
+    if (clearRelatedFields) {
+      clearRelatedFields('demographics', fieldsToClear);
+    } else if (clearAnswer) {
+      fieldsToClear.forEach(field => clearAnswer(field));
+    }
+  };
+
+  // Check if any field has value
+  const hasAnyValue = () => {
+    return (formData.gender && formData.gender !== '') ||
+           (formData.pronouns && formData.pronouns !== '') ||
+           (formData.ethnicity && formData.ethnicity.length > 0);
+  };
+
+  return (
+    <div className="demographics-section">
+      <div className="demographics-header">
+        <h2>Demographics</h2>
+        <div className="section-description">
+          Help us understand your background
+        </div>
+      </div>
+      
+      <div className="section-status-wrapper">
+        <div className={`section-status ${isFormValid ? 'complete' : 'in-progress'}`}>
+          <span className="status-indicator"></span>
+          {isFormValid ? 'Complete' : 'In Progress'}
         </div>
       </div>
 
-
-      <div className="form-group">
-        <label>Pronouns</label>
-        <div className="radio-group">
-          <label>
-            <input
-              type="radio"
-              name="pronouns"
-              value="he-him"
-              checked={formData.pronouns === 'he-him'}
-              onChange={handleInputChange}
-            />
-            He/Him
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="pronouns"
-              value="she-her"
-              checked={formData.pronouns === 'she-her'}
-              onChange={handleInputChange}
-            />
-            She/Her
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="pronouns"
-              value="they-them"
-              checked={formData.pronouns === 'they-them'}
-              onChange={handleInputChange}
-            />
-            They/Them
-          </label>
+      <div className="form-content">
+        {/* Gender */}
+        <div className="form-group">
+          <label className="required">Gender</label>
+          <div className="radio-group">
+            {['female', 'male', 'nonbinary', 'prefer-not-to-say'].map(option => (
+              <label key={option}>
+                <input
+                  type="radio"
+                  name="gender"
+                  value={option}
+                  checked={formData.gender === option}
+                  onChange={handleInputChange}
+                />
+                <span className="radio-label">
+                  {option === 'prefer-not-to-say' ? 'Prefer not to say' : 
+                   option.charAt(0).toUpperCase() + option.slice(1)}
+                </span>
+              </label>
+            ))}
+          </div>
+          {formData.gender && (
+            <button 
+              type="button" 
+              className="clear-link"
+              onClick={handleClearGender}
+            >
+              Clear answer
+            </button>
+          )}
         </div>
-      </div>
 
-      {/* <div className="form-group">
-        <label>U.S. Armed Forces status</label>
-        <div className="radio-group">
-          <label>
-            <input
-              type="radio"
-              name="armedForcesStatus"
-              value="none"
-              checked={formData.armedForcesStatus === 'none'}
-              onChange={handleInputChange}
-            />
-            None
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="armedForcesStatus"
-              value="currently-serving"
-              checked={formData.armedForcesStatus === 'currently-serving'}
-              onChange={handleInputChange}
-            />
-            Currently Serving
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="armedForcesStatus"
-              value="previously-served"
-              checked={formData.armedForcesStatus === 'previously-served'}
-              onChange={handleInputChange}
-            />
-            Previously Served
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="armedForcesStatus"
-              value="current-dependent"
-              checked={formData.armedForcesStatus === 'current-dependent'}
-              onChange={handleInputChange}
-            />
-            Current Dependent
-          </label>
+        {/* Pronouns */}
+        <div className="form-group">
+          <label>Pronouns</label>
+          <div className="radio-group">
+            {[
+              { value: 'he-him', label: 'He/Him' },
+              { value: 'she-her', label: 'She/Her' },
+              { value: 'they-them', label: 'They/Them' },
+              { value: 'prefer-not-to-say', label: 'Prefer not to say' }
+            ].map(option => (
+              <label key={option.value}>
+                <input
+                  type="radio"
+                  name="pronouns"
+                  value={option.value}
+                  checked={formData.pronouns === option.value}
+                  onChange={handleInputChange}
+                />
+                <span className="radio-label">{option.label}</span>
+              </label>
+            ))}
+          </div>
+          {formData.pronouns && (
+            <button 
+              type="button" 
+              className="clear-link"
+              onClick={handleClearPronouns}
+            >
+              Clear answer
+            </button>
+          )}
         </div>
-      </div> */}
 
-      {/* <div className="form-group">
-        <label>Are you Hispanic or Latino/a/x?</label>
-        <div className="radio-group">
-          <label>
-            <input
-              type="radio"
-              name="hispanicOrLatino"
-              value="yes"
-              checked={formData.hispanicOrLatino === 'yes'}
-              onChange={handleInputChange}
-            />
-            Yes
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="hispanicOrLatino"
-              value="no"
-              checked={formData.hispanicOrLatino === 'no'}
-              onChange={handleInputChange}
-            />
-            No
-          </label>
+        {/* Ethnicity */}
+        <div className="form-group">
+          <label className="required">How do you identify yourself?</label>
+          <div className="checkbox-description">
+            Regardless of your answer to the prior question, please indicate how you identify yourself. (You may select one or more)
+          </div>
+          <div className="checkbox-group">
+            {ethnicityOptions.map(option => (
+              <label key={option.value}>
+                <input
+                  type="checkbox"
+                  checked={formData.ethnicity?.includes(option.value) || false}
+                  onChange={() => handleCheckboxChange(option.value)}
+                />
+                <span className="checkbox-label">{option.label}</span>
+              </label>
+            ))}
+          </div>
+          {formData.ethnicity && formData.ethnicity.length > 0 && (
+            <button 
+              type="button" 
+              className="clear-link"
+              onClick={handleClearEthnicity}
+            >
+              Clear all selections
+            </button>
+          )}
         </div>
-      </div> */}
 
-      <div className="form-group">
-        <label>Regardless of your answer to the prior question, please indicate how you identify yourself. (You may select one or more)</label>
-        <div className="checkbox-group">
-          <label>
-            <input
-              type="checkbox"
-              checked={formData.ethnicity.includes('american-indian-alaska-native')}
-              onChange={() => handleArrayChange('ethnicity', 'american-indian-alaska-native')}
-            />
-            American Indian or Alaska Native
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={formData.ethnicity.includes('asian')}
-              onChange={() => handleArrayChange('ethnicity', 'asian')}
-            />
-            Asian
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={formData.ethnicity.includes('black-african-american')}
-              onChange={() => handleArrayChange('ethnicity', 'black-african-american')}
-            />
-            Black or African American
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={formData.ethnicity.includes('native-hawaiian-pacific-islander')}
-              onChange={() => handleArrayChange('ethnicity', 'native-hawaiian-pacific-islander')}
-            />
-            Native Hawaiian or Other Pacific Islander
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={formData.ethnicity.includes('white')}
-              onChange={() => handleArrayChange('ethnicity', 'white')}
-            />
-            White
-          </label>
-        </div>
+        {/* Clear All Button */}
+        {hasAnyValue() && (
+          <div className="clear-all-container">
+            <button type="button" className="clear-all-link" onClick={handleClearAll}>
+              Clear all demographics
+            </button>
+          </div>
+        )}
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default DemographicsSection;

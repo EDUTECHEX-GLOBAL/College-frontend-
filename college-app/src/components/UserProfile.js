@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./UserProfile.css";
+import EdutechLogo from "./../assets/Edutech-logo.svg"; // ← Import the logo SVG
 
 const API_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
@@ -31,8 +32,8 @@ if (typeof document !== 'undefined' && !document.getElementById('urp-styles')) {
 .urp-ring-2{inset:8px;border-bottom-color:#8b5cf6;border-left-color:#8b5cf6;animation:urp-spin 2s linear infinite reverse}
 .urp-ring-3{inset:16px;border-top-color:#a78bfa;animation:urp-spin 2.8s linear infinite}
 @keyframes urp-spin{to{transform:rotate(360deg)}}
-.urp-center-emoji{font-size:30px;line-height:1;animation:urp-float 3s ease-in-out infinite;position:relative;z-index:2}
-@keyframes urp-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.urp-center-logo{position:relative;z-index:2;width:40px;height:40px;display:flex;align-items:center;justify-content:center}
+.urp-center-logo img{width:100%;height:100%;object-fit:contain}
 .urp-chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
 .urp-chip{background:#ede9fe;color:#5b21b6;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:600}
 .urp-status-badge{display:inline-flex;align-items:center;gap:8px;background:#f0f0ff;border:1px solid #c7d2fe;border-radius:999px;padding:8px 18px;font-size:13px;color:#4338ca;font-weight:600}
@@ -65,6 +66,7 @@ if (typeof document !== 'undefined' && !document.getElementById('urp-styles')) {
 .urp-reject-circle{width:72px;height:72px;border-radius:50%;background:#fee2e2;border:2px solid #fca5a5;display:flex;align-items:center;justify-content:center;animation:urp-slide-up .45s cubic-bezier(.34,1.56,.64,1)}
 .urp-reject-x{font-size:26px;color:#ef4444;font-weight:800;line-height:1}
 .urp-timeout-emoji{font-size:54px;line-height:1;animation:urp-float 3s ease-in-out infinite}
+@keyframes urp-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 .urp-reason{width:100%;background:#fff1f2;border:1px dashed #fca5a5;border-radius:12px;padding:14px 16px;text-align:left}
 .urp-reason-label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#ef4444;margin-bottom:6px}
 .urp-reason-text{font-size:13px;color:#7f1d1d;margin:0;line-height:1.55;font-style:italic}
@@ -103,7 +105,6 @@ if (typeof document !== 'undefined' && !document.getElementById('urp-styles')) {
 .segment-dropdown-trigger:hover{border-color:#a5b4fc}
 .segment-dropdown-trigger.open{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.1)}
 .segment-dropdown-trigger.has-value{border-color:#6366f1;background:#fafafe}
-
 .segment-trigger-text{flex:1;font-size:14px;font-weight:600;color:#374151;text-align:left}
 .segment-trigger-text.placeholder{color:#94a3b8;font-weight:400}
 .segment-trigger-arrow{font-size:11px;color:#94a3b8;transition:transform .2s;flex-shrink:0}
@@ -116,12 +117,11 @@ if (typeof document !== 'undefined' && !document.getElementById('urp-styles')) {
 .segment-dropdown-item:last-child{border-bottom:none}
 .segment-dropdown-item:hover{background:#f5f3ff}
 .segment-dropdown-item.selected{background:linear-gradient(90deg,#eef2ff,#f5f3ff)}
-
 .segment-item-name{font-size:13px;font-weight:600;color:#374151;flex:1}
 .segment-dropdown-item.selected .segment-item-name{color:#4338ca}
 .segment-item-check{font-size:13px;color:#6366f1;font-weight:800;flex-shrink:0}
 .segment-indicator{margin-top:8px;padding:7px 12px;background:#ede9fe;border-radius:10px;font-size:12px;color:#5b21b6;font-weight:600;display:inline-flex;align-items:center;gap:6px}
-/* ── Field of Study Dropdown Styles — identical to segment dropdown ── */
+/* ── Field of Study Dropdown Styles ── */
 .fos-dropdown-wrapper{position:relative;width:100%}
 .fos-dropdown-trigger{width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:12px;background:#fff;cursor:pointer;display:flex;align-items:center;gap:10px;transition:border-color .2s,box-shadow .2s;user-select:none}
 .fos-dropdown-trigger:hover{border-color:#a5b4fc}
@@ -141,7 +141,6 @@ if (typeof document !== 'undefined' && !document.getElementById('urp-styles')) {
 .fos-item-name{font-size:13px;font-weight:600;color:#374151;flex:1}
 .fos-dropdown-item.selected .fos-item-name{color:#4338ca}
 .fos-item-check{font-size:13px;color:#6366f1;font-weight:800;flex-shrink:0}
-
 `;
   document.head.appendChild(s);
 }
@@ -151,44 +150,42 @@ if (typeof document !== 'undefined' && !document.getElementById('urp-styles')) {
 // ─────────────────────────────────────────────────────────────────────────────
 const SEGMENTS_BY_QUALIFICATION = {
   "12th": [
-    { id: "engineering", name: "Engineering & Technology", emoji: "⚙️", keywords: ["engineering","technology","computer","electrical","mechanical","civil","software","robotics","aerospace","it","information"] },
-    { id: "medical",     name: "Medical & Health Sciences", emoji: "🏥", keywords: ["medicine","medical","health","nursing","pharmacy","dental","biology","biotech","microbiology","mbbs","bds","bpharm"] },
-    { id: "commerce",    name: "Commerce & Business",       emoji: "💼", keywords: ["business","commerce","finance","accounting","management","economics","marketing","bba","bcom","mba"] },
-    { id: "arts",        name: "Arts & Humanities",         emoji: "🎨", keywords: ["arts","humanities","history","philosophy","literature","language","social","political","sociology","psychology"] },
-    { id: "science",     name: "Pure Sciences",             emoji: "🔬", keywords: ["physics","chemistry","mathematics","statistics","data","science","environmental","astronomy","geology"] },
-    { id: "law",         name: "Law & Legal Studies",       emoji: "⚖️", keywords: ["law","legal","llb","advocate","justice"] },
-    { id: "design",      name: "Design & Architecture",     emoji: "🏛️", keywords: ["design","architecture","graphic","interior","fashion","ux","ui","product design"] },
-    { id: "media",       name: "Media & Communication",     emoji: "📡", keywords: ["media","communication","journalism","film","broadcasting","pr","public relations"] },
-    { id: "agriculture", name: "Agriculture & Environment", emoji: "🌱", keywords: ["agriculture","horticulture","forestry","environment","food","veterinary","bvsc"] },
-    { id: "hospitality", name: "Hospitality & Tourism",     emoji: "🏨", keywords: ["hospitality","hotel","tourism","travel","culinary","bhm"] },
+    { id: "engineering", name: "Engineering & Technology", keywords: ["engineering","technology","computer","electrical","mechanical","civil","software","robotics","aerospace","it","information"] },
+    { id: "medical",     name: "Medical & Health Sciences", keywords: ["medicine","medical","health","nursing","pharmacy","dental","biology","biotech","microbiology","mbbs","bds","bpharm"] },
+    { id: "commerce",    name: "Commerce & Business",       keywords: ["business","commerce","finance","accounting","management","economics","marketing","bba","bcom","mba"] },
+    { id: "arts",        name: "Arts & Humanities",         keywords: ["arts","humanities","history","philosophy","literature","language","social","political","sociology","psychology"] },
+    { id: "science",     name: "Pure Sciences",             keywords: ["physics","chemistry","mathematics","statistics","data","science","environmental","astronomy","geology"] },
+    { id: "law",         name: "Law & Legal Studies",       keywords: ["law","legal","llb","advocate","justice"] },
+    { id: "design",      name: "Design & Architecture",     keywords: ["design","architecture","graphic","interior","fashion","ux","ui","product design"] },
+    { id: "media",       name: "Media & Communication",     keywords: ["media","communication","journalism","film","broadcasting","pr","public relations"] },
+    { id: "agriculture", name: "Agriculture & Environment", keywords: ["agriculture","horticulture","forestry","environment","food","veterinary","bvsc"] },
+    { id: "hospitality", name: "Hospitality & Tourism",     keywords: ["hospitality","hotel","tourism","travel","culinary","bhm"] },
   ],
   "Bachelor": [
-    { id: "mba",        name: "MBA / Management",          emoji: "📊", keywords: ["mba","management","business","administration","finance","marketing","hr","operations"] },
-    { id: "ms_tech",    name: "MS / Technology",           emoji: "💻", keywords: ["ms","computer science","software","data science","ai","machine learning","cybersecurity","cloud","it"] },
-    { id: "ms_eng",     name: "MS / Engineering",          emoji: "🔧", keywords: ["mechanical","electrical","civil","aerospace","chemical","industrial","engineering"] },
-    { id: "ms_science", name: "MS / Pure Sciences",        emoji: "🧪", keywords: ["physics","chemistry","biology","mathematics","statistics","biotechnology","environmental"] },
-    { id: "mca",        name: "MCA / Computer Apps",       emoji: "🖥️", keywords: ["mca","computer applications","software","programming","web"] },
-    { id: "mlaw",       name: "LLM / Law",                 emoji: "⚖️", keywords: ["llm","law","legal","corporate","international law"] },
-    { id: "mdesign",    name: "M.Des / Design",            emoji: "🎨", keywords: ["design","fashion","graphic","interior","product","ux"] },
-    { id: "med_health", name: "Medicine & Health",         emoji: "🏥", keywords: ["medicine","public health","nursing","pharmacy","hospital","clinical"] },
-    { id: "media_comm", name: "Media & Communication",     emoji: "📡", keywords: ["media","journalism","communication","film","broadcasting","digital"] },
-    { id: "education",  name: "Education / Teaching",      emoji: "📚", keywords: ["education","teaching","b.ed","m.ed","curriculum","pedagogy"] },
+    { id: "mba",        name: "MBA / Management",          keywords: ["mba","management","business","administration","finance","marketing","hr","operations"] },
+    { id: "ms_tech",    name: "MS / Technology",           keywords: ["ms","computer science","software","data science","ai","machine learning","cybersecurity","cloud","it"] },
+    { id: "ms_eng",     name: "MS / Engineering",          keywords: ["mechanical","electrical","civil","aerospace","chemical","industrial","engineering"] },
+    { id: "ms_science", name: "MS / Pure Sciences",        keywords: ["physics","chemistry","biology","mathematics","statistics","biotechnology","environmental"] },
+    { id: "mca",        name: "MCA / Computer Apps",       keywords: ["mca","computer applications","software","programming","web"] },
+    { id: "mlaw",       name: "LLM / Law",                 keywords: ["llm","law","legal","corporate","international law"] },
+    { id: "mdesign",    name: "M.Des / Design",            keywords: ["design","fashion","graphic","interior","product","ux"] },
+    { id: "med_health", name: "Medicine & Health",         keywords: ["medicine","public health","nursing","pharmacy","hospital","clinical"] },
+    { id: "media_comm", name: "Media & Communication",     keywords: ["media","journalism","communication","film","broadcasting","digital"] },
+    { id: "education",  name: "Education / Teaching",      keywords: ["education","teaching","b.ed","m.ed","curriculum","pedagogy"] },
   ],
   "Master": [
-    { id: "phd_tech",    name: "PhD / Technology",         emoji: "💻", keywords: ["computer","software","ai","data","machine learning","technology"] },
-    { id: "phd_science", name: "PhD / Sciences",           emoji: "🔬", keywords: ["physics","chemistry","biology","mathematics","research","science"] },
-    { id: "phd_eng",     name: "PhD / Engineering",        emoji: "⚙️", keywords: ["engineering","mechanical","electrical","civil","aerospace"] },
-    { id: "phd_mgmt",    name: "DBA / Management",         emoji: "📊", keywords: ["management","business","dba","finance","strategy"] },
-    { id: "phd_arts",    name: "PhD / Humanities",         emoji: "🎨", keywords: ["arts","humanities","history","philosophy","literature","social"] },
+    { id: "phd_tech",    name: "PhD / Technology",         keywords: ["computer","software","ai","data","machine learning","technology"] },
+    { id: "phd_science", name: "PhD / Sciences",           keywords: ["physics","chemistry","biology","mathematics","research","science"] },
+    { id: "phd_eng",     name: "PhD / Engineering",        keywords: ["engineering","mechanical","electrical","civil","aerospace"] },
+    { id: "phd_mgmt",    name: "DBA / Management",         keywords: ["management","business","dba","finance","strategy"] },
+    { id: "phd_arts",    name: "PhD / Humanities",         keywords: ["arts","humanities","history","philosophy","literature","social"] },
   ],
 };
-
 
 // ─────────────────────────────────────────────────────────────────────────────
 // FIELD OF STUDY OPTIONS per segment
 // ─────────────────────────────────────────────────────────────────────────────
 const FIELD_OF_STUDY_BY_SEGMENT = {
-  // 12th segments
   engineering: ["Computer Science & Engineering","Electrical Engineering","Mechanical Engineering","Civil Engineering","Electronics & Communication","Information Technology","Aerospace Engineering","Robotics & Automation","Chemical Engineering","Software Engineering"],
   medical:     ["Biology & Life Sciences","MBBS / Medicine","BDS / Dentistry","B.Pharm / Pharmacy","B.Sc Nursing","Biotechnology","Microbiology","B.Sc Agriculture","Veterinary Science","Public Health"],
   commerce:    ["B.Com (General)","B.Com (Honours)","Business Administration (BBA)","Finance & Accounting","Economics","Marketing","Human Resource Management","Banking & Insurance","Taxation","International Business"],
@@ -199,7 +196,6 @@ const FIELD_OF_STUDY_BY_SEGMENT = {
   media:       ["BA Journalism & Mass Communication","BA Film & Television","BA Digital Media","BA Public Relations","BA Advertising","BA Broadcasting","BA Photography","BA Radio Production","BA Media Studies","BA Content Writing"],
   agriculture: ["B.Sc Agriculture","B.Sc Horticulture","B.Sc Forestry","B.Sc Food Technology","B.Sc Fisheries","Veterinary Science","B.Sc Dairy Technology","Environmental Science","B.Sc Soil Science","Agri-Business Management"],
   hospitality: ["BHM Hotel Management","B.Sc Hospitality","BA Tourism Management","B.Sc Culinary Arts","BA Travel & Tourism","Event Management","B.Sc Food & Nutrition","Airline & Airport Management","Cruise Management","Resort Management"],
-  // Bachelor segments
   mba:        ["MBA Finance","MBA Marketing","MBA Human Resources","MBA Operations","MBA Business Analytics","MBA International Business","MBA Entrepreneurship","MBA Supply Chain Management","MBA Healthcare Management","MBA Digital Marketing"],
   ms_tech:    ["MS Computer Science","MS Data Science","MS Artificial Intelligence","MS Machine Learning","MS Cybersecurity","MS Cloud Computing","MS Software Engineering","MS Information Systems","MS Human-Computer Interaction","MS Robotics"],
   ms_eng:     ["MS Mechanical Engineering","MS Electrical Engineering","MS Civil Engineering","MS Aerospace Engineering","MS Chemical Engineering","MS Industrial Engineering","MS Structural Engineering","MS Environmental Engineering","MS Biomedical Engineering","MS Materials Science"],
@@ -210,7 +206,6 @@ const FIELD_OF_STUDY_BY_SEGMENT = {
   med_health: ["MPH Public Health","M.Sc Nursing","M.Pharm Pharmacy","MDS Dental Surgery","MD Medicine","MS Surgery","M.Sc Clinical Research","M.Sc Nutrition","M.Sc Biotechnology","M.Sc Epidemiology"],
   media_comm: ["MA Journalism","MA Mass Communication","MA Digital Media","MA Film Studies","MA Public Relations","MA Advertising","MA Broadcasting","MA Media Management","MA Content Strategy","MA Photography"],
   education:  ["M.Ed Education","MA Education","M.Sc Education","PhD Education","Special Education","Early Childhood Education","Educational Leadership","Curriculum Development","Educational Psychology","TESOL / TEFL"],
-  // Master segments
   phd_tech:   ["PhD Computer Science","PhD Artificial Intelligence","PhD Data Science","PhD Software Engineering","PhD Cybersecurity","PhD Human-Computer Interaction","PhD Machine Learning","PhD Robotics","PhD Cloud Computing","PhD Information Systems"],
   phd_science:["PhD Physics","PhD Chemistry","PhD Biology","PhD Mathematics","PhD Biochemistry","PhD Neuroscience","PhD Environmental Science","PhD Astronomy","PhD Genetics","PhD Materials Science"],
   phd_eng:    ["PhD Mechanical Engineering","PhD Electrical Engineering","PhD Civil Engineering","PhD Aerospace Engineering","PhD Chemical Engineering","PhD Biomedical Engineering","PhD Environmental Engineering","PhD Structural Engineering","PhD Robotics","PhD Industrial Engineering"],
@@ -322,9 +317,14 @@ const UniversityRequestPopup = ({ token, pendingRequest, onApproved, onRejected,
         {phase === "waiting" && (
           <div className="urp-body">
             <button className="urp-close" onClick={handleDismiss} aria-label="Close">✕</button>
+            {/* ── Spinning rings with Edutech SVG logo in center (replaces 🏛️ emoji) ── */}
             <div className="urp-rings">
-              <div className="urp-ring urp-ring-1" /><div className="urp-ring urp-ring-2" /><div className="urp-ring urp-ring-3" />
-              <span className="urp-center-emoji">🏛️</span>
+              <div className="urp-ring urp-ring-1" />
+              <div className="urp-ring urp-ring-2" />
+              <div className="urp-ring urp-ring-3" />
+              <div className="urp-center-logo">
+                <img src={EdutechLogo} alt="Edutech" />
+              </div>
             </div>
             <h2 className="urp-title">Request Sent!</h2>
             <p className="urp-desc">Your request for <strong className="urp-highlight">"{pendingRequest?.universityName}"</strong> has been sent to the admin team.</p>
@@ -433,9 +433,6 @@ const isDirectApplyUniversity = (u) =>
   !!(u.isKansas || u.isDirectApply ||
     (u.INSTNM || u.universityName || u.name || '').toLowerCase().includes('kansas'));
 
-// ─────────────────────────────────────────────────────────────────────────────
-// HELPER: check if a university/course matches a segment
-// ─────────────────────────────────────────────────────────────────────────────
 const matchesSegment = (text = "", keywords = []) => {
   const t = text.toLowerCase();
   return keywords.some(kw => t.includes(kw.toLowerCase()));
@@ -445,13 +442,11 @@ const universityMatchesSegment = (uni, segment) => {
   if (!segment) return true;
   const uniName = (uni.INSTNM || uni.universityName || '').toLowerCase();
   const programs = uni.programs || [];
-  // Check if any program name matches the segment keywords
   const hasMatchingProgram = programs.some(p => {
     const pName = (p.name || p.title || p.program_name || '').toLowerCase();
     const pMajor = (p.majorArea || '').toLowerCase();
     return matchesSegment(pName + ' ' + pMajor, segment.keywords);
   });
-  // Also check university name itself
   const nameMatches = matchesSegment(uniName, segment.keywords);
   return hasMatchingProgram || nameMatches;
 };
@@ -464,7 +459,6 @@ const courseMatchesSegment = (course, segment) => {
   return matchesSegment(cName + ' ' + cMajor + ' ' + cLevel, segment.keywords);
 };
 
-// ── STOPWORDS: generic words that should never trigger a match ──
 const FIELD_STOPWORDS = new Set([
   'with','from','and','the','for','study','year','hons','bachelor',
   'master','science','arts','business','general','applied','studies',
@@ -473,10 +467,7 @@ const FIELD_STOPWORDS = new Set([
   'professional','higher','national','certificate','diploma',
 ]);
 
-// ── Domain keyword map — each field maps to SPECIFIC domain words ──
-// Only courses containing at least one of these will show up
 const FIELD_DOMAIN_KEYWORDS = {
-  // Law
   'ba llb (integrated)':    ['law','legal','llb','jurisprudence','justice','constitutional','legislation'],
   'b.com llb':               ['law','legal','llb','jurisprudence','commerce','commercial'],
   'bba llb':                 ['law','legal','llb','corporate','business law'],
@@ -487,7 +478,6 @@ const FIELD_DOMAIN_KEYWORDS = {
   'constitutional law':      ['law','legal','constitutional','llb'],
   'international law':       ['law','legal','international','llb'],
   'cyber law':               ['law','legal','cyber','llb','digital law'],
-  // Engineering
   'computer science & engineering': ['computer','software','computing','programming','algorithm','data structure','cs'],
   'electrical engineering':  ['electrical','electronics','circuit','power','signal'],
   'electronics & communication engineering': ['electronics','communication','telecom','signal','circuit','embedded','wireless'],
@@ -498,7 +488,6 @@ const FIELD_DOMAIN_KEYWORDS = {
   'chemical engineering':    ['chemical','chemistry','process','reaction'],
   'software engineering':    ['software','programming','computing','development','computer'],
   'information technology':  ['information','it','computing','software','network','database'],
-  // Medical
   'biology & life sciences': ['biology','life science','biochemistry','physiology','genetics'],
   'mbbs / medicine':         ['medicine','medical','mbbs','clinical','surgery','anatomy'],
   'bds / dentistry':         ['dental','dentistry','oral','bds'],
@@ -506,7 +495,6 @@ const FIELD_DOMAIN_KEYWORDS = {
   'b.sc nursing':            ['nursing','nurse','clinical','patient','health'],
   'biotechnology':           ['biotech','biotechnology','biology','genetic','molecular'],
   'microbiology':            ['microbiology','microbe','bacteria','virus','pathology'],
-  // Commerce
   'b.com (general)':         ['commerce','accounting','finance','business','economics','tax'],
   'b.com (honours)':         ['commerce','accounting','honours','finance','business'],
   'business administration (bba)': ['business','management','administration','bba','marketing'],
@@ -514,13 +502,11 @@ const FIELD_DOMAIN_KEYWORDS = {
   'economics':               ['economics','economy','micro','macro','econometrics'],
   'marketing':               ['marketing','market','advertising','brand','consumer'],
   'human resource management': ['human resource','hr','people','recruitment','organisation'],
-  // Arts
   'ba english literature':   ['english','literature','writing','creative','linguistic'],
   'ba history':              ['history','historical','heritage','civilisation','ancient'],
   'ba political science':    ['political','politics','policy','governance','public policy'],
   'ba sociology':            ['sociology','social','society','culture','community'],
   'ba psychology':           ['psychology','mental','cognitive','behaviour','counselling'],
-  // Science
   'b.sc physics':            ['physics','physical','quantum','optics','mechanics'],
   'b.sc chemistry':          ['chemistry','chemical','organic','inorganic','molecule'],
   'b.sc mathematics':        ['mathematics','maths','calculus','algebra','statistics'],
@@ -531,31 +517,22 @@ const FIELD_DOMAIN_KEYWORDS = {
   'b.sc forensic science':   ['forensic','crime','investigation','science','legal'],
 };
 
-// ── Match course against a specific field of study string ──
 const courseMatchesField = (course, fieldOfStudy) => {
   if (!fieldOfStudy || !fieldOfStudy.trim()) return true;
   const cName  = (course.title || course.name || course.program_name || '').toLowerCase();
   const cMajor = (course.majorArea || '').toLowerCase();
   const cDesc  = (course.description || '').toLowerCase();
   const haystack = cName + ' ' + cMajor + ' ' + cDesc;
-
   const fieldKey = fieldOfStudy.toLowerCase().trim();
-
-  // 1. Try exact domain keyword map first
   const domainKeys = FIELD_DOMAIN_KEYWORDS[fieldKey];
   if (domainKeys && domainKeys.length) {
     return domainKeys.some(kw => haystack.includes(kw));
   }
-
-  // 2. Fallback: extract words from field, remove stopwords, require ALL core words to match
   const words = fieldKey
     .replace(/[^a-z0-9\s]/g, ' ')
     .split(/\s+/)
     .filter(w => w.length > 3 && !FIELD_STOPWORDS.has(w));
-
   if (!words.length) return true;
-
-  // Require at least 2 words to match (or all if fewer than 2)
   const required = Math.min(words.length, 2);
   const matched = words.filter(w => haystack.includes(w)).length;
   return matched >= required;
@@ -590,10 +567,8 @@ const UserProfile = () => {
 
   const [basicInfo,  setBasicInfo]  = useState({ fullName:"",email:userEmail,mobile:"",dob:"",gender:"",nationality:"",residence:"" });
   const [education,  setEducation]  = useState({ qualification:"",institution:"",field:"",year:"",cgpa:"" });
-  const [eligibleProgram,       setEligibleProgram]       = useState("");
-
-  // ── NEW: selected segment state ──
-  const [selectedSegment, setSelectedSegment] = useState(null); // segment object or null
+  const [eligibleProgram, setEligibleProgram] = useState("");
+  const [selectedSegment, setSelectedSegment] = useState(null);
 
   const [selectedUniversities,  setSelectedUniversities]  = useState([]);
   const [universities,          setUniversities]          = useState([]);
@@ -653,7 +628,6 @@ const UserProfile = () => {
 
   useEffect(() => { fetchUniversities(); }, []);
 
-  // ── Filter universities: by eligibleProgram + searchTerm + selectedSegment ──
   useEffect(() => {
     let filtered = [...universities];
     if (eligibleProgram==="Bachelor") filtered=filtered.filter(u=>u._source==='bachelors'||u._source==='admin');
@@ -666,16 +640,13 @@ const UserProfile = () => {
         (u.universityCode||'').toLowerCase().includes(t)
       );
     }
-    // ── Filter by field of study first, then segment as fallback ──
     const fieldValue = education.field || '';
     const fieldKey = fieldValue.toLowerCase().trim();
     const domainKeys = FIELD_DOMAIN_KEYWORDS[fieldKey];
-
     if (fieldValue && (domainKeys && domainKeys.length)) {
-      // Filter universities that have at least one matching program for this field
       const fieldFiltered = filtered.filter(u => {
         const programs = u.programs || [];
-        if (!programs.length) return true; // no programs = direct apply, always show
+        if (!programs.length) return true;
         return programs.some(p => {
           const pName = (p.name || p.title || p.program_name || '').toLowerCase();
           const pMajor = (p.majorArea || '').toLowerCase();
@@ -685,7 +656,6 @@ const UserProfile = () => {
       });
       filtered = fieldFiltered.length > 0 ? fieldFiltered : filtered;
     } else if (selectedSegment) {
-      // Fallback: filter by segment keywords
       const segFiltered = filtered.filter(u => universityMatchesSegment(u, selectedSegment));
       filtered = segFiltered.length > 0 ? segFiltered : filtered;
     }
@@ -761,7 +731,6 @@ const UserProfile = () => {
   const getUniKey = (u) => u._normalizedId||u.UNITID?.toString()||u._id?.toString()||'';
   const detectProgram = (q) => { if(q==="12th"||q==="High School") return "Bachelor"; if(q==="Bachelor"||q==="Bachelor's Degree") return "Master"; if(q==="Master"||q==="Master's Degree") return "PhD"; return ""; };
 
-  // ── Handle qualification change — also reset segment and field ──
   const handleQualificationChange = (value) => {
     setEducation(prev => ({ ...prev, qualification: value, field: '' }));
     setEligibleProgram(detectProgram(value));
@@ -770,11 +739,8 @@ const UserProfile = () => {
     if (validationErrors.qualification) setValidationErrors({ ...validationErrors, qualification: null });
   };
 
-  // ── Segment dropdown open/close state ──
   const [segmentDropdownOpen, setSegmentDropdownOpen] = useState(false);
   const segmentDropdownRef = useRef(null);
-
-  // ── Field of Study dropdown state ──
   const [fosDropdownOpen, setFosDropdownOpen] = useState(false);
   const fosDropdownRef = useRef(null);
   const fieldOptions = selectedSegment ? (FIELD_OF_STUDY_BY_SEGMENT[selectedSegment.id] || []) : [];
@@ -790,12 +756,10 @@ const UserProfile = () => {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // ── Select a segment from dropdown — also reset field of study ──
   const handleSegmentSelect = (segment) => {
     const isSame = selectedSegment?.id === segment.id;
     setSelectedSegment(isSame ? null : segment);
     setSegmentDropdownOpen(false);
-    // Reset field of study when segment changes
     setEducation(prev => ({ ...prev, field: '' }));
   };
 
@@ -897,27 +861,15 @@ const UserProfile = () => {
     finally { setSubmittingRequest(false); }
   };
 
-  // ── Open course modal — pre-filter courses by segment if selected ──
   const openCourseModal = (uni) => {
     const key=getUniKey(uni); const fresh=universities.find(u=>getUniKey(u)===key)||uni;
     const allCourses=universityCourses[key]||buildCourses(fresh);
-
-    // ── Filter priority: field of study first, then segment, then all ──
     const fieldValue = education.field || '';
-
-    // 1st pass: match by specific field of study
-    let courses = fieldValue
-      ? allCourses.filter(c => courseMatchesField(c, fieldValue))
-      : [];
-
-    // 2nd pass: if field gives no results, try segment keywords
+    let courses = fieldValue ? allCourses.filter(c => courseMatchesField(c, fieldValue)) : [];
     if (!courses.length && selectedSegment) {
       courses = allCourses.filter(c => courseMatchesSegment(c, selectedSegment));
     }
-
-    // 3rd pass: fallback to all courses
     const coursesToShow = courses.length > 0 ? courses : allCourses;
-
     if (!coursesToShow.length) { toggleUniversity(uni); return; }
     setCurrentUniversity(fresh);
     setCurrentUniversityCourses(coursesToShow);
@@ -987,7 +939,6 @@ const UserProfile = () => {
     if (education.year&&!/^\d{4}$/.test(education.year)) e.year="Enter a valid year (YYYY)";
     setValidationErrors(e); return !Object.keys(e).length;
   };
-
   const validateStep3 = () => {
     if (selectedUniversities.length<3) {
       setError('Please select at least 3 universities'); setTimeout(()=>setError(''),3000); return false;
@@ -1029,12 +980,10 @@ const UserProfile = () => {
     let formattedUniversities = [];
     try {
       if (profileImage) await uploadProfileImage();
-
       formattedUniversities = selectedUniversities.map(u => {
         const city  = u.CITY   || u.city  || u.location?.city  || '';
         const state = u.STABBR || u.state || u.location?.state || '';
         const isDirect = isDirectApplyUniversity(u);
-
         return {
           id:    u.id || u.UNITID?.toString() || u.universityCode || u._id?.toString() || u._normalizedId || '',
           unitid: u.UNITID || null,
@@ -1060,22 +1009,18 @@ const UserProfile = () => {
               })),
         };
       });
-
       const profileData = {
         profileImage:imagePreview, basicInfo, education, eligibleProgram,
         selectedSegment: selectedSegment ? { id: selectedSegment.id, name: selectedSegment.name } : null,
         selectedUniversities:formattedUniversities,
         profileCompleted:true, completedAt:new Date().toISOString(),
       };
-
       if (JSON.stringify(profileData).length>500000) {
         setError("Profile data too large. Reduce course selections."); setSaving(false); return;
       }
-
       const res = await axios.post(`${API_URL}/api/user/profile`, profileData, {
         headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
       });
-
       if (res.data.success) {
         localStorage.setItem('userProfile',JSON.stringify(profileData));
         localStorage.setItem('profileCompleted','true');
@@ -1112,7 +1057,6 @@ const UserProfile = () => {
   const getStudyModeColor = (m="") => { const s=m.toLowerCase(); if(s.includes('online')) return '#2196F3'; if(s.includes('campus')) return '#FFC107'; if(s.includes('hybrid')||s.includes('blended')) return '#9C27B0'; if(s.includes('distance')) return '#00BCD4'; return '#757575'; };
   const getSourceLabel = (u) => { if(u._source==='bachelors') return "🎓 Bachelor's"; if(u._source==='masters') return "📘 Master's"; return null; };
 
-  // ── Get available segments for current qualification ──
   const availableSegments = SEGMENTS_BY_QUALIFICATION[education.qualification] || [];
 
   if (fetchingProfile) {
@@ -1140,22 +1084,20 @@ const UserProfile = () => {
         </div>
       )}
 
+      {/* ── HEADER: Edutech logo + title + email ── */}
       <div className="userprofile-profile-header">
         <div className="header-container">
-          <div className="profile-image-wrapper">
-            <div className="profile-image-container">
-              {imagePreview?<img src={imagePreview} alt="Profile" className="profile-image" />:<div className="profile-image-placeholder"><span className="placeholder-initials">{getUserInitials()}</span></div>}
-              <label htmlFor="profile-upload" className="image-upload-label">
-                <input type="file" id="profile-upload" accept="image/*" onChange={handleImageUpload} className="image-upload-input" />
-                <span className="upload-icon">+</span>
-              </label>
-            </div>
+          <div className="header-logo-wrapper">
+            <img
+              src={EdutechLogo}
+              alt="Edutech Logo"
+              className="header-logo-img"
+            />
           </div>
           <div className="header-title-section">
             <h1 className="header-title">Complete Your Profile</h1>
-            <p className="header-email">{basicInfo.email}</p>
+            <p className="header-email">{basicInfo.email || userEmail}</p>
           </div>
-          <button className="header-cancel-btn ripple-effect" onClick={()=>{ if(window.confirm("Cancel? Your progress will be lost.")) navigateToDashboard(); }}>Cancel</button>
         </div>
       </div>
 
@@ -1191,10 +1133,45 @@ const UserProfile = () => {
           </div>
         </div>
 
-        {/* STEP 1 */}
+        {/* ── STEP 1 ── */}
         {step===1&&(
           <div className="form-card userprofile-fade-in">
-            <div className="card-header"><h2>Personal Information</h2><p>Tell us about yourself</p></div>
+            <div className="card-header"><h2>Personal Information</h2></div>
+
+            <div className="profile-photo-upload-section">
+              <div className="profile-photo-avatar">
+                {imagePreview
+                  ? <img src={imagePreview} alt="Profile" className="profile-photo-preview" />
+                  : <div className="profile-photo-placeholder">{getUserInitials()}</div>
+                }
+                <label htmlFor="profile-photo-input-step1" className="profile-photo-edit-btn" title="Change photo">
+                  <svg className="photo-edit-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                    <circle cx="12" cy="13" r="4"/>
+                  </svg>
+                </label>
+                <input
+                  type="file"
+                  id="profile-photo-input-step1"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="profile-photo-input"
+                />
+              </div>
+              <div className="profile-photo-info">
+                <span className="profile-photo-label">Profile Photo</span>
+                <span className="profile-photo-hint">JPG, PNG or GIF · Max 5 MB</span>
+                <label htmlFor="profile-photo-input-step1" className="profile-photo-upload-btn">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  {imagePreview ? 'Change Photo' : 'Upload Photo'}
+                </label>
+              </div>
+            </div>
+
             <div className="form-fields">
               {[{label:"Full Name",key:"fullName",type:"text",placeholder:"John Doe"},{label:"Mobile Number",key:"mobile",type:"tel",placeholder:"+1 9876543210"},{label:"Date of Birth",key:"dob",type:"date",placeholder:""},{label:"Nationality",key:"nationality",type:"text",placeholder:"e.g., Indian, American"},{label:"Country of Residence",key:"residence",type:"text",placeholder:"e.g., India, USA, UK"}].map(({label,key,type,placeholder})=>(
                 <div className="form-row" key={key}>
@@ -1218,20 +1195,14 @@ const UserProfile = () => {
           </div>
         )}
 
-        {/* STEP 2 */}
+        {/* ── STEP 2 ── */}
         {step===2&&(
           <div className="form-card userprofile-fade-in">
             <div className="card-header"><h2>Education Background</h2><p>Tell us about your academic journey</p></div>
             <div className="form-fields">
-
-              {/* Qualification dropdown */}
               <div className="form-row">
                 <label>Highest Qualification Completed</label>
-                <select
-                  value={education.qualification}
-                  onChange={e => handleQualificationChange(e.target.value)}
-                  className={validationErrors.qualification ? 'error' : ''}
-                >
+                <select value={education.qualification} onChange={e => handleQualificationChange(e.target.value)} className={validationErrors.qualification ? 'error' : ''}>
                   <option value="">Select Qualification</option>
                   <option value="12th">12th / High School</option>
                   <option value="Bachelor">Bachelor's Degree</option>
@@ -1240,57 +1211,31 @@ const UserProfile = () => {
                 {validationErrors.qualification&&<span className="field-error">{validationErrors.qualification}</span>}
               </div>
 
-              {/* ── Segment/Interest Dropdown — appears right after qualification ── */}
               {education.qualification && availableSegments.length > 0 && (
                 <div className="form-row segment-section" ref={segmentDropdownRef}>
                   <label className="segment-section-label">
                     What field are you interested in?
                     <span style={{fontWeight:400,color:'#94a3b8',marginLeft:6,fontSize:12}}>(optional — helps filter universities)</span>
                   </label>
-
-                  {/* Trigger button */}
-                  <div
-                    className={`segment-dropdown-trigger${segmentDropdownOpen ? ' open' : ''}${selectedSegment ? ' has-value' : ''}`}
-                    onClick={() => setSegmentDropdownOpen(o => !o)}
-                  >
-<span className={`segment-trigger-text${selectedSegment ? '' : ' placeholder'}`}>
-                      {selectedSegment ? selectedSegment.name : 'Select your field of interest…'}
-                    </span>
-                    {selectedSegment && (
-                      <button
-                        className="segment-trigger-clear"
-                        onClick={e => { e.stopPropagation(); setSelectedSegment(null); setSegmentDropdownOpen(false); }}
-                        title="Clear"
-                      >✕</button>
-                    )}
+                  <div className={`segment-dropdown-trigger${segmentDropdownOpen ? ' open' : ''}${selectedSegment ? ' has-value' : ''}`} onClick={() => setSegmentDropdownOpen(o => !o)}>
+                    <span className={`segment-trigger-text${selectedSegment ? '' : ' placeholder'}`}>{selectedSegment ? selectedSegment.name : 'Select your field of interest…'}</span>
+                    {selectedSegment && (<button className="segment-trigger-clear" onClick={e => { e.stopPropagation(); setSelectedSegment(null); setSegmentDropdownOpen(false); }} title="Clear">✕</button>)}
                     <span className={`segment-trigger-arrow${segmentDropdownOpen ? ' open' : ''}`}>▼</span>
                   </div>
-
-                  {/* Dropdown menu */}
                   {segmentDropdownOpen && (
                     <div className="segment-dropdown-menu">
                       {availableSegments.map(seg => (
-                        <div
-                          key={seg.id}
-                          className={`segment-dropdown-item${selectedSegment?.id === seg.id ? ' selected' : ''}`}
-                          onClick={() => handleSegmentSelect(seg)}
-                        >
+                        <div key={seg.id} className={`segment-dropdown-item${selectedSegment?.id === seg.id ? ' selected' : ''}`} onClick={() => handleSegmentSelect(seg)}>
                           <span className="segment-item-name">{seg.name}</span>
                           {selectedSegment?.id === seg.id && <span className="segment-item-check">✓</span>}
                         </div>
                       ))}
                     </div>
                   )}
-
-                  {selectedSegment && (
-                    <div className="segment-indicator">
-                      Filtering for: <strong style={{marginLeft:4}}>{selectedSegment.name}</strong>
-                    </div>
-                  )}
+                  {selectedSegment && (<div className="segment-indicator">Filtering for: <strong style={{marginLeft:4}}>{selectedSegment.name}</strong></div>)}
                 </div>
               )}
 
-              {/* University / School Name */}
               <div className="form-row">
                 <label>University / School Name</label>
                 <input type="text" placeholder="Enter institution name" value={education.institution}
@@ -1299,42 +1244,19 @@ const UserProfile = () => {
                 {validationErrors.institution&&<span className="field-error">{validationErrors.institution}</span>}
               </div>
 
-              {/* Field of Study — dropdown if segment selected, free text otherwise */}
               <div className="form-row">
                 <label>Field of Study</label>
                 {fieldOptions.length > 0 ? (
                   <div className="fos-dropdown-wrapper" ref={fosDropdownRef}>
-                    {/* Trigger — identical structure to segment dropdown trigger */}
-                    <div
-                      className={`fos-dropdown-trigger${fosDropdownOpen ? ' open' : ''}${education.field ? ' has-value' : ''}`}
-                      onClick={() => setFosDropdownOpen(o => !o)}
-                    >
-                      <span className={`fos-trigger-text${education.field ? '' : ' placeholder'}`}>
-                        {education.field || 'Select your field of study…'}
-                      </span>
-                      {education.field && (
-                        <button
-                          className="fos-trigger-clear"
-                          onClick={e => { e.stopPropagation(); setEducation({...education, field:''}); if(validationErrors.field) setValidationErrors({...validationErrors,field:null}); setFosDropdownOpen(false); }}
-                          title="Clear"
-                        >✕</button>
-                      )}
+                    <div className={`fos-dropdown-trigger${fosDropdownOpen ? ' open' : ''}${education.field ? ' has-value' : ''}`} onClick={() => setFosDropdownOpen(o => !o)}>
+                      <span className={`fos-trigger-text${education.field ? '' : ' placeholder'}`}>{education.field || 'Select your field of study…'}</span>
+                      {education.field && (<button className="fos-trigger-clear" onClick={e => { e.stopPropagation(); setEducation({...education, field:''}); if(validationErrors.field) setValidationErrors({...validationErrors,field:null}); setFosDropdownOpen(false); }} title="Clear">✕</button>)}
                       <span className={`fos-trigger-arrow${fosDropdownOpen ? ' open' : ''}`}>▼</span>
                     </div>
-
-                    {/* Menu — identical structure to segment dropdown menu */}
                     {fosDropdownOpen && (
                       <div className="fos-dropdown-menu">
                         {fieldOptions.map((opt, i) => (
-                          <div
-                            key={i}
-                            className={`fos-dropdown-item${education.field === opt ? ' selected' : ''}`}
-                            onClick={() => {
-                              setEducation({...education, field: opt});
-                              if(validationErrors.field) setValidationErrors({...validationErrors, field: null});
-                              setFosDropdownOpen(false);
-                            }}
-                          >
+                          <div key={i} className={`fos-dropdown-item${education.field === opt ? ' selected' : ''}`} onClick={() => { setEducation({...education, field: opt}); if(validationErrors.field) setValidationErrors({...validationErrors, field: null}); setFosDropdownOpen(false); }}>
                             <span className="fos-item-name">{opt}</span>
                             {education.field === opt && <span className="fos-item-check">✓</span>}
                           </div>
@@ -1351,7 +1273,6 @@ const UserProfile = () => {
                 {!fieldOptions.length && validationErrors.field && <span className="field-error">{validationErrors.field}</span>}
               </div>
 
-              {/* Year of Passing */}
               <div className="form-row">
                 <label>Year of Passing</label>
                 <input type="text" placeholder="e.g., 2023" value={education.year}
@@ -1360,7 +1281,6 @@ const UserProfile = () => {
                 {validationErrors.year&&<span className="field-error">{validationErrors.year}</span>}
               </div>
 
-              {/* Percentage / CGPA */}
               <div className="form-row">
                 <label>Percentage / CGPA</label>
                 <input type="text" placeholder="e.g., 85% or 8.5" value={education.cgpa}
@@ -1373,10 +1293,7 @@ const UserProfile = () => {
             {eligibleProgram&&(
               <div className="eligibility-badge">
                 <span className="badge-icon">🎓</span>
-                <span>
-                  You are eligible for: <strong>{eligibleProgram} Programs</strong>
-                  {selectedSegment && <span> · <strong>{selectedSegment.name}</strong></span>}
-                </span>
+                <span>You are eligible for: <strong>{eligibleProgram} Programs</strong>{selectedSegment && <span> · <strong>{selectedSegment.name}</strong></span>}</span>
               </div>
             )}
 
@@ -1387,42 +1304,26 @@ const UserProfile = () => {
           </div>
         )}
 
-        {/* STEP 3 */}
+        {/* ── STEP 3 ── */}
         {step===3&&(
           <div className="form-card userprofile-fade-in">
             <div className="card-header">
               <h2>Select Universities &amp; Courses</h2>
-              <p>
-                Choose at least 3 universities and select up to 2 courses for each
-                {selectedSegment && <span style={{marginLeft:6,background:'#ede9fe',color:'#5b21b6',padding:'2px 10px',borderRadius:999,fontSize:12,fontWeight:600}}>{selectedSegment.name}</span>}
-              </p>
+              <p>Choose at least 3 universities and select up to 2 courses for each{selectedSegment && <span style={{marginLeft:6,background:'#ede9fe',color:'#5b21b6',padding:'2px 10px',borderRadius:999,fontSize:12,fontWeight:600}}>{selectedSegment.name}</span>}</p>
             </div>
-
             {eligibleProgram&&(
               <div className="program-indicator">
-                <span>
-                  Showing universities for: <strong>{eligibleProgram} Program</strong>
-                  {selectedSegment && <span> — filtered by <strong>{selectedSegment.name}</strong></span>}
-                  {selectedSegment && (
-                    <button
-                      onClick={() => setSelectedSegment(null)}
-                      style={{marginLeft:10,background:'none',border:'1px solid #c4b5fd',borderRadius:8,padding:'2px 8px',fontSize:11,color:'#7c3aed',cursor:'pointer',fontWeight:600}}
-                    >Clear Filter</button>
-                  )}
-                </span>
+                <span>Showing universities for: <strong>{eligibleProgram} Program</strong>{selectedSegment && <span> — filtered by <strong>{selectedSegment.name}</strong></span>}{selectedSegment && (<button onClick={() => setSelectedSegment(null)} style={{marginLeft:10,background:'none',border:'1px solid #c4b5fd',borderRadius:8,padding:'2px 8px',fontSize:11,color:'#7c3aed',cursor:'pointer',fontWeight:600}}>Clear Filter</button>)}</span>
               </div>
             )}
-
             <div className="university-controls">
               <div className="search-wrapper">
                 <span className="search-icon">🔍</span>
-                <input type="text" className="search-input" placeholder="Search universities by name, city, country…"
-                  value={searchTerm} onChange={e=>setSearchTerm(e.target.value)} />
-                {searchTerm&&(<button className="search-clear-btn" onClick={()=>{setSearchTerm("");setApprovedUniName(null);}} style={{background:'none',border:'none',cursor:'pointer',fontSize:'16px',color:'#94a3b8',padding:'0 8px'}}>×</button>)}
+                <input type="text" className="search-input" placeholder="Search universities by name, city, country…" value={searchTerm} onChange={e=>setSearchTerm(e.target.value)} />
+                {searchTerm&&(<button className="search-clear-btn" onClick={()=>{setSearchTerm("");setApprovedUniName(null);}}>×</button>)}
               </div>
               <div className="selection-counter"><span className="counter-number">{selectedUniversities.length}</span><span>/5 selected</span></div>
             </div>
-
             {loading?(
               <div className="loading-state"><div className="loading-spinner" /><p>Loading universities…</p><button className="retry-small-btn ripple-effect" onClick={fetchUniversities}>Retry</button></div>
             ):(
@@ -1468,9 +1369,7 @@ const UserProfile = () => {
                     );
                   }):(
                     <div className="no-results">
-                      <p>No universities found{searchTerm?` matching "${searchTerm}"`:''}
-                        {selectedSegment?` in the "${selectedSegment.name}" segment`:''}.
-                      </p>
+                      <p>No universities found{searchTerm?` matching "${searchTerm}"`:''}{ selectedSegment?` in the "${selectedSegment.name}" segment`:''}.</p>
                       <div style={{display:'flex',gap:8,flexWrap:'wrap',justifyContent:'center',marginTop:8}}>
                         {searchTerm&&<button className="retry-btn ripple-effect" onClick={()=>setSearchTerm('')}>Clear Search</button>}
                         {selectedSegment&&<button className="retry-btn ripple-effect" onClick={()=>setSelectedSegment(null)}>Clear Segment Filter</button>}
@@ -1494,7 +1393,7 @@ const UserProfile = () => {
           </div>
         )}
 
-        {/* STEP 4 */}
+        {/* ── STEP 4 ── */}
         {step===4&&(
           <div className="form-card userprofile-fade-in">
             <div className="card-header"><h2>Review Your Profile</h2><p>Verify everything before submitting</p></div>
@@ -1512,9 +1411,7 @@ const UserProfile = () => {
                 {[['Qualification',education.qualification],['Institution',education.institution],['Field',education.field],['Year',education.year],['CGPA',education.cgpa]].map(([l,v])=>(
                   <p key={l}><strong>{l}:</strong> {v||'Not provided'}</p>
                 ))}
-                {selectedSegment && (
-                  <p><strong>Interested Field:</strong> {selectedSegment.name}</p>
-                )}
+                {selectedSegment && (<p><strong>Interested Field:</strong> {selectedSegment.name}</p>)}
               </div>
             </div>
             <div className="review-section">
@@ -1571,7 +1468,7 @@ const UserProfile = () => {
         </div>
       </div>
 
-      {/* Course Selection Modal */}
+      {/* ── Course Selection Modal ── */}
       {showCourseModal&&currentUniversity&&(
         <div className="modal-overlay" onClick={closeCourseModal}>
           <div className="modal-content course-modal" onClick={e=>e.stopPropagation()}>
@@ -1626,7 +1523,7 @@ const UserProfile = () => {
         </div>
       )}
 
-      {/* Request University Modal */}
+      {/* ── Request University Modal ── */}
       {showRequestModal&&(
         <div className="modal-overlay" onClick={closeRequestModal}>
           <div className="modal-content request-university-modal" onClick={e=>e.stopPropagation()}>

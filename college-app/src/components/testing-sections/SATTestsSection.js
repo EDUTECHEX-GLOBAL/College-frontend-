@@ -1,28 +1,70 @@
 // src/components/testing-sections/SATTestsSection.js
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './SATTestsSection.css';
 
-const SATTestsSection = ({ formData, handleInputChange, clearAnswer }) => {
+const SATTestsSection = ({ 
+  formData = {}, 
+  handleInputChange,
+  clearAnswer,
+  clearRelatedFields 
+}) => {
+  const [isFormValid, setIsFormValid] = useState(false);
+
   const pastScoreOptions = ['0', '1', '2', '3', '4', '5'];
   const futureSittingOptions = ['0', '1', '2', '3'];
 
-  const isSectionComplete = formData.pastSATScores && formData.futureSATSittings;
+  // Validate form completion
+  useEffect(() => {
+    const hasPastScores = formData.pastSATScores !== undefined && 
+                          formData.pastSATScores !== '' && 
+                          formData.pastSATScores !== null;
+    const hasFutureSittings = formData.futureSATSittings !== undefined && 
+                              formData.futureSATSittings !== '' && 
+                              formData.futureSATSittings !== null;
+    
+    setIsFormValid(hasPastScores && hasFutureSittings);
+  }, [formData.pastSATScores, formData.futureSATSittings]);
+
+  // Handle clearing past SAT scores
+  const handleClearPastScores = () => {
+    if (clearRelatedFields) {
+      clearRelatedFields('pastSATScores', ['satScoreDetails', 'satTestDates']);
+    } else if (clearAnswer) {
+      clearAnswer('pastSATScores');
+    }
+  };
+
+  // Handle clearing future SAT sittings
+  const handleClearFutureSittings = () => {
+    if (clearAnswer) {
+      clearAnswer('futureSATSittings');
+    }
+  };
+
+  // Check if any value is selected
+  const hasPastScoresValue = formData.pastSATScores !== undefined && 
+                             formData.pastSATScores !== '' && 
+                             formData.pastSATScores !== null;
+  
+  const hasFutureSittingsValue = formData.futureSATSittings !== undefined && 
+                                 formData.futureSATSittings !== '' && 
+                                 formData.futureSATSittings !== null;
 
   return (
     <div className="sat-tests-section">
       <div className="section-header">
         <h2>SAT Tests</h2>
-        <div className={`section-status ${isSectionComplete ? 'complete' : 'in-progress'}`}>
+        <div className={`section-status ${isFormValid ? 'complete' : 'in-progress'}`}>
           <span className="status-indicator"></span>
-          {isSectionComplete ? 'Complete' : 'In Progress'}
+          {isFormValid ? 'Complete' : 'In Progress'}
         </div>
       </div>
 
       <div className="form-content">
         {/* Past SAT Scores */}
         <div className="form-group">
-          <p className="question-text">
-            Number of past SAT scores you wish to report*
+          <p className="question-text required">
+            Number of past SAT scores you wish to report
           </p>
           <div className="select-group">
             <select
@@ -36,22 +78,34 @@ const SATTestsSection = ({ formData, handleInputChange, clearAnswer }) => {
                 <option key={option} value={option}>{option}</option>
               ))}
             </select>
+            {hasPastScoresValue && (
+              <button
+                type="button"
+                className="clear-field-btn select-clear"
+                onClick={handleClearPastScores}
+                aria-label="Clear selection"
+              >
+                ×
+              </button>
+            )}
           </div>
-          <div className="clear-button-container">
-            <button
-              type="button"
-              className="clear-answer-button"
-              onClick={() => clearAnswer('pastSATScores')}
-            >
-              Clear answer
-            </button>
-          </div>
+          {hasPastScoresValue && (
+            <div className="clear-link-container">
+              <button
+                type="button"
+                className="clear-link"
+                onClick={handleClearPastScores}
+              >
+                Clear answer
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Future SAT Sittings */}
         <div className="form-group">
-          <p className="question-text">
-            Number of future SAT sittings you expect*
+          <p className="question-text required">
+            Number of future SAT sittings you expect
           </p>
           <div className="radio-group-vertical">
             {futureSittingOptions.map(option => (
@@ -68,15 +122,17 @@ const SATTestsSection = ({ formData, handleInputChange, clearAnswer }) => {
               </label>
             ))}
           </div>
-          <div className="clear-button-container">
-            <button
-              type="button"
-              className="clear-answer-button"
-              onClick={() => clearAnswer('futureSATSittings')}
-            >
-              Clear answer
-            </button>
-          </div>
+          {hasFutureSittingsValue && (
+            <div className="clear-link-container">
+              <button
+                type="button"
+                className="clear-link"
+                onClick={handleClearFutureSittings}
+              >
+                Clear answer
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -33,7 +33,7 @@
 }
 
 /* Header Styles */
-.address-header {
+.applicationaddress-address-header {
   display: flex;
   justify-content: space-between;
   align-items: center;

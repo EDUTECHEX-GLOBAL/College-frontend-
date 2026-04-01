@@ -163,159 +163,165 @@ const APSubjectTestsSection = ({ formData, handleInputChange }) => {
   };
 
   return (
-    <div className="ap-subject-tests-section">
-      <h2>AP Subject Tests</h2>
-      <div className="section-status">
-        {isSectionComplete ? 'Complete' : 'In Progress'}
-      </div>
-      
-      <div className="form-content">
-        {/* Number of Tests Question */}
-        <div className="form-group">
-          <label className="question-label">
-            Number of AP Tests you wish to report, including tests you expect to take*
-          </label>
-          <div className="select-group">
-            <select
-              name="numberOfAPTests"
-              value={numberOfTests}
-              onChange={handleNumberOfTestsChange}
-              className={`number-select ${showErrors && !numberOfTests ? 'error' : ''}`}
-            >
-              <option value="">Choose an option</option>
-              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map(num => (
-                <option key={num} value={num.toString()}>{num}</option>
-              ))}
-            </select>
+    <div className="ap-container">
+      <div className="ap-card">
+        <div className="ap-card-header">
+          <h2 className="ap-card-title">AP Subject Tests</h2>
+          <div className="ap-status-badge">
+            {isSectionComplete ? 'Complete' : 'In Progress'}
           </div>
-          {showErrors && !numberOfTests && (
-            <div className="error-message">
-              Please complete this required question.
+        </div>
+        
+        <div className="ap-form-content">
+          {/* Number of Tests Question */}
+          <div className="ap-form-group">
+            <label className="ap-question-label required">
+              Number of AP Tests you wish to report, including tests you expect to take*
+            </label>
+            <div className="ap-select-group">
+              <select
+                name="numberOfAPTests"
+                value={numberOfTests}
+                onChange={handleNumberOfTestsChange}
+                className={`ap-select ${showErrors && !numberOfTests ? 'error' : ''}`}
+              >
+                <option value="">Choose an option</option>
+                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map(num => (
+                  <option key={num} value={num.toString()}>{num}</option>
+                ))}
+              </select>
+            </div>
+            {showErrors && !numberOfTests && (
+              <div className="ap-error-message">
+                Please complete this required question.
+              </div>
+            )}
+          </div>
+
+          {/* Dynamic Test Forms based on number selected */}
+          {numberOfTests && parseInt(numberOfTests) > 0 && (
+            <div className="ap-tests-container">
+              {tests.map((test, index) => (
+                <div key={index} className="ap-test-entry">
+                  <h3>Test {index + 1}</h3>
+                  
+                  {/* Date Field with Month Selection and Year Grid */}
+                  <div className="ap-form-group">
+                    <label className="ap-question-label required">Date taken or planned*</label>
+                    <div className="ap-date-selection">
+                      <div className="ap-month-year-selection">
+                        <div className="ap-month-select-container">
+                          <select
+                            value={test.month || ''}
+                            onChange={(e) => handleMonthChange(index, e.target.value)}
+                            className={`ap-select ${isFieldMissing(test, 'month') ? 'error' : ''}`}
+                          >
+                            <option value="">Month</option>
+                            {monthOptions.map(month => (
+                              <option key={month} value={month}>{month}</option>
+                            ))}
+                          </select>
+                        </div>
+                        
+                        <div className="ap-year-select-container">
+                          <div 
+                            className={`ap-year-display ${isFieldMissing(test, 'year') ? 'error' : ''}`}
+                            onClick={() => toggleYearGrid(index)}
+                          >
+                            {test.year || 'Year'}
+                            <span className="ap-dropdown-arrow">▼</span>
+                          </div>
+                          
+                          {showYearGrid === index && (
+                            <div className="ap-year-grid-container">
+                              <div className="ap-year-grid">
+                                {yearRows.map((row, rowIndex) => (
+                                  <div key={rowIndex} className="ap-year-row">
+                                    {row.map(year => (
+                                      <div
+                                        key={year}
+                                        className={`ap-year-option ${test.year === year.toString() ? 'selected' : ''}`}
+                                        onClick={() => handleYearSelect(index, year)}
+                                      >
+                                        {year}
+                                      </div>
+                                    ))}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="ap-date-format-hint">
+                        Date uses "month year" format (e.g. August 2002)
+                      </div>
+                    </div>
+                    {(isFieldMissing(test, 'month') || isFieldMissing(test, 'year')) && (
+                      <div className="ap-error-message">
+                        Please complete this required question.
+                      </div>
+                    )}
+                    {formatDate(test) && (
+                      <div className="ap-selected-date">
+                        Selected: {formatDate(test)}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Subject Field */}
+                  <div className="ap-form-group">
+                    <label className="ap-question-label required">Subject*</label>
+                    <select
+                      value={test.subject || ''}
+                      onChange={(e) => handleTestChange(index, 'subject', e.target.value)}
+                      className={`ap-select ${isFieldMissing(test, 'subject') ? 'error' : ''}`}
+                    >
+                      <option value="">Choose an option</option>
+                      {subjectOptions.map(subject => (
+                        <option key={subject} value={subject}>{subject}</option>
+                      ))}
+                    </select>
+                    {isFieldMissing(test, 'subject') && (
+                      <div className="ap-error-message">
+                        Please complete this required question.
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Score Field - Radio buttons for AP scores (1-5) */}
+                  <div className="ap-form-group">
+                    <label className="ap-question-label">Score</label>
+                    <div className="ap-score-radio-group-horizontal">
+                      {scoreOptions.map(score => (
+                        <label key={score} className="ap-score-radio-option">
+                          <input
+                            type="radio"
+                            name={`score-${index}`}
+                            value={score}
+                            checked={test.score === score.toString()}
+                            onChange={(e) => handleTestChange(index, 'score', e.target.value)}
+                            className="ap-score-radio-input"
+                          />
+                          <span className="ap-score-radio-label">{score}</span>
+                        </label>
+                      ))}
+                    </div>
+                    {test.score && (
+                      <button 
+                        type="button" 
+                        className="ap-clear-link"
+                        onClick={() => handleTestChange(index, 'score', '')}
+                      >
+                        Clear answer
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
-
-        {/* Dynamic Test Forms based on number selected */}
-        {numberOfTests && parseInt(numberOfTests) > 0 && (
-          <div className="tests-container">
-            {tests.map((test, index) => (
-              <div key={index} className="test-entry">
-                <h3>Test {index + 1}</h3>
-                
-                {/* Date Field with Month Selection and Year Grid */}
-                <div className="form-group">
-                  <label>Date taken or planned*</label>
-                  <div className="date-selection">
-                    <div className="month-year-selection">
-                      <div className="month-select-container">
-                        <select
-                          value={test.month || ''}
-                          onChange={(e) => handleMonthChange(index, e.target.value)}
-                          className={`month-select ${isFieldMissing(test, 'month') ? 'error' : ''}`}
-                        >
-                          <option value="">Month</option>
-                          {monthOptions.map(month => (
-                            <option key={month} value={month}>{month}</option>
-                          ))}
-                        </select>
-                      </div>
-                      
-                      <div className="year-select-container">
-                        <div 
-                          className={`year-display ${isFieldMissing(test, 'year') ? 'error' : ''}`}
-                          onClick={() => toggleYearGrid(index)}
-                        >
-                          {test.year || 'Year'}
-                          <span className="dropdown-arrow">▼</span>
-                        </div>
-                        
-                        {showYearGrid === index && (
-                          <div className="year-grid-container">
-                            <div className="year-grid">
-                              {yearRows.map((row, rowIndex) => (
-                                <div key={rowIndex} className="year-row">
-                                  {row.map(year => (
-                                    <div
-                                      key={year}
-                                      className={`year-option ${test.year === year.toString() ? 'selected' : ''}`}
-                                      onClick={() => handleYearSelect(index, year)}
-                                    >
-                                      {year}
-                                    </div>
-                                  ))}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="date-format-hint">
-                      Date uses "month year" format (e.g. August 2002)
-                    </div>
-                  </div>
-                  {(isFieldMissing(test, 'month') || isFieldMissing(test, 'year')) && (
-                    <div className="error-message">
-                      Please complete this required question.
-                    </div>
-                  )}
-                  {formatDate(test) && (
-                    <div className="selected-date">
-                      Selected: {formatDate(test)}
-                    </div>
-                  )}
-                </div>
-
-                {/* Subject Field */}
-                <div className="form-group">
-                  <label>Subject*</label>
-                  <select
-                    value={test.subject || ''}
-                    onChange={(e) => handleTestChange(index, 'subject', e.target.value)}
-                    className={`subject-select ${isFieldMissing(test, 'subject') ? 'error' : ''}`}
-                  >
-                    <option value="">Choose an option</option>
-                    {subjectOptions.map(subject => (
-                      <option key={subject} value={subject}>{subject}</option>
-                    ))}
-                  </select>
-                  {isFieldMissing(test, 'subject') && (
-                    <div className="error-message">
-                      Please complete this required question.
-                    </div>
-                  )}
-                </div>
-
-                {/* Score Field - Radio buttons for AP scores (1-5) */}
-                <div className="form-group">
-                  <label>Score</label>
-                  <div className="score-radio-group-horizontal">
-                    {scoreOptions.map(score => (
-                      <label key={score} className="score-radio-option-horizontal">
-                        <input
-                          type="radio"
-                          name={`score-${index}`}
-                          value={score}
-                          checked={test.score === score.toString()}
-                          onChange={(e) => handleTestChange(index, 'score', e.target.value)}
-                          className="score-radio-input"
-                        />
-                        <span className="score-radio-label">{score}</span>
-                      </label>
-                    ))}
-                  </div>
-                  <button 
-                    type="button" 
-                    className="clear-answer-button"
-                    onClick={() => handleTestChange(index, 'score', '')}
-                  >
-                    Clear answer
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );

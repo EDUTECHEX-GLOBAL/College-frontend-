@@ -1,11 +1,182 @@
-// src/components/DashboardLayout.js - FULLY UPDATED WITH MOBILE SUPPORT
+// src/components/DashboardLayout.js - UPDATED WITH EDUTECH STYLE SIDEBAR
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import logo from '../assets/Edutech-logo.svg';
 
-const DashboardLayout = ({ userData, children, activeMainSection, onSectionChange, userColleges = [] }) => {
+// ─── SVG Icon Components for Sidebar ───
+const Icons = {
+  Dashboard: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1"/>
+      <rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/>
+      <rect x="14" y="14" width="7" height="7" rx="1"/>
+    </svg>
+  ),
+  Profile: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+      <circle cx="12" cy="7" r="4"/>
+    </svg>
+  ),
+  Contact: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+    </svg>
+  ),
+  Address: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+      <circle cx="12" cy="10" r="3"/>
+    </svg>
+  ),
+  Demographics: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+    </svg>
+  ),
+  Language: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 8h14M12 3v5M8 8v10M16 8v10M6 18h12M9 21h6"/>
+      <path d="M4 8h16"/>
+    </svg>
+  ),
+  Geography: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="2" y1="12" x2="22" y2="12"/>
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+    </svg>
+  ),
+  Family: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+    </svg>
+  ),
+  Education: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+      <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+    </svg>
+  ),
+  Testing: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="9 11 12 14 22 4"/>
+      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+    </svg>
+  ),
+  Activities: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+    </svg>
+  ),
+  Writing: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 20h9"/>
+      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+    </svg>
+  ),
+  Colleges: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+  ),
+  Courses: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+    </svg>
+  ),
+  Search: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="8"/>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+  ),
+  Application: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+      <line x1="16" y1="13" x2="8" y2="13"/>
+      <line x1="16" y1="17" x2="8" y2="17"/>
+      <polyline points="10 9 9 9 8 9"/>
+    </svg>
+  ),
+  DirectAdmissions: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+      <polyline points="22 4 12 14.01 9 11.01"/>
+    </svg>
+  ),
+  Financial: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="1" x2="12" y2="23"/>
+      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+    </svg>
+  ),
+  Settings: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+    </svg>
+  ),
+  SignOut: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+      <polyline points="16 17 21 12 16 7"/>
+      <line x1="21" y1="12" x2="9" y2="12"/>
+    </svg>
+  ),
+  ChevronDown: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="6 9 12 15 18 9"/>
+    </svg>
+  ),
+  ChevronRight: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="9 18 15 12 9 6"/>
+    </svg>
+  ),
+  Menu: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="3" y1="12" x2="21" y2="12"/>
+      <line x1="3" y1="6" x2="21" y2="6"/>
+      <line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  ),
+  Close: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"/>
+      <line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+  ),
+  College: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+  ),
+};
+
+const DashboardLayout = ({ 
+  userData, 
+  children, 
+  activeMainSection, 
+  onSectionChange, 
+  userColleges = [],
+  sidebarCollapsed = false,
+  onToggleSidebar
+}) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile sidebar toggle
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
     testing: false,
     colleges: false,
@@ -17,47 +188,21 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
   });
   const [forceUpdate, setForceUpdate] = useState(0);
 
-  // Close sidebar on route change (mobile)
   useEffect(() => {
     setSidebarOpen(false);
   }, [location.pathname]);
 
-  // Prevent body scroll when sidebar is open on mobile
   useEffect(() => {
     if (sidebarOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
     }
-    return () => {
-      document.body.style.overflow = '';
-    };
+    return () => { document.body.style.overflow = ''; };
   }, [sidebarOpen]);
 
-  // Calculate completed sections for "My Common Application" in sidebar
-  const calculateCommonAppProgress = () => {
-    if (!userData) return '0/8';
-    
-    const sections = [
-      userData.applicationProgress?.application || 0,
-      userData.profileProgress || 0,
-      userData.applicationProgress?.family || 0,
-      userData.applicationProgress?.education || 0,
-      userData.applicationProgress?.testing || 0,
-      userData.applicationProgress?.activities || 0,
-      userData.applicationProgress?.writing || 0
-    ];
-    
-    const completed = sections.filter(progress => progress >= 100).length;
-    const total = sections.length;
-    
-    return `${completed}/${total}`;
-  };
-
-  // Calculate overall progress percentage
   const calculateOverallProgress = () => {
     if (!userData) return 0;
-    
     const sections = [
       userData.applicationProgress?.application || 0,
       userData.profileProgress || 0,
@@ -67,36 +212,19 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
       userData.applicationProgress?.activities || 0,
       userData.applicationProgress?.writing || 0
     ];
-    
-    const totalProgress = sections.reduce((sum, progress) => sum + progress, 0);
-    return Math.round(totalProgress / sections.length);
+    return Math.round(sections.reduce((sum, p) => sum + p, 0) / sections.length);
   };
 
-  // Auto-expand sections when on their pages
   useEffect(() => {
     const path = location.pathname;
-    
-    if (path.includes('/testing')) {
-      setExpandedSections(prev => ({ ...prev, testing: true }));
-    }
-    if (path.includes('/colleges') && !path.includes('/college-search')) {
-      setExpandedSections(prev => ({ ...prev, colleges: true }));
-    }
-    if (path.includes('/writing')) {
-      setExpandedSections(prev => ({ ...prev, writing: true }));
-    }
-    if (path.includes('/activities')) {
-      setExpandedSections(prev => ({ ...prev, activities: true }));
-    }
-    if (path.includes('/courses')) {
-      setExpandedSections(prev => ({ ...prev, courses: true }));
-    }
-    if (path.includes('/application')) {
-      setExpandedSections(prev => ({ ...prev, application: true }));
-    }
+    if (path.includes('/testing')) setExpandedSections(prev => ({ ...prev, testing: true }));
+    if (path.includes('/colleges') && !path.includes('/college-search')) setExpandedSections(prev => ({ ...prev, colleges: true }));
+    if (path.includes('/writing')) setExpandedSections(prev => ({ ...prev, writing: true }));
+    if (path.includes('/activities')) setExpandedSections(prev => ({ ...prev, activities: true }));
+    if (path.includes('/courses')) setExpandedSections(prev => ({ ...prev, courses: true }));
+    if (path.includes('/application')) setExpandedSections(prev => ({ ...prev, application: true }));
   }, [location.pathname]);
 
-  // Auto-expand specific college when on its pages
   useEffect(() => {
     if (location.pathname.includes('/colleges/')) {
       const pathParts = location.pathname.split('/');
@@ -106,55 +234,33 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
         if (collegeId && collegeId !== 'colleges') {
           setExpandedSections(prev => ({
             ...prev,
-            expandedColleges: {
-              ...prev.expandedColleges,
-              [collegeId]: true
-            }
+            expandedColleges: { ...prev.expandedColleges, [collegeId]: true }
           }));
         }
       }
     }
   }, [location.pathname]);
 
-  // Listen for storage changes
   useEffect(() => {
-    const handleStorageChange = () => setForceUpdate(prev => prev + 1);
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
-
-  useEffect(() => {
-    const handleTestingDataUpdate = () => setForceUpdate(prev => prev + 1);
-    window.addEventListener('testingDataUpdated', handleTestingDataUpdate);
-    return () => window.removeEventListener('testingDataUpdated', handleTestingDataUpdate);
-  }, []);
-
-  useEffect(() => {
-    const handleCollegeFormUpdate = () => setForceUpdate(prev => prev + 1);
-    window.addEventListener('collegeFormUpdated', handleCollegeFormUpdate);
-    return () => window.removeEventListener('collegeFormUpdated', handleCollegeFormUpdate);
-  }, []);
-
-  useEffect(() => {
-    const handleApplicationUpdate = () => setForceUpdate(prev => prev + 1);
-    window.addEventListener('applicationUpdated', handleApplicationUpdate);
-    return () => window.removeEventListener('applicationUpdated', handleApplicationUpdate);
+    const h = () => setForceUpdate(p => p + 1);
+    window.addEventListener('storage', h);
+    window.addEventListener('testingDataUpdated', h);
+    window.addEventListener('collegeFormUpdated', h);
+    window.addEventListener('applicationUpdated', h);
+    return () => {
+      window.removeEventListener('storage', h);
+      window.removeEventListener('testingDataUpdated', h);
+      window.removeEventListener('collegeFormUpdated', h);
+      window.removeEventListener('applicationUpdated', h);
+    };
   }, []);
 
   const getStudentId = () => {
     if (!userData) return 'CAID Loading...';
-    const possibleIds = [
-      userData.studentId,
-      userData.caId,
-      userData.CAID,
-      userData.studentID,
-      userData._id
-    ];
+    const possibleIds = [userData.studentId, userData.caId, userData.CAID, userData.studentID, userData._id];
     const foundId = possibleIds.find(id => id && id !== '');
     if (foundId) {
-      if (foundId.length === 24) {
-        return `CAID-${foundId.substring(0, 8).toUpperCase()}`;
-      }
+      if (foundId.length === 24) return `CAID-${foundId.substring(0, 8).toUpperCase()}`;
       return foundId;
     }
     return 'CAID Loading...';
@@ -170,19 +276,13 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
   };
 
   const toggleSection = (section) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
   const toggleCollege = (collegeId) => {
     setExpandedSections(prev => ({
       ...prev,
-      expandedColleges: {
-        ...prev.expandedColleges,
-        [collegeId]: !prev.expandedColleges[collegeId]
-      }
+      expandedColleges: { ...prev.expandedColleges, [collegeId]: !prev.expandedColleges[collegeId] }
     }));
   };
 
@@ -191,16 +291,10 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     if (storedUserData) {
       try {
         const parsedData = JSON.parse(storedUserData);
-        const tests = parsedData.testingData?.testsToReport || [];
-        return tests;
-      } catch (error) {
-        console.error('Error parsing stored user data:', error);
-      }
+        return parsedData.testingData?.testsToReport || [];
+      } catch (error) {}
     }
-    if (userData?.testingData?.testsToReport) {
-      return userData.testingData.testsToReport;
-    }
-    return [];
+    return userData?.testingData?.testsToReport || [];
   };
 
   const getApplicationProgress = () => {
@@ -209,84 +303,35 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
       try {
         const parsedData = JSON.parse(storedUserData);
         return parsedData.applicationProgress?.application || 0;
-      } catch (error) {
-        console.error('Error parsing stored user data:', error);
-      }
+      } catch (error) {}
     }
     return userData?.applicationProgress?.application || 0;
   };
 
   const calculateApplicationStepProgress = (step) => {
     const gusAppData = JSON.parse(localStorage.getItem('gusApplicationData') || '{}');
-    const isFieldFilled = (fieldValue) => {
-      if (fieldValue === null || fieldValue === undefined || fieldValue === false) return false;
-      if (typeof fieldValue === 'string') return fieldValue.trim() !== '';
-      if (typeof fieldValue === 'number') return true;
-      if (Array.isArray(fieldValue)) return fieldValue.length > 0;
-      if (typeof fieldValue === 'object') {
-        if (fieldValue.grade9 || fieldValue.grade10 || fieldValue.grade11 || fieldValue.grade12 ||
-            fieldValue.satTotal || fieldValue.act || fieldValue.toefl || fieldValue.ielts) {
-          return true;
-        }
-        return Object.keys(fieldValue).length > 0;
+    const isFieldFilled = (v) => {
+      if (v === null || v === undefined || v === false) return false;
+      if (typeof v === 'string') return v.trim() !== '';
+      if (typeof v === 'number') return true;
+      if (Array.isArray(v)) return v.length > 0;
+      if (typeof v === 'object') {
+        if (v.grade9 || v.grade10 || v.grade11 || v.grade12 || v.satTotal || v.act || v.toefl || v.ielts) return true;
+        return Object.keys(v).length > 0;
       }
-      return !!fieldValue;
+      return !!v;
     };
-
-    switch(step) {
-      case 'personal':
-        const personalFields = ['firstName', 'lastName', 'gender', 'dob', 'nationality',
-                                'countryOfResidence', 'email', 'mobile'];
-        const personalFilled = personalFields.filter(field => isFieldFilled(gusAppData[field])).length;
-        return (personalFilled / personalFields.length) * 100;
-      case 'address':
-        const addressFields = ['currentAddress', 'city', 'country', 'state', 'postalCode'];
-        const addressFilled = addressFields.filter(field => isFieldFilled(gusAppData[field])).length;
-        return (addressFilled / addressFields.length) * 100;
-      case 'entrance-qualification':
-        const eqheFields = ['eqheDate', 'eqheCity', 'eqheCountry', 'eqheOriginalTitle', 'hasAnotherEQHE'];
-        const eqheFilled = eqheFields.filter(field => isFieldFilled(gusAppData[field])).length;
-        return (eqheFilled / eqheFields.length) * 100;
-      case 'special-needs':
-        if (gusAppData.hasSpecialNeeds === 'no') return 100;
-        if (gusAppData.hasSpecialNeeds === 'yes' && isFieldFilled(gusAppData.specialNeedsDescription)) return 100;
-        return 0;
-      case 'education':
-        const educationFields = ['qualificationLevel', 'institutionName', 'boardUniversity',
-                                'countryOfStudy', 'startYear', 'endYear'];
-        const educationFilled = educationFields.filter(field => isFieldFilled(gusAppData[field])).length;
-        return (educationFilled / educationFields.length) * 100;
-      case 'test-scores':
-        const scores = gusAppData.scores || {};
-        const hasAnyScore = scores.grade9 || scores.grade10 || scores.grade11 || scores.grade12 ||
-                           scores.satTotal || scores.act || scores.toefl || scores.ielts;
-        return hasAnyScore ? 100 : 0;
-      case 'documents':
-        const documentFields = ['passport', 'transcripts', 'degreeCertificate', 'sop', 'lor1', 'lor2', 'eqheCertificate'];
-        const documentFilled = documentFields.filter(field => {
-          const fieldName = field + 'FileName';
-          return isFieldFilled(gusAppData[field]) || isFieldFilled(gusAppData[fieldName]);
-        }).length;
-        return (documentFilled / documentFields.length) * 100;
-      case 'preview':
-        return gusAppData.agreedToTerms ? 100 : 0;
-      default:
-        return 0;
+    switch (step) {
+      case 'personal': { const f = ['firstName','lastName','gender','dob','nationality','countryOfResidence','email','mobile']; return (f.filter(x => isFieldFilled(gusAppData[x])).length / f.length) * 100; }
+      case 'address': { const f = ['currentAddress','city','country','state','postalCode']; return (f.filter(x => isFieldFilled(gusAppData[x])).length / f.length) * 100; }
+      case 'entrance-qualification': { const f = ['eqheDate','eqheCity','eqheCountry','eqheOriginalTitle','hasAnotherEQHE']; return (f.filter(x => isFieldFilled(gusAppData[x])).length / f.length) * 100; }
+      case 'special-needs': { if (gusAppData.hasSpecialNeeds === 'no') return 100; if (gusAppData.hasSpecialNeeds === 'yes' && isFieldFilled(gusAppData.specialNeedsDescription)) return 100; return 0; }
+      case 'education': { const f = ['qualificationLevel','institutionName','boardUniversity','countryOfStudy','startYear','endYear']; return (f.filter(x => isFieldFilled(gusAppData[x])).length / f.length) * 100; }
+      case 'test-scores': { const s = gusAppData.scores || {}; return (s.grade9 || s.grade10 || s.grade11 || s.grade12 || s.satTotal || s.act || s.toefl || s.ielts) ? 100 : 0; }
+      case 'documents': { const f = ['passport','transcripts','degreeCertificate','sop','lor1','lor2','eqheCertificate']; return (f.filter(x => isFieldFilled(gusAppData[x]) || isFieldFilled(gusAppData[x + 'FileName'])).length / f.length) * 100; }
+      case 'preview': return gusAppData.agreedToTerms ? 100 : 0;
+      default: return 0;
     }
-  };
-
-  const getCurrentApplicationStep = () => {
-    const path = location.pathname;
-    if (path.includes('/application/personal')) return 'personal';
-    if (path.includes('/application/address')) return 'address';
-    if (path.includes('/application/language')) return 'entrance-qualification';
-    if (path.includes('/application/specialneeds')) return 'special-needs';
-    if (path.includes('/application/firsteducation') || path.includes('/application/education')) return 'education';
-    if (path.includes('/application/scores')) return 'test-scores';
-    if (path.includes('/application/documents')) return 'documents';
-    if (path.includes('/application/preview')) return 'preview';
-    if (path.includes('/application/overview')) return 'overview';
-    return '';
   };
 
   const studentType = location.pathname.includes('/transfer/') ? 'transfer' : 'firstyear';
@@ -306,72 +351,46 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
   ];
 
   const selectedTests = getSelectedTests();
-  const selectedTestTypes = selectedTests.length > 0
-    ? testTypes.filter(test => selectedTests.includes(test.id))
-    : [];
-
+  const selectedTestTypes = selectedTests.length > 0 ? testTypes.filter(t => selectedTests.includes(t.id)) : [];
   const applicationProgress = getApplicationProgress();
-  const currentAppStep = getCurrentApplicationStep();
 
-  // CollegeSidebarItem Component
   const CollegeSidebarItem = ({ college, isExpanded, onToggle, onNavigate }) => {
     const [showInternational, setShowInternational] = useState(false);
-
     useEffect(() => {
-      const shouldShowInternational = localStorage.getItem(`college_${college.collegeId}_show_international`) === 'true';
-      setShowInternational(shouldShowInternational);
+      setShowInternational(localStorage.getItem(`college_${college.collegeId}_show_international`) === 'true');
     }, [college.collegeId]);
-
     useEffect(() => {
-      const handleCollegeFormUpdate = (event) => {
-        if (event.detail.collegeId === college.collegeId) {
-          setShowInternational(event.detail.showInternational);
-        }
-      };
-      window.addEventListener('collegeFormUpdated', handleCollegeFormUpdate);
-      return () => window.removeEventListener('collegeFormUpdated', handleCollegeFormUpdate);
+      const h = (e) => { if (e.detail.collegeId === college.collegeId) setShowInternational(e.detail.showInternational); };
+      window.addEventListener('collegeFormUpdated', h);
+      return () => window.removeEventListener('collegeFormUpdated', h);
     }, [college.collegeId]);
 
     const applicationSubsections = [
-      { id: 'documents', name: 'Documents' },
-      { id: 'general', name: 'General' },
-      { id: 'academics', name: 'Academics' },
-      { id: 'high-school', name: 'High School Curriculum' },
-      { id: 'activities', name: 'Activities' },
-      { id: 'contacts', name: 'Contacts' },
-      { id: 'family', name: 'Family' },
-      { id: 'residency', name: 'Residency' },
+      { id: 'documents', name: 'Documents' }, { id: 'general', name: 'General' },
+      { id: 'academics', name: 'Academics' }, { id: 'high-school', name: 'High School Curriculum' },
+      { id: 'activities', name: 'Activities' }, { id: 'contacts', name: 'Contacts' },
+      { id: 'family', name: 'Family' }, { id: 'residency', name: 'Residency' },
       ...(showInternational ? [{ id: 'international', name: 'International Student Information' }] : []),
     ];
-
     const isCollegeActive = location.pathname.includes(`/colleges/${college.collegeId}`);
-
     return (
       <li className="nav-college-item">
-        <div
-          className={`nav-college-header ${isCollegeActive ? 'active' : ''}`}
-          onClick={onToggle}
-        >
+        <div className={`nav-college-header ${isCollegeActive ? 'active' : ''}`} onClick={onToggle}>
+          <Icons.College />
           <span className="nav-text">{college.name}</span>
-          <span className="expand-icon">{isExpanded ? '▼' : '►'}</span>
+          <span className="expand-icon">{isExpanded ? <Icons.ChevronDown /> : <Icons.ChevronRight />}</span>
         </div>
-
         {isExpanded && (
           <ul className="nav-college-submenu">
             <li className="nav-college-subitem">
-              <div className="nav-college-subheader">
-                <span className="nav-text">APPLICATION</span>
-              </div>
+              <div className="nav-college-subheader"><span className="nav-text">APPLICATION</span></div>
               <ul className="nav-application-submenu">
-                {applicationSubsections.map((subsection) => {
-                  const isSubsectionActive = location.pathname === `${basePath}/colleges/${college.collegeId}/${subsection.id}`;
+                {applicationSubsections.map((sub) => {
+                  const isActive = location.pathname === `${basePath}/colleges/${college.collegeId}/${sub.id}`;
                   return (
-                    <li key={subsection.id} className={`nav-application-subitem ${isSubsectionActive ? 'active' : ''}`}>
-                      <div
-                        className={`nav-content ${isSubsectionActive ? 'active' : ''}`}
-                        onClick={() => onNavigate(`college-${college.collegeId}-${subsection.id}`)}
-                      >
-                        <span className="nav-text">{subsection.name}</span>
+                    <li key={sub.id} className={`nav-application-subitem ${isActive ? 'active' : ''}`}>
+                      <div className={`nav-content ${isActive ? 'active' : ''}`} onClick={() => onNavigate(`college-${college.collegeId}-${sub.id}`)}>
+                        <span className="nav-text">{sub.name}</span>
                       </div>
                     </li>
                   );
@@ -379,10 +398,7 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
               </ul>
             </li>
             <li className={`nav-college-subitem ${location.pathname === `${basePath}/colleges/${college.collegeId}/review` ? 'active' : ''}`}>
-              <div
-                className={`nav-content ${location.pathname === `${basePath}/colleges/${college.collegeId}/review` ? 'active' : ''}`}
-                onClick={() => onNavigate(`college-${college.collegeId}-review`)}
-              >
+              <div className={`nav-content ${location.pathname === `${basePath}/colleges/${college.collegeId}/review` ? 'active' : ''}`} onClick={() => onNavigate(`college-${college.collegeId}-review`)}>
                 <span className="nav-text">Review and submit application</span>
               </div>
             </li>
@@ -399,42 +415,84 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     navigate(`${basePath}/colleges/${collegeId}/${subsection}`);
   };
 
+  // Reusable NavItem component with icon
+  const NavItem = ({ icon: Icon, label, isActive, onClick, badge, hint }) => (
+    <li className={`nav-item ${isActive ? 'active' : ''}`} onClick={onClick}>
+      <div className="nav-content">
+        {Icon && <span className="nav-icon"><Icon /></span>}
+        <span className="nav-text">{hint || label}</span>
+        {badge !== undefined && badge !== '' && <div className="nav-progress">{badge}</div>}
+      </div>
+    </li>
+  );
+
+  // Expandable nav section with icon
+  const ExpandableNav = ({ icon: Icon, label, isExpanded, onToggle, badge, children }) => (
+    <li className="nav-section-expandable">
+      <div className={`nav-header ${isExpanded ? 'expanded' : ''}`} onClick={onToggle}>
+        {Icon && <span className="nav-icon"><Icon /></span>}
+        <span className="nav-text">{label}</span>
+        <div className="nav-header-right">
+          {badge !== undefined && badge !== '' && <span className="nav-progress-small">{badge}</span>}
+          <span className="expand-icon">{isExpanded ? <Icons.ChevronDown /> : <Icons.ChevronRight />}</span>
+        </div>
+      </div>
+      {isExpanded && <ul className="nav-submenu">{children}</ul>}
+    </li>
+  );
+
+  const SubItem = ({ label, isActive, onClick, badge }) => (
+    <li className={`nav-subitem ${isActive ? 'active' : ''}`}>
+      <div className="nav-content" onClick={onClick}>
+        <span className="nav-text">{label}</span>
+        {badge !== undefined && <div className="nav-progress-tiny">{badge}</div>}
+      </div>
+    </li>
+  );
+
   const getSidebarContent = () => {
+    // PROFILE Section - This is the main sidebar for profile sections
     if (activeMainSection === 'profile') {
       return (
         <div className="nav-section">
-          <h4 className="nav-section-title">Profile</h4>
+          <h4 className="nav-section-title">PROFILE</h4>
           <ul className="nav-menu">
-            <li className={`nav-item ${location.pathname.includes('/personal') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => onSectionChange('personal')}>
-                <span className="nav-text">Personal Information</span>
-              </div>
-            </li>
-            <li className={`nav-item ${location.pathname.includes('/contact') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => onSectionChange('contact')}>
-                <span className="nav-text">Contact Details</span>
-              </div>
-            </li>
-            <li className={`nav-item ${location.pathname.includes('/address') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => onSectionChange('address')}>
-                <span className="nav-text">Address</span>
-              </div>
-            </li>
-            <li className={`nav-item ${location.pathname.includes('/demographics') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => onSectionChange('demographics')}>
-                <span className="nav-text">Demographics</span>
-              </div>
-            </li>
-            <li className={`nav-item ${location.pathname.includes('/language') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => onSectionChange('language')}>
-                <span className="nav-text">Language</span>
-              </div>
-            </li>
-            <li className={`nav-item ${location.pathname.includes('/geography') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => onSectionChange('geography')}>
-                <span className="nav-text">Geography & Nationality</span>
-              </div>
-            </li>
+            <NavItem 
+              icon={Icons.Profile}
+              label="Personal Information" 
+              isActive={location.pathname.includes('/personal')} 
+              onClick={() => onSectionChange('personal')} 
+            />
+            <NavItem 
+              icon={Icons.Contact}
+              label="Contact Details" 
+              isActive={location.pathname.includes('/contact')} 
+              onClick={() => onSectionChange('contact')} 
+            />
+            <NavItem 
+              icon={Icons.Address}
+              label="Address" 
+              isActive={location.pathname.includes('/address')} 
+              onClick={() => onSectionChange('address')} 
+            />
+            <NavItem 
+              icon={Icons.Demographics}
+              label="Demographics" 
+              isActive={location.pathname.includes('/demographics')} 
+              onClick={() => onSectionChange('demographics')} 
+            />
+            <NavItem 
+              icon={Icons.Language}
+              label="Language" 
+              isActive={location.pathname.includes('/language')} 
+              onClick={() => onSectionChange('language')} 
+            />
+            <NavItem 
+              icon={Icons.Geography}
+              label="Geography & Nationality" 
+              isActive={location.pathname.includes('/geography')} 
+              onClick={() => onSectionChange('geography')} 
+            />
           </ul>
         </div>
       );
@@ -443,28 +501,22 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     if (activeMainSection === 'family') {
       return (
         <div className="nav-section">
-          <h4 className="nav-section-title">Family</h4>
+          <h4 className="nav-section-title">FAMILY</h4>
           <ul className="nav-menu">
-            <li className={`nav-item ${location.pathname.includes('/household') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate(`${basePath}/family/household`)}>
-                <span className="nav-text">Household</span>
-              </div>
-            </li>
-            <li className={`nav-item ${location.pathname.includes('/parent1') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate(`${basePath}/family/parent1`)}>
-                <span className="nav-text">Parent 1</span>
-              </div>
-            </li>
-            <li className={`nav-item ${location.pathname.includes('/parent2') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate(`${basePath}/family/parent2`)}>
-                <span className="nav-text">Parent 2</span>
-              </div>
-            </li>
-            <li className={`nav-item ${location.pathname.includes('/sibling') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate(`${basePath}/family/sibling`)}>
-                <span className="nav-text">Sibling</span>
-              </div>
-            </li>
+            {[
+              ['household','Household'],
+              ['parent1','Parent 1'],
+              ['parent2','Parent 2'],
+              ['sibling','Sibling']
+            ].map(([key, label]) => (
+              <NavItem 
+                key={key} 
+                icon={Icons.Family}
+                label={label} 
+                isActive={location.pathname.includes(`/${key}`)} 
+                onClick={() => navigate(`${basePath}/family/${key}`)} 
+              />
+            ))}
           </ul>
         </div>
       );
@@ -473,53 +525,26 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     if (activeMainSection === 'education') {
       return (
         <div className="nav-section">
-          <h4 className="nav-section-title">Education</h4>
+          <h4 className="nav-section-title">EDUCATION</h4>
           <ul className="nav-menu">
-            <li className={`nav-item ${location.pathname.includes('/current-school') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate(`${basePath}/education/current-school`)}>
-                <span className="nav-text">Current or Most Recent Secondary/High School</span>
-              </div>
-            </li>
-            <li className={`nav-item ${location.pathname.includes('/other-schools') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate(`${basePath}/education/other-schools`)}>
-                <span className="nav-text">Other Secondary/High Schools</span>
-              </div>
-            </li>
-            <li className={`nav-item ${location.pathname.includes('/colleges') && !location.pathname.includes('/dashboard/colleges') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate(`${basePath}/education/colleges`)}>
-                <span className="nav-text">Colleges & Universities</span>
-              </div>
-            </li>
-            <li className={`nav-item ${location.pathname.includes('/grades') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate(`${basePath}/education/grades`)}>
-                <span className="nav-text">Grades</span>
-              </div>
-            </li>
-            <li className={`nav-item ${location.pathname.includes('/current-courses') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate(`${basePath}/education/current-courses`)}>
-                <span className="nav-text">Current or Most Recent Year Courses</span>
-              </div>
-            </li>
-            <li className={`nav-item ${location.pathname.includes('/honors') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate(`${basePath}/education/honors`)}>
-                <span className="nav-text">Honors</span>
-              </div>
-            </li>
-            <li className={`nav-item ${location.pathname.includes('/community-organizations') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate(`${basePath}/education/community-organizations`)}>
-                <span className="nav-text">Community-Based Organizations</span>
-              </div>
-            </li>
-            <li className={`nav-item ${location.pathname.includes('/future-plans') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate(`${basePath}/education/future-plans`)}>
-                <span className="nav-text">Future Plans</span>
-              </div>
-            </li>
-            <li className={`nav-item ${location.pathname.includes('/documents') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate(`${basePath}/education/documents`)}>
-                <span className="nav-text">Documents Upload</span>
-              </div>
-            </li>
+            {[
+              ['current-school','Current or Most Recent Secondary/High School'],
+              ['other-schools','Other Secondary/High Schools'],
+              ['grades','Grades'],
+              ['current-courses','Current or Most Recent Year Courses'],
+              ['honors','Honors'],
+              ['community-organizations','Community-Based Organizations'],
+              ['future-plans','Future Plans'],
+              ['documents','Documents Upload'],
+            ].map(([key, label]) => (
+              <NavItem 
+                key={key} 
+                icon={Icons.Education}
+                label={label} 
+                isActive={location.pathname.includes(`/${key}`)} 
+                onClick={() => navigate(`${basePath}/education/${key}`)} 
+              />
+            ))}
           </ul>
         </div>
       );
@@ -528,18 +553,20 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     if (activeMainSection === 'writing') {
       return (
         <div className="nav-section">
-          <h4 className="nav-section-title">Writing</h4>
+          <h4 className="nav-section-title">WRITING</h4>
           <ul className="nav-menu">
-            <li className={`nav-item ${location.pathname.includes('/personal-essay') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate(`${basePath}/writing/personal-essay`)}>
-                <span className="nav-text">Personal Essay</span>
-              </div>
-            </li>
-            <li className={`nav-item ${location.pathname.includes('/additional-information') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate(`${basePath}/writing/additional-information`)}>
-                <span className="nav-text">Additional Information</span>
-              </div>
-            </li>
+            <NavItem 
+              icon={Icons.Writing}
+              label="Personal Essay" 
+              isActive={location.pathname.includes('/personal-essay')} 
+              onClick={() => navigate(`${basePath}/writing/personal-essay`)} 
+            />
+            <NavItem 
+              icon={Icons.Writing}
+              label="Additional Information" 
+              isActive={location.pathname.includes('/additional-information')} 
+              onClick={() => navigate(`${basePath}/writing/additional-information`)} 
+            />
           </ul>
         </div>
       );
@@ -548,111 +575,53 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
     if (activeMainSection === 'activities') {
       return (
         <div className="nav-section">
-          <h4 className="nav-section-title">Activities</h4>
+          <h4 className="nav-section-title">ACTIVITIES</h4>
           <ul className="nav-menu">
-            <li className={`nav-item ${location.pathname.includes('/activities/activities') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate(`${basePath}/activities/activities`)}>
-                <span className="nav-text">Activities</span>
-              </div>
-            </li>
-            <li className={`nav-item ${location.pathname.includes('/responsibilities') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate(`${basePath}/activities/responsibilities`)}>
-                <span className="nav-text">Responsibilities and circumstances</span>
-              </div>
-            </li>
+            <NavItem 
+              icon={Icons.Activities}
+              label="Activities" 
+              isActive={location.pathname.includes('/activities/activities')} 
+              onClick={() => navigate(`${basePath}/activities/activities`)} 
+            />
+            <NavItem 
+              icon={Icons.Activities}
+              label="Responsibilities and circumstances" 
+              isActive={location.pathname.includes('/responsibilities')} 
+              onClick={() => navigate(`${basePath}/activities/responsibilities`)} 
+            />
           </ul>
         </div>
       );
     }
 
     if (activeMainSection === 'testing') {
-      const sectionDisplayNames = {
-        'tests-taken': 'Tests Taken',
-        'act-tests': 'ACT Tests',
-        'sat-tests': 'SAT Tests',
-        'sat-subject-tests': 'SAT Subject Tests',
-        'ap-subject-tests': 'AP Tests',
-        'ib-subject-tests': 'IB Tests',
-        'cambridge': 'Cambridge Tests',
-        'toefl-ibt': 'TOEFL iBT',
-        'pte-academic-tests': 'PTE Academic',
-        'ielts': 'IELTS',
-        'duolingo-english-test': 'Duolingo English Test'
+      const sectionDisplayNames = { 
+        'tests-taken':'Tests Taken',
+        'act-tests':'ACT Tests',
+        'sat-tests':'SAT Tests',
+        'sat-subject-tests':'SAT Subject Tests',
+        'ap-subject-tests':'AP Tests',
+        'ib-subject-tests':'IB Tests',
+        'cambridge':'Cambridge Tests',
+        'toefl-ibt':'TOEFL iBT',
+        'pte-academic-tests':'PTE Academic',
+        'ielts':'IELTS',
+        'duolingo-english-test':'Duolingo English Test'
       };
-
-      const sectionsToShow = [
-        'tests-taken',
-        ...selectedTests.filter(test => test !== 'tests-taken')
-      ];
-
+      const sectionsToShow = ['tests-taken', ...selectedTests.filter(t => t !== 'tests-taken')];
       return (
         <div className="nav-section">
-          <h4 className="nav-section-title">Testing</h4>
+          <h4 className="nav-section-title">TESTING</h4>
           <ul className="nav-menu">
-            {sectionsToShow.map((section) => (
-              <li
-                key={section}
-                className={`nav-item ${location.pathname.includes(`/${section}`) ? 'active' : ''}`}
-              >
-                <div
-                  className="nav-content"
-                  onClick={() => navigate(`${basePath}/testing/${section}`)}
-                >
-                  <span className="nav-text">{sectionDisplayNames[section] || section}</span>
-                </div>
-              </li>
+            {sectionsToShow.map(s => (
+              <NavItem 
+                key={s} 
+                icon={Icons.Testing}
+                label={sectionDisplayNames[s] || s} 
+                isActive={location.pathname.includes(`/${s}`)} 
+                onClick={() => navigate(`${basePath}/testing/${s}`)} 
+              />
             ))}
-          </ul>
-        </div>
-      );
-    }
-
-    if (activeMainSection === 'courses') {
-      return (
-        <div className="nav-section">
-          <h4 className="nav-section-title">Courses</h4>
-          <ul className="nav-menu">
-            <li className={`nav-item ${location.pathname.includes('/courses') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate(`${basePath}/college-search`)}>
-                <span className="nav-hint">← Go to College Search</span>
-              </div>
-            </li>
-            <li className="nav-item">
-              <div className="nav-content" onClick={() => {
-                navigate(`${basePath}/college-search`);
-                setTimeout(() => {
-                  window.dispatchEvent(new CustomEvent('filterGUSUniversities'));
-                }, 100);
-              }}>
-                <span className="nav-text">GUS Portal Universities</span>
-              </div>
-            </li>
-            <li className="nav-item">
-              <div className="nav-content" onClick={() => {
-                const savedPrograms = JSON.parse(localStorage.getItem('savedPrograms') || '[]');
-                if (savedPrograms.length > 0) {
-                  alert(`You have ${savedPrograms.length} saved programs`);
-                } else {
-                  alert('No saved programs yet. Browse universities to save programs.');
-                  navigate(`${basePath}/college-search`);
-                }
-              }}>
-                <span className="nav-text">Saved Programs</span>
-                <span className="nav-count">
-                  {(() => {
-                    const savedPrograms = JSON.parse(localStorage.getItem('savedPrograms') || '[]');
-                    return savedPrograms.length > 0 ? savedPrograms.length : '';
-                  })()}
-                </span>
-              </div>
-            </li>
-            <li className="nav-item">
-              <div className="nav-content" onClick={() => {
-                alert('Course Application Timeline:\n\n1. Browse universities in College Search\n2. Click on any GUS university\n3. View available programs and courses\n4. Select a program to apply\n5. Add to My Colleges');
-              }}>
-                <span className="nav-text">Application Timeline</span>
-              </div>
-            </li>
           </ul>
         </div>
       );
@@ -670,520 +639,359 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
         { id: 'documents', name: 'Documents', route: `${basePath}/application/documents` },
         { id: 'preview', name: 'Preview & Submit', route: `${basePath}/application/preview` }
       ];
-
       return (
         <div className="nav-section">
-          <h4 className="nav-section-title">University Application</h4>
+          <h4 className="nav-section-title">UNIVERSITY APPLICATION</h4>
           <ul className="nav-menu">
-            <li className={`nav-item ${location.pathname.includes('/application/overview') ? 'active' : ''}`}>
-              <div className="nav-content" onClick={() => navigate(`${basePath}/application/overview`)}>
-                <span className="nav-text">Application Overview</span>
-              </div>
-            </li>
-
-            {applicationSteps.slice(1).map((step) => {
-              const stepProgress = calculateApplicationStepProgress(step.id);
+            <NavItem 
+              icon={Icons.Application}
+              label="Application Overview" 
+              isActive={location.pathname.includes('/application/overview')} 
+              onClick={() => navigate(`${basePath}/application/overview`)} 
+            />
+            {applicationSteps.slice(1).map(step => {
               const isActive = location.pathname === step.route ||
-                             (step.id === 'entrance-qualification' && location.pathname.includes('/application/language')) ||
-                             (step.id === 'special-needs' && location.pathname.includes('/application/specialneeds')) ||
-                             (step.id === 'test-scores' && location.pathname.includes('/application/scores'));
+                (step.id === 'entrance-qualification' && location.pathname.includes('/application/language')) ||
+                (step.id === 'special-needs' && location.pathname.includes('/application/specialneeds')) ||
+                (step.id === 'test-scores' && location.pathname.includes('/application/scores'));
               return (
-                <li key={step.id} className={`nav-item ${isActive ? 'active' : ''}`}>
-                  <div className="nav-content" onClick={() => navigate(step.route)}>
-                    <span className="nav-text">{step.name}</span>
-                    <div className="nav-progress">{Math.round(stepProgress)}%</div>
-                  </div>
-                </li>
+                <NavItem 
+                  key={step.id} 
+                  icon={Icons.Application}
+                  label={step.name} 
+                  isActive={isActive} 
+                  onClick={() => navigate(step.route)}
+                  badge={`${Math.round(calculateApplicationStepProgress(step.id))}%`} 
+                />
               );
             })}
-
-            <li className="nav-item">
-              <div className="nav-content" onClick={() => {
-                alert('GUS University Application Portal\n\nComplete your application in 8 steps:\n\n1. Personal Information\n2. Address\n3. Entrance Qualification\n4. Special Needs\n5. Education\n6. Test Scores\n7. Documents\n8. Preview & Submit');
-              }}>
-                <span className="nav-text">Application Guide</span>
-              </div>
-            </li>
-
-            <li className="nav-item">
-              <div className="nav-content" onClick={() => {
-                const appData = localStorage.getItem('gusApplicationData');
-                if (appData) {
-                  try {
-                    const parsedData = JSON.parse(appData);
-                    const steps = applicationSteps.slice(1);
-                    const completedSteps = steps.filter(step => {
-                      const stepProgress = calculateApplicationStepProgress(step.id);
-                      return stepProgress >= 100;
-                    }).length;
-                    alert(`Application Progress: ${completedSteps}/8 steps completed\nOverall Progress: ${applicationProgress}%`);
-                  } catch (e) {
-                    alert('No application data saved yet.');
-                  }
-                } else {
-                  alert('No application data saved yet.');
-                }
-              }}>
-                <span className="nav-text">Application Status</span>
-                <div className="nav-progress">{applicationProgress}%</div>
-              </div>
-            </li>
-
-            <li className="nav-item">
-              <div className="nav-content" onClick={() => {
-                const gusAppData = JSON.parse(localStorage.getItem('gusApplicationData') || '{}');
-                const documents = [
-                  { name: 'Passport/ID', key: 'passport', uploaded: !!gusAppData.passportFileName || !!gusAppData.passport },
-                  { name: 'Photograph', key: 'photo', uploaded: !!gusAppData.photographFileName || !!gusAppData.photograph },
-                  { name: 'Academic Transcripts', key: 'transcripts', uploaded: !!gusAppData.transcriptsFileName || !!gusAppData.transcripts },
-                  { name: 'Degree Certificate', key: 'degreeCertificate', uploaded: !!gusAppData.degreeCertificateFileName || !!gusAppData.degreeCertificate },
-                  { name: 'EQHE Certificate', key: 'eqheCertificate', uploaded: !!gusAppData.eqheCertificateFileName || !!gusAppData.eqheCertificate },
-                  { name: 'Statement of Purpose', key: 'sop', uploaded: !!gusAppData.sopFileName || !!gusAppData.sop },
-                  { name: 'Letters of Recommendation', key: 'lor', uploaded: !!(gusAppData.lor1FileName || gusAppData.lor2FileName || gusAppData.lor1 || gusAppData.lor2) }
-                ];
-                const uploadedCount = documents.filter(doc => doc.uploaded).length;
-                const checklist = documents.map(doc => `${doc.uploaded ? '✓' : '○'} ${doc.name}`).join('\n');
-                alert(`Document Checklist (${uploadedCount}/7 uploaded):\n\n${checklist}`);
-              }}>
-                <span className="nav-text">Document Checklist</span>
-              </div>
-            </li>
           </ul>
         </div>
       );
     }
 
-    // Default dashboard sidebar
+    // Default sidebar - Main Dashboard Menu with PROFILE section
     return (
-      <div className="nav-section">
-        <h4 className="nav-section-title">Dashboard</h4>
-        <ul className="nav-menu">
-          <li className={`nav-item ${activeMainSection === 'dashboard' ? 'active' : ''}`}>
-            <div className="nav-content" onClick={() => onSectionChange('dashboard')}>
-              <span className="nav-text">My Dashboard</span>
-              <div className="nav-progress">{calculateOverallProgress()}%</div>
-            </div>
-          </li>
+      <>
+        <div className="nav-section">
+          <h4 className="nav-section-title">MAIN MENU</h4>
+          <ul className="nav-menu">
+            <NavItem 
+              icon={Icons.Dashboard} 
+              label="Dashboard" 
+              isActive={activeMainSection === 'dashboard'}
+              onClick={() => onSectionChange('dashboard')} 
+              badge={`${calculateOverallProgress()}%`} 
+            />
+          </ul>
+        </div>
 
-          {/* Expandable Application Section */}
-          <li className="nav-section-expandable">
-            <div
-              className={`nav-header ${expandedSections.application ? 'expanded' : ''}`}
-              onClick={() => toggleSection('application')}
+        <div className="nav-section">
+          <h4 className="nav-section-title">PROFILE</h4>
+          <ul className="nav-menu">
+            <NavItem 
+              icon={Icons.Profile} 
+              label="Personal Information" 
+              isActive={activeMainSection === 'profile' && location.pathname.includes('/personal')}
+              onClick={() => navigate(`${basePath}/profile/personal`)} 
+              badge={userData?.profileProgress >= 100 ? '✓' : userData?.profileProgress > 0 ? `${userData.profileProgress}%` : 'Start'} 
+            />
+            <NavItem 
+              icon={Icons.Contact} 
+              label="Contact Details" 
+              isActive={activeMainSection === 'profile' && location.pathname.includes('/contact')}
+              onClick={() => navigate(`${basePath}/profile/contact`)} 
+            />
+            <NavItem 
+              icon={Icons.Address} 
+              label="Address" 
+              isActive={activeMainSection === 'profile' && location.pathname.includes('/address')}
+              onClick={() => navigate(`${basePath}/profile/address`)} 
+            />
+            <NavItem 
+              icon={Icons.Demographics} 
+              label="Demographics" 
+              isActive={activeMainSection === 'profile' && location.pathname.includes('/demographics')}
+              onClick={() => navigate(`${basePath}/profile/demographics`)} 
+            />
+            <NavItem 
+              icon={Icons.Language} 
+              label="Language" 
+              isActive={activeMainSection === 'profile' && location.pathname.includes('/language')}
+              onClick={() => navigate(`${basePath}/profile/language`)} 
+            />
+            <NavItem 
+              icon={Icons.Geography} 
+              label="Geography & Nationality" 
+              isActive={activeMainSection === 'profile' && location.pathname.includes('/geography')}
+              onClick={() => navigate(`${basePath}/profile/geography`)} 
+            />
+          </ul>
+        </div>
+
+        <div className="nav-section">
+          <h4 className="nav-section-title">APPLICATION</h4>
+          <ul className="nav-menu">
+            <ExpandableNav 
+              icon={Icons.Application} 
+              label="University Application" 
+              isExpanded={expandedSections.application}
+              onToggle={() => toggleSection('application')} 
+              badge={`${applicationProgress}%`}
             >
-              <span className="nav-text">University Application</span>
-              <div className="nav-header-right">
-                <span className="nav-progress-small">{applicationProgress}%</span>
-                <span className="expand-icon">{expandedSections.application ? '▼' : '►'}</span>
-              </div>
-            </div>
-            {expandedSections.application && (
-              <ul className="nav-submenu">
-                <li className={`nav-subitem ${location.pathname === `${basePath}/application/overview` ? 'active' : ''}`}>
-                  <div className="nav-content" onClick={() => navigate(`${basePath}/application/overview`)}>
-                    <span className="nav-text">Application Overview</span>
-                  </div>
-                </li>
-                <li className={`nav-subitem ${location.pathname.includes('/application/personal') ? 'active' : ''}`}>
-                  <div className="nav-content" onClick={() => navigate(`${basePath}/application/personal`)}>
-                    <span className="nav-text">• Personal Information</span>
-                    <div className="nav-progress-tiny">{Math.round(calculateApplicationStepProgress('personal'))}%</div>
-                  </div>
-                </li>
-                <li className={`nav-subitem ${location.pathname.includes('/application/address') ? 'active' : ''}`}>
-                  <div className="nav-content" onClick={() => navigate(`${basePath}/application/address`)}>
-                    <span className="nav-text">• Address</span>
-                    <div className="nav-progress-tiny">{Math.round(calculateApplicationStepProgress('address'))}%</div>
-                  </div>
-                </li>
-                <li className={`nav-subitem ${location.pathname.includes('/application/language') ? 'active' : ''}`}>
-                  <div className="nav-content" onClick={() => navigate(`${basePath}/application/language`)}>
-                    <span className="nav-text">• Entrance Qualification</span>
-                    <div className="nav-progress-tiny">{Math.round(calculateApplicationStepProgress('entrance-qualification'))}%</div>
-                  </div>
-                </li>
-                <li className={`nav-subitem ${location.pathname.includes('/application/specialneeds') ? 'active' : ''}`}>
-                  <div className="nav-content" onClick={() => navigate(`${basePath}/application/specialneeds`)}>
-                    <span className="nav-text">• Special Needs</span>
-                    <div className="nav-progress-tiny">{Math.round(calculateApplicationStepProgress('special-needs'))}%</div>
-                  </div>
-                </li>
-                <li className={`nav-subitem ${location.pathname.includes('/application/firsteducation') ? 'active' : ''}`}>
-                  <div className="nav-content" onClick={() => navigate(`${basePath}/application/firsteducation`)}>
-                    <span className="nav-text">• Education</span>
-                    <div className="nav-progress-tiny">{Math.round(calculateApplicationStepProgress('education'))}%</div>
-                  </div>
-                </li>
-                <li className={`nav-subitem ${location.pathname.includes('/application/scores') ? 'active' : ''}`}>
-                  <div className="nav-content" onClick={() => navigate(`${basePath}/application/scores`)}>
-                    <span className="nav-text">• Test Scores</span>
-                    <div className="nav-progress-tiny">{Math.round(calculateApplicationStepProgress('test-scores'))}%</div>
-                  </div>
-                </li>
-                <li className={`nav-subitem ${location.pathname.includes('/application/documents') ? 'active' : ''}`}>
-                  <div className="nav-content" onClick={() => navigate(`${basePath}/application/documents`)}>
-                    <span className="nav-text">• Documents</span>
-                    <div className="nav-progress-tiny">{Math.round(calculateApplicationStepProgress('documents'))}%</div>
-                  </div>
-                </li>
-                <li className="nav-subitem">
-                  <div className="nav-content" onClick={() => {
-                    alert('GUS University Application Portal\n\nComplete your application in 8 steps:\n\n1. Personal Information\n2. Address\n3. Entrance Qualification\n4. Special Needs\n5. Education\n6. Test Scores\n7. Documents\n8. Preview & Submit');
-                  }}>
-                    <span className="nav-text">Application Guide</span>
-                  </div>
-                </li>
-                <li className="nav-subitem">
-                  <div className="nav-content" onClick={() => {
-                    const appData = localStorage.getItem('gusApplicationData');
-                    if (appData) {
-                      try {
-                        const steps = ['personal', 'address', 'entrance-qualification', 'special-needs', 'education', 'test-scores', 'documents', 'preview'];
-                        const completedSteps = steps.filter(step => {
-                          const stepProgress = calculateApplicationStepProgress(step);
-                          return stepProgress >= 100;
-                        }).length;
-                        alert(`Application Progress: ${completedSteps}/8 steps completed\nOverall Progress: ${applicationProgress}%`);
-                      } catch (e) {
-                        alert('No application data saved yet.');
-                      }
-                    } else {
-                      alert('No application data saved yet.');
-                    }
-                  }}>
-                    <span className="nav-text">Application Status</span>
-                    <div className="nav-progress-small">{applicationProgress}%</div>
-                  </div>
-                </li>
-                <li className="nav-subitem">
-                  <div className="nav-content" onClick={() => {
-                    const gusAppData = JSON.parse(localStorage.getItem('gusApplicationData') || '{}');
-                    const requiredDocs = [
-                      { name: 'Passport/ID', key: 'passport' },
-                      { name: 'Academic Transcripts', key: 'transcripts' },
-                      { name: 'EQHE Certificate', key: 'eqheCertificate' },
-                      { name: 'Statement of Purpose', key: 'sop' },
-                      { name: 'Letters of Recommendation', key: 'lor' }
-                    ];
-                    const uploadedDocs = requiredDocs.filter(doc =>
-                      gusAppData[doc.key] || gusAppData[doc.key + 'FileName']
-                    ).length;
-                    alert(`Document Checklist: ${uploadedDocs}/5 required documents uploaded\n\nRequired:\n- Passport/ID\n- Academic Transcripts\n- EQHE Certificate\n- Statement of Purpose\n- Letters of Recommendation`);
-                  }}>
-                    <span className="nav-text">Document Checklist</span>
-                  </div>
-                </li>
-              </ul>
-            )}
-          </li>
+              <SubItem 
+                label="Application Overview" 
+                isActive={location.pathname === `${basePath}/application/overview`}
+                onClick={() => navigate(`${basePath}/application/overview`)} 
+              />
+              {[
+                { id: 'personal', label: 'Personal Information', route: `${basePath}/application/personal` },
+                { id: 'address', label: 'Address', route: `${basePath}/application/address` },
+                { id: 'entrance-qualification', label: 'Entrance Qualification', route: `${basePath}/application/language` },
+                { id: 'special-needs', label: 'Special Needs', route: `${basePath}/application/specialneeds` },
+                { id: 'education', label: 'Education', route: `${basePath}/application/firsteducation` },
+                { id: 'test-scores', label: 'Test Scores', route: `${basePath}/application/scores` },
+                { id: 'documents', label: 'Documents', route: `${basePath}/application/documents` },
+                { id: 'preview', label: 'Preview & Submit', route: `${basePath}/application/preview` },
+              ].map(s => (
+                <SubItem 
+                  key={s.id} 
+                  label={s.label} 
+                  isActive={location.pathname.includes(s.route)}
+                  onClick={() => navigate(s.route)} 
+                  badge={`${Math.round(calculateApplicationStepProgress(s.id))}%`} 
+                />
+              ))}
+            </ExpandableNav>
 
-          <li className={`nav-item ${activeMainSection === 'profile' ? 'active' : ''}`}>
-            <div className="nav-content" onClick={() => onSectionChange('profile')}>
-              <span className="nav-text">Profile</span>
-              <div className="nav-progress">
-                {userData?.profileProgress >= 100 ? 'Review' : userData?.profileProgress > 0 ? `${userData.profileProgress}%` : 'Start'}
-              </div>
-            </div>
-          </li>
+            <NavItem 
+              icon={Icons.Family} 
+              label="Family" 
+              isActive={activeMainSection === 'family'}
+              onClick={() => onSectionChange('family')}
+              badge={userData?.applicationProgress?.family >= 100 ? '✓' : userData?.applicationProgress?.family > 0 ? `${userData.applicationProgress.family}%` : 'Start'} 
+            />
 
-          <li className={`nav-item ${activeMainSection === 'family' ? 'active' : ''}`}>
-            <div className="nav-content" onClick={() => onSectionChange('family')}>
-              <span className="nav-text">Family</span>
-              <div className="nav-progress">
-                {userData?.applicationProgress?.family >= 100 ? 'Review' : userData?.applicationProgress?.family > 0 ? `${userData.applicationProgress.family}%` : 'Start'}
-              </div>
-            </div>
-          </li>
+            <NavItem 
+              icon={Icons.Education} 
+              label="Education" 
+              isActive={activeMainSection === 'education'}
+              onClick={() => onSectionChange('education')}
+              badge={userData?.applicationProgress?.education >= 100 ? '✓' : userData?.applicationProgress?.education > 0 ? `${userData.applicationProgress.education}%` : 'Start'} 
+            />
 
-          {/* Expandable My Colleges Section */}
-          <li className="nav-section-expandable">
-            <div
-              className={`nav-header ${expandedSections.colleges ? 'expanded' : ''}`}
-              onClick={() => toggleSection('colleges')}
+            <ExpandableNav 
+              icon={Icons.Testing} 
+              label="Testing" 
+              isExpanded={expandedSections.testing}
+              onToggle={() => toggleSection('testing')}
+              badge={userData?.applicationProgress?.testing >= 100 ? '✓' : userData?.applicationProgress?.testing > 0 ? `${userData.applicationProgress.testing}%` : '0%'}
             >
-              <span className="nav-text">My Colleges</span>
-              <div className="nav-header-right">
-                <span className="expand-icon">{expandedSections.colleges ? '▼' : '►'}</span>
-              </div>
-            </div>
-            {expandedSections.colleges && (
-              <ul className="nav-submenu">
-                <li className={`nav-subitem ${location.pathname === `${basePath}/colleges` ? 'active' : ''}`}>
-                  <div className="nav-content" onClick={() => onSectionChange('colleges')}>
-                    <span className="nav-text">Overview</span>
-                  </div>
-                </li>
-                {userColleges.length > 0 ? (
-                  userColleges.map((college) => (
-                    <CollegeSidebarItem
-                      key={college.collegeId}
-                      college={college}
-                      isExpanded={expandedSections.expandedColleges[college.collegeId]}
-                      onToggle={() => toggleCollege(college.collegeId)}
-                      onNavigate={handleCollegeSubsectionNavigate}
-                    />
-                  ))
-                ) : (
-                  <li className="nav-subitem">
-                    <div className="nav-content">
-                      <span className="nav-text" style={{ color: '#6b7280', fontStyle: 'italic' }}>
-                        No colleges added
-                      </span>
-                    </div>
-                  </li>
-                )}
-              </ul>
-            )}
-          </li>
+              <SubItem 
+                label="Tests Taken" 
+                isActive={location.pathname.includes('/tests-taken')} 
+                onClick={() => navigate(`${basePath}/testing/tests-taken`)} 
+              />
+              {selectedTestTypes.length > 0 ? selectedTestTypes.map(t => (
+                <SubItem 
+                  key={t.id} 
+                  label={t.name} 
+                  isActive={location.pathname.includes(t.id)} 
+                  onClick={() => navigate(t.route)} 
+                />
+              )) : (
+                <li className="nav-subitem"><div className="nav-content"><span className="nav-text nav-text--muted">No tests selected</span></div></li>
+              )}
+            </ExpandableNav>
 
-          {/* Expandable Courses Section */}
-          <li className="nav-section-expandable">
-            <div
-              className={`nav-header ${expandedSections.courses ? 'expanded' : ''}`}
-              onClick={() => toggleSection('courses')}
+            <ExpandableNav 
+              icon={Icons.Activities} 
+              label="Activities" 
+              isExpanded={expandedSections.activities}
+              onToggle={() => toggleSection('activities')}
+              badge={userData?.applicationProgress?.activities >= 100 ? '✓' : userData?.applicationProgress?.activities > 0 ? `${userData.applicationProgress.activities}%` : '0%'}
             >
-              <span className="nav-text">Courses & Programs</span>
-              <div className="nav-header-right">
-                <span className="expand-icon">{expandedSections.courses ? '▼' : '►'}</span>
-              </div>
-            </div>
-            {expandedSections.courses && (
-              <ul className="nav-submenu">
-                <li className={`nav-subitem ${location.pathname.includes('/college-search') ? 'active' : ''}`}>
-                  <div className="nav-content" onClick={() => onSectionChange('courses')}>
-                    <span className="nav-hint-small">Access via College Search</span>
-                  </div>
-                </li>
-                <li className="nav-subitem">
-                  <div className="nav-content" onClick={() => {
+              <SubItem 
+                label="Activities" 
+                isActive={location.pathname === `${basePath}/activities`} 
+                onClick={() => navigate(`${basePath}/activities`)} 
+              />
+              <SubItem 
+                label="Responsibilities" 
+                isActive={location.pathname.includes('/responsibilities')} 
+                onClick={() => navigate(`${basePath}/activities/responsibilities`)} 
+              />
+            </ExpandableNav>
+
+            <ExpandableNav 
+              icon={Icons.Writing} 
+              label="Writing" 
+              isExpanded={expandedSections.writing}
+              onToggle={() => toggleSection('writing')}
+              badge={userData?.applicationProgress?.writing >= 100 ? '✓' : userData?.applicationProgress?.writing > 0 ? `${userData.applicationProgress.writing}%` : '0%'}
+            >
+              <SubItem 
+                label="Personal Essay" 
+                isActive={location.pathname.includes('/personal-essay')} 
+                onClick={() => navigate(`${basePath}/writing/personal-essay`)} 
+              />
+              <SubItem 
+                label="Additional Information" 
+                isActive={location.pathname.includes('/additional-information')} 
+                onClick={() => navigate(`${basePath}/writing/additional-information`)} 
+              />
+            </ExpandableNav>
+          </ul>
+        </div>
+
+        <div className="nav-section">
+          <h4 className="nav-section-title">COLLEGES</h4>
+          <ul className="nav-menu">
+            <NavItem 
+              icon={Icons.Search} 
+              label="College Search" 
+              isActive={location.pathname.includes('/college-search')} 
+              onClick={() => navigate(`${basePath}/college-search`)} 
+            />
+            
+            <ExpandableNav 
+              icon={Icons.Colleges} 
+              label="My Colleges" 
+              isExpanded={expandedSections.colleges} 
+              onToggle={() => toggleSection('colleges')}
+            >
+              <SubItem 
+                label="Overview" 
+                isActive={location.pathname === `${basePath}/colleges`} 
+                onClick={() => onSectionChange('colleges')} 
+              />
+              {userColleges.length > 0 ? userColleges.map(college => (
+                <CollegeSidebarItem 
+                  key={college.collegeId} 
+                  college={college}
+                  isExpanded={expandedSections.expandedColleges[college.collegeId]}
+                  onToggle={() => toggleCollege(college.collegeId)}
+                  onNavigate={handleCollegeSubsectionNavigate} 
+                />
+              )) : (
+                <li className="nav-subitem"><div className="nav-content"><span className="nav-text nav-text--muted">No colleges added</span></div></li>
+              )}
+            </ExpandableNav>
+
+            <ExpandableNav 
+              icon={Icons.Courses} 
+              label="Courses & Programs" 
+              isExpanded={expandedSections.courses} 
+              onToggle={() => toggleSection('courses')}
+            >
+              <SubItem 
+                label="College Search" 
+                isActive={location.pathname.includes('/college-search')} 
+                onClick={() => onSectionChange('courses')} 
+              />
+              <SubItem 
+                label="GUS Portal Universities" 
+                isActive={false} 
+                onClick={() => { onSectionChange('courses'); setTimeout(() => window.dispatchEvent(new CustomEvent('filterGUSUniversities')), 100); }} 
+              />
+              <li className="nav-subitem">
+                <div className="nav-content" onClick={() => {
+                  const saved = JSON.parse(localStorage.getItem('savedPrograms') || '[]');
+                  if (saved.length > 0) {
+                    alert(`You have ${saved.length} saved programs`);
+                  } else {
+                    alert('No saved programs yet.');
                     onSectionChange('courses');
-                    setTimeout(() => {
-                      window.dispatchEvent(new CustomEvent('filterGUSUniversities'));
-                    }, 100);
-                  }}>
-                    <span className="nav-text">GUS Portal Universities</span>
-                  </div>
-                </li>
-                <li className="nav-subitem">
-                  <div className="nav-content" onClick={() => {
-                    const savedPrograms = JSON.parse(localStorage.getItem('savedPrograms') || '[]');
-                    if (savedPrograms.length > 0) {
-                      alert(`You have ${savedPrograms.length} saved program(s):\n\n${savedPrograms.map(p => `• ${p.program.title} at ${p.university}`).join('\n')}`);
-                    } else {
-                      alert('No saved programs yet. Browse universities to save programs.');
-                      onSectionChange('courses');
-                    }
-                  }}>
-                    <span className="nav-text">Saved Programs</span>
-                    <span className="nav-count-small">
-                      {(() => {
-                        const savedPrograms = JSON.parse(localStorage.getItem('savedPrograms') || '[]');
-                        return savedPrograms.length > 0 ? savedPrograms.length : '';
-                      })()}
-                    </span>
-                  </div>
-                </li>
-                <li className="nav-subitem">
-                  <div className="nav-content" onClick={() => {
-                    alert('How to use Courses:\n\n1. Go to College Search\n2. Click on any GUS university (non-Kansas)\n3. View all available programs\n4. Filter by major area or study mode\n5. Select programs to save or apply');
-                  }}>
-                    <span className="nav-text">How to Use</span>
-                  </div>
-                </li>
-              </ul>
-            )}
-          </li>
+                  }
+                }}>
+                  <span className="nav-text">Saved Programs</span>
+                  {(() => { const c = JSON.parse(localStorage.getItem('savedPrograms') || '[]').length; return c > 0 ? <span className="nav-count-small">{c}</span> : null; })()}
+                </div>
+              </li>
+            </ExpandableNav>
+          </ul>
+        </div>
 
-          <li className={`nav-item ${activeMainSection === 'education' ? 'active' : ''}`}>
-            <div className="nav-content" onClick={() => onSectionChange('education')}>
-              <span className="nav-text">Education</span>
-              <div className="nav-progress">
-                {userData?.applicationProgress?.education >= 100 ? 'Review' : userData?.applicationProgress?.education > 0 ? `${userData.applicationProgress.education}%` : 'Start'}
-              </div>
-            </div>
-          </li>
-
-          {/* Expandable Testing Section */}
-          <li className="nav-section-expandable">
-            <div
-              className={`nav-header ${expandedSections.testing ? 'expanded' : ''}`}
-              onClick={() => toggleSection('testing')}
-            >
-              <span className="nav-text">Testing</span>
-              <div className="nav-header-right">
-                <span className="expand-icon">{expandedSections.testing ? '▼' : '►'}</span>
-              </div>
-            </div>
-            {expandedSections.testing && (
-              <ul className="nav-submenu">
-                <li className={`nav-subitem ${location.pathname.includes('/tests-taken') ? 'active' : ''}`}>
-                  <div className="nav-content" onClick={() => navigate(`${basePath}/testing/tests-taken`)}>
-                    <span className="nav-text">Tests Taken</span>
-                  </div>
-                </li>
-                {selectedTestTypes.length > 0 ? (
-                  selectedTestTypes.map((test) => (
-                    <li key={test.id} className={`nav-subitem ${location.pathname.includes(test.id) ? 'active' : ''}`}>
-                      <div className="nav-content" onClick={() => navigate(test.route)}>
-                        <span className="nav-text">{test.name}</span>
-                      </div>
-                    </li>
-                  ))
-                ) : (
-                  <li className="nav-subitem">
-                    <div className="nav-content">
-                      <span className="nav-text" style={{ color: '#6b7280', fontStyle: 'italic' }}>
-                        No tests selected
-                      </span>
-                    </div>
-                  </li>
-                )}
-              </ul>
-            )}
-          </li>
-
-          {/* Expandable Activities Section */}
-          <li className="nav-section-expandable">
-            <div
-              className={`nav-header ${expandedSections.activities ? 'expanded' : ''}`}
-              onClick={() => toggleSection('activities')}
-            >
-              <span className="nav-text">Activities</span>
-              <div className="nav-header-right">
-                <span className="expand-icon">{expandedSections.activities ? '▼' : '►'}</span>
-              </div>
-            </div>
-            {expandedSections.activities && (
-              <ul className="nav-submenu">
-                <li className={`nav-subitem ${location.pathname === `${basePath}/activities` ? 'active' : ''}`}>
-                  <div className="nav-content" onClick={() => navigate(`${basePath}/activities`)}>
-                    <span className="nav-text">Activities</span>
-                  </div>
-                </li>
-                <li className={`nav-subitem ${location.pathname.includes('/responsibilities') ? 'active' : ''}`}>
-                  <div className="nav-content" onClick={() => navigate(`${basePath}/activities/responsibilities`)}>
-                    <span className="nav-text">Responsibilities</span>
-                  </div>
-                </li>
-              </ul>
-            )}
-          </li>
-
-          {/* Expandable Writing Section */}
-          <li className="nav-section-expandable">
-            <div
-              className={`nav-header ${expandedSections.writing ? 'expanded' : ''}`}
-              onClick={() => toggleSection('writing')}
-            >
-              <span className="nav-text">Writing</span>
-              <div className="nav-header-right">
-                <span className="expand-icon">{expandedSections.writing ? '▼' : '►'}</span>
-              </div>
-            </div>
-            {expandedSections.writing && (
-              <ul className="nav-submenu">
-                <li className={`nav-subitem ${location.pathname.includes('/personal-essay') ? 'active' : ''}`}>
-                  <div className="nav-content" onClick={() => navigate(`${basePath}/writing/personal-essay`)}>
-                    <span className="nav-text">Personal Essay</span>
-                  </div>
-                </li>
-                <li className={`nav-subitem ${location.pathname.includes('/additional-information') ? 'active' : ''}`}>
-                  <div className="nav-content" onClick={() => navigate(`${basePath}/writing/additional-information`)}>
-                    <span className="nav-text">Additional Information</span>
-                  </div>
-                </li>
-              </ul>
-            )}
-          </li>
-
-          <li className={`nav-item ${location.pathname.includes('/college-search') ? 'active' : ''}`}>
-            <div className="nav-content" onClick={() => navigate(`${basePath}/college-search`)}>
-              <span className="nav-text">College Search</span>
-            </div>
-          </li>
-
-          <li className="nav-item">
-            <div className="nav-content">
-              <span className="nav-text">Direct Admissions</span>
-            </div>
-          </li>
-          <li className="nav-item">
-            <div className="nav-content">
-              <span className="nav-text">Financial Aid</span>
-            </div>
-          </li>
-          <li className="nav-item">
-            <div className="nav-content">
-              <span className="nav-text">Settings</span>
-            </div>
-          </li>
-        </ul>
-      </div>
+        <div className="nav-section">
+          <h4 className="nav-section-title">RESOURCES</h4>
+          <ul className="nav-menu">
+            <NavItem 
+              icon={Icons.DirectAdmissions} 
+              label="Direct Admissions" 
+              isActive={false} 
+              onClick={() => {}} 
+            />
+            <NavItem 
+              icon={Icons.Financial} 
+              label="Financial Aid" 
+              isActive={false} 
+              onClick={() => {}} 
+            />
+            <NavItem 
+              icon={Icons.Settings} 
+              label="Settings" 
+              isActive={false} 
+              onClick={() => {}} 
+            />
+          </ul>
+        </div>
+      </>
     );
   };
 
   return (
     <div className="dashboard-container">
-      {/* ─── Mobile Top Bar ─── */}
+      {/* Mobile Top Bar */}
       <div className="mobile-topbar">
-        <button
-          className="mobile-menu-btn"
-          onClick={() => setSidebarOpen(true)}
-          aria-label="Open navigation menu"
-        >
-          <span className="hamburger-icon">
-            <span></span>
-            <span></span>
-            <span></span>
-          </span>
+        <button className="mobile-menu-btn" onClick={() => setSidebarOpen(true)} aria-label="Open navigation menu">
+          <Icons.Menu />
         </button>
-        <h2 className="mobile-brand-logo">College App</h2>
+        <div className="mobile-brand-logo">
+          <img 
+            src={logo} 
+            alt="Edutech" 
+            className="mobile-logo-img"
+            style={{ width: '38px', height: '38px' }}
+            onError={e => { e.target.style.display = 'none'; }} 
+          />
+        </div>
         <div className="mobile-avatar">
-          {userData?.firstName && userData?.lastName
-            ? `${userData.firstName[0]}${userData.lastName[0]}`.toUpperCase()
-            : 'AA'
-          }
+          {userData?.firstName && userData?.lastName ? `${userData.firstName[0]}${userData.lastName[0]}`.toUpperCase() : 'AA'}
         </div>
       </div>
 
-      {/* ─── Overlay (mobile) ─── */}
-      {sidebarOpen && (
-        <div
-          className="sidebar-overlay"
-          onClick={() => setSidebarOpen(false)}
-          aria-hidden="true"
-        />
-      )}
+      {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} aria-hidden="true" />}
 
-      {/* ─── Sidebar ─── */}
+      {/* Sidebar */}
       <div className={`dashboard-sidebar ${sidebarOpen ? 'sidebar-open' : ''}`}>
-        {/* Close button (mobile only) */}
-        <button
-          className="sidebar-close-btn"
-          onClick={() => setSidebarOpen(false)}
-          aria-label="Close navigation menu"
-        >
-          ✕
+        <button className="sidebar-close-btn" onClick={() => setSidebarOpen(false)} aria-label="Close navigation menu">
+          <Icons.Close />
         </button>
 
         <div className="sidebar-header">
           <div className="brand-section">
-            <h2 className="brand-logo">College App</h2>
+            <div className="brand-logo-container">
+              <img 
+                src={logo} 
+                alt="Edutech Logo" 
+                className="brand-logo-image"
+                style={{ height: '45px', width: 'auto' }}
+                onError={e => { 
+                  e.target.style.display = 'none'; 
+                  if (e.target.nextSibling) e.target.nextSibling.style.display = 'block'; 
+                }} 
+              />
+              <span className="brand-logo" style={{ display: 'none' }}>EDUTECH</span>
+            </div>
           </div>
 
           <div className="user-profile-card">
             <div className="user-avatar">
-              {userData?.firstName && userData?.lastName
-                ? `${userData.firstName[0]}${userData.lastName[0]}`.toUpperCase()
-                : 'AA'
-              }
+              {userData?.firstName && userData?.lastName ? `${userData.firstName[0]}${userData.lastName[0]}`.toUpperCase() : 'AA'}
             </div>
             <div className="user-info">
               <h3 className="user-name">
-                {userData?.firstName && userData?.lastName
-                  ? `${userData.firstName} ${userData.lastName}`
-                  : 'Loading...'
-                }
+                {userData?.firstName && userData?.lastName ? `${userData.firstName} ${userData.lastName}` : 'Loading...'}
               </h3>
               <p className="user-email">{userData?.email || 'Loading...'}</p>
               <p className="user-id">{getStudentId()}</p>
@@ -1193,21 +1001,22 @@ const DashboardLayout = ({ userData, children, activeMainSection, onSectionChang
 
         <nav className="sidebar-navigation">
           {getSidebarContent()}
-
           <div className="nav-footer">
-            <li className="nav-item sign-out" onClick={handleSignOut}>
-              <div className="nav-content">
-                <span className="nav-text">Sign Out</span>
-              </div>
-            </li>
+            <ul className="nav-menu">
+              <li className="nav-item sign-out" onClick={handleSignOut}>
+                <div className="nav-content">
+                  <span className="nav-icon"><Icons.SignOut /></span>
+                  <span className="nav-text">Sign Out</span>
+                </div>
+              </li>
+            </ul>
+            <div className="copyright">© 2026 EDUTECH. All rights reserved.</div>
           </div>
         </nav>
       </div>
 
-      {/* ─── Main Content ─── */}
-      <div className="dashboard-main">
-        {children}
-      </div>
+      {/* Main Content */}
+      <div className="dashboard-main">{children}</div>
     </div>
   );
 };

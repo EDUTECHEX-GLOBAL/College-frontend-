@@ -31,6 +31,11 @@ const TestingForm = () => {
   const [progress, setProgress] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
   const [updateTrigger, setUpdateTrigger] = useState(0);
+  const [userData, setUserData] = useState({
+    name: '',
+    email: '',
+    caid: ''
+  });
 
   // Optional: list of sections (for future use)
   const sections = [
@@ -192,6 +197,7 @@ const TestingForm = () => {
     seniorSecondaryExams: [],
   });
 
+  
   // Set active section based on URL
   useEffect(() => {
     if (section) {
@@ -291,6 +297,32 @@ const TestingForm = () => {
     fetchTestingData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // ── NEW: CV auto-fill callback ─────────────────────────────────────────────
+  // Called by TestsTakenSection once the backend parses the uploaded CV.
+  // Receives a flat object of formData-compatible field updates and merges
+  // them into the existing formData state without wiping any manual input.
+  const handleCVDataExtracted = (mappedUpdates) => {
+    setFormData((prev) => {
+      // Merge testsToReport additively so existing manual selections are kept
+      let mergedTestsToReport = prev.testsToReport;
+      if (mappedUpdates.testsToReport && mappedUpdates.testsToReport.length > 0) {
+        mergedTestsToReport = Array.from(
+          new Set([...prev.testsToReport, ...mappedUpdates.testsToReport])
+        );
+      }
+
+      const next = {
+        ...prev,
+        ...mappedUpdates,
+        testsToReport: mergedTestsToReport,
+      };
+
+      updateLocalStorageWithTestingData(next, progress);
+      setUpdateTrigger((t) => t + 1);
+      return next;
+    });
+  };
 
   // Handle simple inputs + nested objects like cambridgeCertificateDetails.level
   const handleInputChange = (e) => {
@@ -548,31 +580,37 @@ const TestingForm = () => {
 
   return (
     <div className="testing-container">
-      {/* Header with Back Button and Centered Title */}
+      {/* Header with Logo and User Info */}
       <div className="testing-header">
-        <button className="back-button" onClick={handleBackToDashboard}>
-          ← Back to Dashboard
-        </button>
-        <h1>
-          {activeSection === 'tests-taken'
-            ? 'Complete your Common Application - Testing'
-            : activeSection === 'ielts'
-            ? 'Testing - IELTS'
-            : activeSection === 'duolingo-english-test'
-            ? 'Testing - Duolingo English Test'
-            : `Testing - ${activeSection
-                .split('-')
-                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                .join(' ')}`}
-        </h1>
-        <div className="progress-section">
-          <div className="progress-bar">
-            <div
-              className="progress-fill"
-              style={{ width: `${progress}%` }}
-            ></div>
+        
+        
+        <div className="header-bottom">
+          <button className="back-button" onClick={handleBackToDashboard}>
+            ← Back to Dashboard
+          </button>
+          <div className="page-title">
+            <h1>
+              {activeSection === 'tests-taken'
+                ? 'Complete your Common Application - Testing'
+                : activeSection === 'ielts'
+                ? 'Testing - IELTS'
+                : activeSection === 'duolingo-english-test'
+                ? 'Testing - Duolingo English Test'
+                : `Testing - ${activeSection
+                    .split('-')
+                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ')}`}
+            </h1>
           </div>
-          <span className="progress-text">{progress}% Complete</span>
+          <div className="progress-wrapper">
+            <div className="progress-bar">
+              <div
+                className="progress-fill"
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
+            <span className="progress-text">{progress}% Complete</span>
+          </div>
         </div>
       </div>
 
@@ -607,6 +645,7 @@ const TestingForm = () => {
                 handleArrayChange={handleArrayChange}
                 clearAnswer={clearAnswer}
                 clearArrayAnswer={clearArrayAnswer}
+                onCVDataExtracted={handleCVDataExtracted}
               />
             )}
 

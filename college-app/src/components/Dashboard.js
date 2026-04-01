@@ -1,3 +1,4 @@
+// src/components/Dashboard.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Routes, Route, useLocation } from 'react-router-dom';
 import axios from 'axios';
@@ -28,6 +29,123 @@ import Courses from './Courses';
 import Application from './Application/Application';
 import Overview from './Application/Overview';
 
+// SVG Icon Components
+const DashboardIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M3 13H11V3H3V13ZM3 21H11V15H3V21ZM13 21H21V11H13V21ZM13 3V9H21V3H13Z" fill="currentColor"/>
+  </svg>
+);
+
+const UniversityAppIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 3L1 9L12 15L21 10.09V17H23V9L12 3ZM4 13.18V16L12 20L20 16V13.18L12 17L4 13.18Z" fill="currentColor"/>
+  </svg>
+);
+
+const ProfileIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="currentColor"/>
+  </svg>
+);
+
+const FamilyIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 6C13.1 6 14 5.1 14 4C14 2.9 13.1 2 12 2C10.9 2 10 2.9 10 4C10 5.1 10.9 6 12 6ZM16 8C17.1 8 18 7.1 18 6C18 4.9 17.1 4 16 4C14.9 4 14 4.9 14 6C14 7.1 14.9 8 16 8ZM8 8C9.1 8 10 7.1 10 6C10 4.9 9.1 4 8 4C6.9 4 6 4.9 6 6C6 7.1 6.9 8 8 8ZM4 18C4 15.8 5.8 14 8 14H16C18.2 14 20 15.8 20 18V20H4V18ZM12 12C9.8 12 8 13.8 8 16H16C16 13.8 14.2 12 12 12Z" fill="currentColor"/>
+  </svg>
+);
+
+const EducationIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M5 13.18V16L12 20L19 16V13.18L12 17L5 13.18ZM12 3L1 9L12 15L21 10.09V17H23V9L12 3Z" fill="currentColor"/>
+  </svg>
+);
+
+const TestingIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="currentColor"/>
+  </svg>
+);
+
+const ActivitiesIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M3 13H8V3H3V13ZM3 21H8V15H3V21ZM10 21H15V11H10V21ZM10 3V9H15V3H10ZM17 3V7H22V3H17ZM17 13H22V21H17V13Z" fill="currentColor"/>
+  </svg>
+);
+
+const WritingIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63Z" fill="currentColor"/>
+  </svg>
+);
+
+const MyCollegesIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 3L1 9L12 15L21 10.09V17H23V9L12 3ZM4 13.18V16L12 20L20 16V13.18L12 17L4 13.18Z" fill="currentColor"/>
+    <path d="M12 22L4 18V15L12 19L20 15V18L12 22Z" fill="currentColor"/>
+  </svg>
+);
+
+const CoursesIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M4 6H20V18H4V6ZM4 4H20C22.2 4 24 5.8 24 8V16C24 18.2 22.2 20 20 20H4C1.8 20 0 18.2 0 16V8C0 5.8 1.8 4 4 4Z" fill="currentColor"/>
+    <path d="M4 8V10H20V8H4Z" fill="currentColor"/>
+  </svg>
+);
+
+const CollegeSearchIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M15.5 14H14.71L14.43 13.73C15.41 12.59 16 11.11 16 9.5C16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16C11.11 16 12.59 15.41 13.73 14.43L14 14.71V15.5L19 20.49L20.49 19L15.5 14ZM9.5 14C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14Z" fill="currentColor"/>
+  </svg>
+);
+
+const DirectAdmissionsIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 2L15 8H22L16 12L19 18L12 14L5 18L8 12L2 8H9L12 2Z" fill="currentColor"/>
+  </svg>
+);
+
+const FinancialAidIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M11.8 10.9C9.2 10.1 8.5 9.3 8.5 8.5C8.5 7.5 9.4 6.7 10.7 6.7C12.2 6.7 13.3 7.5 13.6 8.7H16.1C15.7 6.1 13.6 4.5 11.3 4.2V2H10.1V4.2C7.6 4.5 6.3 6.1 6.3 8.3C6.3 10.8 8.2 12.2 11.3 13.1C14.2 13.9 14.9 15.1 14.9 16.1C14.9 17.3 13.8 18.2 12.1 18.2C10.2 18.2 9.1 17.3 8.8 15.9H6.2C6.6 18.8 9 20.4 11.3 20.7V22H12.5V20.7C15.2 20.4 17 18.9 17 16.4C17 13.5 14.7 11.8 11.8 10.9Z" fill="currentColor"/>
+  </svg>
+);
+
+const SettingsIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M19.14 12.94C19.18 12.64 19.2 12.33 19.2 12C19.2 11.68 19.18 11.36 19.13 11.06L21.16 9.48C21.34 9.34 21.39 9.07 21.28 8.87L19.36 5.55C19.24 5.33 18.99 5.26 18.77 5.33L16.38 6.29C15.88 5.91 15.35 5.59 14.76 5.35L14.4 2.81C14.36 2.57 14.16 2.4 13.92 2.4H10.08C9.84 2.4 9.65 2.57 9.61 2.81L9.25 5.35C8.66 5.59 8.12 5.92 7.63 6.29L5.24 5.33C5.02 5.25 4.77 5.33 4.65 5.55L2.74 8.87C2.62 9.08 2.66 9.34 2.86 9.48L4.89 11.06C4.84 11.36 4.8 11.69 4.8 12C4.8 12.31 4.82 12.64 4.87 12.94L2.84 14.52C2.66 14.66 2.61 14.93 2.72 15.13L4.64 18.45C4.76 18.67 5.01 18.74 5.23 18.67L7.62 17.71C8.12 18.09 8.65 18.41 9.24 18.65L9.6 21.19C9.65 21.43 9.84 21.6 10.08 21.6H13.92C14.16 21.6 14.36 21.43 14.39 21.19L14.75 18.65C15.34 18.41 15.88 18.08 16.37 17.71L18.76 18.67C18.98 18.75 19.23 18.67 19.35 18.45L21.27 15.13C21.39 14.91 21.34 14.66 21.15 14.52L19.14 12.94ZM12 15.6C10.02 15.6 8.4 13.98 8.4 12C8.4 10.02 10.02 8.4 12 8.4C13.98 8.4 15.6 10.02 15.6 12C15.6 13.98 13.98 15.6 12 15.6Z" fill="currentColor"/>
+  </svg>
+);
+
+const SignOutIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M17 7L15.59 8.41L18.17 11H8V13H18.17L15.59 15.58L17 17L22 12L17 7ZM4 5H12V3H4C2.9 3 2 3.9 2 5V19C2 20.1 2.9 21 4 21H12V19H4V5Z" fill="currentColor"/>
+  </svg>
+);
+
+const ChevronDownIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M7 10L12 15L17 10H7Z" fill="currentColor"/>
+  </svg>
+);
+
+const ChevronRightIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 7L15 12L10 17V7Z" fill="currentColor"/>
+  </svg>
+);
+
+const MenuIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M3 18H21V16H3V18ZM3 13H21V11H3V13ZM3 6V8H21V6H3Z" fill="currentColor"/>
+  </svg>
+);
+
+const CloseIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z" fill="currentColor"/>
+  </svg>
+);
+
 const API_URL = process.env.REACT_APP_API_BASE_URL;
 
 const Dashboard = () => {
@@ -41,6 +159,7 @@ const Dashboard = () => {
   const [familyCompleted, setFamilyCompleted] = useState(false);
   const [applicationProgress, setApplicationProgress] = useState(0);
   const [selectedCourseData, setSelectedCourseData] = useState(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // DYNAMIC BASE PATH DETECTION
   const isFirstYear = location.pathname.includes('/firstyear/');
@@ -165,7 +284,7 @@ const Dashboard = () => {
     });
     if (appData.hasSpecialNeeds === 'yes') {
       totalFields++;
-      if (isFieldFilled(appData.specialNeedsDescription)) completedFields++;
+      if (isFieldFilled(appData.specialNeedsDescription)) completedFields++;  
     }
 
     // Education
@@ -193,7 +312,6 @@ const Dashboard = () => {
     });
 
     const progress = Math.round((completedFields / totalFields) * 100);
-    console.log(`📈 Local Application Progress: ${completedFields}/${totalFields} fields = ${progress}%`);
     return progress;
   };
 
@@ -523,43 +641,57 @@ const Dashboard = () => {
       name: "University Application",
       completed: applicationProgress >= 100,
       progress: applicationProgress || 0,
-      path: `${basePath}/application/overview`
+      path: `${basePath}/application/overview`,
+      statusText: applicationProgress === 100 ? "Review" : applicationProgress > 0 ? "Continue" : "Start",
+      progressColor: "#0a5c2e"
     },
     {
       name: "Profile",
       completed: userData?.profileProgress >= 100,
       progress: userData?.profileProgress || 0,
-      path: `${basePath}/profile/personal`
+      path: `${basePath}/profile/personal`,
+      statusText: userData?.profileProgress === 100 ? "Review" : userData?.profileProgress > 0 ? "Continue" : "Start",
+      progressColor: "#0a5c2e"
     },
     {
       name: "Family",
       completed: familyCompleted || (userData?.applicationProgress?.family >= 100),
       progress: familyCompleted ? 100 : (userData?.applicationProgress?.family || 0),
-      path: `${basePath}/family`
+      path: `${basePath}/family`,
+      statusText: (familyCompleted || userData?.applicationProgress?.family >= 100) ? "Review" : (userData?.applicationProgress?.family > 0 || familyCompleted) ? "Continue" : "Start",
+      progressColor: "#0a5c2e"
     },
     {
       name: "Education",
       completed: userData?.applicationProgress?.education >= 100,
       progress: userData?.applicationProgress?.education || 0,
-      path: `${basePath}/education/current-school`
+      path: `${basePath}/education/current-school`,
+      statusText: userData?.applicationProgress?.education === 100 ? "Review" : userData?.applicationProgress?.education > 0 ? "Continue" : "Start",
+      progressColor: "#0a5c2e"
     },
     {
       name: "Testing",
       completed: userData?.applicationProgress?.testing >= 100,
       progress: userData?.applicationProgress?.testing || 0,
-      path: `${basePath}/testing/tests-taken`
+      path: `${basePath}/testing/tests-taken`,
+      statusText: userData?.applicationProgress?.testing === 100 ? "Review" : userData?.applicationProgress?.testing > 0 ? "Continue" : "Start",
+      progressColor: "#0a5c2e"
     },
     {
       name: "Activities",
       completed: userData?.applicationProgress?.activities >= 100,
       progress: userData?.applicationProgress?.activities || 0,
-      path: `${basePath}/activities`
+      path: `${basePath}/activities`,
+      statusText: userData?.applicationProgress?.activities === 100 ? "Review" : userData?.applicationProgress?.activities > 0 ? "Continue" : "Start",
+      progressColor: "#0a5c2e"
     },
     {
       name: "Writing",
       completed: userData?.applicationProgress?.writing >= 100,
       progress: userData?.applicationProgress?.writing || 0,
-      path: `${basePath}/writing/personal-essay`
+      path: `${basePath}/writing/personal-essay`,
+      statusText: userData?.applicationProgress?.writing === 100 ? "Review" : userData?.applicationProgress?.writing > 0 ? "Continue" : "Start",
+      progressColor: "#0a5c2e"
     }
   ];
 
@@ -641,7 +773,7 @@ const Dashboard = () => {
                   className="primary-action-button"
                   onClick={() => navigate(`${basePath}/college-search`)}
                 >
-                  Search Colleges
+                  🔍 Search Colleges
                 </button>
               </div>
             </div>
@@ -692,190 +824,207 @@ const Dashboard = () => {
     </>
   );
 
+  
   // ─── DashboardHome ───
-  const DashboardHome = () => (
-    <>
-      <header className="main-header">
-        <div className="header-content">
-          <div className="welcome-section-centered">
-            <h1 className="welcome-name">{userData?.name || 'Student'}</h1>
-            <p className="welcome-subtitle">Welcome back to your application dashboard</p>
+const DashboardHome = () => (
+  <>
+    <header className="main-header">
+      <div className="header-content">
+        <div className="welcome-section-centered">
+          <h1 className="welcome-name">Welcome back, {userData?.firstName || 'Student'}!</h1>
+          <p className="welcome-subtitle">Track your college application progress and manage your applications</p>
+        </div>
+      </div>
+    </header>
+
+    <div className="main-content">
+      {/* My Common Application Section - Updated to match design exactly */}
+      <section className="content-section application-section">
+        <div className="section-header">
+          <div className="section-title-group">
+            <h2 className="section-title">My Common Application</h2>
+            <div className="progress-indicator">
+              {completedSections}/{totalSections} sections complete
+            </div>
           </div>
         </div>
-      </header>
 
-      <div className="main-content">
-        <section className="content-section application-section">
-          <div className="section-header">
-            <div className="section-title-group">
-              <h2 className="section-title">My Common Application</h2>
-              <div className="progress-indicator">{completedSections}/{totalSections} sections complete</div>
+        <div className="application-sections-grid">
+          {applicationSections.map((section, index) => (
+            <div key={index} className="application-section-card" onClick={() => handleSectionClick(section)}>
+              <div className="section-header-mini">
+                <h4 className="section-name">{section.name}</h4>
+                {section.progress > 0 && (
+                  <div className="section-progress-percentage">{section.progress}%</div>
+                )}
+              </div>
+              <div className="section-progress-bar">
+                <div
+                  className="section-progress-fill"
+                  style={{ width: `${section.progress}%` }}
+                ></div>
+              </div>
+              <button
+                className={`section-action-button ${section.progress === 100 ? 'completed' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSectionClick(section);
+                }}
+              >
+                {section.progress === 100 ? '✓ Review' : section.progress > 0 ? '▶ Continue' : '▶ Start'}
+              </button>
             </div>
-            <div className="progress-bar-container">
-              <div className="progress-bar">
-                <div className="progress-fill" style={{ width: `${overallProgress}%` }}></div>
+          ))}
+        </div>
+      </section>
+
+      {/* My Colleges Section */}
+      <section className="content-section colleges-section">
+        <div className="section-header">
+          <div className="section-title-group">
+            <h2 className="section-title">My Colleges</h2>
+            <div className="college-count">{userColleges.length} colleges</div>
+          </div>
+        </div>
+
+        <div className="colleges-content">
+          {userColleges.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-state-icon">
+                <div className="icon-background">🏫</div>
+              </div>
+              <div className="empty-state-content">
+                <h3 className="empty-state-title">No colleges added yet</h3>
+                <p className="empty-state-description">
+                  Start by searching for colleges to add to your list. You can manage your applications from the sidebar.
+                </p>
+                <button
+                  className="primary-action-button"
+                  onClick={() => navigate(`${basePath}/college-search`)}
+                >
+                  🔍 Search Colleges
+                </button>
               </div>
             </div>
+          ) : (
+            <div className="college-preview-list">
+              {userColleges.slice(0, 3).map((college) => (
+                <div 
+                  key={college.collegeId} 
+                  className="college-preview-item"
+                  onClick={() => navigate(`${basePath}/colleges/${college.collegeId}`)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <h4 className="college-name">{college.name}</h4>
+                  <p className="college-location">{college.city}, {college.state}</p>
+                  <span className={`status-badge-small ${college.status || 'not-started'}`}>
+                    {college.status || 'Not Started'}
+                  </span>
+                </div>
+              ))}
+              {userColleges.length > 3 && (
+                <button
+                  className="view-all-colleges-button"
+                  onClick={() => navigate(`${basePath}/colleges`)}
+                >
+                  View all {userColleges.length} colleges →
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Quick Access Section */}
+      <section className="content-section quick-access-section">
+        <div className="section-header">
+          <h2 className="section-title">Quick Access</h2>
+        </div>
+
+        <div className="quick-access-grid">
+          <div className="quick-access-card" onClick={() => navigate(`${basePath}/application/overview`)}>
+            <div className="quick-access-icon">
+              <UniversityAppIcon />
+            </div>
+            <div className="quick-access-content">
+              <h4 className="quick-access-title">University Application</h4>
+              <p className="quick-access-description">
+                Complete your university application in easy steps
+              </p>
+            </div>
+            <div className="quick-access-arrow">→</div>
           </div>
 
-          <div className="application-sections-grid">
-            {applicationSections.map((section, index) => (
-              <div key={index} className="application-section-card">
-                <div className="section-header-mini">
-                  <h4 className="section-name">{section.name}</h4>
-                  {section.progress > 0 && (
-                    <div className="section-progress">{section.progress}%</div>
-                  )}
+          <div className="quick-access-card" onClick={() => navigate(`${basePath}/college-search`)}>
+            <div className="quick-access-icon">
+              <CollegeSearchIcon />
+            </div>
+            <div className="quick-access-content">
+              <h4 className="quick-access-title">Explore Programs</h4>
+              <p className="quick-access-description">
+                Browse detailed program information for partner universities
+              </p>
+            </div>
+            <div className="quick-access-arrow">→</div>
+          </div>
+
+          <div className="quick-access-card" onClick={() => navigate(`${basePath}/college-search`)}>
+            <div className="quick-access-icon">
+              <CoursesIcon />
+            </div>
+            <div className="quick-access-content">
+              <h4 className="quick-access-title">View Course Details</h4>
+              <p className="quick-access-description">
+                Click on any university to see available courses and programs
+              </p>
+            </div>
+            <div className="quick-access-arrow">→</div>
+          </div>
+        </div>
+      </section>
+
+      {/* Help & Support Section */}
+      <section className="content-section help-section">
+        <div className="section-header">
+          <h2 className="section-title">Help & Support</h2>
+        </div>
+
+        <div className="search-container">
+          <input
+            type="text"
+            placeholder="Search FAQs"
+            className="search-input"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <div className="search-hint">
+            Search takes you to the student solution center
+          </div>
+        </div>
+
+        <div className="faq-section">
+          <h3 className="faq-section-title">Frequently Asked Questions</h3>
+          <div className="faq-list">
+            {faqItems.map((faq, index) => (
+              <div key={index} className="faq-card">
+                <div className="faq-content">
+                  <h4 className="faq-question">{faq.question}</h4>
+                  <p className="faq-answer">{faq.shortAnswer}</p>
                 </div>
-                <div className="section-progress-bar">
-                  <div
-                    className="section-progress-fill"
-                    style={{ width: `${section.progress}%` }}
-                  ></div>
-                </div>
-                <button
-                  className={`section-action-button ${section.progress === 100 ? 'completed' : ''}`}
-                  onClick={() => handleSectionClick(section)}
+                <button 
+                  className="faq-action-button"
+                  onClick={() => alert(faq.answer)}
                 >
-                  {section.progress === 100 ? 'Review' : section.progress > 0 ? 'Continue' : 'Start'}
+                  Read full answer
                 </button>
               </div>
             ))}
           </div>
-        </section>
-
-        <section className="content-section colleges-section">
-          <div className="section-header">
-            <div className="section-title-group">
-              <h2 className="section-title">My Colleges</h2>
-              <div className="college-count">{userColleges.length} colleges</div>
-            </div>
-          </div>
-
-          <div className="colleges-content">
-            {userColleges.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-state-icon">
-                  <div className="icon-background">🏫</div>
-                </div>
-                <div className="empty-state-content">
-                  <h3 className="empty-state-title">Nothing here yet!</h3>
-                  <p className="empty-state-description">
-                    Add some colleges to your list to get started with your applications.
-                  </p>
-                  <button
-                    className="primary-action-button"
-                    onClick={() => navigate(`${basePath}/college-search`)}
-                  >
-                    Add Colleges
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="college-preview-list">
-                {userColleges.slice(0, 3).map((college) => (
-                  <div key={college.collegeId} className="college-preview-item">
-                    <h4 className="college-name">{college.name}</h4>
-                    <p className="college-location">{college.city}, {college.state}</p>
-                    <span className={`status-badge-small ${college.status}`}>
-                      {college.status}
-                    </span>
-                  </div>
-                ))}
-                {userColleges.length > 3 && (
-                  <button
-                    className="view-all-colleges-button"
-                    onClick={() => navigate(`${basePath}/colleges`)}
-                  >
-                    View all {userColleges.length} colleges →
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-        </section>
-
-        <section className="content-section quick-access-section">
-          <div className="section-header">
-            <h2 className="section-title">Quick Access</h2>
-          </div>
-
-          <div className="quick-access-grid">
-            <div className="quick-access-card" onClick={() => navigate(`${basePath}/application/overview`)}>
-              <div className="quick-access-icon">📝</div>
-              <div className="quick-access-content">
-                <h4 className="quick-access-title">University Application</h4>
-                <p className="quick-access-description">
-                  Complete your GUS University application in 7 easy steps
-                </p>
-              </div>
-              <div className="quick-access-arrow">→</div>
-            </div>
-
-            <div className="quick-access-card" onClick={() => navigate(`${basePath}/college-search`)}>
-              <div className="quick-access-icon">🔍</div>
-              <div className="quick-access-content">
-                <h4 className="quick-access-title">Explore Programs</h4>
-                <p className="quick-access-description">
-                  Browse detailed program information for GUS portal universities
-                </p>
-              </div>
-              <div className="quick-access-arrow">→</div>
-            </div>
-
-            <div className="quick-access-card" onClick={() => navigate(`${basePath}/college-search`)}>
-              <div className="quick-access-icon">🎓</div>
-              <div className="quick-access-content">
-                <h4 className="quick-access-title">View Course Details</h4>
-                <p className="quick-access-description">
-                  Click on any GUS university to see available courses and programs
-                </p>
-              </div>
-              <div className="quick-access-arrow">→</div>
-            </div>
-          </div>
-        </section>
-
-        <section className="content-section help-section">
-          <div className="section-header">
-            <h2 className="section-title">Help & Support</h2>
-          </div>
-
-          <div className="search-section">
-            <div className="search-container">
-              <input
-                type="text"
-                placeholder="Search FAQs"
-                className="search-input"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <div className="search-hint">
-                Search takes you to the student solution center
-              </div>
-            </div>
-          </div>
-
-          <div className="faq-section">
-            <h3 className="faq-section-title">Frequently Asked Questions</h3>
-            <div className="faq-list">
-              {faqItems.map((faq, index) => (
-                <div key={index} className="faq-card">
-                  <div className="faq-content">
-                    <h4 className="faq-question">{faq.question}</h4>
-                    <p className="faq-answer">{faq.shortAnswer}</p>
-                  </div>
-                  <button className="faq-action-button">
-                    Read full answer
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      </div>
-    </>
-  );
+        </div>
+      </section>
+    </div>
+  </>
+);
 
   if (loading) {
     return (
@@ -894,6 +1043,28 @@ const Dashboard = () => {
         onSectionChange={handleSectionChange}
         userColleges={userColleges}
         onRefreshColleges={fetchUserColleges}
+        sidebarCollapsed={sidebarCollapsed}
+        onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+        // SVG Icons passed to DashboardLayout
+        DashboardIcon={DashboardIcon}
+        UniversityAppIcon={UniversityAppIcon}
+        ProfileIcon={ProfileIcon}
+        FamilyIcon={FamilyIcon}
+        EducationIcon={EducationIcon}
+        TestingIcon={TestingIcon}
+        ActivitiesIcon={ActivitiesIcon}
+        WritingIcon={WritingIcon}
+        MyCollegesIcon={MyCollegesIcon}
+        CoursesIcon={CoursesIcon}
+        CollegeSearchIcon={CollegeSearchIcon}
+        DirectAdmissionsIcon={DirectAdmissionsIcon}
+        FinancialAidIcon={FinancialAidIcon}
+        SettingsIcon={SettingsIcon}
+        SignOutIcon={SignOutIcon}
+        ChevronDownIcon={ChevronDownIcon}
+        ChevronRightIcon={ChevronRightIcon}
+        MenuIcon={MenuIcon}
+        CloseIcon={CloseIcon}
       >
         <Routes>
           <Route path="/" element={<DashboardHome />} />

@@ -57,6 +57,33 @@ const CambridgeSection = ({ formData, handleInputChange, handleComplexChange, cl
     return years;
   };
 
+  // Check if section is complete
+  const isSectionComplete = () => {
+    // Check if number of tests is selected
+    if (!numberOfTests || numberOfTests === '') return false;
+    
+    const numTests = parseInt(numberOfTests);
+    const tests = formData.cambridgeTests || [];
+    
+    // Check if all test entries are complete
+    for (let i = 0; i < numTests; i++) {
+      const test = tests[i];
+      if (!test || !test.date || !test.subject) return false;
+    }
+    
+    // If certificate report is yes, check certificate details
+    if (showCertificateSection === 'yes') {
+      const certDetails = formData.cambridgeCertificateDetails || {};
+      if (!certDetails.level || !certDetails.date) return false;
+    } else if (showCertificateSection === 'no') {
+      return true;
+    } else {
+      return false;
+    }
+    
+    return true;
+  };
+
   const handleNumberOfTestsChange = (e) => {
     const value = e.target.value;
     setNumberOfTests(value);
@@ -125,7 +152,7 @@ const CambridgeSection = ({ formData, handleInputChange, handleComplexChange, cl
   // Close calendar when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (showCalendar && !event.target.closest('.calendar-container')) {
+      if (showCalendar && !event.target.closest('.cam-calendar-container')) {
         setShowCalendar(false);
         setSelectedYear(null);
         setCurrentTestIndex(null);
@@ -139,235 +166,236 @@ const CambridgeSection = ({ formData, handleInputChange, handleComplexChange, cl
   }, [showCalendar]);
 
   return (
-    <div className="cambridge-section">
-      <div className="cambridge-header">
-        <h1>Cambridge</h1>
-        <div className="progress-status">In progress</div>
-      </div>
-
-      <div className="cambridge-content">
-        {/* Number of Tests Question */}
-        <div className="form-section">
-          <div className="form-question">
-            <label className="question-label">
-              Number of Cambridge International subject tests you wish to report, including tests you expect to take*
-            </label>
-            <div className="input-container">
-              <select
-                name="cambridgeNumberOfTests"
-                value={numberOfTests}
-                onChange={handleNumberOfTestsChange}
-                className="form-dropdown"
-              >
-                <option value="">- Choose an option -</option>
-                <option value="0">0</option>
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-                <option value="6">6</option>
-                <option value="7">7</option>
-                <option value="8">8</option>
-                <option value="9">9</option>
-                <option value="10">10</option>
-              </select>
-            </div>
+    <div className="cam-container">
+      <div className="cam-card">
+        <div className="cam-card-header">
+          <h1 className="cam-card-title">Cambridge</h1>
+          <div className="cam-status-badge">
+            {isSectionComplete() ? 'Complete' : 'In Progress'}
           </div>
         </div>
 
-        {/* Dynamic Test Fields */}
-        {numberOfTests && numberOfTests !== '' && numberOfTests !== '0' && (
-          <div className="tests-section">
-            <div className="section-divider"></div>
-            <h3 className="section-title">Test Details</h3>
-            
-            {Array.from({ length: parseInt(numberOfTests) }, (_, index) => (
-              <div key={index} className="test-entry">
-                <h4 className="test-number">Test {index + 1}</h4>
-                
-                <div className="test-fields">
-                  {/* Date Field */}
-                  <div className="form-question">
-                    <label className="question-label">
-                      Date taken or planned*
-                    </label>
-                    <div className="input-container">
-                      {!formData.cambridgeTests?.[index]?.date.includes(' ') ? (
-                        <select
-                          value={formData.cambridgeTests?.[index]?.date || ''}
-                          onChange={(e) => handleYearSelect(index, e.target.value)}
-                          className="form-dropdown"
-                        >
-                          <option value="">- Choose an option -</option>
-                          {generateYears().map(year => (
-                            <option key={year} value={year}>{year}</option>
-                          ))}
-                        </select>
-                      ) : (
-                        <div className="selected-date">
-                          {formData.cambridgeTests?.[index]?.date}
+        <div className="cam-content">
+          {/* Number of Tests Question */}
+          <div className="cam-form-section">
+            <div className="cam-form-group">
+              <label className="cam-question-label required">
+                Number of Cambridge International subject tests you wish to report, including tests you expect to take*
+              </label>
+              <div className="cam-input-container">
+                <select
+                  name="cambridgeNumberOfTests"
+                  value={numberOfTests}
+                  onChange={handleNumberOfTestsChange}
+                  className="cam-select"
+                >
+                  <option value="">- Choose an option -</option>
+                  <option value="0">0</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
+                  <option value="9">9</option>
+                  <option value="10">10</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Dynamic Test Fields */}
+          {numberOfTests && numberOfTests !== '' && numberOfTests !== '0' && (
+            <div className="cam-tests-section">
+              <div className="cam-section-divider"></div>
+              <h3 className="cam-section-title">Test Details</h3>
+              
+              {Array.from({ length: parseInt(numberOfTests) }, (_, index) => (
+                <div key={index} className="cam-test-entry">
+                  <h4 className="cam-test-number">Test {index + 1}</h4>
+                  
+                  <div className="cam-test-fields">
+                    {/* Date Field */}
+                    <div className="cam-form-group">
+                      <label className="cam-question-label required">
+                        Date taken or planned*
+                      </label>
+                      <div className="cam-input-container">
+                        {!formData.cambridgeTests?.[index]?.date.includes(' ') ? (
+                          <select
+                            value={formData.cambridgeTests?.[index]?.date || ''}
+                            onChange={(e) => handleYearSelect(index, e.target.value)}
+                            className="cam-select"
+                          >
+                            <option value="">- Choose an option -</option>
+                            {generateYears().map(year => (
+                              <option key={year} value={year}>{year}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <div className="cam-selected-date">
+                            {formData.cambridgeTests?.[index]?.date}
+                            <button
+                              type="button"
+                              className="cam-change-date"
+                              onClick={() => handleTestFieldChange(index, 'date', '')}
+                            >
+                              Change
+                            </button>
+                          </div>
+                        )}
+                        <div className="cam-field-note">Date uses "month year" format (e.g., JUN 2020)</div>
+                      </div>
+
+                      {/* Calendar Popup */}
+                      {showCalendar && currentTestIndex === index && (
+                        <div className="cam-calendar-container">
+                          <div className="cam-calendar-header">
+                            Select Month for {selectedYear}
+                          </div>
+                          <div className="cam-calendar-grid">
+                            {months.map(month => (
+                              <button
+                                key={month}
+                                type="button"
+                                className="cam-calendar-month"
+                                onClick={() => handleMonthSelect(month)}
+                              >
+                                {month}
+                              </button>
+                            ))}
+                          </div>
                           <button
                             type="button"
-                            className="change-date"
-                            onClick={() => handleTestFieldChange(index, 'date', '')}
+                            className="cam-calendar-cancel"
+                            onClick={() => {
+                              setShowCalendar(false);
+                              setSelectedYear(null);
+                              setCurrentTestIndex(null);
+                            }}
                           >
-                            Change
+                            Cancel
                           </button>
                         </div>
                       )}
-                      <div className="field-note">Date uses "month year" format (e.g., JUN 2020)</div>
                     </div>
 
-                    {/* Calendar Popup */}
-                    {showCalendar && currentTestIndex === index && (
-                      <div className="calendar-container">
-                        <div className="calendar-header">
-                          Select Month for {selectedYear}
-                        </div>
-                        <div className="calendar-grid">
-                          {months.map(month => (
-                            <button
-                              key={month}
-                              type="button"
-                              className="calendar-month"
-                              onClick={() => handleMonthSelect(month)}
-                            >
-                              {month}
-                            </button>
-                          ))}
-                        </div>
-                        <button
-                          type="button"
-                          className="calendar-cancel"
-                          onClick={() => {
-                            setShowCalendar(false);
-                            setSelectedYear(null);
-                            setCurrentTestIndex(null);
-                          }}
+                    {/* Subject Field */}
+                    <div className="cam-form-group">
+                      <label className="cam-question-label required">
+                        Subject*
+                      </label>
+                      <div className="cam-input-container">
+                        <select
+                          value={formData.cambridgeTests?.[index]?.subject || ''}
+                          onChange={(e) => handleTestFieldChange(index, 'subject', e.target.value)}
+                          className="cam-select"
                         >
-                          Cancel
-                        </button>
+                          <option value="">- Choose an option -</option>
+                          {subjectOptions.map(subject => (
+                            <option key={subject} value={subject}>{subject}</option>
+                          ))}
+                        </select>
                       </div>
-                    )}
-                  </div>
-
-                  {/* Subject Field */}
-                  <div className="form-question">
-                    <label className="question-label">
-                      Subject*
-                    </label>
-                    <div className="input-container">
-                      <select
-                        value={formData.cambridgeTests?.[index]?.subject || ''}
-                        onChange={(e) => handleTestFieldChange(index, 'subject', e.target.value)}
-                        className="form-dropdown"
-                      >
-                        <option value="">- Choose an option -</option>
-                        {subjectOptions.map(subject => (
-                          <option key={subject} value={subject}>{subject}</option>
-                        ))}
-                      </select>
                     </div>
                   </div>
+                  
+                  {index < parseInt(numberOfTests) - 1 && <div className="cam-test-divider"></div>}
                 </div>
-                
-                {index < parseInt(numberOfTests) - 1 && <div className="test-divider"></div>}
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
 
-        {/* Certificate Question */}
-        <div className="form-section">
-          <div className="section-divider"></div>
-          <div className="form-question">
-            <label className="question-label">
-              Have you received a Cambridge English Qualifications certificate that you'd like to report?*
-            </label>
-            <div className="radio-container">
-              <div className="radio-options">
-                <label className="radio-option">
-                  <input
-                    type="radio"
-                    name="cambridgeCertificateReport"
-                    value="yes"
-                    checked={showCertificateSection === 'yes'}
-                    onChange={handleCertificateChange}
-                    className="radio-input"
-                  />
-                  <span className="radio-custom"></span>
-                  <span className="radio-text">Yes</span>
-                </label>
-                <label className="radio-option">
-                  <input
-                    type="radio"
-                    name="cambridgeCertificateReport"
-                    value="no"
-                    checked={showCertificateSection === 'no'}
-                    onChange={handleCertificateChange}
-                    className="radio-input"
-                  />
-                  <span className="radio-custom"></span>
-                  <span className="radio-text">No</span>
-                </label>
+          {/* Certificate Question */}
+          <div className="cam-form-section">
+            <div className="cam-section-divider"></div>
+            <div className="cam-form-group">
+              <label className="cam-question-label required">
+                Have you received a Cambridge English Qualifications certificate that you'd like to report?*
+              </label>
+              <div className="cam-radio-container">
+                <div className="cam-radio-options">
+                  <label className="cam-radio-option">
+                    <input
+                      type="radio"
+                      name="cambridgeCertificateReport"
+                      value="yes"
+                      checked={showCertificateSection === 'yes'}
+                      onChange={handleCertificateChange}
+                    />
+                    <span>Yes</span>
+                  </label>
+                  <label className="cam-radio-option">
+                    <input
+                      type="radio"
+                      name="cambridgeCertificateReport"
+                      value="no"
+                      checked={showCertificateSection === 'no'}
+                      onChange={handleCertificateChange}
+                    />
+                    <span>No</span>
+                  </label>
+                </div>
+                <button
+                  type="button"
+                  className="cam-clear-link"
+                  onClick={clearCertificateAnswer}
+                  disabled={!showCertificateSection}
+                >
+                  Clear answer
+                </button>
               </div>
-              <button
-                type="button"
-                className="clear-answer"
-                onClick={clearCertificateAnswer}
-              >
-                Clear answer
-              </button>
             </div>
           </div>
+
+          {/* Certificate Details (shown only if Yes is selected) */}
+          {showCertificateSection === 'yes' && (
+            <div className="cam-certificate-section">
+              <div className="cam-section-divider"></div>
+              
+              {/* Highest Level Certificate */}
+              <div className="cam-form-group">
+                <label className="cam-question-label required">
+                  Highest level certificate earned*
+                </label>
+                <div className="cam-input-container">
+                  <select
+                    value={formData.cambridgeCertificateDetails?.level || ''}
+                    onChange={(e) => handleCertificateDetailChange('level', e.target.value)}
+                    className="cam-select"
+                  >
+                    <option value="">- Choose an option -</option>
+                    {certificateOptions.map(cert => (
+                      <option key={cert} value={cert}>{cert}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Exam Session Date */}
+              <div className="cam-form-group">
+                <label className="cam-question-label required">
+                  Exam session date*
+                </label>
+                <div className="cam-input-container">
+                  <select
+                    value={formData.cambridgeCertificateDetails?.date || ''}
+                    onChange={(e) => handleCertificateDetailChange('date', e.target.value)}
+                    className="cam-select"
+                  >
+                    <option value="">- Choose an option -</option>
+                    {generateYears().map(year => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
+                  <div className="cam-field-note">Date uses "year" format (e.g., 2002)</div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-
-        {/* Certificate Details (shown only if Yes is selected) */}
-        {showCertificateSection === 'yes' && (
-          <div className="certificate-section">
-            <div className="section-divider"></div>
-            
-            {/* Highest Level Certificate */}
-            <div className="form-question">
-              <label className="question-label">
-                Highest level certificate earned*
-              </label>
-              <div className="input-container">
-                <select
-                  value={formData.cambridgeCertificateDetails?.level || ''}
-                  onChange={(e) => handleCertificateDetailChange('level', e.target.value)}
-                  className="form-dropdown"
-                >
-                  <option value="">- Choose an option -</option>
-                  {certificateOptions.map(cert => (
-                    <option key={cert} value={cert}>{cert}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Exam Session Date */}
-            <div className="form-question">
-              <label className="question-label">
-                Exam session date*
-              </label>
-              <div className="input-container">
-                <select
-                  value={formData.cambridgeCertificateDetails?.date || ''}
-                  onChange={(e) => handleCertificateDetailChange('date', e.target.value)}
-                  className="form-dropdown"
-                >
-                  <option value="">- Choose an option -</option>
-                  {generateYears().map(year => (
-                    <option key={year} value={year}>{year}</option>
-                  ))}
-                </select>
-                <div className="field-note">Date uses "year" format (e.g., 2002)</div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

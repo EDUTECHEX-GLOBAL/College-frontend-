@@ -75,9 +75,9 @@ const DocumentUploadBanner = ({
   if (status === 'done') {
     return (
       <div className="passport-banner passport-banner--success">
-        <div className="passport-banner__icon passport-banner__icon--success">
+        <div className="passport-banner__icon">
           <svg width="16" height="16" fill="none" viewBox="0 0 16 16">
-            <circle cx="8" cy="8" r="7" fill="#16a34a" />
+            <circle cx="8" cy="8" r="7" fill="#10b981" />
             <polyline points="4.5,8.5 7,11 11.5,5.5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
@@ -114,7 +114,7 @@ const DocumentUploadBanner = ({
       <div className="passport-banner passport-banner--error">
         <div className="passport-banner__icon">
           <svg width="16" height="16" fill="none" viewBox="0 0 16 16">
-            <circle cx="8" cy="8" r="7" fill="#dc2626" />
+            <circle cx="8" cy="8" r="7" fill="#ef4444" />
             <line x1="8" y1="4.5" x2="8" y2="8.5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" />
             <circle cx="8" cy="11" r="0.8" fill="#fff" />
           </svg>
@@ -169,12 +169,12 @@ const CVUploadBanner = ({ onAutoFill, onDismiss }) => (
     endpoint="/api/students/cv/parse"
     fieldName="cv"
     icon={
-      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#2C5AA0" strokeWidth="1.5">
+      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#0ba5a0" strokeWidth="1.5">
         <rect x="4" y="2" width="16" height="20" rx="2" />
         <line x1="8" y1="7" x2="16" y2="7" />
         <line x1="8" y1="11" x2="16" y2="11" />
         <line x1="8" y1="15" x2="13" y2="15" />
-        <circle cx="17" cy="17" r="3" fill="#fff" stroke="#2C5AA0" strokeWidth="1.5" />
+        <circle cx="17" cy="17" r="3" fill="#fff" stroke="#0ba5a0" strokeWidth="1.5" />
         <line x1="17" y1="15.5" x2="17" y2="18.5" strokeWidth="1.2" />
         <line x1="15.5" y1="17" x2="18.5" y2="17" strokeWidth="1.2" />
       </svg>
@@ -197,7 +197,7 @@ const PassportUploadBanner = ({ onAutoFill, onDismiss }) => (
     endpoint="/api/students/passport/parse"
     fieldName="passport"
     icon={
-      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#2C5AA0" strokeWidth="1.5">
+      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#0ba5a0" strokeWidth="1.5">
         <rect x="3" y="5" width="18" height="14" rx="2" />
         <line x1="7" y1="10" x2="17" y2="10" />
         <line x1="7" y1="14" x2="13" y2="14" />
@@ -221,7 +221,7 @@ const AadhaarUploadBanner = ({ onAutoFill, onDismiss }) => (
     endpoint="/api/students/aadhaar/parse"
     fieldName="aadhaar"
     icon={
-      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#2C5AA0" strokeWidth="1.5">
+      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#0ba5a0" strokeWidth="1.5">
         <rect x="2" y="4" width="20" height="16" rx="2" />
         <circle cx="8" cy="12" r="2.5" />
         <path d="M12 10h6M12 14h4" strokeLinecap="round" />
@@ -241,14 +241,23 @@ const AadhaarUploadBanner = ({ onAutoFill, onDismiss }) => (
 // Main Component
 // ─────────────────────────────────────────────
 const PersonalInfoSection = ({ formData, handleInputChange }) => {
-  const [cvBannerVisible,       setCvBannerVisible]       = useState(true);
-  const [passportBannerVisible,  setPassportBannerVisible]  = useState(false);
-  const [aadhaarBannerVisible,   setAadhaarBannerVisible]   = useState(false);
-  const [autofillFields,         setAutofillFields]         = useState(new Set());
-  const [saveStatus,             setSaveStatus]             = useState(null); // null | saving | saved | error
+  const [cvBannerVisible, setCvBannerVisible] = useState(true);
+  const [passportBannerVisible, setPassportBannerVisible] = useState(false);
+  const [aadhaarBannerVisible, setAadhaarBannerVisible] = useState(false);
+  const [autofillFields, setAutofillFields] = useState(new Set());
+  const [saveStatus, setSaveStatus] = useState(null); // null | saving | saved | error
 
-  const handleCvSkip    = () => { setCvBannerVisible(false); setPassportBannerVisible(true); setAadhaarBannerVisible(true); };
-  const handleCvDismiss = () => { setCvBannerVisible(false); };
+  const handleCvSkip = () => { 
+    setCvBannerVisible(false); 
+    setPassportBannerVisible(true); 
+    setAadhaarBannerVisible(true); 
+  };
+  
+  const handleCvDismiss = () => { 
+    setCvBannerVisible(false);
+    setPassportBannerVisible(true);
+    setAadhaarBannerVisible(true);
+  };
 
   /**
    * handleAutoFill
@@ -325,18 +334,34 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
       <h2>Personal Information</h2>
 
       <div className="section-status">
-        {formData.profileCompletion?.personalInfo ? 'Complete' : 'In Progress'}
+        {formData.profileCompletion?.personalInfo ? '✓ Complete' : '◌ In Progress'}
       </div>
 
       {/* Background save indicator */}
       {saveStatus === 'saving' && (
-        <div className="autofill-save-status autofill-save-status--saving">Saving data…</div>
+        <div className="autofill-save-status autofill-save-status--saving">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '8px', animation: 'spin 0.8s linear infinite' }}>
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 6v6l4 2" />
+          </svg>
+          Saving data…
+        </div>
       )}
       {saveStatus === 'saved' && (
-        <div className="autofill-save-status autofill-save-status--saved">✓ Data saved</div>
+        <div className="autofill-save-status autofill-save-status--saved">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '8px' }}>
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          ✓ Data saved
+        </div>
       )}
       {saveStatus === 'error' && (
         <div className="autofill-save-status autofill-save-status--error">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '8px' }}>
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
           ⚠ Could not save — your changes are visible but may not persist. Try saving manually.
         </div>
       )}
@@ -403,6 +428,7 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
               onChange={handleInputChange}
               className={autoClass('firstName')}
               required
+              placeholder="e.g., John"
             />
           </div>
 
@@ -417,6 +443,7 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
               value={formData.middleName || ''}
               onChange={handleInputChange}
               className={autoClass('middleName')}
+              placeholder="e.g., Robert"
             />
           </div>
 
@@ -432,6 +459,7 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
               onChange={handleInputChange}
               className={autoClass('lastName')}
               required
+              placeholder="e.g., Smith"
             />
           </div>
         </div>
@@ -485,7 +513,7 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
               value={formData.birthCountry || ''}
               onChange={handleInputChange}
               className={autoClass('birthCountry')}
-              placeholder="e.g. India"
+              placeholder="e.g., India"
             />
           </div>
 
@@ -500,7 +528,7 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
               value={formData.cityOfBirth || ''}
               onChange={handleInputChange}
               className={autoClass('cityOfBirth')}
-              placeholder="e.g. Mumbai"
+              placeholder="e.g., Mumbai"
             />
           </div>
 
@@ -515,7 +543,7 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
               value={formData.country || ''}
               onChange={handleInputChange}
               className={autoClass('country')}
-              placeholder="e.g. India"
+              placeholder="e.g., India"
             />
           </div>
 
@@ -672,7 +700,7 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
             value={formData.primaryLanguage || ''}
             onChange={handleInputChange}
             className={autoClass('primaryLanguage')}
-            placeholder="e.g. English"
+            placeholder="e.g., English"
           />
         </div>
 
