@@ -56,7 +56,7 @@ const UniversityAdminTemplate = () => {
   const [apiError, setApiError] = useState(null);
   
   // API Base URL
-  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+  const API_BASE_URL = process.env.REACT_APP_API_URL ;
   
   // Dynamic Available Intakes (Current Year + Next 3 Years)
   const getAvailableIntakes = () => {

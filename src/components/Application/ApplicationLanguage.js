@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import './ApplicationLanguage.css';
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+const API_URL = process.env.REACT_APP_API_URL ;
 
 const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId, onNext }) => {
     const [showAnotherEQHE, setShowAnotherEQHE] = useState(false);

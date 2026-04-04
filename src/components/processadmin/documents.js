@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./documents.css";
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL ;
 
 const Documents = () => {
   const [documents, setDocuments] = useState([]);
@@ -146,7 +146,7 @@ const Documents = () => {
       setLoading(true); setError('');
       const token = getToken();
       if (!token) { setError('No authentication token found. Please login again.'); setLoading(false); return; }
-      const response = await axios.get(`${API_BASE_URL}/process-admin/documents/all`, {
+      const response = await axios.get(`${API_BASE_URL}/api/process-admin/documents/all`, {
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         params: { limit: 1000 }
       });
@@ -220,7 +220,7 @@ const Documents = () => {
         else if (fileName.toLowerCase().includes('9th')) expectedType = '9th Marksheet';
         else if (fileName.toLowerCase().includes('12th')) expectedType = '12th Marksheet';
         const response = await axios.post(
-          `${API_BASE_URL}/process-admin/documents/${doc._id || doc.id}/send-correction`,
+          `${API_BASE_URL}/api/process-admin/documents/${doc._id || doc.id}/send-correction`,
           { reason, adminNotes: `The document you uploaded ("${fileName}") was labeled as a "${getDocumentTypeDisplay(doc.documentType)}", which is incorrect or inconsistent.`, uploadedType: doc.documentType, expectedType },
           { headers: { 'Authorization': `Bearer ${token}` } }
         );
@@ -243,7 +243,7 @@ const Documents = () => {
       const originalText = downloadBtn?.innerHTML;
       if (downloadBtn) { downloadBtn.innerHTML = 'Generating PDF…'; downloadBtn.disabled = true; }
       const response = await axios.get(
-        `${API_BASE_URL}/process-admin/documents/generate-pdf/${student.studentId}`,
+        `${API_BASE_URL}/api/process-admin/documents/generate-pdf/${student.studentId}`,
         { headers: { 'Authorization': `Bearer ${token}` }, responseType: 'blob', timeout: 120000 }
       );
       if (response.data) {

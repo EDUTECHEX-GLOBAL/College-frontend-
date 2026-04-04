@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./ApplicationFirstEducation.css";
 
-const BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
+const BASE_URL = process.env.REACT_APP_API_BASE_URL ;
 
 const ApplicationFirstEducation = ({ onInputChange }) => {
   const navigate   = useNavigate();

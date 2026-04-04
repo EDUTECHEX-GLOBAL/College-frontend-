@@ -7,7 +7,7 @@ import Applications from "./Applications";
 import Documents from "./documents";
 import GusUniversity from "./gusuniversity";
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL ;
 
 /* ─── Helpers ─── */
 const getProcessAdminToken = () => {
@@ -321,7 +321,7 @@ const ProcessAdminDashboard = () => {
     try {
       const token = getProcessAdminToken();
       if (!token) { navigate('/process-admin-login'); return; }
-      const response = await axios.get(`${API_BASE_URL}/process-admin/documents/all`, {
+      const response = await axios.get(`${API_BASE_URL}/api/process-admin/documents/all`, {
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
       });
       if (response.data?.success && response.data?.data?.applications) {

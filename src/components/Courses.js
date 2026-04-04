@@ -4,7 +4,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import "./Courses.css";
 
-const API_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const API_URL = process.env.REACT_APP_API_BASE_URL;
 
 const Courses = ({ onCourseSelect }) => {
   const { universityId } = useParams();

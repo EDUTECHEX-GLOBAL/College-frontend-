@@ -5,7 +5,7 @@ import axios from "axios";
 import "./UserProfile.css";
 import EdutechLogo from "./../assets/Edutech-logo.svg";
 
-const API_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const API_URL = process.env.REACT_APP_API_BASE_URL ;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SVG ICON COMPONENTS (replaces all emojis/icon fonts)
