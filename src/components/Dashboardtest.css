@@ -1,0 +1,963 @@
+/* ==============================================
+   TRANSFER DASHBOARD - UNIQUE CLASS NAMES
+   ============================================== */
+
+/* Dashboard Container - Transfer */
+.dashboard-test-container {
+  display: flex;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #1a202c;
+  line-height: 1.6;
+}
+
+/* Loading State - Transfer */
+.dashboard-test-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.dashboard-test-loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid #2C5AA0;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Sidebar - Transfer */
+.dashboard-test-sidebar {
+  width: 300px;
+  background: white;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  overflow-y: auto;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.08);
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-test-sidebar-header {
+  padding: 0;
+}
+
+.dashboard-test-brand-section {
+  padding: 24px;
+  border-bottom: 1px solid #e2e8f0;
+  background: linear-gradient(135deg, #2C5AA0, #1E3D6F);
+}
+
+.dashboard-test-brand-logo {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: -0.5px;
+}
+
+.dashboard-test-user-profile-card {
+  padding: 24px;
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.dashboard-test-user-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #2C5AA0, #1E3D6F);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px rgba(44, 90, 160, 0.2);
+}
+
+.dashboard-test-user-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0 0 6px 0;
+  line-height: 1.3;
+}
+
+.dashboard-test-user-email {
+  font-size: 14px;
+  color: #718096;
+  margin: 0 0 4px 0;
+  line-height: 1.4;
+}
+
+.dashboard-test-user-id {
+  font-size: 13px;
+  color: #a0aec0;
+  margin: 0;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+/* Navigation - Transfer */
+.dashboard-test-sidebar-navigation {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0;
+}
+
+.dashboard-test-nav-section {
+  padding: 24px 0 0 0;
+}
+
+.dashboard-test-nav-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 24px 16px 24px;
+}
+
+.dashboard-test-nav-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.dashboard-test-nav-item {
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+  margin: 2px 0;
+}
+
+.dashboard-test-nav-item:hover {
+  background: #f7fafc;
+  border-left-color: #e2e8f0;
+}
+
+.dashboard-test-nav-item.active {
+  background: #edf2f7;
+  border-left-color: #2C5AA0;
+}
+
+.dashboard-test-nav-item.active .dashboard-test-nav-text {
+  color: #2C5AA0;
+  font-weight: 600;
+}
+
+.dashboard-test-nav-content {
+  padding: 14px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dashboard-test-nav-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #4a5568;
+  transition: color 0.3s ease;
+}
+
+.dashboard-test-nav-progress {
+  font-size: 12px;
+  font-weight: 600;
+  color: #718096;
+  background: #e2e8f0;
+  padding: 4px 8px;
+  border-radius: 12px;
+  min-width: 36px;
+  text-align: center;
+}
+
+.dashboard-test-nav-item.active .dashboard-test-nav-progress {
+  background: #2C5AA0;
+  color: white;
+}
+
+.dashboard-test-nav-footer {
+  padding: 16px 0 24px 0;
+  border-top: 1px solid #e2e8f0;
+  margin-top: auto;
+}
+
+.dashboard-test-nav-item.sign-out {
+  border-left: none;
+}
+
+.dashboard-test-nav-item.sign-out:hover {
+  background: #fed7d7;
+  color: #c53030;
+}
+
+.dashboard-test-nav-item.sign-out:hover .dashboard-test-nav-text {
+  color: #c53030;
+}
+
+/* Main Content - Transfer */
+.dashboard-test-main {
+  flex: 1;
+  margin-left: 300px;
+  background: transparent;
+  min-height: 100vh;
+}
+
+.dashboard-test-main-header {
+  background: white;
+  padding: 0;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.dashboard-test-header-content {
+  display: flex;
+  justify-content: center; /* Centered header for transfer */
+  align-items: center;
+  padding: 32px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.dashboard-test-welcome-section {
+  flex: 1;
+  text-align: center; /* Centered text */
+}
+
+.dashboard-test-welcome-title {
+  font-size: 30px; /* Larger for transfer */
+  font-weight: 700;
+  color: #1e3d6f; /* Different color */
+  margin: 0 0 8px 0;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+.dashboard-test-welcome-subtitle {
+  font-size: 16px;
+  color: #718096;
+  margin: 0;
+  font-weight: 400;
+  letter-spacing: 0.3px;
+}
+
+/* Hide help button for transfer */
+.dashboard-test-help-button {
+  display: none !important;
+}
+
+.dashboard-test-help-icon {
+  width: 20px;
+  height: 20px;
+  background: #2C5AA0;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Main Content - Transfer */
+.dashboard-test-main-content {
+  padding: 32px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Content Sections - Transfer */
+.dashboard-test-content-section {
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.dashboard-test-content-section:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.dashboard-test-section-header {
+  margin-bottom: 24px;
+}
+
+.dashboard-test-section-title-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.dashboard-test-section-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.dashboard-test-progress-indicator, 
+.dashboard-test-college-count {
+  font-size: 14px;
+  font-weight: 600;
+  color: #718096;
+  background: #f7fafc;
+  padding: 6px 12px;
+  border-radius: 6px;
+}
+
+.dashboard-test-progress-bar-container {
+  width: 100%;
+}
+
+.dashboard-test-progress-bar {
+  width: 100%;
+  height: 6px;
+  background-color: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.dashboard-test-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2C5AA0, #1E3D6F);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+/* Application Sections Grid - Transfer */
+.dashboard-test-application-sections-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.dashboard-test-application-section-card {
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.dashboard-test-application-section-card:hover {
+  background: white;
+  border-color: #2C5AA0;
+  box-shadow: 0 4px 12px rgba(44, 90, 160, 0.1);
+  transform: translateY(-2px);
+}
+
+.dashboard-test-section-header-mini {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.dashboard-test-section-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0;
+}
+
+.dashboard-test-section-progress {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2C5AA0;
+  background: #e8f0fe;
+  padding: 4px 8px;
+  border-radius: 12px;
+}
+
+.dashboard-test-section-progress-bar {
+  width: 100%;
+  height: 4px;
+  background-color: #e2e8f0;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.dashboard-test-section-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2C5AA0, #1E3D6F);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+.dashboard-test-section-action-button {
+  width: 100%;
+  background: white;
+  color: #2C5AA0;
+  border: 1px solid #2C5AA0;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.dashboard-test-section-action-button:hover {
+  background: #2C5AA0;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.dashboard-test-section-action-button.completed {
+  background: #10b981;
+  color: white;
+  border-color: #10b981;
+}
+
+.dashboard-test-section-action-button.completed:hover {
+  background: #059669;
+  border-color: #059669;
+  transform: translateY(-1px);
+}
+
+/* Colleges Section - Transfer */
+.dashboard-test-colleges-content {
+  text-align: center;
+}
+
+.dashboard-test-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+}
+
+.dashboard-test-empty-state-icon {
+  margin-bottom: 24px;
+}
+
+.dashboard-test-icon-background {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #f7fafc, #e2e8f0);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  margin-bottom: 16px;
+}
+
+.dashboard-test-empty-state-content {
+  max-width: 400px;
+}
+
+.dashboard-test-empty-state-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0 0 12px 0;
+}
+
+.dashboard-test-empty-state-description {
+  font-size: 15px;
+  color: #718096;
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}
+
+.dashboard-test-primary-action-button {
+  background: linear-gradient(135deg, #2C5AA0, #1E3D6F);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(44, 90, 160, 0.2);
+}
+
+.dashboard-test-primary-action-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(44, 90, 160, 0.3);
+}
+
+/* Help & Support Section - Transfer */
+.dashboard-test-search-container {
+  margin-bottom: 32px;
+}
+
+.dashboard-test-search-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  background: white;
+  margin-bottom: 8px;
+}
+
+.dashboard-test-search-input:focus {
+  outline: none;
+  border-color: #2C5AA0;
+  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+}
+
+.dashboard-test-search-hint {
+  font-size: 13px;
+  color: #a0aec0;
+  font-style: italic;
+}
+
+.dashboard-test-faq-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #4a5568;
+  margin: 0 0 20px 0;
+}
+
+.dashboard-test-faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dashboard-test-faq-card {
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.dashboard-test-faq-card:hover {
+  background: white;
+  border-color: #2C5AA0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.dashboard-test-faq-content {
+  flex: 1;
+}
+
+.dashboard-test-faq-question {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+}
+
+.dashboard-test-faq-answer {
+  font-size: 14px;
+  color: #718096;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.dashboard-test-faq-action-button {
+  background: transparent;
+  color: #2C5AA0;
+  border: 1px solid #2C5AA0;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.dashboard-test-faq-action-button:hover {
+  background: #2C5AA0;
+  color: white;
+}
+
+/* ==============================================
+   EXPANDABLE NAVIGATION - TRANSFER
+   ============================================== */
+
+.dashboard-test-nav-section-expandable {
+  padding: 0;
+  cursor: pointer;
+}
+
+.dashboard-test-nav-header {
+  padding: 14px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.3s ease;
+  border-left: 4px solid transparent;
+}
+
+.dashboard-test-nav-header:hover {
+  background: #f7fafc;
+  border-left-color: #e2e8f0;
+}
+
+.dashboard-test-nav-header.expanded {
+  background: #edf2f7;
+  border-left-color: #2C5AA0;
+}
+
+.dashboard-test-nav-header.expanded .dashboard-test-nav-text {
+  color: #2C5AA0;
+  font-weight: 600;
+}
+
+.dashboard-test-expand-icon {
+  font-size: 12px;
+  color: #718096;
+  transition: transform 0.3s ease;
+}
+
+.dashboard-test-nav-submenu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  background: #f8f9fa;
+}
+
+.dashboard-test-nav-subitem {
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+}
+
+.dashboard-test-nav-subitem:hover {
+  background: #f1f5f9;
+  border-left-color: #e2e8f0;
+}
+
+.dashboard-test-nav-subitem.active {
+  background: #e8f0fe;
+  border-left-color: #2C5AA0;
+}
+
+.dashboard-test-nav-subitem.active .dashboard-test-nav-text {
+  color: #2C5AA0;
+  font-weight: 600;
+}
+
+.dashboard-test-nav-subitem .dashboard-test-nav-content {
+  padding: 12px 24px 12px 40px; /* Indent sub-items */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dashboard-test-nav-subitem .dashboard-test-nav-progress {
+  font-size: 11px;
+  font-weight: 600;
+  color: #718096;
+  background: #e2e8f0;
+  padding: 3px 6px;
+  border-radius: 10px;
+  min-width: 32px;
+  text-align: center;
+}
+
+.dashboard-test-nav-subitem.active .dashboard-test-nav-progress {
+  background: #2C5AA0;
+  color: white;
+}
+
+/* My Colleges Expandable Styles - Transfer */
+.dashboard-test-nav-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dashboard-test-nav-college-item {
+  padding: 0;
+}
+
+.dashboard-test-nav-college-header {
+  padding: 12px 24px 12px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border-left: 4px solid transparent;
+}
+
+.dashboard-test-nav-college-header:hover {
+  background: #f7fafc;
+  border-left-color: #e2e8f0;
+}
+
+.dashboard-test-nav-college-header.active {
+  background: #edf2f7;
+  border-left-color: #2C5AA0;
+}
+
+.dashboard-test-nav-college-header.active .dashboard-test-nav-text {
+  color: #2C5AA0;
+  font-weight: 600;
+}
+
+.dashboard-test-nav-college-submenu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  background: #f8f9fa;
+}
+
+.dashboard-test-nav-college-subitem {
+  padding: 0;
+}
+
+.dashboard-test-nav-college-subitem .dashboard-test-nav-content {
+  padding: 10px 24px 10px 56px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+}
+
+.dashboard-test-nav-college-subitem .dashboard-test-nav-content:hover {
+  background: #f1f5f9;
+  border-left-color: #e2e8f0;
+}
+
+.dashboard-test-nav-college-subheader {
+  padding: 8px 24px 8px 56px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4a5568;
+  background: #e2e8f0;
+  border-left: 4px solid transparent;
+}
+
+.dashboard-test-nav-application-submenu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  background: #f1f5f9;
+}
+
+.dashboard-test-nav-application-subitem .dashboard-test-nav-content {
+  padding: 8px 24px 8px 72px;
+  font-size: 13px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dashboard-test-nav-application-subitem .dashboard-test-nav-content:hover {
+  background: #e2e8f0;
+}
+
+.dashboard-test-nav-college-subitem .dashboard-test-nav-progress,
+.dashboard-test-nav-application-subitem .dashboard-test-nav-progress {
+  font-size: 11px;
+  font-weight: 600;
+  color: #718096;
+  background: #e2e8f0;
+  padding: 2px 6px;
+  border-radius: 8px;
+  min-width: 28px;
+  text-align: center;
+}
+
+/* ==============================================
+   LIGHT GLASSY ACTIVE STATE STYLES - TRANSFER
+   ============================================== */
+
+.dashboard-test-nav-item.active,
+.dashboard-test-nav-subitem.active,
+.dashboard-test-nav-college-subitem.active,
+.dashboard-test-nav-application-subitem.active {
+  background: rgba(44, 90, 160, 0.08) !important;
+  backdrop-filter: blur(10px);
+}
+
+.dashboard-test-nav-item.active .dashboard-test-nav-content,
+.dashboard-test-nav-subitem.active .dashboard-test-nav-content,
+.dashboard-test-nav-college-subitem.active .dashboard-test-nav-content,
+.dashboard-test-nav-application-subitem.active .dashboard-test-nav-content {
+  background: rgba(44, 90, 160, 0.08) !important;
+  color: #2C5AA0 !important;
+  backdrop-filter: blur(10px);
+  border-left: 3px solid #2C5AA0;
+}
+
+.dashboard-test-nav-item.active .dashboard-test-nav-text,
+.dashboard-test-nav-subitem.active .dashboard-test-nav-text,
+.dashboard-test-nav-college-subitem.active .dashboard-test-nav-text,
+.dashboard-test-nav-application-subitem.active .dashboard-test-nav-text {
+  color: #2C5AA0 !important;
+  font-weight: 600 !important;
+}
+
+.dashboard-test-nav-college-header.active {
+  background: rgba(44, 90, 160, 0.08) !important;
+  border-left: 3px solid #2C5AA0 !important;
+  backdrop-filter: blur(10px);
+}
+
+.dashboard-test-nav-college-header.active .dashboard-test-nav-text {
+  color: #2C5AA0 !important;
+  font-weight: 600 !important;
+}
+
+.dashboard-test-nav-college-header.active .dashboard-test-expand-icon {
+  color: #2C5AA0 !important;
+}
+
+.dashboard-test-nav-content.active:hover {
+  background: rgba(44, 90, 160, 0.12) !important;
+  color: #2C5AA0 !important;
+}
+
+.dashboard-test-nav-content.active:hover .dashboard-test-nav-text {
+  color: #2C5AA0 !important;
+}
+
+.dashboard-test-nav-application-subitem.active .dashboard-test-nav-content,
+.dashboard-test-nav-college-subitem.active .dashboard-test-nav-content {
+  background: rgba(44, 90, 160, 0.08) !important;
+  color: #2C5AA0 !important;
+  backdrop-filter: blur(10px);
+}
+
+/* ==============================================
+   RESPONSIVE DESIGN - TRANSFER
+   ============================================== */
+
+@media (max-width: 1024px) {
+  .dashboard-test-sidebar {
+    width: 280px;
+  }
+  
+  .dashboard-test-main {
+    margin-left: 280px;
+  }
+  
+  .dashboard-test-application-sections-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-test-sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+  
+  .dashboard-test-main {
+    margin-left: 0;
+  }
+  
+  .dashboard-test-main-content {
+    padding: 20px;
+  }
+  
+  .dashboard-test-header-content {
+    padding: 24px 20px;
+    min-height: 100px;
+  }
+  
+  .dashboard-test-welcome-title {
+    font-size: 28px;
+  }
+  
+  .dashboard-test-welcome-subtitle {
+    font-size: 15px;
+  }
+  
+  .dashboard-test-main-header {
+    min-height: 120px;
+  }
+  
+  .dashboard-test-application-sections-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-test-content-section {
+    padding: 24px 20px;
+  }
+  
+  .dashboard-test-welcome-title {
+    font-size: 24px;
+  }
+  
+  .dashboard-test-welcome-subtitle {
+    font-size: 14px;
+  }
+  
+  .dashboard-test-main-header {
+    min-height: 100px;
+  }
+  
+  .dashboard-test-section-title {
+    font-size: 18px;
+  }
+  
+  .dashboard-test-faq-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .dashboard-test-faq-action-button {
+    align-self: flex-start;
+    margin-top: 12px;
+  }
+}
+
+/* Ensure Activities page shows the logo */
+.dashboard-test-container .dashboard-test-sidebar {
+  display: flex !important;
+}
+
+.dashboard-test-brand-section {
+  display: block !important;
+  visibility: visible !important;
+}
+
+/* Make sure Activities page doesn't hide the sidebar */
+.activities-container ~ .dashboard-test-sidebar,
+.responsibilities-container ~ .dashboard-test-sidebar {
+  display: flex !important;
+}

@@ -1,0 +1,323 @@
+/* ===== GLOBAL ===== */
+.home-wrapper {
+  min-height: 100vh;
+max-height: 100vh; /* Prevent content from expanding beyond viewport */
+  max-height: 100vh; /* Ensure it doesn't exceed viewport height */
+  background-image: url("../assets/homebgimg.png");
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  font-family: "Poppins", sans-serif;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: visible;  /* Prevent any scrolling within the wrapper */
+}
+
+.home-wrapper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35); /* Slightly reduced dark overlay */
+  z-index: 0;
+}
+
+/* Prevent body scrolling */
+body {
+  margin: 0;
+  padding: 0;
+ overflow-y: auto; /* ✅ allow vertical scroll */
+  overflow-x: hidden;/* Disable scrolling on the entire page */
+  height: 100vh;
+}
+
+
+/* ===== HEADER ===== */
+.header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 25px 8%;
+  background-color: transparent;
+  position: relative;
+  z-index: 10; /* Keep header/logo above overlay */
+  box-sizing: border-box;
+  flex-shrink: 0; /* Prevent header from shrinking */
+}
+
+.logo {
+  font-size: 2rem;
+  color: white;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* ===== LOGO IMAGE SIZE (UPDATED) ===== */
+.logo-img {
+  width: 180px;
+  height: auto;
+  object-fit: contain;
+  display: block;
+
+  /* Keep logo true to brand color */
+  filter: none;
+  opacity: 1;
+}
+
+
+
+/* ===== HEADER BUTTONS ===== */
+.header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* FIXED: Both buttons should be white with blue text */
+.header-btn {
+  padding: 12px 28px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: rgb(29, 56, 131);
+  color: #fbfcff;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  border: 2px solid white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.header-btn:hover {
+  background-color: #f8f9fa;
+  color: #1E3D6F;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+
+/* ===== MAIN CONTENT - OPTIMIZED LEFT ALIGNMENT ===== */
+.home-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  text-align: left;
+  padding: 0 8% 80px 8%; /* Reduced top padding since header takes space */
+  position: relative;
+  z-index: 1;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+    overflow: visible; /* Allow scrolling only within content if needed */
+    max-height: none; /* Calculate available height minus header */
+}
+
+.headline {
+  font-size: 3.5rem; /* Slightly reduced from 4rem */
+  color: white;
+  margin-bottom: 20px; /* Reduced from 30px */
+  line-height: 1.1;
+  font-weight: 700;
+  max-width: 700px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.description {
+  font-size: 1.3rem; /* Slightly reduced from 1.4rem */
+  color: white;
+  line-height: 1.6; /* Reduced from 1.7 */
+  max-width: 650px;
+  margin-bottom: 40px; /* Reduced from 50px */
+  opacity: 0.95;
+  font-weight: 400;
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+}
+
+.highlight {
+  color: white;
+  font-weight: 700;
+  background: linear-gradient(135deg, #ffffff 0%, #e8f4ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+
+/* ===== CTA BUTTON - MODERN STYLING ===== */
+.cta-button {
+  padding: 16px 40px; /* Slightly reduced padding */
+  font-size: 1.1rem;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  color: #1E3D6F;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 700;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  text-transform: none;
+  margin-top: 10px;
+}
+
+.cta-button:hover {
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+}
+
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1200px) {
+  .home-content {
+    padding: 0 6% 80px 6%;
+  }
+  
+  .headline {
+    font-size: 3.2rem;
+  }
+  
+  .description {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 992px) {
+  .header {
+    padding: 20px 5%;
+  }
+
+  .home-content {
+    padding: 0 5% 60px 5%;
+  }
+
+  .headline {
+    font-size: 2.8rem;
+    max-width: 550px;
+  }
+
+  .description {
+    font-size: 1.2rem;
+    max-width: 550px;
+    margin-bottom: 35px;
+  }
+  
+  .cta-button {
+    padding: 15px 35px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 18px 5%;
+  }
+
+  .header-buttons {
+    gap: 12px;
+  }
+
+  .header-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+    background-color: white;
+    color: #1E3D6F;
+    border: 2px solid white;
+  }
+
+  .home-content {
+    padding: 0 5% 50px 5%;
+    align-items: center;
+    text-align: center;
+    max-height: calc(100vh - 100px);
+  }
+
+  .headline {
+    font-size: 2.5rem;
+    text-align: center;
+    max-width: 100%;
+    margin-bottom: 15px;
+  }
+
+  .description {
+    font-size: 1.1rem;
+    margin-bottom: 30px;
+    text-align: center;
+    max-width: 100%;
+  }
+
+  .cta-button {
+    padding: 14px 30px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px 5%;
+  }
+
+  .logo {
+    font-size: 1.8rem;
+  }
+
+  .header-buttons {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .header-btn {
+    padding: 10px 20px;
+    min-width: 140px;
+    background-color: white;
+    color: #1E3D6F;
+    border: 2px solid white;
+  }
+
+  .home-content {
+    padding: 0 5% 40px 5%;
+    max-height: calc(100vh - 150px);
+  }
+
+  .headline {
+    font-size: 2rem;
+    margin-bottom: 12px;
+  }
+
+  .description {
+    font-size: 1rem;
+    margin-bottom: 25px;
+    line-height: 1.5;
+  }
+
+  .cta-button {
+    padding: 12px 25px;
+    width: 100%;
+    max-width: 280px;
+    font-size: 1rem;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 360px) {
+  .home-content {
+    padding: 0 4% 30px 4%;
+  }
+  
+  .headline {
+    font-size: 1.8rem;
+  }
+  
+  .description {
+    font-size: 0.95rem;
+  }
+  
+  .cta-button {
+    max-width: 250px;
+  }
+}

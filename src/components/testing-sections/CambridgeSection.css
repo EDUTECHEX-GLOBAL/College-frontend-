@@ -1,0 +1,574 @@
+/* ============================================================
+   CambridgeSection.css — Blue Theme
+   Primary: #3b82f6 | Clean Modern Design
+   ============================================================ */
+
+:root {
+  --cam-primary:          #3b82f6;
+  --cam-primary-dark:     #2563eb;
+  --cam-primary-light:    #60a5fa;
+  --cam-primary-pale:     #eff6ff;
+  --cam-primary-border:   #bfdbfe;
+  --cam-primary-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+
+  --cam-success:          #10b981;
+  --cam-success-bg:       #ecfdf5;
+
+  --cam-white:            #ffffff;
+  --cam-bg:               #f8fafc;
+  --cam-gray-50:          #fafafa;
+  --cam-gray-100:         #f5f5f5;
+  --cam-gray-200:         #e5e5e5;
+  --cam-gray-300:         #d4d4d4;
+  --cam-gray-400:         #a3a3a3;
+  --cam-gray-600:         #525252;
+  --cam-gray-700:         #404040;
+  --cam-gray-900:         #171717;
+
+  --cam-shadow-sm:        0 1px 3px rgba(0,0,0,0.05);
+  --cam-shadow-md:        0 4px 14px rgba(0,0,0,0.07);
+  --cam-shadow-blue:      0 4px 18px rgba(59,130,246,0.18);
+
+  --cam-radius-sm:        8px;
+  --cam-radius:           12px;
+  --cam-radius-full:      9999px;
+
+  --cam-font:             'DM Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --cam-font-display:     'DM Serif Display', Georgia, serif;
+  --cam-transition:       150ms ease;
+}
+
+/* ─────────────────────────────────────────
+   CONTAINER
+───────────────────────────────────────── */
+.cam-container {
+  min-height: 100vh;
+  background: var(--cam-bg);
+  font-family: var(--cam-font);
+  padding: 0 0 80px;
+}
+
+/* ── MAIN CARD ── */
+.cam-card {
+  background: var(--cam-white);
+  border-radius: var(--cam-radius);
+  border: 1px solid var(--cam-gray-200);
+  box-shadow: var(--cam-shadow-sm);
+  margin: 20px 32px;
+  overflow: visible;
+}
+
+/* ── Card Header ── */
+.cam-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 28px;
+  border-bottom: 1px solid var(--cam-gray-200);
+  background: var(--cam-white);
+  border-radius: var(--cam-radius) var(--cam-radius) 0 0;
+}
+
+.cam-card-title {
+  font-family: var(--cam-font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--cam-gray-900);
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.cam-status-badge {
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--cam-primary-pale);
+  color: var(--cam-primary-dark);
+  padding: 6px 12px;
+  border-radius: var(--cam-radius-full);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cam-status-badge::before {
+  content: "●";
+  font-size: 10px;
+  color: var(--cam-primary);
+}
+
+/* ── Content Area ── */
+.cam-content {
+  padding: 28px;
+}
+
+/* ── Form Sections ── */
+.cam-form-section {
+  margin-bottom: 8px;
+}
+
+.cam-section-divider {
+  height: 1px;
+  background: var(--cam-gray-200);
+  margin: 24px 0;
+}
+
+.cam-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--cam-gray-900);
+  margin: 0 0 16px 0;
+  font-family: var(--cam-font);
+}
+
+/* ── Form Groups ── */
+.cam-form-group {
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.cam-question-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cam-gray-700);
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.cam-question-label.required::after {
+  content: "*";
+  color: var(--cam-primary);
+  margin-left: 4px;
+}
+
+/* ── Input Container ── */
+.cam-input-container {
+  position: relative;
+}
+
+/* ── Select / Dropdown ── */
+.cam-select {
+  width: 100%;
+  max-width: 400px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--cam-gray-200);
+  border-radius: var(--cam-radius-sm);
+  font-size: 14px;
+  font-family: var(--cam-font);
+  background: var(--cam-white);
+  color: var(--cam-gray-900);
+  cursor: pointer;
+  transition: all var(--cam-transition);
+  box-sizing: border-box;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+}
+
+.cam-select:focus {
+  outline: none;
+  border-color: var(--cam-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+/* ── Field Note / Helper Text ── */
+.cam-field-note {
+  font-size: 12px;
+  color: var(--cam-gray-400);
+  margin-top: 6px;
+  font-style: italic;
+}
+
+/* ── Radio Options ── */
+.cam-radio-container {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.cam-radio-options {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cam-radio-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 1.5px solid var(--cam-gray-200);
+  border-radius: var(--cam-radius-sm);
+  background: var(--cam-white);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cam-gray-700);
+  transition: all var(--cam-transition);
+  user-select: none;
+}
+
+.cam-radio-option:hover {
+  border-color: var(--cam-primary-light);
+  background: var(--cam-primary-pale);
+  color: var(--cam-primary);
+}
+
+.cam-radio-option input[type="radio"] {
+  display: none;
+}
+
+.cam-radio-option:has(input:checked) {
+  border-color: var(--cam-primary);
+  background: var(--cam-primary-pale);
+  color: var(--cam-primary);
+  font-weight: 600;
+}
+
+/* ── Clear Answer Link ── */
+.cam-clear-link {
+  background: none;
+  border: none;
+  color: var(--cam-primary);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 0;
+  text-decoration: underline;
+  transition: color var(--cam-transition);
+  white-space: nowrap;
+  display: inline-block;
+  margin-top: 8px;
+}
+
+.cam-clear-link:hover:not(:disabled) {
+  color: var(--cam-primary-dark);
+}
+
+.cam-clear-link:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Test Entries ── */
+.cam-tests-section {
+  margin-top: 4px;
+}
+
+.cam-test-entry {
+  margin-bottom: 8px;
+}
+
+.cam-test-number {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cam-primary);
+  margin: 0 0 14px 0;
+  font-family: var(--cam-font);
+}
+
+.cam-test-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.cam-test-divider {
+  height: 1px;
+  background: var(--cam-gray-200);
+  margin: 20px 0;
+}
+
+/* ── Selected Date Display ── */
+.cam-selected-date {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--cam-gray-200);
+  border-radius: var(--cam-radius-sm);
+  background: var(--cam-gray-50);
+  font-size: 14px;
+  color: var(--cam-gray-700);
+  max-width: 400px;
+}
+
+.cam-change-date {
+  background: none;
+  border: none;
+  color: var(--cam-primary);
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  margin-left: auto;
+  white-space: nowrap;
+  transition: color var(--cam-transition);
+}
+
+.cam-change-date:hover {
+  color: var(--cam-primary-dark);
+}
+
+/* ── Month/Year Calendar Popup ── */
+.cam-calendar-container {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 200;
+  background: var(--cam-white);
+  border: 1px solid var(--cam-gray-200);
+  border-radius: var(--cam-radius);
+  padding: 16px;
+  box-shadow: var(--cam-shadow-md);
+  min-width: 280px;
+}
+
+.cam-calendar-header {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cam-gray-900);
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.cam-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.cam-calendar-month {
+  background: var(--cam-gray-100);
+  border: 1px solid var(--cam-gray-200);
+  border-radius: var(--cam-radius-sm);
+  padding: 8px 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cam-gray-700);
+  cursor: pointer;
+  transition: all var(--cam-transition);
+  text-align: center;
+}
+
+.cam-calendar-month:hover {
+  background: var(--cam-primary);
+  color: white;
+  border-color: var(--cam-primary);
+}
+
+.cam-calendar-cancel {
+  width: 100%;
+  background: none;
+  border: 1px solid var(--cam-gray-200);
+  border-radius: var(--cam-radius-sm);
+  padding: 7px;
+  font-size: 13px;
+  color: var(--cam-gray-600);
+  cursor: pointer;
+  transition: all var(--cam-transition);
+}
+
+.cam-calendar-cancel:hover {
+  background: var(--cam-gray-100);
+  color: var(--cam-gray-900);
+}
+
+/* ── Certificate Sub-section ── */
+.cam-certificate-section {
+  margin-top: 4px;
+}
+
+/* ── Form Helper Text ── */
+.cam-form-helper {
+  font-size: 12px;
+  color: var(--cam-gray-400);
+  margin-top: 20px;
+  font-style: italic;
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Tablet ≤ 1023px
+════════════════════════════════════════ */
+@media (max-width: 1023px) {
+  .cam-card {
+    margin: 20px 24px;
+  }
+
+  .cam-card-header {
+    padding: 20px 24px;
+  }
+
+  .cam-content {
+    padding: 24px;
+  }
+
+  .cam-select,
+  .cam-selected-date {
+    max-width: 100%;
+  }
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Mobile ≤ 767px
+════════════════════════════════════════ */
+@media (max-width: 767px) {
+  .cam-card {
+    margin: 16px;
+    border-radius: var(--cam-radius);
+  }
+
+  .cam-card-header {
+    padding: 16px 20px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .cam-card-title {
+    font-size: 19px;
+  }
+
+  .cam-content {
+    padding: 20px;
+  }
+
+  /* Stack test fields vertically */
+  .cam-test-fields {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .cam-select {
+    max-width: 100%;
+  }
+
+  .cam-selected-date {
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .cam-change-date {
+    margin-left: 0;
+  }
+
+  /* Radio row: wrap naturally */
+  .cam-radio-container {
+    gap: 12px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .cam-radio-options {
+    gap: 8px;
+    width: 100%;
+  }
+
+  .cam-radio-option {
+    flex: 1;
+    justify-content: center;
+  }
+
+  /* Calendar: full width */
+  .cam-calendar-container {
+    min-width: 0;
+    width: 100%;
+    left: 0;
+    right: 0;
+  }
+
+  .cam-section-divider {
+    margin: 18px 0;
+  }
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Small Mobile ≤ 480px
+════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .cam-card {
+    margin: 12px;
+  }
+
+  .cam-card-header {
+    padding: 14px 16px;
+  }
+
+  .cam-card-title {
+    font-size: 18px;
+  }
+
+  .cam-content {
+    padding: 16px;
+  }
+
+  .cam-question-label {
+    font-size: 13px;
+  }
+
+  .cam-select {
+    padding: 9px 10px;
+    font-size: 13px;
+  }
+
+  .cam-calendar-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+  }
+
+  .cam-calendar-month {
+    padding: 7px 4px;
+    font-size: 12px;
+  }
+
+  .cam-radio-option {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+
+  .cam-section-divider {
+    margin: 14px 0;
+  }
+
+  .cam-form-group {
+    margin-bottom: 20px;
+  }
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Very Small ≤ 360px
+════════════════════════════════════════ */
+@media (max-width: 360px) {
+  .cam-card {
+    margin: 8px;
+  }
+
+  .cam-content {
+    padding: 12px;
+  }
+
+  .cam-card-header {
+    padding: 12px;
+  }
+
+  .cam-card-title {
+    font-size: 16px;
+  }
+
+  .cam-select {
+    font-size: 12px;
+    padding: 8px 9px;
+  }
+
+  .cam-calendar-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .cam-calendar-month {
+    font-size: 11px;
+    padding: 6px 2px;
+  }
+}

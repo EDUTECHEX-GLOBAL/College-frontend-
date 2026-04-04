@@ -1,0 +1,530 @@
+/* ============================================================
+   IBSubjectTestsSection.css — Blue Theme
+   Primary: #3b82f6 | Clean Modern Design
+   ============================================================ */
+
+:root {
+  --ib-primary:          #3b82f6;
+  --ib-primary-dark:     #2563eb;
+  --ib-primary-light:    #60a5fa;
+  --ib-primary-pale:     #eff6ff;
+  --ib-primary-border:   #bfdbfe;
+  --ib-primary-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+
+  --ib-success:          #10b981;
+  --ib-success-bg:       #ecfdf5;
+
+  --ib-white:            #ffffff;
+  --ib-bg:               #f8fafc;
+  --ib-gray-50:          #fafafa;
+  --ib-gray-100:         #f5f5f5;
+  --ib-gray-200:         #e5e5e5;
+  --ib-gray-300:         #d4d4d4;
+  --ib-gray-400:         #a3a3a3;
+  --ib-gray-600:         #525252;
+  --ib-gray-700:         #404040;
+  --ib-gray-900:         #171717;
+
+  --ib-shadow-sm:        0 1px 3px rgba(0,0,0,0.05);
+  --ib-shadow-md:        0 4px 14px rgba(0,0,0,0.07);
+  --ib-shadow-blue:      0 4px 18px rgba(59,130,246,0.18);
+
+  --ib-radius-sm:        8px;
+  --ib-radius:           12px;
+  --ib-radius-full:      9999px;
+
+  --ib-font:             'DM Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --ib-font-display:     'DM Serif Display', Georgia, serif;
+  --ib-transition:       150ms ease;
+}
+
+/* ─────────────────────────────────────────
+   CONTAINER
+───────────────────────────────────────── */
+.ib-container {
+  min-height: 100vh;
+  background: var(--ib-bg);
+  font-family: var(--ib-font);
+  padding: 0 0 80px;
+}
+
+/* ── MAIN CARD ── */
+.ib-card {
+  background: var(--ib-white);
+  border-radius: var(--ib-radius);
+  border: 1px solid var(--ib-gray-200);
+  box-shadow: var(--ib-shadow-sm);
+  margin: 20px 32px;
+  overflow: hidden;
+}
+
+/* ── Card Header ── */
+.ib-card-header {
+  background: var(--ib-white);
+  padding: 24px 28px;
+  border-bottom: 1px solid var(--ib-gray-200);
+}
+
+.ib-card-title {
+  font-family: var(--ib-font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ib-gray-900);
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.ib-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--ib-primary-pale);
+  color: var(--ib-primary-dark);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: var(--ib-radius-full);
+  margin-top: 12px;
+}
+
+.ib-status-badge::before {
+  content: "●";
+  font-size: 10px;
+  color: var(--ib-primary);
+}
+
+/* ── FORM CONTENT ── */
+.ib-form-content {
+  padding: 28px;
+}
+
+.ib-form-group {
+  margin-bottom: 28px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--ib-gray-200);
+}
+
+.ib-form-group:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+/* Question Label */
+.ib-question-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ib-gray-700);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.ib-question-label.required::after {
+  content: "*";
+  color: var(--ib-primary);
+  margin-left: 4px;
+}
+
+.ib-question-description {
+  font-size: 13px;
+  color: var(--ib-gray-600);
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+
+/* Select Inputs */
+.ib-select {
+  width: 100%;
+  max-width: 300px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--ib-gray-200);
+  border-radius: var(--ib-radius-sm);
+  font-family: var(--ib-font);
+  font-size: 14px;
+  color: var(--ib-gray-900);
+  background: var(--ib-white);
+  transition: all var(--ib-transition);
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+}
+
+.ib-select:focus {
+  border-color: var(--ib-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.ib-select.error {
+  border-color: #dc2626;
+}
+
+/* Error Message */
+.ib-error-message {
+  color: #dc2626;
+  font-size: 12px;
+  margin-top: 6px;
+  font-style: italic;
+}
+
+/* Tests Container */
+.ib-tests-container {
+  margin-top: 24px;
+  border-top: 1px solid var(--ib-gray-200);
+  padding-top: 24px;
+}
+
+.ib-test-entry {
+  background: var(--ib-gray-50);
+  padding: 24px;
+  border-radius: var(--ib-radius);
+  border: 1px solid var(--ib-gray-200);
+  margin-bottom: 24px;
+}
+
+.ib-test-entry:last-child {
+  margin-bottom: 0;
+}
+
+.ib-test-entry h3 {
+  margin: 0 0 20px 0;
+  font-size: 16px;
+  color: var(--ib-gray-900);
+  font-weight: 600;
+  border-bottom: 1px solid var(--ib-gray-200);
+  padding-bottom: 12px;
+  font-family: var(--ib-font);
+}
+
+/* Date Selection Styles */
+.ib-date-selection {
+  margin-bottom: 20px;
+}
+
+.ib-month-year-selection {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.ib-month-select-container,
+.ib-year-select-container {
+  flex: 1;
+  max-width: 150px;
+  position: relative;
+}
+
+.ib-year-display {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--ib-gray-200);
+  border-radius: var(--ib-radius-sm);
+  font-size: 14px;
+  background: var(--ib-white);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all var(--ib-transition);
+}
+
+.ib-year-display:hover {
+  border-color: var(--ib-primary-light);
+}
+
+.ib-year-display.error {
+  border-color: #dc2626;
+}
+
+.ib-dropdown-arrow {
+  font-size: 10px;
+  color: var(--ib-gray-400);
+}
+
+.ib-year-grid-container {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--ib-white);
+  border: 1px solid var(--ib-gray-200);
+  border-radius: var(--ib-radius-sm);
+  box-shadow: var(--ib-shadow-md);
+  z-index: 10;
+  margin-top: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.ib-year-grid {
+  padding: 8px;
+}
+
+.ib-year-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.ib-year-option {
+  padding: 8px 4px;
+  text-align: center;
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: var(--ib-radius-sm);
+  transition: all var(--ib-transition);
+}
+
+.ib-year-option:hover {
+  background-color: var(--ib-primary-pale);
+  color: var(--ib-primary);
+}
+
+.ib-year-option.selected {
+  background-color: var(--ib-primary);
+  color: white;
+}
+
+.ib-date-format-hint {
+  font-size: 12px;
+  color: var(--ib-gray-400);
+  font-style: italic;
+  margin-bottom: 8px;
+}
+
+.ib-selected-date {
+  font-size: 13px;
+  color: var(--ib-success);
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+/* Select with Clear Button */
+.ib-select-with-clear {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.ib-select-with-clear .ib-select {
+  flex: 1;
+}
+
+/* Score Radio Button Styles - Horizontal Layout */
+.ib-score-radio-group-horizontal {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.ib-score-radio-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--ib-gray-700);
+  transition: color var(--ib-transition);
+}
+
+.ib-score-radio-option:hover {
+  color: var(--ib-primary);
+}
+
+.ib-score-radio-option input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--ib-primary);
+  cursor: pointer;
+}
+
+.ib-score-radio-option:has(input:checked) {
+  color: var(--ib-primary);
+  font-weight: 500;
+}
+
+/* Clear Link */
+.ib-clear-link {
+  display: inline-block;
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: var(--ib-gray-400);
+  text-decoration: underline;
+  cursor: pointer;
+  font-family: var(--ib-font);
+  padding: 4px 0;
+  transition: color var(--ib-transition);
+  margin-top: 8px;
+}
+
+.ib-clear-link:hover:not(:disabled) {
+  color: var(--ib-primary);
+}
+
+.ib-clear-link:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Remove Button for Test Entry */
+.ib-remove-btn {
+  background: none;
+  border: 1.5px solid var(--ib-gray-200);
+  color: var(--ib-gray-600);
+  border-radius: var(--ib-radius-sm);
+  padding: 6px 14px;
+  font-family: var(--ib-font);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--ib-transition);
+  margin-top: 16px;
+}
+
+.ib-remove-btn:hover:not(:disabled) {
+  border-color: #fca5a5;
+  color: #dc2626;
+  background: #fef2f2;
+}
+
+.ib-remove-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Add Test Button */
+.ib-add-btn {
+  background: var(--ib-primary-pale);
+  border: 1.5px solid var(--ib-primary-border);
+  color: var(--ib-primary-dark);
+  border-radius: var(--ib-radius-sm);
+  padding: 10px 20px;
+  font-family: var(--ib-font);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--ib-transition);
+  margin-top: 16px;
+}
+
+.ib-add-btn:hover:not(:disabled) {
+  background: var(--ib-primary);
+  color: var(--ib-white);
+  border-color: var(--ib-primary);
+}
+
+.ib-add-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Form Helper Text */
+.ib-form-helper {
+  font-size: 12px;
+  color: var(--ib-gray-400);
+  margin-top: 20px;
+  font-style: italic;
+}
+
+/* Responsive Design */
+@media (max-width: 1023px) {
+  .ib-card {
+    margin: 20px 24px;
+  }
+  
+  .ib-form-content {
+    padding: 24px;
+  }
+  
+  .ib-select {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 767px) {
+  .ib-card {
+    margin: 16px;
+  }
+  
+  .ib-card-header {
+    padding: 20px;
+  }
+  
+  .ib-card-title {
+    font-size: 19px;
+  }
+  
+  .ib-form-content {
+    padding: 20px;
+  }
+  
+  .ib-month-year-selection {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .ib-month-select-container,
+  .ib-year-select-container {
+    max-width: 100%;
+  }
+  
+  .ib-year-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .ib-score-radio-group-horizontal {
+    gap: 12px;
+    flex-direction: column;
+  }
+  
+  .ib-select-with-clear {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .ib-test-entry {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ib-card {
+    margin: 12px;
+  }
+  
+  .ib-card-header {
+    padding: 16px;
+  }
+  
+  .ib-card-title {
+    font-size: 18px;
+  }
+  
+  .ib-form-content {
+    padding: 16px;
+  }
+  
+  .ib-test-entry {
+    padding: 16px;
+  }
+  
+  .ib-year-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .ib-score-radio-group-horizontal {
+    gap: 8px;
+  }
+  
+  .ib-select {
+    max-width: 100%;
+  }
+}

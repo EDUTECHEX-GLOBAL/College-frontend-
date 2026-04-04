@@ -1,0 +1,588 @@
+/* src/components/testing-sections/TOEFLiBTSection.css */
+/* ============================================================
+   TOEFLiBTSection.css — Blue Theme
+   Primary: #3b82f6 | Matches other test sections design system
+   ============================================================ */
+
+:root {
+  --toefl-primary:          #3b82f6;
+  --toefl-primary-dark:     #2563eb;
+  --toefl-primary-light:    #60a5fa;
+  --toefl-primary-pale:     #eff6ff;
+  --toefl-primary-border:   #bfdbfe;
+  --toefl-primary-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+
+  --toefl-success:          #10b981;
+  --toefl-success-bg:       #ecfdf5;
+  --toefl-error:            #ef4444;
+  --toefl-error-bg:         #fef2f2;
+
+  --toefl-white:            #ffffff;
+  --toefl-bg:               #f8fafc;
+  --toefl-gray-50:          #fafafa;
+  --toefl-gray-100:         #f5f5f5;
+  --toefl-gray-200:         #e5e5e5;
+  --toefl-gray-300:         #d4d4d4;
+  --toefl-gray-400:         #a3a3a3;
+  --toefl-gray-600:         #525252;
+  --toefl-gray-700:         #404040;
+  --toefl-gray-900:         #171717;
+
+  --toefl-shadow-sm:        0 1px 3px rgba(0,0,0,0.05);
+  --toefl-shadow-md:        0 4px 14px rgba(0,0,0,0.07);
+  --toefl-shadow-blue:      0 4px 18px rgba(59,130,246,0.18);
+
+  --toefl-radius-sm:        8px;
+  --toefl-radius:           12px;
+  --toefl-radius-full:      9999px;
+
+  --toefl-font:             'DM Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --toefl-font-display:     'DM Serif Display', Georgia, serif;
+  --toefl-transition:       150ms ease;
+}
+
+/* Main Container */
+.toefl-section {
+  background: var(--toefl-white);
+  margin: 20px 32px;
+  border-radius: var(--toefl-radius);
+  border: 1px solid var(--toefl-gray-200);
+  box-shadow: var(--toefl-shadow-sm);
+  max-width: 100%;
+  overflow: hidden;
+  font-family: var(--toefl-font);
+}
+
+/* Section Header */
+.toefl-section .section-header {
+  border-bottom: 1px solid var(--toefl-gray-200);
+  background: var(--toefl-white);
+}
+
+.toefl-section h2 {
+  background: var(--toefl-white);
+  margin: 0;
+  padding: 24px 28px;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--toefl-gray-900);
+  font-family: var(--toefl-font-display);
+  letter-spacing: -0.3px;
+  border-bottom: 1px solid var(--toefl-gray-200);
+}
+
+/* Status Badge */
+.toefl-section .section-status {
+  padding: 12px 28px;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--toefl-font);
+}
+
+.toefl-section .section-status.in-progress {
+  background: var(--toefl-primary-pale);
+  color: var(--toefl-primary-dark);
+}
+
+.toefl-section .section-status.complete {
+  background: var(--toefl-success-bg);
+  color: var(--toefl-success);
+}
+
+.toefl-section .status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.toefl-section .section-status.in-progress .status-indicator {
+  background: var(--toefl-primary);
+}
+
+.toefl-section .section-status.complete .status-indicator {
+  background: var(--toefl-success);
+}
+
+/* Form Content */
+.toefl-section .form-content {
+  padding: 28px;
+  max-width: 100%;
+}
+
+/* Form Groups */
+.toefl-section .form-group {
+  margin-bottom: 28px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--toefl-gray-200);
+}
+
+.toefl-section .form-group:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.toefl-section .question-text {
+  font-size: 14px;
+  color: var(--toefl-gray-700);
+  margin: 0 0 12px 0;
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+.toefl-section .question-text.required::after {
+  content: "*";
+  color: var(--toefl-primary);
+  margin-left: 4px;
+}
+
+/* Radio Groups */
+.radio-group-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.radio-group-vertical .radio-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--toefl-gray-700);
+  padding: 10px 14px;
+  border-radius: var(--toefl-radius-sm);
+  transition: all var(--toefl-transition);
+  position: relative;
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  border: 1.5px solid transparent;
+}
+
+.radio-group-vertical .radio-option:hover {
+  background: var(--toefl-gray-50);
+  border-color: var(--toefl-gray-200);
+}
+
+.radio-group-vertical .radio-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  width: 0;
+  height: 0;
+}
+
+.radio-checkmark {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--toefl-gray-300);
+  border-radius: 50%;
+  position: relative;
+  transition: all var(--toefl-transition);
+  flex-shrink: 0;
+  background: var(--toefl-white);
+}
+
+.radio-group-vertical .radio-option input[type="radio"]:checked + .radio-checkmark {
+  border-color: var(--toefl-primary);
+  background: var(--toefl-primary);
+}
+
+.radio-group-vertical .radio-option input[type="radio"]:checked + .radio-checkmark::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background: var(--toefl-white);
+  border-radius: 50%;
+}
+
+.radio-group-vertical .radio-option input[type="radio"]:checked ~ .radio-label {
+  color: var(--toefl-primary);
+  font-weight: 500;
+}
+
+.radio-label {
+  transition: color var(--toefl-transition);
+  flex: 1;
+}
+
+/* Clear Link */
+.clear-link-container {
+  margin-top: 8px;
+}
+
+.clear-link {
+  background: none;
+  border: none;
+  color: var(--toefl-primary);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 6px 0;
+  text-decoration: underline;
+  transition: color var(--toefl-transition);
+  display: inline-block;
+}
+
+.clear-link:hover {
+  color: var(--toefl-primary-dark);
+}
+
+.clear-all-link {
+  background: none;
+  border: none;
+  color: var(--toefl-error);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 4px 8px;
+  text-decoration: underline;
+  transition: color var(--toefl-transition);
+}
+
+.clear-all-link:hover {
+  color: #dc2626;
+}
+
+/* Detailed Fields Section */
+.detailed-fields {
+  background: var(--toefl-gray-50);
+  border: 1px solid var(--toefl-gray-200);
+  border-radius: var(--toefl-radius);
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.detailed-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--toefl-gray-200);
+}
+
+.detailed-fields h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--toefl-gray-900);
+  margin: 0;
+  font-family: var(--toefl-font);
+}
+
+/* Score row: score dropdown + date picker side by side */
+.detailed-fields .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--toefl-gray-200);
+}
+
+.detailed-fields .form-row:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.detailed-fields .form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Select Containers */
+.select-container,
+.date-input-container,
+.total-score-container {
+  position: relative;
+  width: 100%;
+}
+
+.score-dropdown,
+.date-input,
+.total-score-input {
+  width: 100%;
+  padding: 10px 32px 10px 12px;
+  border: 1.5px solid var(--toefl-gray-200);
+  border-radius: var(--toefl-radius-sm);
+  font-size: 14px;
+  background: var(--toefl-white);
+  color: var(--toefl-gray-900);
+  transition: all var(--toefl-transition);
+  font-family: var(--toefl-font);
+  box-sizing: border-box;
+}
+
+.score-dropdown {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+}
+
+.score-dropdown:focus,
+.date-input:focus,
+.total-score-input:focus {
+  outline: none;
+  border-color: var(--toefl-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.score-dropdown:hover,
+.date-input:hover,
+.total-score-input:hover {
+  border-color: var(--toefl-gray-400);
+}
+
+.total-score-input {
+  -moz-appearance: textfield;
+}
+
+.total-score-input::-webkit-inner-spin-button,
+.total-score-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Clear Field Button */
+.clear-field-btn {
+  background: none;
+  border: none;
+  color: var(--toefl-gray-400);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color var(--toefl-transition);
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  border-radius: var(--toefl-radius-sm);
+}
+
+.clear-field-btn:hover {
+  color: var(--toefl-error);
+}
+
+/* Helper Text */
+.form-helper {
+  font-size: 12px;
+  color: var(--toefl-gray-400);
+  font-style: italic;
+  line-height: 1.4;
+  margin-top: 4px;
+}
+
+/* Responsive Design */
+@media (max-width: 1023px) {
+  .toefl-section {
+    margin: 20px 24px;
+  }
+
+  .toefl-section .form-content {
+    padding: 24px;
+  }
+
+  .toefl-section h2 {
+    padding: 20px 24px;
+    font-size: 20px;
+  }
+
+  .toefl-section .section-status {
+    padding: 10px 24px;
+  }
+}
+
+@media (max-width: 767px) {
+  .toefl-section {
+    margin: 16px;
+  }
+
+  .toefl-section .form-content {
+    padding: 20px;
+  }
+
+  .toefl-section h2 {
+    padding: 18px 20px;
+    font-size: 18px;
+  }
+
+  .toefl-section .section-status {
+    padding: 10px 20px;
+    font-size: 12px;
+  }
+
+  .toefl-section .form-group {
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+  }
+
+  /* Stack score + date vertically on mobile */
+  .detailed-fields .form-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .detailed-fields {
+    padding: 16px;
+  }
+
+  .detailed-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .detailed-fields h3 {
+    font-size: 15px;
+  }
+
+  .radio-group-vertical .radio-option {
+    padding: 8px 12px;
+  }
+
+  .radio-checkmark {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .toefl-section {
+    margin: 12px;
+  }
+
+  .toefl-section .form-content {
+    padding: 16px;
+  }
+
+  .toefl-section h2 {
+    padding: 14px 16px;
+    font-size: 16px;
+  }
+
+  .toefl-section .section-status {
+    padding: 8px 16px;
+    font-size: 11px;
+  }
+
+  .toefl-section .form-group {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+  }
+
+  .toefl-section .question-text {
+    font-size: 13px;
+  }
+
+  .score-dropdown,
+  .date-input,
+  .total-score-input {
+    font-size: 13px;
+    padding: 8px 32px 8px 10px;
+  }
+
+  .detailed-fields {
+    padding: 12px;
+  }
+
+  .detailed-fields .form-row {
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+  }
+
+  .detailed-fields h3 {
+    font-size: 14px;
+  }
+
+  .radio-group-vertical .radio-option {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .radio-checkmark {
+    width: 18px;
+    height: 18px;
+  }
+
+  .clear-link {
+    font-size: 11px;
+  }
+
+  .form-helper {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 360px) {
+  .toefl-section {
+    margin: 8px;
+  }
+
+  .toefl-section .form-content {
+    padding: 12px;
+  }
+
+  .toefl-section h2 {
+    padding: 12px 14px;
+    font-size: 15px;
+  }
+
+  .toefl-section .section-status {
+    padding: 6px 14px;
+    font-size: 10px;
+  }
+
+  .detailed-fields {
+    padding: 10px;
+  }
+
+  .radio-group-vertical .radio-option {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .radio-checkmark {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* Focus accessibility */
+.radio-option:focus-within {
+  outline: 2px solid var(--toefl-primary);
+  outline-offset: 2px;
+  border-radius: var(--toefl-radius-sm);
+}
+
+/* Animation */
+@keyframes radioPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.radio-group-vertical .radio-option input[type="radio"]:checked + .radio-checkmark::after {
+  animation: radioPulse 0.2s ease-out;
+}

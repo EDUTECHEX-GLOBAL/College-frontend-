@@ -1,0 +1,927 @@
+/* ============================================================
+   PersonalInfoSection.css — EDUTECH-X Modern UI
+   Primary Teal: #0ba5a0 | Clean White | Minimalist Design
+   ============================================================ */
+
+/* ─────────────────────────────────────────
+   CSS VARIABLES
+───────────────────────────────────────── */
+:root {
+  /* Primary Colors - EDUTECH-X Teal (Fixed) */
+  --primary: #0ba5a0;
+  --primary-dark: #0a8a86;
+  --primary-light: #2bc9c4;
+  --primary-pale: #f0fdfa;
+  --primary-gradient: linear-gradient(135deg, #0ba5a0 0%, #0891b2 100%);
+  
+  /* Secondary Colors */
+  --navy: #1a2e44;
+  --navy-light: #2c4a6e;
+  --navy-pale: #f5f9ff;
+  
+  /* Status Colors */
+  --success: #10b981;
+  --success-pale: #ecfdf5;
+  --warning: #f59e0b;
+  --warning-pale: #fffbeb;
+  --error: #ef4444;
+  --error-pale: #fef2f2;
+  --info: #0ba5a0;
+  --info-pale: #f0fdfa;
+  
+  /* Neutral Colors */
+  --gray-50: #fafafa;
+  --gray-100: #f5f5f5;
+  --gray-200: #e5e5e5;
+  --gray-300: #d4d4d4;
+  --gray-400: #a3a3a3;
+  --gray-500: #737373;
+  --gray-600: #525252;
+  --gray-700: #404040;
+  --gray-800: #262626;
+  --gray-900: #171717;
+  
+  /* Backgrounds */
+  --bg-primary: #fafafa;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f5f5f5;
+  
+  /* Text */
+  --text-primary: #171717;
+  --text-secondary: #404040;
+  --text-tertiary: #737373;
+  --text-muted: #a3a3a3;
+  
+  /* Borders */
+  --border-light: #e5e5e5;
+  --border-medium: #d4d4d4;
+  --border-primary: rgba(11, 165, 160, 0.2);
+  
+  /* Shadows */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+  --shadow-primary: 0 4px 12px rgba(11, 165, 160, 0.12);
+  --shadow-teal: 0 4px 18px rgba(11, 165, 160, 0.18);
+  
+  /* Border Radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+  
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+  
+  /* Font */
+  --font: 'DM Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
+  --font-display: 'DM Serif Display', Georgia, serif;
+}
+
+/* ─────────────────────────────────────────
+   MAIN CONTAINER
+───────────────────────────────────────── */
+.personal-info-section {
+  background: var(--bg-secondary);
+  max-width: 100%;
+  font-family: var(--font);
+}
+
+/* Header Section */
+.personal-info-section h2 {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 20px 0;
+  padding: 0;
+  letter-spacing: -0.3px;
+  font-family: var(--font-display);
+}
+
+/* Section Status Badge */
+.personal-info-section .section-status {
+  background: var(--primary-pale);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.personal-info-section .section-status::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background: var(--primary);
+  border-radius: 50%;
+  display: inline-block;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.2); }
+}
+
+/* ============================================================
+   DOCUMENT UPLOAD BANNERS
+============================================================ */
+.document-banners-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.passport-banner-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.passport-skip-link {
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+  text-decoration: none;
+  align-self: flex-start;
+  padding: 4px 8px;
+  transition: color var(--transition-fast);
+  font-family: var(--font);
+}
+
+.passport-skip-link:hover {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+/* Base Banner */
+.passport-banner {
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  transition: all var(--transition-base);
+  font-family: var(--font);
+}
+
+/* Upload / Idle State */
+.passport-banner--upload {
+  background: var(--gray-50);
+  border: 1px solid var(--border-light);
+  cursor: pointer;
+}
+
+.passport-banner--upload:hover {
+  background: var(--primary-pale);
+  border-color: var(--primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.passport-banner__upload-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.passport-banner--upload:hover .passport-banner__upload-icon {
+  border-color: var(--primary);
+  background: var(--bg-secondary);
+}
+
+.passport-banner__upload-icon svg {
+  stroke: var(--primary);
+}
+
+.passport-banner__text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.passport-banner__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-family: var(--font);
+}
+
+.passport-banner__badge {
+  display: inline-block;
+  background: var(--primary-gradient);
+  color: white;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+}
+
+.passport-banner__sub {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  line-height: 1.4;
+}
+
+.passport-banner__cta {
+  background: var(--primary-gradient);
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 20px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+  font-family: var(--font);
+}
+
+.passport-banner--upload:hover .passport-banner__cta {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-primary);
+}
+
+/* Scanning State */
+.passport-banner--scanning {
+  background: var(--primary-pale);
+  border: 1px solid var(--border-primary);
+}
+
+.passport-banner__spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border-primary);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Success State */
+.passport-banner--success {
+  background: var(--success-pale);
+  border: 1px solid #bbf7d0;
+}
+
+.passport-banner--success .passport-banner__title {
+  color: var(--success);
+}
+
+.passport-banner__icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.passport-banner__dismiss {
+  background: none;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  color: var(--text-muted);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.passport-banner__dismiss:hover {
+  background: var(--success-pale);
+  color: var(--text-primary);
+}
+
+/* Error State */
+.passport-banner--error {
+  background: var(--error-pale);
+  border: 1px solid #fecaca;
+}
+
+.passport-banner--error .passport-banner__title {
+  color: var(--error);
+}
+
+.passport-banner__retry {
+  background: none;
+  border: 1px solid #fca5a5;
+  color: var(--error);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+  font-family: var(--font);
+}
+
+.passport-banner__retry:hover {
+  background: var(--error-pale);
+  border-color: var(--error);
+}
+
+/* ============================================================
+   SAVE STATUS INDICATOR
+============================================================ */
+.autofill-save-status {
+  margin-bottom: 24px;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  animation: fadeSlide 0.3s ease;
+  display: flex;
+  align-items: center;
+  font-family: var(--font);
+}
+
+.autofill-save-status svg {
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+@keyframes fadeSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.autofill-save-status--saving {
+  background: var(--primary-pale);
+  color: var(--primary);
+  border: 1px solid var(--border-primary);
+}
+
+.autofill-save-status--saving svg {
+  animation: spin 0.8s linear infinite;
+}
+
+.autofill-save-status--saved {
+  background: var(--success-pale);
+  color: var(--success);
+  border: 1px solid #bbf7d0;
+}
+
+.autofill-save-status--error {
+  background: var(--error-pale);
+  color: var(--error);
+  border: 1px solid #fecaca;
+}
+
+/* ============================================================
+   FORM CONTENT
+============================================================ */
+.personal-info-section .form-content {
+  max-width: 100%;
+}
+
+/* Form Section Headings */
+.form-section-heading {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 28px 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--border-light);
+  letter-spacing: -0.2px;
+  font-family: var(--font-display);
+}
+
+.form-section-heading:first-child {
+  margin-top: 0;
+}
+
+/* Form Grid - Two Column Layout */
+.personal-info-section .form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+/* Form Group */
+.personal-info-section .form-group {
+  margin-bottom: 20px;
+}
+
+.personal-info-section .form-group.full-width {
+  grid-column: span 2;
+}
+
+.personal-info-section .form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-family: var(--font);
+}
+
+.personal-info-section .form-group label.required::after {
+  content: " *";
+  color: var(--error);
+}
+
+/* Input Fields */
+.personal-info-section .form-group input,
+.personal-info-section .form-group select,
+.personal-info-section .form-group textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  transition: all var(--transition-fast);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-family: var(--font);
+  box-sizing: border-box;
+}
+
+.personal-info-section .form-group input:focus,
+.personal-info-section .form-group select:focus,
+.personal-info-section .form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(11, 165, 160, 0.12);
+}
+
+.personal-info-section .form-group input::placeholder,
+.personal-info-section .form-group select::placeholder {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.personal-info-section .form-group input[type="date"] {
+  padding: 9px 14px;
+}
+
+/* Disabled Input */
+.personal-info-section .form-group input:disabled,
+.personal-info-section .form-group select:disabled {
+  background: var(--gray-50);
+  cursor: not-allowed;
+  color: var(--text-tertiary);
+  opacity: 0.6;
+}
+
+/* Auto-filled Field Styles */
+.personal-info-section .form-group input.input--autofilled,
+.personal-info-section .form-group select.input--autofilled {
+  background: var(--primary-pale);
+  border-color: var(--primary);
+}
+
+/* Auto-fill Tag */
+.autofill-tag {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--primary);
+  background: var(--primary-pale);
+  border: 1px solid var(--border-primary);
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  margin-left: 6px;
+  vertical-align: middle;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Radio & Checkbox Groups */
+.radio-group,
+.checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 8px;
+}
+
+.radio-group label,
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: normal;
+  cursor: pointer;
+  margin-bottom: 0;
+  font-size: 13px;
+}
+
+.radio-group input[type="radio"],
+.checkbox-group input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--primary);
+}
+
+/* Help Text */
+.help-text {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 5px;
+}
+
+/* Error Message */
+.field-error {
+  color: var(--error);
+  font-size: 11px;
+  margin-top: 5px;
+}
+
+/* ============================================================
+   BIRTH INFORMATION SECTION
+============================================================ */
+.birth-info-section {
+  margin-top: 8px;
+}
+
+/* ============================================================
+   ADDRESS SECTION
+============================================================ */
+.address-section {
+  margin-top: 8px;
+}
+
+/* ============================================================
+   CONTACT DETAILS SECTION
+============================================================ */
+.contact-details-section {
+  margin-top: 8px;
+}
+
+/* ============================================================
+   LANGUAGE SECTION
+============================================================ */
+.language-section {
+  margin-top: 8px;
+}
+
+/* Language Item */
+.language-item {
+  background: var(--gray-50);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 16px;
+  transition: all var(--transition-fast);
+}
+
+.language-item:last-child {
+  margin-bottom: 0;
+}
+
+.language-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.language-header h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  font-family: var(--font);
+}
+
+.remove-language-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.remove-language-btn:hover {
+  color: var(--error);
+  background: var(--error-pale);
+}
+
+.add-language-btn {
+  background: none;
+  border: 1px dashed var(--border-medium);
+  color: var(--primary);
+  padding: 10px;
+  border-radius: var(--radius-md);
+  width: 100%;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  margin-top: 16px;
+  font-family: var(--font);
+}
+
+.add-language-btn:hover {
+  background: var(--primary-pale);
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+
+/* Proficiency Group */
+.proficiency-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-light);
+}
+
+.proficiency-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: normal;
+  font-size: 12px;
+  margin-bottom: 0;
+  cursor: pointer;
+}
+
+.proficiency-group input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--primary);
+}
+
+/* ============================================================
+   RESPONSIVE DESIGN
+============================================================ */
+
+/* Tablet (≤ 1023px) */
+@media (max-width: 1023px) {
+  .personal-info-section .form-grid {
+    gap: 20px;
+  }
+  
+  .passport-banner {
+    padding: 18px 20px;
+  }
+}
+
+/* Mobile (≤ 767px) */
+@media (max-width: 767px) {
+  .personal-info-section h2 {
+    font-size: 20px;
+  }
+  
+  .personal-info-section .form-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  
+  .personal-info-section .form-group.full-width {
+    grid-column: span 1;
+  }
+  
+  .personal-info-section .form-group {
+    margin-bottom: 18px;
+  }
+  
+  .passport-banner {
+    flex-direction: column;
+    text-align: center;
+    padding: 20px;
+    gap: 14px;
+  }
+  
+  .passport-banner__upload-icon {
+    width: 52px;
+    height: 52px;
+  }
+  
+  .passport-banner__text {
+    text-align: center;
+  }
+  
+  .passport-banner__title {
+    justify-content: center;
+  }
+  
+  .passport-banner__cta {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .form-section-heading {
+    font-size: 14px;
+    margin: 24px 0 14px;
+  }
+  
+  .radio-group,
+  .checkbox-group {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .proficiency-group {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+/* Small Mobile (≤ 480px) */
+@media (max-width: 480px) {
+  .personal-info-section h2 {
+    font-size: 18px;
+  }
+  
+  .personal-info-section .section-status {
+    font-size: 11px;
+    padding: 4px 12px;
+  }
+  
+  .passport-banner {
+    padding: 16px;
+  }
+  
+  .passport-banner__title {
+    font-size: 13px;
+  }
+  
+  .passport-banner__sub {
+    font-size: 11px;
+  }
+  
+  .passport-banner__cta {
+    padding: 6px 16px;
+    font-size: 12px;
+  }
+  
+  .form-section-heading {
+    font-size: 13px;
+    margin: 20px 0 12px;
+  }
+  
+  .personal-info-section .form-group label {
+    font-size: 12px;
+  }
+  
+  .personal-info-section .form-group input,
+  .personal-info-section .form-group select {
+    padding: 9px 12px;
+    font-size: 13px;
+  }
+  
+  .language-item {
+    padding: 16px;
+  }
+}
+
+/* Very Small (≤ 320px) */
+@media (max-width: 320px) {
+  .personal-info-section h2 {
+    font-size: 16px;
+  }
+  
+  .passport-banner__upload-icon {
+    width: 44px;
+    height: 44px;
+  }
+  
+  .personal-info-section .form-group input,
+  .personal-info-section .form-group select {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+}
+
+/* ============================================================
+   ANIMATIONS
+============================================================ */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.language-item {
+  animation: slideUp 0.3s ease;
+}
+
+.passport-banner {
+  animation: fadeIn 0.3s ease;
+}
+
+/* ============================================================
+   PRINT STYLES
+============================================================ */
+@media print {
+  .personal-info-section {
+    background: white;
+  }
+  
+  .document-banners-wrapper,
+  .passport-skip-link,
+  .autofill-save-status,
+  .passport-banner__cta,
+  .passport-banner__dismiss,
+  .passport-banner__retry,
+  .add-language-btn,
+  .remove-language-btn {
+    display: none;
+  }
+  
+  .passport-banner {
+    display: none;
+  }
+  
+  .personal-info-section .form-group input,
+  .personal-info-section .form-group select {
+    border: 1px solid var(--border-light);
+    background: white;
+  }
+  
+  .language-item {
+    break-inside: avoid;
+  }
+}
+
+/* ============================================================
+   UTILITY CLASSES
+============================================================ */
+.text-center {
+  text-align: center;
+}
+
+.mt-2 {
+  margin-top: 8px;
+}
+
+.mb-2 {
+  margin-bottom: 8px;
+}
+
+.p-relative {
+  position: relative;
+}
+
+/* Focus Visible for Accessibility */
+.personal-info-section .form-group input:focus-visible,
+.personal-info-section .form-group select:focus-visible,
+.passport-banner:focus-visible,
+.add-language-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}

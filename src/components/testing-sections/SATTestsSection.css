@@ -1,0 +1,470 @@
+/* src/components/testing-sections/SATTestsSection.css */
+/* ============================================================
+   SATTestsSection.css — Blue Theme
+   Primary: #3b82f6 | Matches PTE Academic Tests design system
+   ============================================================ */
+
+:root {
+  --sat-primary:          #3b82f6;
+  --sat-primary-dark:     #2563eb;
+  --sat-primary-light:    #60a5fa;
+  --sat-primary-pale:     #eff6ff;
+  --sat-primary-border:   #bfdbfe;
+  --sat-primary-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+
+  --sat-success:          #10b981;
+  --sat-success-bg:       #ecfdf5;
+  --sat-error:            #ef4444;
+  --sat-error-bg:         #fef2f2;
+
+  --sat-white:            #ffffff;
+  --sat-bg:               #f8fafc;
+  --sat-gray-50:          #fafafa;
+  --sat-gray-100:         #f5f5f5;
+  --sat-gray-200:         #e5e5e5;
+  --sat-gray-300:         #d4d4d4;
+  --sat-gray-400:         #a3a3a3;
+  --sat-gray-600:         #525252;
+  --sat-gray-700:         #404040;
+  --sat-gray-900:         #171717;
+
+  --sat-shadow-sm:        0 1px 3px rgba(0,0,0,0.05);
+  --sat-shadow-md:        0 4px 14px rgba(0,0,0,0.07);
+  --sat-shadow-blue:      0 4px 18px rgba(59,130,246,0.18);
+
+  --sat-radius-sm:        8px;
+  --sat-radius:           12px;
+  --sat-radius-full:      9999px;
+
+  --sat-font:             'DM Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --sat-font-display:     'DM Serif Display', Georgia, serif;
+  --sat-transition:       150ms ease;
+}
+
+/* Main Container */
+.sat-tests-section {
+  background: var(--sat-white);
+  margin: 20px 32px;
+  border-radius: var(--sat-radius);
+  border: 1px solid var(--sat-gray-200);
+  box-shadow: var(--sat-shadow-sm);
+  max-width: 100%;
+  overflow: hidden;
+  font-family: var(--sat-font);
+}
+
+/* Section Header */
+.sat-tests-section .section-header {
+  border-bottom: 1px solid var(--sat-gray-200);
+  background: var(--sat-white);
+}
+
+.sat-tests-section h2 {
+  background: var(--sat-white);
+  margin: 0;
+  padding: 24px 28px;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--sat-gray-900);
+  font-family: var(--sat-font-display);
+  letter-spacing: -0.3px;
+  border-bottom: 1px solid var(--sat-gray-200);
+}
+
+/* Status Badge */
+.sat-tests-section .section-status {
+  padding: 12px 28px;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--sat-font);
+}
+
+.sat-tests-section .section-status.in-progress {
+  background: var(--sat-primary-pale);
+  color: var(--sat-primary-dark);
+}
+
+.sat-tests-section .section-status.complete {
+  background: var(--sat-success-bg);
+  color: var(--sat-success);
+}
+
+.sat-tests-section .status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.sat-tests-section .section-status.in-progress .status-indicator {
+  background: var(--sat-primary);
+}
+
+.sat-tests-section .section-status.complete .status-indicator {
+  background: var(--sat-success);
+}
+
+/* Form Content */
+.sat-tests-section .form-content {
+  padding: 28px;
+  max-width: 100%;
+}
+
+/* Form Groups */
+.sat-tests-section .form-group {
+  margin-bottom: 28px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--sat-gray-200);
+}
+
+.sat-tests-section .form-group:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.sat-tests-section .question-text {
+  font-size: 14px;
+  color: var(--sat-gray-700);
+  margin: 0 0 12px 0;
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+.sat-tests-section .question-text.required::after {
+  content: "*";
+  color: var(--sat-primary);
+  margin-left: 4px;
+}
+
+/* Select Group */
+.select-group {
+  margin-bottom: 8px;
+  position: relative;
+  display: inline-block;
+  width: auto;
+}
+
+.sat-select {
+  width: 140px;
+  padding: 10px 32px 10px 12px;
+  border: 1.5px solid var(--sat-gray-200);
+  border-radius: var(--sat-radius-sm);
+  font-size: 14px;
+  background: var(--sat-white);
+  color: var(--sat-gray-900);
+  cursor: pointer;
+  font-family: var(--sat-font);
+  transition: all var(--sat-transition);
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+}
+
+.sat-select:focus {
+  outline: none;
+  border-color: var(--sat-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.sat-select:hover {
+  border-color: var(--sat-gray-400);
+}
+
+/* Clear Field Button */
+.clear-field-btn {
+  background: none;
+  border: none;
+  color: var(--sat-gray-400);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color var(--sat-transition);
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  border-radius: var(--sat-radius-sm);
+}
+
+.clear-field-btn:hover {
+  color: var(--sat-error);
+}
+
+.clear-field-btn.select-clear {
+  right: 32px;
+}
+
+/* Clear Link */
+.clear-link-container {
+  margin-top: 8px;
+}
+
+.clear-link {
+  background: none;
+  border: none;
+  color: var(--sat-primary);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 6px 0;
+  text-decoration: underline;
+  transition: color var(--sat-transition);
+  display: inline-block;
+}
+
+.clear-link:hover {
+  color: var(--sat-primary-dark);
+}
+
+/* Radio Group */
+.radio-group-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.radio-group-vertical .radio-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--sat-gray-700);
+  padding: 10px 14px;
+  border-radius: var(--sat-radius-sm);
+  transition: all var(--sat-transition);
+  position: relative;
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  border: 1.5px solid transparent;
+}
+
+.radio-group-vertical .radio-option:hover {
+  background: var(--sat-gray-50);
+  border-color: var(--sat-gray-200);
+}
+
+.radio-group-vertical .radio-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  width: 0;
+  height: 0;
+}
+
+.radio-checkmark {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--sat-gray-300);
+  border-radius: 50%;
+  position: relative;
+  transition: all var(--sat-transition);
+  flex-shrink: 0;
+  background: var(--sat-white);
+}
+
+.radio-group-vertical .radio-option input[type="radio"]:checked + .radio-checkmark {
+  border-color: var(--sat-primary);
+  background: var(--sat-primary);
+}
+
+.radio-group-vertical .radio-option input[type="radio"]:checked + .radio-checkmark::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background: var(--sat-white);
+  border-radius: 50%;
+}
+
+.radio-group-vertical .radio-option input[type="radio"]:checked ~ .radio-label {
+  color: var(--sat-primary);
+  font-weight: 500;
+}
+
+.radio-label {
+  transition: color var(--sat-transition);
+  flex: 1;
+}
+
+/* Focus accessibility */
+.radio-option:focus-within {
+  outline: 2px solid var(--sat-primary);
+  outline-offset: 2px;
+  border-radius: var(--sat-radius-sm);
+}
+
+/* Responsive Design */
+@media (max-width: 1023px) {
+  .sat-tests-section {
+    margin: 20px 24px;
+  }
+
+  .sat-tests-section .form-content {
+    padding: 24px;
+  }
+
+  .sat-tests-section h2 {
+    padding: 20px 24px;
+    font-size: 20px;
+  }
+
+  .sat-tests-section .section-status {
+    padding: 10px 24px;
+  }
+}
+
+@media (max-width: 767px) {
+  .sat-tests-section {
+    margin: 16px;
+  }
+
+  .sat-tests-section .form-content {
+    padding: 20px;
+  }
+
+  .sat-tests-section h2 {
+    padding: 18px 20px;
+    font-size: 18px;
+  }
+
+  .sat-tests-section .section-status {
+    padding: 10px 20px;
+    font-size: 12px;
+  }
+
+  .sat-tests-section .form-group {
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+  }
+
+  .select-group {
+    display: block;
+    width: 100%;
+  }
+
+  .sat-select {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .clear-field-btn.select-clear {
+    right: 8px;
+  }
+
+  .radio-group-vertical .radio-option {
+    padding: 8px 12px;
+  }
+
+  .radio-checkmark {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sat-tests-section {
+    margin: 12px;
+  }
+
+  .sat-tests-section .form-content {
+    padding: 16px;
+  }
+
+  .sat-tests-section h2 {
+    padding: 14px 16px;
+    font-size: 16px;
+  }
+
+  .sat-tests-section .section-status {
+    padding: 8px 16px;
+    font-size: 11px;
+  }
+
+  .sat-tests-section .form-group {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+  }
+
+  .sat-tests-section .question-text {
+    font-size: 13px;
+  }
+
+  .sat-select {
+    font-size: 13px;
+    padding: 8px 32px 8px 10px;
+  }
+
+  .radio-group-vertical .radio-option {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .radio-checkmark {
+    width: 18px;
+    height: 18px;
+  }
+
+  .clear-link {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 360px) {
+  .sat-tests-section {
+    margin: 8px;
+  }
+
+  .sat-tests-section .form-content {
+    padding: 12px;
+  }
+
+  .sat-tests-section h2 {
+    padding: 12px 14px;
+    font-size: 15px;
+  }
+
+  .sat-tests-section .section-status {
+    padding: 6px 14px;
+    font-size: 10px;
+  }
+
+  .radio-group-vertical .radio-option {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .radio-checkmark {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* Animation for radio selection */
+@keyframes radioPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.radio-group-vertical .radio-option input[type="radio"]:checked + .radio-checkmark::after {
+  animation: radioPulse 0.2s ease-out;
+}

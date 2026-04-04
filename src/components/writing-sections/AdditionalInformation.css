@@ -1,0 +1,367 @@
+/* Additional Information Styles */
+.additional-information {
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  box-sizing: border-box;
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+.additional-header { margin-bottom: 28px; }
+
+.additional-header h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0 0 10px 0;
+}
+
+.additional-subtitle {
+  font-size: 15px;
+  color: #718096;
+  line-height: 1.5;
+}
+
+/* ── Save Status ────────────────────────────────────────── */
+.save-status {
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-weight: 500;
+  border: 1px solid;
+  font-size: 14px;
+}
+.save-status.success { background: #d1fae5; color: #065f46; border-color: #a7f3d0; }
+.save-status.error   { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+.save-status.info    { background: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
+
+/* ── Content Stack ──────────────────────────────────────── */
+.additional-info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── College Requirements ───────────────────────────────── */
+.college-requirements {
+  background: #f8f9fa;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.requirements-summary {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.requirement-item { display: flex; flex-direction: column; gap: 4px; }
+.requirement-label { font-size: 14px; color: #718096; font-weight: 500; }
+.requirement-value { font-size: 16px; color: #1a202c; font-weight: 600; }
+
+/* ── Circumstances & Qualifications Sections ────────────── */
+.circumstances-section,
+.qualifications-section {
+  background: #f8f9fa;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.circumstances-section h3,
+.qualifications-section h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0 0 16px 0;
+}
+
+.circumstances-list {
+  font-size: 14px;
+  color: #4a5568;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  padding-left: 20px;
+}
+
+.circumstances-list li { margin-bottom: 6px; }
+
+/* ── Question / Radio ───────────────────────────────────── */
+.question-section { margin-bottom: 16px; }
+
+.question-section p {
+  font-size: 14px;
+  color: #4a5568;
+  margin: 0 0 12px 0;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-bottom: 14px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  min-height: 44px; /* touch-friendly */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.radio-option input { display: none; }
+
+.radio-custom {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #cbd5e0;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.radio-option input:checked + .radio-custom { border-color: #2C5AA0; }
+.radio-option input:checked + .radio-custom::after {
+  content: '';
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  background: #2C5AA0;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.radio-label { font-size: 14px; color: #4a5568; font-weight: 500; }
+
+.clear-answer-btn {
+  background: transparent;
+  color: #dc2626;
+  border: 1px solid #dc2626;
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 36px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.clear-answer-btn:hover { background: #dc2626; color: white; }
+
+/* ── Editor ─────────────────────────────────────────────── */
+.editor-container {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 16px;
+}
+
+.editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 0;
+  padding: 14px 16px 0;
+  background: transparent;
+  flex-wrap: wrap;
+}
+
+.editor-header h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #4a5568;
+  margin: 0;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.word-count {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.word-count-warning {
+  font-size: 12px;
+  font-weight: normal;
+  margin-left: 6px;
+}
+
+.additional-textarea {
+  width: 100%;
+  border: none;
+  padding: 14px 16px;
+  font-size: 15px;
+  line-height: 1.6;
+  resize: vertical;
+  font-family: 'Inter', sans-serif;
+  background: white;
+  box-sizing: border-box;
+  min-height: 180px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.additional-textarea:focus { outline: none; }
+
+.editor-toolbar {
+  background: #f8f9fa;
+  padding: 10px 16px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.toolbar-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.toolbar-btn {
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 7px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 36px;
+  min-width: 36px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.toolbar-btn:hover { background: #f1f5f9; border-color: #cbd5e0; }
+
+.toolbar-hint {
+  font-size: 12px;
+  color: #a0aec0;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+/* ── Action Buttons ─────────────────────────────────────── */
+.editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.save-draft-btn {
+  background: white;
+  color: #4a5568;
+  border: 1px solid #e2e8f0;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.save-draft-btn:hover { background: #f7fafc; border-color: #cbd5e0; }
+
+.continue-btn {
+  background: #2C5AA0;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.continue-btn:hover { background: #1E3D6F; }
+
+/* Disabled states */
+button:disabled { opacity: 0.6; cursor: not-allowed; }
+input:disabled, textarea:disabled { opacity: 0.7; cursor: not-allowed; }
+
+/* ─── Responsive: Tablet (≤768px) ──────────────────────────── */
+@media (max-width: 768px) {
+  .additional-information { padding: 22px 18px; }
+  .additional-header h2 { font-size: 20px; }
+  .requirements-summary { gap: 16px; }
+  .circumstances-section, .qualifications-section { padding: 18px 14px; }
+
+  .radio-group { gap: 16px; }
+
+  .editor-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .editor-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .save-draft-btn,
+  .continue-btn {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .additional-textarea {
+    font-size: 16px; /* prevents iOS auto-zoom */
+  }
+}
+
+/* ─── Responsive: Mobile Portrait (≤480px) ──────────────────── */
+@media (max-width: 480px) {
+  .additional-information {
+    padding: 16px 12px;
+    border-radius: 8px;
+  }
+
+  .additional-header h2 { font-size: 18px; }
+  .additional-subtitle { font-size: 13px; }
+
+  .circumstances-section h3,
+  .qualifications-section h3 { font-size: 16px; }
+
+  .circumstances-section,
+  .qualifications-section { padding: 14px 12px; }
+
+  .circumstances-list { font-size: 13px; padding-left: 16px; }
+
+  .question-section p { font-size: 13px; }
+
+  .radio-group {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .editor-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .additional-textarea {
+    padding: 12px;
+    min-height: 140px;
+  }
+
+  .toolbar-hint { display: none; }
+}

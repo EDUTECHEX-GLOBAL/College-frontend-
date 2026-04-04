@@ -1,0 +1,620 @@
+.application-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.application-header {
+    background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+    color: white;
+    padding: 25px 30px;
+    border-radius: 10px 10px 0 0;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(26, 35, 126, 0.2);
+}
+
+.application-header h1 {
+    font-size: 28px;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.application-header p {
+    font-size: 16px;
+    opacity: 0.9;
+    margin: 0;
+}
+
+.progress-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 40px 0;
+    padding: 0 20px;
+    position: relative;
+}
+
+.application-progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+    flex: 1;
+}
+
+.step-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e0e0e0;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    border: 3px solid #f5f5f5;
+}
+
+.step-circle.active {
+    background: #1a237e;
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 0 0 3px rgba(26, 35, 126, 0.2);
+}
+
+.step-title {
+    margin-top: 10px;
+    font-size: 12px;
+    text-align: center;
+    color: #666;
+    font-weight: 500;
+    max-width: 100px;
+}
+
+.step-connector {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    right: -50%;
+    height: 2px;
+    background: #e0e0e0;
+    z-index: 0;
+}
+
+.application-form-content {
+    background: white;
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 30px;
+    border: 1px solid #e0e0e0;
+}
+
+.form-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    border-top: 1px solid #e0e0e0;
+    margin-top: 30px;
+}
+
+.nav-btn {
+    padding: 12px 30px;
+    border-radius: 6px;
+    border: none;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.prev-btn {
+    background: #f5f5f5;
+    color: #333;
+}
+
+.prev-btn:hover {
+    background: #e0e0e0;
+}
+
+.next-btn {
+    background: #1a237e;
+    color: white;
+}
+
+.next-btn:hover {
+    background: #283593;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(26, 35, 126, 0.3);
+}
+
+.submit-btn {
+    background: #43a047;
+    color: white;
+}
+
+.submit-btn:hover {
+    background: #388e3c;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(67, 160, 71, 0.3);
+}
+
+.step-indicator {
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Form Section Styles */
+.application-form-section {
+    margin-bottom: 40px;
+}
+
+.application-section-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e8eaf6;
+}
+
+.section-number {
+    width: 36px;
+    height: 36px;
+    background: #e8eaf6;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1a237e;
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.section-title {
+    color: #1a237e;
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.section-subtitle {
+    color: #666;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.applicationpersonal-form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.required::after {
+    content: " *";
+    color: #e53935;
+}
+
+.form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+    outline: none;
+    border-color: #1a237e;
+    box-shadow: 0 0 0 3px rgba(26, 35, 126, 0.1);
+}
+
+.form-textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.radio-group {
+    display: flex;
+    gap: 25px;
+    margin-top: 8px;
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.radio-option input[type="radio"] {
+    width: auto;
+    margin: 0;
+}
+
+.info-box {
+    background: #e8f5e9;
+    border-left: 4px solid #43a047;
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 0 6px 6px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.info-box i {
+    color: #43a047;
+    margin-top: 2px;
+}
+
+.info-text {
+    color: #2e7d32;
+    font-size: 14px;
+    margin: 0;
+}
+
+/* Upload Area Styles */
+.upload-area {
+    border: 2px dashed #c5cae9;
+    border-radius: 8px;
+    padding: 25px;
+    text-align: center;
+    background: #f8f9fe;
+    margin-top: 10px;
+}
+
+.upload-area.drag-over {
+    border-color: #1a237e;
+    background: #e8eaf6;
+}
+
+.upload-prompt {
+    margin-bottom: 15px;
+}
+
+.upload-prompt i {
+    font-size: 48px;
+    color: #5c6bc0;
+    margin-bottom: 10px;
+}
+
+.upload-prompt p {
+    color: #666;
+    margin: 8px 0;
+    font-size: 14px;
+}
+
+.upload-btn {
+    background: #1a237e;
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.upload-btn:hover {
+    background: #283593;
+}
+
+.file-list {
+    margin-top: 20px;
+}
+
+.file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: white;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    border: 1px solid #eee;
+    transition: all 0.3s ease;
+}
+
+.file-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.file-icon {
+    color: #1a237e;
+    font-size: 20px;
+}
+
+.file-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.file-name {
+    font-weight: 500;
+    color: #333;
+}
+
+.file-size {
+    font-size: 12px;
+    color: #888;
+}
+
+.remove-file {
+    background: none;
+    border: none;
+    color: #e53935;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 5px;
+    transition: color 0.3s ease;
+}
+
+.remove-file:hover {
+    color: #c62828;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .progress-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+        padding: 0;
+    }
+
+    .progress-step {
+        flex-direction: row;
+        width: 100%;
+        gap: 15px;
+    }
+
+    .step-connector {
+        display: none;
+    }
+
+    .step-title {
+        margin-top: 0;
+        text-align: left;
+        max-width: none;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-navigation {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .nav-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .step-indicator {
+        order: -1;
+        margin-bottom: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .application-container {
+        padding: 10px;
+    }
+
+    .application-form-content {
+        padding: 20px;
+    }
+
+    .radio-group {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+/* Add these styles to Application.css */
+
+.overview-btn {
+    padding: 12px 20px;
+    border-radius: 6px;
+    border: none;
+    background: #f5f5f5;
+    color: #333;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.overview-btn:hover {
+    background: #e0e0e0;
+}
+
+/* Update for the new navigation layout */
+.form-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    border-top: 1px solid #e0e0e0;
+    margin-top: 30px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.form-navigation > * {
+    margin: 5px;
+}
+/* Add these styles to Application.css */
+
+/* Dashboard button styles */
+.dashboard-btn {
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dashboard-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.dashboard-btn-nav {
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    background: #f5f5f5;
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dashboard-btn-nav:hover {
+    background: #e0e0e0;
+}
+
+/* Header layout for dashboard button */
+.header-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.header-left {
+    flex: 1;
+}
+
+.header-right {
+    margin-left: 20px;
+}
+
+/* Overview wrapper */
+.overview-wrapper {
+    background: white;
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+}
+
+.overview-header-section {
+    margin-bottom: 30px;
+}
+
+.overview-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e8eaf6;
+}
+
+.overview-header-top h1 {
+    color: #1a237e;
+    font-size: 28px;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.overview-header-top p {
+    color: #666;
+    font-size: 16px;
+    opacity: 0.9;
+    margin: 0;
+}
+
+/* Update form navigation layout for better spacing */
+.form-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    border-top: 1px solid #e0e0e0;
+    margin-top: 30px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.form-navigation > * {
+    margin: 5px;
+}
+
+/* Responsive design for dashboard button */
+@media (max-width: 768px) {
+    .header-top-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .header-right {
+        margin-left: 0;
+        width: 100%;
+    }
+    
+    .dashboard-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .overview-header-top {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .overview-header-top .dashboard-btn {
+        width: auto;
+    }
+}

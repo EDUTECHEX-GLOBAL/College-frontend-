@@ -1,0 +1,220 @@
+/* ── Writing Section Styles ──────────────────────────────── */
+.writing-section {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.writing-header {
+  background: white;
+  padding: 0;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.writing-header .header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 32px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.writing-header .welcome-section { flex: 1; }
+
+.writing-header .welcome-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+}
+
+.writing-header .welcome-subtitle {
+  font-size: 16px;
+  color: #718096;
+  margin: 0;
+}
+
+/* ── Layout Container ────────────────────────────────────── */
+.writing-container {
+  display: flex;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 40px;
+  gap: 32px;
+  box-sizing: border-box;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────── */
+.writing-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+}
+
+.writing-nav-section {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.nav-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 16px 0;
+}
+
+.writing-nav-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.writing-nav-item {
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-left: 4px solid transparent;
+  margin: 2px 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.writing-nav-item:hover {
+  background: #f7fafc;
+  border-left-color: #e2e8f0;
+}
+
+.writing-nav-item.active {
+  background: rgba(44, 90, 160, 0.08);
+  border-left-color: #2C5AA0;
+}
+
+.writing-nav-item.active .writing-nav-text {
+  color: #2C5AA0;
+  font-weight: 600;
+}
+
+.writing-nav-content {
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 44px; /* touch target */
+}
+
+.writing-nav-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #4a5568;
+  transition: color 0.2s ease;
+}
+
+/* ── Main Content ────────────────────────────────────────── */
+.writing-main-content {
+  flex: 1;
+  min-width: 0; /* prevents flex overflow */
+  min-height: 600px;
+}
+
+/* ── Back Button ─────────────────────────────────────────── */
+.content-back-button {
+  margin-bottom: 20px;
+}
+
+.back-to-dashboard-content-btn {
+  background: #2C5AA0;
+  color: white;
+  border: 1px solid #2C5AA0;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px; /* touch target */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.back-to-dashboard-content-btn:hover {
+  background: #1E3D6F;
+  border-color: #1E3D6F;
+}
+
+.back-to-dashboard-content-btn:active {
+  transform: translateY(1px);
+}
+
+/* ── Responsive: ≤1024px ─────────────────────────────────── */
+@media (max-width: 1024px) {
+  .writing-container {
+    padding: 24px;
+    gap: 24px;
+  }
+
+  .writing-header .header-content {
+    padding: 24px;
+  }
+
+  .writing-sidebar { width: 240px; }
+}
+
+/* ── Responsive: Tablet (≤768px) ─────────────────────────── */
+@media (max-width: 768px) {
+  .writing-container {
+    flex-direction: column;
+    padding: 16px;
+    gap: 20px;
+  }
+
+  .writing-header .header-content {
+    padding: 20px 16px;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .writing-header .welcome-title   { font-size: 22px; }
+  .writing-header .welcome-subtitle { font-size: 14px; }
+
+  .writing-sidebar { width: 100%; }
+
+  .writing-nav-section { padding: 16px; }
+
+  .back-to-dashboard-content-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ── Responsive: Mobile Portrait (≤480px) ────────────────── */
+@media (max-width: 480px) {
+  .writing-container {
+    padding: 12px;
+    gap: 16px;
+  }
+
+  .writing-header .header-content {
+    padding: 16px 12px;
+  }
+
+  .writing-header .welcome-title   { font-size: 19px; }
+  .writing-header .welcome-subtitle { font-size: 13px; }
+
+  .writing-nav-section {
+    padding: 12px;
+    border-radius: 8px;
+  }
+
+  .writing-nav-content { padding: 12px; }
+  .writing-nav-text    { font-size: 13px; }
+}

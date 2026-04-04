@@ -1,0 +1,142 @@
+/* src/components/family-sections/Parent1Section.css */
+
+.parent1-section {
+  background: white;
+  margin: 20px 40px;
+  padding: 32px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.parent1-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.parent1-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0;
+}
+
+.parent1-status {
+  font-size: 14px;
+  color: #2C5AA0;
+  font-weight: 500;
+  background: #e8f0fe;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.parent1-description {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.parent1-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.parent1-full-width {
+  grid-column: 1 / -1;
+}
+
+.parent1-form-group {
+  margin-bottom: 16px;
+}
+
+.parent1-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.parent1-required::after {
+  content: " *";
+  color: #dc2626;
+}
+
+.parent1-input,
+.parent1-select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+  background: white;
+  font-family: inherit;
+}
+
+.parent1-input:focus,
+.parent1-select:focus {
+  outline: none;
+  border-color: #2C5AA0;
+  box-shadow: 0 0 0 2px rgba(44, 90, 160, 0.1);
+}
+
+.parent1-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #374151;
+}
+
+.parent1-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #2C5AA0;
+}
+
+.parent1-phone-group {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 8px;
+}
+
+.parent1-country-code {
+  padding: 10px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+  background: white;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .parent1-section {
+    margin: 15px 20px;
+    padding: 24px;
+  }
+  
+  .parent1-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .parent1-section {
+    margin: 10px 15px;
+    padding: 20px;
+  }
+  
+  .parent1-title {
+    font-size: 18px;
+  }
+}

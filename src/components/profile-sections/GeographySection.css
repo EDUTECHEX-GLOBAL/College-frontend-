@@ -1,0 +1,555 @@
+/* src/components/GeographySection.css */
+/* ============================================================
+   GeographySection.css — EDUTECH-X Modern UI
+   Primary Teal: #0ba5a0 | Clean White | Minimalist Design
+   ============================================================ */
+
+:root {
+  --primary: #3b82f6;
+  --primary-dark: #3b82f6;
+  --primary-light: #3b82f6;
+  --primary-pale: #f0fdfa;
+  --success: #3b82f6;
+  --success-pale: #ecfdf5;
+  --error: #ef4444;
+  --gray-50: #fafafa;
+  --gray-100: #f5f5f5;
+  --gray-200: #e5e5e5;
+  --gray-300: #d4d4d4;
+  --gray-400: #a3a3a3;
+  --gray-500: #737373;
+  --gray-600: #525252;
+  --gray-700: #404040;
+  --bg-secondary: #ffffff;
+  --text-primary: #171717;
+  --text-secondary: #404040;
+  --text-tertiary: #737373;
+  --text-muted: #a3a3a3;
+  --border-light: #e5e5e5;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+  --transition-fast: 150ms ease;
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
+}
+
+/* Main Container */
+.geography-section {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  max-width: 100%;
+  border: 1px solid var(--border-light);
+  overflow: hidden;
+  margin: 20px 32px;
+  font-family: var(--font);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Header */
+.geography-header {
+  padding: 24px 28px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.geography-section h2 {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+  letter-spacing: -0.3px;
+}
+
+.section-description {
+  font-size: 14px;
+  color: var(--text-tertiary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Section Status Badge */
+.section-status-wrapper {
+  padding: 0 28px;
+  margin: 16px 0 8px;
+}
+
+.geography-section .section-status {
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+}
+
+.geography-section .section-status.in-progress {
+  background: var(--primary-pale);
+  color: var(--primary-dark);
+}
+
+.geography-section .section-status.complete {
+  background: var(--success-pale);
+  color: var(--success);
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.section-status.in-progress .status-indicator {
+  background: var(--primary);
+}
+
+.section-status.complete .status-indicator {
+  background: var(--success);
+}
+
+/* Form Content */
+.geography-section .form-content {
+  padding: 28px;
+}
+
+/* Form Group */
+.geography-section .form-group {
+  margin-bottom: 28px;
+  position: relative;
+}
+
+.geography-section .form-group:last-of-type {
+  margin-bottom: 0;
+}
+
+.geography-section .form-group label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.geography-section .form-group label.required::after {
+  content: " *";
+  color: var(--error);
+}
+
+/* Input Container with Clear Button */
+.input-container {
+  position: relative;
+  width: 100%;
+}
+
+/* Input Fields */
+.geography-section .form-group input {
+  width: 100%;
+  padding: 12px 32px 12px 16px;
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  transition: all var(--transition-fast);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-family: var(--font);
+  box-sizing: border-box;
+}
+
+.geography-section .form-group input:hover {
+  border-color: var(--gray-400);
+}
+
+.geography-section .form-group input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(11, 165, 160, 0.1);
+}
+
+.geography-section .form-group input.error {
+  border-color: var(--error);
+}
+
+.geography-section .form-group input.error:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.geography-section .form-group input::placeholder {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.geography-section .form-group input[type="number"] {
+  width: 160px;
+}
+
+/* Clear Field Button */
+.clear-field-btn {
+  background: none;
+  border: none;
+  color: var(--gray-400);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color var(--transition-fast);
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  border-radius: var(--radius-sm);
+}
+
+.clear-field-btn:hover {
+  color: var(--error);
+}
+
+/* Radio Group */
+.geography-section .radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.geography-section .radio-group label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-weight: normal;
+  cursor: pointer;
+  margin-bottom: 0;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  color: var(--text-secondary);
+}
+
+.geography-section .radio-group label:hover {
+  background: var(--gray-50);
+  color: var(--primary);
+}
+
+.geography-section .radio-group input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  margin-top: 2px;
+  flex-shrink: 0;
+  cursor: pointer;
+  accent-color: var(--primary);
+}
+
+.radio-label {
+  flex: 1;
+  line-height: 1.4;
+}
+
+/* Clear Link */
+.clear-link {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 8px 12px;
+  text-decoration: underline;
+  transition: color var(--transition-fast);
+  margin-top: 8px;
+  display: inline-block;
+  border-radius: var(--radius-sm);
+}
+
+.clear-link:hover {
+  color: var(--primary-dark);
+  background: var(--gray-50);
+}
+
+/* Validation Hint */
+.validation-hint {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--error);
+  font-style: italic;
+  padding: 6px 12px;
+  background: #fef2f2;
+  border-radius: var(--radius-sm);
+}
+
+/* Error Message */
+.error-message {
+  font-size: 12px;
+  color: var(--error);
+  margin-top: 6px;
+  font-weight: 500;
+  padding-left: 4px;
+}
+
+/* Clear All Container */
+.clear-all-container {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-light);
+  text-align: right;
+}
+
+.clear-all-link {
+  background: none;
+  border: none;
+  color: var(--error);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 8px 16px;
+  text-decoration: underline;
+  transition: all var(--transition-fast);
+  border-radius: var(--radius-sm);
+}
+
+.clear-all-link:hover {
+  color: #dc2626;
+  background: #fef2f2;
+}
+
+/* Responsive Design */
+@media (max-width: 1023px) {
+  .geography-section {
+    margin: 20px 24px;
+  }
+  
+  .geography-header {
+    padding: 20px 24px;
+  }
+  
+  .geography-section h2 {
+    font-size: 20px;
+  }
+  
+  .section-status-wrapper {
+    padding: 0 24px;
+  }
+  
+  .geography-section .form-content {
+    padding: 24px;
+  }
+}
+
+@media (max-width: 767px) {
+  .geography-section {
+    margin: 16px;
+  }
+  
+  .geography-header {
+    padding: 18px 20px;
+  }
+  
+  .geography-section h2 {
+    font-size: 18px;
+  }
+  
+  .section-description {
+    font-size: 13px;
+  }
+  
+  .section-status-wrapper {
+    padding: 0 20px;
+    margin: 12px 0 6px;
+  }
+  
+  .geography-section .section-status {
+    font-size: 12px;
+    padding: 5px 12px;
+  }
+  
+  .geography-section .form-content {
+    padding: 20px;
+  }
+  
+  .geography-section .form-group {
+    margin-bottom: 24px;
+  }
+  
+  .geography-section .form-group label {
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+  
+  .geography-section .form-group input {
+    padding: 10px 32px 10px 14px;
+    font-size: 13px;
+  }
+  
+  .geography-section .form-group input[type="number"] {
+    width: 140px;
+  }
+  
+  .radio-group {
+    gap: 10px;
+  }
+  
+  .radio-group label {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+  
+  .validation-hint {
+    font-size: 11px;
+    padding: 5px 10px;
+  }
+  
+  .clear-all-container {
+    margin-top: 24px;
+    padding-top: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .geography-section {
+    margin: 12px;
+  }
+  
+  .geography-header {
+    padding: 14px 16px;
+  }
+  
+  .geography-section h2 {
+    font-size: 16px;
+  }
+  
+  .section-description {
+    font-size: 12px;
+  }
+  
+  .section-status-wrapper {
+    padding: 0 16px;
+  }
+  
+  .geography-section .section-status {
+    font-size: 11px;
+    padding: 4px 10px;
+  }
+  
+  .geography-section .form-content {
+    padding: 16px;
+  }
+  
+  .geography-section .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .geography-section .form-group label {
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+  
+  .geography-section .form-group input {
+    padding: 9px 32px 9px 12px;
+    font-size: 12px;
+  }
+  
+  .geography-section .form-group input[type="number"] {
+    width: 120px;
+  }
+  
+  .radio-group {
+    gap: 8px;
+  }
+  
+  .radio-group label {
+    padding: 5px 8px;
+    font-size: 12px;
+  }
+  
+  .radio-group input[type="radio"] {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .validation-hint {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+  
+  .clear-link,
+  .clear-all-link {
+    font-size: 11px;
+  }
+  
+  .clear-all-container {
+    margin-top: 20px;
+    padding-top: 16px;
+  }
+}
+
+@media (max-width: 320px) {
+  .geography-section {
+    margin: 8px;
+  }
+  
+  .geography-header {
+    padding: 12px 14px;
+  }
+  
+  .geography-section h2 {
+    font-size: 15px;
+  }
+  
+  .section-description {
+    font-size: 11px;
+  }
+  
+  .geography-section .form-content {
+    padding: 14px;
+  }
+  
+  .geography-section .form-group {
+    margin-bottom: 16px;
+  }
+  
+  .geography-section .form-group label {
+    font-size: 11px;
+  }
+  
+  .geography-section .form-group input {
+    padding: 8px 32px 8px 10px;
+    font-size: 11px;
+  }
+  
+  .geography-section .form-group input[type="number"] {
+    width: 100px;
+  }
+  
+  .radio-group label {
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+  
+  .validation-hint {
+    font-size: 9px;
+    padding: 3px 6px;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .geography-section {
+    margin: 0;
+    background: white;
+    border: 1px solid var(--border-light);
+    box-shadow: none;
+  }
+  
+  .section-status-wrapper,
+  .clear-all-container,
+  .clear-link,
+  .clear-field-btn,
+  .validation-hint {
+    display: none;
+  }
+  
+  .geography-section .radio-group input[type="radio"] {
+    accent-color: black;
+  }
+}

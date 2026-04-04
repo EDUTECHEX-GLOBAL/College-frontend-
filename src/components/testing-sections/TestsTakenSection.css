@@ -1,0 +1,585 @@
+/* ============================================================
+   TestsTakenSection.css — Light Teal Theme
+   Primary: #0ba5a0 | Matches ActivitiesSection design system
+   ============================================================ */
+
+:root {
+  --tt-primary:          #3b82f6;
+  --tt-primary-dark:     #3b82f6;
+  --tt-primary-light:    #3b82f6;
+  --tt-primary-pale:     #f0fdfa;
+  --tt-primary-border:   #3b82f6;
+  --tt-primary-gradient: linear-gradient(135deg, #3b82f6 0%, #0891b2 100%);
+
+  --tt-navy:             #3b82f6;
+  --tt-success:          #3b82f6; 
+  --tt-success-bg:       #ecfdf5;
+
+  --tt-white:            #ffffff;
+  --tt-bg:               #f4fafa;
+  --tt-gray-50:          #ffffff;
+  --tt-gray-100:         #f5f5f5;
+  --tt-gray-200:         #e5e5e5;
+  --tt-gray-300:         #ffffff;
+  --tt-gray-400:         #a3a3a3;
+  --tt-gray-600:         #525252;
+  --tt-gray-700:         #404040;
+  --tt-gray-900:         #171717;
+
+  --tt-shadow-sm:        0 1px 3px rgba(0,0,0,0.05);
+  --tt-shadow-md:        0 4px 14px rgba(0,0,0,0.07);
+  --tt-shadow-teal:      0 4px 18px rgba(11,165,160,0.18);
+
+  --tt-radius-sm:        8px;
+  --tt-radius:           12px;
+  --tt-radius-full:      9999px;
+
+  --tt-font:             'DM Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --tt-font-display:     'DM Serif Display', Georgia, serif;
+  --tt-transition:       150ms ease;
+}
+
+/* ─────────────────────────────────────────
+   CONTAINER
+───────────────────────────────────────── */
+.tt-container {
+  min-height: 100vh;
+  background: var(--tt-bg);
+  font-family: var(--tt-font);
+  padding: 0 0 80px;
+}
+
+/* ─────────────────────────────────────────
+   CV UPLOAD BANNER
+───────────────────────────────────────── */
+.tt-cv-banner {
+  background: var(--tt-primary-gradient);
+  border-radius: var(--tt-radius);
+  padding: 22px 26px;
+  margin: 24px 32px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  box-shadow: var(--tt-shadow-teal);
+  position: relative;
+  overflow: hidden;
+}
+
+.tt-cv-banner-bg {
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 160px;
+  height: 160px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.tt-cv-banner-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 220px;
+}
+
+.tt-cv-banner-title {
+  color: var(--tt-white);
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.tt-cv-banner-desc {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 12px;
+  margin: 0;
+}
+
+.tt-cv-banner-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.tt-cv-upload-btn {
+  background: var(--tt-white);
+  color: var(--tt-primary);
+  border: none;
+  border-radius: var(--tt-radius-sm);
+  padding: 10px 22px;
+  font-family: var(--tt-font);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  white-space: nowrap;
+}
+
+.tt-cv-upload-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+
+.tt-cv-upload-btn:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+.tt-cv-skip-btn {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.9);
+  border-radius: var(--tt-radius-sm);
+  padding: 9px 18px;
+  font-family: var(--tt-font);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--tt-transition);
+  white-space: nowrap;
+}
+
+.tt-cv-skip-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Progress bar */
+.tt-cv-progress-wrap {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.tt-cv-progress-bar {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: var(--tt-radius-full);
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.tt-cv-progress-fill {
+  height: 100%;
+  background: var(--tt-white);
+  border-radius: var(--tt-radius-full);
+  transition: width 0.3s ease;
+}
+
+.tt-cv-progress-text {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+}
+
+/* Status messages (success / error) */
+.tt-cv-status {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: var(--tt-radius-sm);
+  padding: 9px 14px;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.tt-cv-status--success {
+  background: rgba(255, 255, 255, 0.18);
+  color: var(--tt-white);
+}
+
+.tt-cv-status--error {
+  background: rgba(239, 68, 68, 0.18);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: var(--tt-white);
+}
+
+.tt-cv-status-icon {
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.tt-cv-status-text {
+  flex: 1;
+}
+
+.tt-cv-status-clear {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  transition: color var(--tt-transition);
+}
+
+.tt-cv-status-clear:hover {
+  color: var(--tt-white);
+}
+
+.tt-cv-retry-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: var(--tt-white);
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-family: var(--tt-font);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--tt-transition);
+  white-space: nowrap;
+}
+
+.tt-cv-retry-btn:hover {
+  background: rgba(255, 255, 255, 0.32);
+}
+
+/* ─────────────────────────────────────────
+   MAIN CARD
+───────────────────────────────────────── */
+.tt-card {
+  background: var(--tt-white);
+  border-radius: var(--tt-radius);
+  border: 1px solid var(--tt-gray-200);
+  box-shadow: var(--tt-shadow-sm);
+  margin: 20px 32px;
+  padding: 28px 32px 32px;
+}
+
+.tt-card-title {
+  font-family: var(--tt-font-display);
+  font-size: 22px;
+  color: var(--tt-gray-900);
+  margin: 0 0 16px;
+  letter-spacing: -0.3px;
+}
+
+.tt-divider {
+  border: none;
+  border-top: 1px solid var(--tt-gray-200);
+  margin: 0 0 24px;
+}
+
+.tt-divider--inner {
+  margin: 28px 0;
+}
+
+/* ─────────────────────────────────────────
+   INFO BANNER
+───────────────────────────────────────── */
+.tt-info-banner {
+  background: linear-gradient(90deg, var(--tt-primary-pale), #fff);
+  border: 1px solid var(--tt-primary-border);
+  border-left: 3px solid var(--tt-primary);
+  border-radius: var(--tt-radius-sm);
+  padding: 12px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--tt-primary-dark);
+  margin-bottom: 24px;
+}
+
+/* ─────────────────────────────────────────
+   DESCRIPTION LIST
+───────────────────────────────────────── */
+.tt-description {
+  margin-bottom: 24px;
+}
+
+.tt-description p {
+  font-size: 14px;
+  color: var(--tt-gray-700);
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.tt-description ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tt-description ul li {
+  font-size: 14px;
+  color: var(--tt-gray-600);
+  padding-left: 18px;
+  position: relative;
+}
+
+.tt-description ul li::before {
+  content: '–';
+  position: absolute;
+  left: 0;
+  color: var(--tt-primary);
+}
+
+/* ─────────────────────────────────────────
+   QUESTION BLOCK
+───────────────────────────────────────── */
+.tt-question-block {
+  background: var(--tt-gray-50);
+  border: 1px solid var(--tt-gray-200);
+  border-radius: var(--tt-radius-sm);
+  padding: 20px 24px;
+}
+
+.tt-question-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tt-gray-700);
+  margin-bottom: 14px;
+}
+
+.tt-req {
+  color: var(--tt-primary);
+}
+
+.tt-radio-row {
+  display: flex;
+  gap: 10px;
+}
+
+.tt-radio-btn {
+  padding: 9px 24px;
+  border: 1.5px solid var(--tt-gray-200);
+  border-radius: var(--tt-radius-sm);
+  background: var(--tt-white);
+  font-family: var(--tt-font);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--tt-gray-700);
+  cursor: pointer;
+  transition: all var(--tt-transition);
+}
+
+.tt-radio-btn:hover:not(:disabled) {
+  border-color: var(--tt-primary-light);
+  background: var(--tt-primary-pale);
+  color: var(--tt-primary);
+}
+
+.tt-radio-btn--selected {
+  border-color: var(--tt-primary);
+  background: var(--tt-primary-pale);
+  color: var(--tt-primary);
+  font-weight: 600;
+}
+
+.tt-radio-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tt-clear-link {
+  display: block;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--tt-gray-400);
+  text-decoration: underline;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: var(--tt-font);
+  padding: 0;
+  transition: color var(--tt-transition);
+}
+
+.tt-clear-link:hover:not(:disabled) {
+  color: var(--tt-primary);
+}
+
+/* ─────────────────────────────────────────
+   CHECKBOXES FOR TESTS
+───────────────────────────────────────── */
+.tt-check-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tt-check-option {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border: 1.5px solid var(--tt-gray-200);
+  border-radius: var(--tt-radius-sm);
+  background: var(--tt-white);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--tt-gray-700);
+  transition: all var(--tt-transition);
+  user-select: none;
+}
+
+.tt-check-option:hover {
+  border-color: var(--tt-primary-light);
+  background: var(--tt-primary-pale);
+  color: var(--tt-primary);
+}
+
+.tt-check-option input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 2px solid var(--tt-gray-300);
+  appearance: none;
+  -webkit-appearance: none;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all var(--tt-transition);
+  background: var(--tt-white);
+  position: relative;
+}
+
+.tt-check-option input[type="checkbox"]:checked {
+  background: var(--tt-primary);
+  border-color: var(--tt-primary);
+}
+
+.tt-check-option input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 0px;
+  width: 5px;
+  height: 8px;
+  border: 2px solid white;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+
+.tt-check-option:has(input:checked) {
+  border-color: var(--tt-primary);
+  background: var(--tt-primary-pale);
+  color: var(--tt-primary);
+}
+
+/* ─────────────────────────────────────────
+   CLEAR ALL BUTTON
+───────────────────────────────────────── */
+.tt-clear-all {
+  margin-top: 12px;
+}
+
+.tt-clear-all-btn {
+  background: none;
+  border: 1.5px solid var(--tt-gray-200);
+  color: var(--tt-gray-600);
+  border-radius: var(--tt-radius-sm);
+  padding: 6px 14px;
+  font-family: var(--tt-font);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--tt-transition);
+}
+
+.tt-clear-all-btn:hover:not(:disabled) {
+  border-color: #fca5a5;
+  color: #dc2626;
+  background: #fef2f2;
+}
+
+.tt-clear-all-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ─────────────────────────────────────────
+   CARD FOOTER
+───────────────────────────────────────── */
+.tt-footer {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--tt-gray-200);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.tt-continue-btn {
+  background: var(--tt-primary-gradient);
+  color: var(--tt-white);
+  border: none;
+  border-radius: var(--tt-radius-sm);
+  padding: 11px 32px;
+  font-family: var(--tt-font);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(11, 165, 160, 0.25);
+  transition: all 0.2s;
+}
+
+.tt-continue-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(11, 165, 160, 0.35);
+}
+
+.tt-continue-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ─────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────── */
+@media (max-width: 1023px) {
+  .tt-card        { margin: 20px 24px; padding: 24px; }
+  .tt-cv-banner   { margin: 20px 24px 0; }
+}
+
+@media (max-width: 767px) {
+  .tt-card        { margin: 16px; padding: 20px 16px; }
+  .tt-cv-banner   { margin: 16px 16px 0; padding: 18px; }
+
+  .tt-cv-banner-right {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .tt-check-row {
+    gap: 8px;
+  }
+
+  .tt-radio-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .tt-radio-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .tt-footer {
+    justify-content: stretch;
+  }
+
+  .tt-continue-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .tt-card       { margin: 12px; padding: 16px 14px; }
+  .tt-cv-banner  { margin: 12px 12px 0; }
+  .tt-card-title { font-size: 19px; }
+}

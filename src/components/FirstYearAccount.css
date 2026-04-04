@@ -1,0 +1,811 @@
+/* ═══════════════════════════════════════════════
+   FirstYearAccount.css — Teal Dashboard Design
+   ═══════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@700;800&display=swap');
+
+/* ── Variables ── */
+:root {
+  --fy-primary:    #0891b2;
+  --fy-primary-dk: #0e7490;
+  --fy-primary-lt: #f0f9ff;
+  --fy-primary-bd: #bae6fd;
+  --fy-green:      #10b981;
+  --fy-green-lt:   #d1fae5;
+  --fy-red:        #ef4444;
+  --fy-red-lt:     #fee2e2;
+  --fy-amber:      #f59e0b;
+  --fy-bg:         #eef2f7;
+  --fy-surface:    #ffffff;
+  --fy-text:       #1e293b;
+  --fy-text-mid:   #475569;
+  --fy-text-lt:    #94a3b8;
+  --fy-border:     #e2e8f0;
+  --fy-border-lt:  #f1f5f9;
+  --fy-radius:     16px;
+  --fy-radius-sm:  10px;
+  --fy-shadow:     0 2px 8px rgba(0,0,0,0.06);
+  --fy-shadow-md:  0 6px 24px rgba(8,145,178,0.12);
+  --fy-shadow-lg:  0 16px 48px rgba(8,145,178,0.16);
+  --fy-t:          0.2s cubic-bezier(.4,0,.2,1);
+  --fy-font:       'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ═══════════════════════════════
+   PAGE WRAPPER
+═══════════════════════════════ */
+.fy-wrapper {
+  min-height: 100vh;
+  background: var(--fy-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 48px;
+  font-family: var(--fy-font);
+  position: relative;
+}
+
+/* Subtle teal mesh bg */
+.fy-wrapper::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 15% 10%, rgba(8,145,178,0.06) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 90%, rgba(16,185,129,0.05) 0%, transparent 55%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ═══════════════════════════════
+   BRAND HEADER
+═══════════════════════════════ */
+.fy-brand-header {
+  width: 100%;
+  max-width: 780px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── SVG Logo ── */
+.fy-logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.fy-svg-logo {
+  height: 36px;
+  width: auto;
+  display: block;
+}
+
+.fy-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--fy-surface);
+  border: 1.5px solid var(--fy-border);
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fy-text-mid);
+  cursor: pointer;
+  transition: all var(--fy-t);
+  font-family: var(--fy-font);
+  box-shadow: var(--fy-shadow);
+  white-space: nowrap;
+}
+
+.fy-back-btn:hover {
+  background: var(--fy-primary-lt);
+  color: var(--fy-primary);
+  border-color: var(--fy-primary-bd);
+  transform: translateX(-2px);
+}
+
+/* ═══════════════════════════════
+   FORM CARD
+═══════════════════════════════ */
+.fy-card {
+  background: var(--fy-surface);
+  width: 100%;
+  max-width: 780px;
+  border-radius: 20px;
+  border: 1px solid var(--fy-border);
+  box-shadow: var(--fy-shadow-md);
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+/* Teal top bar */
+.fy-card::before {
+  content: '';
+  display: block;
+  height: 5px;
+  background: linear-gradient(90deg, var(--fy-primary), #22d3ee);
+}
+
+.fy-card-inner { padding: 36px 40px 40px; }
+
+/* ── Title ── */
+.fy-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--fy-text);
+  margin-bottom: 4px;
+  letter-spacing: -0.5px;
+}
+
+.fy-subtitle {
+  font-size: 14px;
+  color: var(--fy-text-lt);
+  margin-bottom: 28px;
+  font-weight: 500;
+}
+
+/* ═══════════════════════════════
+   STEP PROGRESS BAR
+═══════════════════════════════ */
+.fy-steps {
+  display: flex;
+  align-items: center;
+  margin-bottom: 32px;
+  gap: 0;
+}
+
+.fy-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  position: relative;
+}
+
+.fy-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: var(--fy-border);
+  z-index: 0;
+}
+
+.fy-step.done:not(:last-child)::after { background: var(--fy-primary); }
+
+.fy-step-circle {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+  border: 2px solid var(--fy-border);
+  background: var(--fy-surface);
+  color: var(--fy-text-lt);
+  position: relative; z-index: 1;
+  transition: all var(--fy-t);
+}
+
+.fy-step.active .fy-step-circle {
+  background: var(--fy-primary);
+  border-color: var(--fy-primary);
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(8,145,178,0.15);
+}
+
+.fy-step.done .fy-step-circle {
+  background: var(--fy-green);
+  border-color: var(--fy-green);
+  color: #fff;
+}
+
+.fy-step-label {
+  font-size: 10px; font-weight: 700;
+  color: var(--fy-text-lt);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 5px;
+  text-align: center;
+}
+
+.fy-step.active .fy-step-label { color: var(--fy-primary); }
+.fy-step.done  .fy-step-label  { color: var(--fy-green); }
+
+/* ═══════════════════════════════
+   ALERT MESSAGES
+═══════════════════════════════ */
+.fy-alert {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 13px 16px;
+  border-radius: var(--fy-radius-sm);
+  margin-bottom: 24px;
+  font-size: 13.5px; font-weight: 500;
+  border: 1.5px solid transparent;
+  line-height: 1.5;
+}
+
+.fy-alert-error {
+  background: var(--fy-red-lt);
+  color: #991b1b;
+  border-color: #fca5a5;
+}
+
+.fy-alert-success {
+  background: var(--fy-green-lt);
+  color: #065f46;
+  border-color: #6ee7b7;
+}
+
+.fy-signin-link {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-top: 8px;
+  padding: 6px 14px;
+  background: #991b1b;
+  color: #fff;
+  border: none; border-radius: 7px;
+  font-size: 12px; font-weight: 700;
+  cursor: pointer;
+  font-family: var(--fy-font);
+  transition: background var(--fy-t);
+}
+.fy-signin-link:hover { background: #7f1d1d; }
+
+/* ═══════════════════════════════
+   FORM SECTIONS
+═══════════════════════════════ */
+.fy-section {
+  margin-bottom: 24px;
+  border: 1.5px solid var(--fy-border);
+  border-radius: var(--fy-radius);
+  overflow: hidden;
+  transition: border-color var(--fy-t), box-shadow var(--fy-t);
+}
+
+.fy-section:focus-within {
+  border-color: var(--fy-primary-bd);
+  box-shadow: 0 0 0 3px rgba(8,145,178,0.07);
+}
+
+.fy-section-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 20px;
+  background: var(--fy-primary-lt);
+  border-bottom: 1.5px solid var(--fy-border-lt);
+}
+
+.fy-section-num {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  background: var(--fy-primary);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800;
+  flex-shrink: 0;
+}
+
+.fy-section-title {
+  font-size: 14px; font-weight: 800;
+  color: var(--fy-text);
+  letter-spacing: -0.1px;
+  font-family: 'Sora', sans-serif;
+}
+
+.fy-section-body { padding: 22px 20px 8px; }
+
+/* ═══════════════════════════════
+   FORM FIELDS
+═══════════════════════════════ */
+.fy-field { margin-bottom: 18px; }
+
+.fy-label {
+  display: block;
+  font-size: 13px; font-weight: 700;
+  color: var(--fy-text);
+  margin-bottom: 7px;
+  letter-spacing: -0.1px;
+}
+
+.fy-label-sub {
+  display: block;
+  font-size: 13px; font-weight: 600;
+  color: var(--fy-text-mid);
+  margin-bottom: 7px;
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+.fy-required { color: var(--fy-primary); margin-left: 2px; }
+
+.fy-input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid var(--fy-border);
+  border-radius: var(--fy-radius-sm);
+  font-size: 14px;
+  font-family: var(--fy-font);
+  color: var(--fy-text);
+  background: #fafbfc;
+  transition: all var(--fy-t);
+  outline: none;
+  /* Prevent zoom on iOS */
+  -webkit-text-size-adjust: 100%;
+}
+
+.fy-input:focus {
+  border-color: var(--fy-primary);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(8,145,178,0.1);
+}
+
+.fy-input::placeholder { color: var(--fy-text-lt); }
+.fy-input:disabled { opacity: 0.55; cursor: not-allowed; background: #f8fafc; }
+
+.fy-hint {
+  font-size: 12px; color: var(--fy-text-lt);
+  margin-top: 5px; line-height: 1.5; font-weight: 500;
+}
+.fy-hint a { color: var(--fy-primary); text-decoration: none; font-weight: 600; }
+.fy-hint a:hover { text-decoration: underline; }
+
+/* ── Password input ── */
+.fy-pw-wrap { position: relative; }
+
+.fy-pw-input {
+  width: 100%;
+  padding: 11px 44px 11px 14px;
+  border: 1.5px solid var(--fy-border);
+  border-radius: var(--fy-radius-sm);
+  font-size: 14px;
+  font-family: var(--fy-font);
+  color: var(--fy-text);
+  background: #fafbfc;
+  transition: all var(--fy-t);
+  outline: none;
+  height: 46px;
+  -webkit-text-size-adjust: 100%;
+}
+
+.fy-pw-input:focus {
+  border-color: var(--fy-primary);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(8,145,178,0.1);
+}
+
+.fy-pw-input:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.fy-pw-toggle {
+  position: absolute;
+  right: 10px; top: 50%;
+  transform: translateY(-50%);
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: none; border-radius: 7px;
+  color: var(--fy-text-lt); cursor: pointer;
+  transition: all var(--fy-t); flex-shrink: 0;
+}
+
+.fy-pw-toggle:hover { background: var(--fy-primary-lt); color: var(--fy-primary); }
+.fy-pw-toggle:disabled { opacity: 0.4; cursor: not-allowed; }
+.fy-pw-toggle svg { width: 18px; height: 18px; display: block; }
+
+/* ── Password strength pills ── */
+.fy-pw-rules {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.fy-pw-rule {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 10px;
+  border-radius: 7px;
+  font-size: 11.5px; font-weight: 600;
+  border: 1.5px solid var(--fy-border);
+  background: #f8fafc;
+  color: var(--fy-text-lt);
+  transition: all var(--fy-t);
+}
+
+.fy-pw-rule.valid {
+  background: var(--fy-green-lt);
+  border-color: #6ee7b7;
+  color: #065f46;
+}
+
+.fy-pw-rule.invalid {
+  background: #f8fafc;
+  border-color: var(--fy-border);
+  color: var(--fy-text-lt);
+}
+
+.fy-pw-rule-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%; flex-shrink: 0;
+  background: var(--fy-border);
+  transition: background var(--fy-t);
+}
+
+.fy-pw-rule.valid .fy-pw-rule-dot { background: var(--fy-green); }
+
+/* ── Radio group ── */
+.fy-radios { display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px; }
+
+.fy-radio-label {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 11px 14px;
+  border-radius: var(--fy-radius-sm);
+  border: 1.5px solid var(--fy-border);
+  background: #fafbfc;
+  cursor: pointer;
+  font-size: 13.5px; font-weight: 500;
+  color: var(--fy-text-mid);
+  transition: all var(--fy-t);
+  line-height: 1.5;
+}
+
+.fy-radio-label:hover {
+  border-color: var(--fy-primary-bd);
+  background: var(--fy-primary-lt);
+  color: var(--fy-text);
+}
+
+.fy-radio-label input[type="radio"] {
+  width: 16px; height: 16px;
+  accent-color: var(--fy-primary);
+  flex-shrink: 0; margin-top: 2px; cursor: pointer;
+}
+
+.fy-radio-label.selected {
+  border-color: var(--fy-primary);
+  background: var(--fy-primary-lt);
+  color: var(--fy-text);
+  font-weight: 600;
+}
+
+/* ── Clear answer ── */
+.fy-clear-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 12px;
+  background: #f8fafc;
+  border: 1.5px solid var(--fy-border);
+  border-radius: 7px;
+  font-size: 12px; font-weight: 600;
+  color: var(--fy-text-lt);
+  cursor: pointer;
+  font-family: var(--fy-font);
+  transition: all var(--fy-t);
+  margin-top: 6px; margin-bottom: 16px;
+}
+
+.fy-clear-btn:hover {
+  border-color: var(--fy-red);
+  color: var(--fy-red);
+  background: var(--fy-red-lt);
+}
+
+/* ── Phone row ── */
+.fy-phone-row {
+  display: flex; gap: 10px;
+}
+
+.fy-country-code {
+  width: 140px; flex-shrink: 0;
+}
+
+.fy-phone-num { flex: 1; }
+
+/* ── Add address button ── */
+.fy-addr-toggle {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 10px 18px;
+  background: var(--fy-primary-lt);
+  border: 1.5px solid var(--fy-primary-bd);
+  border-radius: var(--fy-radius-sm);
+  font-size: 13px; font-weight: 700;
+  color: var(--fy-primary);
+  cursor: pointer;
+  font-family: var(--fy-font);
+  transition: all var(--fy-t);
+  margin-bottom: 8px;
+}
+
+.fy-addr-toggle:hover {
+  background: var(--fy-primary);
+  color: #fff;
+  border-color: var(--fy-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(8,145,178,0.22);
+}
+
+.fy-addr-toggle:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* ── Address fields block ── */
+.fy-addr-fields {
+  margin-top: 14px;
+  padding: 18px;
+  background: var(--fy-primary-lt);
+  border: 1.5px solid var(--fy-primary-bd);
+  border-radius: var(--fy-radius-sm);
+  display: flex; flex-direction: column; gap: 0;
+}
+
+.fy-addr-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ── Privacy text ── */
+.fy-privacy-box {
+  padding: 14px 16px;
+  background: #f8fafc;
+  border: 1.5px solid var(--fy-border-lt);
+  border-left: 4px solid var(--fy-primary);
+  border-radius: var(--fy-radius-sm);
+  font-size: 13px; color: var(--fy-text-mid);
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+
+.fy-privacy-box a { color: var(--fy-primary); font-weight: 600; text-decoration: none; }
+.fy-privacy-box a:hover { text-decoration: underline; }
+
+/* ── Terms checkbox ── */
+.fy-terms-box {
+  padding: 16px;
+  background: linear-gradient(135deg, var(--fy-primary-lt), #f0fdf9);
+  border: 1.5px solid var(--fy-primary-bd);
+  border-radius: var(--fy-radius-sm);
+  margin-top: 8px;
+}
+
+.fy-checkbox-label {
+  display: flex; align-items: flex-start; gap: 12px;
+  cursor: pointer; font-size: 13.5px;
+  color: var(--fy-text-mid); line-height: 1.6;
+}
+
+.fy-checkbox-label input[type="checkbox"] {
+  width: 17px; height: 17px;
+  accent-color: var(--fy-primary);
+  flex-shrink: 0; margin-top: 3px; cursor: pointer;
+}
+
+.fy-checkbox-label a { color: var(--fy-primary); font-weight: 600; text-decoration: none; }
+.fy-checkbox-label a:hover { text-decoration: underline; }
+
+/* ═══════════════════════════════
+   FORM FOOTER ACTIONS
+═══════════════════════════════ */
+.fy-form-footer {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1.5px solid var(--fy-border-lt);
+}
+
+.fy-submit-btn {
+  width: 100%;
+  padding: 14px 24px;
+  background: var(--fy-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--fy-radius-sm);
+  font-size: 15px; font-weight: 800;
+  font-family: var(--fy-font);
+  cursor: pointer;
+  transition: all var(--fy-t);
+  box-shadow: 0 4px 14px rgba(8,145,178,0.3);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  letter-spacing: -0.1px;
+}
+
+.fy-submit-btn:hover:not(:disabled) {
+  background: var(--fy-primary-dk);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(8,145,178,0.38);
+}
+
+.fy-submit-btn:disabled {
+  opacity: 0.6; cursor: not-allowed; transform: none;
+}
+
+.fy-submit-spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: fy-spin 0.7s linear infinite;
+}
+
+@keyframes fy-spin { to { transform: rotate(360deg); } }
+
+.fy-signin-row {
+  text-align: center;
+  margin-top: 18px;
+  font-size: 13.5px;
+  color: var(--fy-text-lt);
+  font-weight: 500;
+}
+
+.fy-signin-row button {
+  background: none; border: none;
+  color: var(--fy-primary);
+  font-weight: 700; cursor: pointer;
+  font-size: 13.5px;
+  font-family: var(--fy-font);
+  text-decoration: underline;
+  transition: color var(--fy-t);
+  padding: 0;
+}
+.fy-signin-row button:hover { color: var(--fy-primary-dk); }
+
+/* ═══════════════════════════════
+   SUCCESS MODAL
+═══════════════════════════════ */
+.fy-modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(15,41,66,0.55);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999; padding: 20px;
+  animation: fy-fadeIn 0.2s ease;
+}
+
+@keyframes fy-fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.fy-modal {
+  background: var(--fy-surface);
+  border-radius: 20px;
+  padding: 40px 36px;
+  max-width: 460px; width: 100%;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.18);
+  border: 1px solid var(--fy-border);
+  animation: fy-slideUp 0.28s cubic-bezier(.34,1.4,.64,1);
+}
+
+@keyframes fy-slideUp {
+  from { opacity: 0; transform: translateY(20px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.fy-modal-icon { font-size: 52px; margin-bottom: 16px; line-height: 1; }
+
+.fy-modal-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 22px; font-weight: 800;
+  color: var(--fy-text); margin-bottom: 10px;
+}
+
+.fy-modal-msg {
+  font-size: 14px; color: var(--fy-text-mid);
+  line-height: 1.6; margin-bottom: 28px;
+}
+
+.fy-modal-btns { display: flex; gap: 12px; }
+
+.fy-modal-btn-primary {
+  flex: 1; padding: 12px;
+  background: var(--fy-primary); color: #fff;
+  border: none; border-radius: 10px;
+  font-size: 14px; font-weight: 700;
+  font-family: var(--fy-font); cursor: pointer;
+  transition: all var(--fy-t);
+  box-shadow: 0 3px 10px rgba(8,145,178,0.28);
+}
+
+.fy-modal-btn-primary:hover { background: var(--fy-primary-dk); transform: translateY(-1px); }
+
+.fy-modal-btn-secondary {
+  flex: 1; padding: 12px;
+  background: var(--fy-surface); color: var(--fy-text-mid);
+  border: 1.5px solid var(--fy-border);
+  border-radius: 10px;
+  font-size: 14px; font-weight: 600;
+  font-family: var(--fy-font); cursor: pointer;
+  transition: all var(--fy-t);
+}
+
+.fy-modal-btn-secondary:hover {
+  background: var(--fy-primary-lt);
+  color: var(--fy-primary);
+  border-color: var(--fy-primary-bd);
+}
+
+/* ═══════════════════════════════
+   RESPONSIVE — 640px
+═══════════════════════════════ */
+@media (max-width: 640px) {
+  .fy-wrapper { padding: 14px 12px 36px; }
+
+  .fy-brand-header { margin-bottom: 12px; }
+
+  /* Logo scales down gracefully */
+  .fy-svg-logo { height: 28px; }
+
+  .fy-back-btn { padding: 7px 11px; font-size: 12px; gap: 4px; }
+
+  .fy-card-inner { padding: 22px 18px 26px; }
+  .fy-title { font-size: 21px; }
+  .fy-subtitle { font-size: 13px; margin-bottom: 20px; }
+
+  .fy-steps { margin-bottom: 22px; }
+  .fy-step-label { font-size: 9px; }
+
+  .fy-section-header { padding: 11px 14px; gap: 10px; }
+  .fy-section-body { padding: 16px 14px 6px; }
+  .fy-section-title { font-size: 13px; }
+
+  /* Stack phone row */
+  .fy-phone-row { flex-direction: column; gap: 0; }
+  .fy-country-code { width: 100%; }
+
+  /* Address 1-col */
+  .fy-addr-row { grid-template-columns: 1fr; gap: 0; }
+
+  /* Password rules 1-col */
+  .fy-pw-rules { grid-template-columns: 1fr; }
+
+  .fy-modal { padding: 30px 20px; }
+  .fy-modal-icon { font-size: 42px; }
+  .fy-modal-title { font-size: 19px; }
+  .fy-modal-btns { flex-direction: column; }
+
+  /* Prevent iOS input zoom (font must be >= 16px on focus) */
+  .fy-input, .fy-pw-input {
+    font-size: 16px;
+  }
+}
+
+/* ═══════════════════════════════
+   RESPONSIVE — 480px
+═══════════════════════════════ */
+@media (max-width: 480px) {
+  .fy-wrapper { padding: 12px 10px 28px; }
+  .fy-brand-header { margin-bottom: 10px; }
+
+  /* Smaller logo on very small screens */
+  .fy-svg-logo { height: 24px; }
+
+  /* Hide "Back to Home" text label, keep arrow only */
+  .fy-back-label { display: none; }
+  .fy-back-btn { padding: 7px 10px; min-width: 36px; justify-content: center; }
+
+  .fy-card-inner { padding: 18px 14px 22px; }
+  .fy-title { font-size: 19px; }
+  .fy-subtitle { font-size: 12px; }
+
+  .fy-step-label { display: none; }
+  .fy-step-circle { width: 28px; height: 28px; font-size: 11px; }
+  .fy-step:not(:last-child)::after { top: 14px; }
+
+  .fy-section-header { padding: 10px 12px; }
+  .fy-section-body { padding: 14px 12px 4px; }
+
+  .fy-addr-fields { padding: 12px; }
+
+  .fy-submit-btn { font-size: 14px; padding: 13px; }
+
+  .fy-pw-rule { font-size: 11px; padding: 5px 8px; }
+}
+
+/* ═══════════════════════════════
+   RESPONSIVE — 360px
+═══════════════════════════════ */
+@media (max-width: 360px) {
+  .fy-svg-logo { height: 20px; }
+  .fy-card-inner { padding: 16px 12px 20px; }
+  .fy-title { font-size: 17px; }
+}

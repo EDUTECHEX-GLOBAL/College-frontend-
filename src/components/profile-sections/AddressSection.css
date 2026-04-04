@@ -1,0 +1,522 @@
+/* src/components/AddressSection.css */
+/* ============================================================
+   AddressSection.css — EDUTECH-X Modern UI
+   Primary Teal: #0ba5a0 | Clean White | Minimalist Design
+   ============================================================ */
+
+/* ─────────────────────────────────────────
+   CSS VARIABLES
+───────────────────────────────────────── */
+:root {
+  /* Primary Colors - EDUTECH-X Teal */
+  --primary: #0ba5a0;
+  --primary-dark: #088a85;
+  --primary-light: #4fd1cb;
+  --primary-pale: #f0fdfa;
+  --primary-gradient: linear-gradient(135deg, #0ba5a0 0%, #0891b2 100%);
+  
+  /* Status Colors */
+  --success: #10b981;
+  --success-pale: #ecfdf5;
+  --warning: #f59e0b;
+  --warning-pale: #fffbeb;
+  --error: #ef4444;
+  --error-pale: #fef2f2;
+  
+  /* Neutral Colors */
+  --gray-50: #fafafa;
+  --gray-100: #f5f5f5;
+  --gray-200: #e5e5e5;
+  --gray-300: #d4d4d4;
+  --gray-400: #a3a3a3;
+  --gray-500: #737373;
+  --gray-600: #525252;
+  --gray-700: #404040;
+  --gray-800: #262626;
+  --gray-900: #171717;
+  
+  /* Backgrounds */
+  --bg-primary: #fafafa;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f5f5f5;
+  
+  /* Text */
+  --text-primary: #171717;
+  --text-secondary: #404040;
+  --text-tertiary: #737373;
+  --text-muted: #a3a3a3;
+  
+  /* Borders */
+  --border-light: #e5e5e5;
+  --border-medium: #d4d4d4;
+  --border-primary: rgba(11, 165, 160, 0.2);
+  
+  /* Shadows */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+  --shadow-primary: 0 4px 12px rgba(11, 165, 160, 0.12);
+  
+  /* Border Radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-full: 9999px;
+  
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+  
+  /* Font */
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
+}
+
+/* ─────────────────────────────────────────
+   MAIN CONTAINER
+───────────────────────────────────────── */
+.address-section {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-2xl);
+  max-width: 100%;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  margin: 20px 32px;
+  overflow: hidden;
+  font-family: var(--font);
+}
+
+/* Header Section */
+.address-header {
+  padding: 24px 28px;
+  border-bottom: 1px solid var(--border-light);
+  background: var(--bg-secondary);
+}
+
+.address-section h2 {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+  letter-spacing: -0.3px;
+  font-family: var(--font);
+}
+
+.section-description {
+  font-size: 14px;
+  color: var(--text-tertiary);
+  line-height: 1.5;
+  margin-top: 4px;
+}
+
+/* Section Status Badge */
+.section-status-wrapper {
+  padding: 0 28px;
+  margin: 16px 0 8px 0;
+}
+
+.address-section .section-status {
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.address-section .section-status.in-progress {
+  background: var(--primary-pale);
+  color: var(--primary-dark);
+}
+
+.address-section .section-status.complete {
+  background: var(--success-pale);
+  color: var(--success);
+}
+
+.address-section .status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.address-section .section-status.in-progress .status-indicator {
+  background: var(--primary);
+}
+
+.address-section .section-status.complete .status-indicator {
+  background: var(--success);
+}
+
+/* ============================================================
+   FORM CONTENT
+============================================================ */
+.address-section .form-content {
+  padding: 28px;
+}
+
+/* Form Group */
+.address-section .form-group {
+  margin-bottom: 24px;
+}
+
+.address-section .form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.address-section .form-group label.required::after {
+  content: " *";
+  color: var(--error);
+}
+
+/* Input Container with Clear Button */
+.input-container {
+  position: relative;
+  width: 100%;
+}
+
+/* Input Fields */
+.address-section .form-group input {
+  width: 100%;
+  padding: 12px 32px 12px 16px;
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  font-size: 14px;
+  transition: all var(--transition-fast);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-family: var(--font);
+  box-sizing: border-box;
+}
+
+.address-section .form-group input:hover {
+  border-color: var(--gray-400);
+}
+
+.address-section .form-group input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(11, 165, 160, 0.1);
+}
+
+.address-section .form-group input.error {
+  border-color: var(--error);
+}
+
+.address-section .form-group input.error:focus {
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+}
+
+.address-section .form-group input::placeholder {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* Clear Field Button */
+.clear-field-btn {
+  background: none;
+  border: none;
+  color: var(--gray-400);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color var(--transition-fast);
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  border-radius: var(--radius-sm);
+}
+
+.clear-field-btn:hover {
+  color: var(--error);
+}
+
+/* Error Message */
+.error-message {
+  font-size: 12px;
+  color: var(--error);
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+/* Form Grid for 2-column layout */
+.address-section .form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-bottom: 0;
+}
+
+/* Full width for country field */
+.address-section .form-grid .form-group:last-child {
+  grid-column: span 2;
+}
+
+/* Clear All Container */
+.clear-all-container {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-light);
+  text-align: right;
+}
+
+.clear-all-link {
+  background: none;
+  border: none;
+  color: var(--error);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 6px 12px;
+  text-decoration: underline;
+  transition: color var(--transition-fast);
+  font-family: var(--font);
+}
+
+.clear-all-link:hover {
+  color: #dc2626;
+}
+
+/* ============================================================
+   RESPONSIVE DESIGN
+============================================================ */
+
+/* Tablet (≤ 1023px) */
+@media (max-width: 1023px) {
+  .address-section {
+    margin: 20px 24px;
+  }
+  
+  .address-header {
+    padding: 20px 24px;
+  }
+  
+  .address-section h2 {
+    font-size: 20px;
+  }
+  
+  .section-status-wrapper {
+    padding: 0 24px;
+  }
+  
+  .address-section .form-content {
+    padding: 24px;
+  }
+  
+  .address-section .form-grid {
+    gap: 20px;
+  }
+}
+
+/* Mobile (≤ 767px) */
+@media (max-width: 767px) {
+  .address-section {
+    margin: 16px;
+  }
+  
+  .address-header {
+    padding: 18px 20px;
+  }
+  
+  .address-section h2 {
+    font-size: 18px;
+  }
+  
+  .section-description {
+    font-size: 13px;
+  }
+  
+  .section-status-wrapper {
+    padding: 0 20px;
+  }
+  
+  .address-section .section-status {
+    font-size: 12px;
+    padding: 5px 12px;
+  }
+  
+  .address-section .form-content {
+    padding: 20px;
+  }
+  
+  .address-section .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .address-section .form-group label {
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+  
+  .address-section .form-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  
+  .address-section .form-grid .form-group:last-child {
+    grid-column: span 1;
+  }
+  
+  .address-section .form-group input {
+    padding: 10px 32px 10px 14px;
+    font-size: 13px;
+  }
+  
+  .clear-all-container {
+    margin-top: 20px;
+    padding-top: 16px;
+  }
+}
+
+/* Small Mobile (≤ 480px) */
+@media (max-width: 480px) {
+  .address-section {
+    margin: 12px;
+  }
+  
+  .address-header {
+    padding: 16px;
+  }
+  
+  .address-section h2 {
+    font-size: 16px;
+  }
+  
+  .section-description {
+    font-size: 12px;
+  }
+  
+  .section-status-wrapper {
+    padding: 0 16px;
+  }
+  
+  .address-section .section-status {
+    font-size: 11px;
+    padding: 4px 10px;
+  }
+  
+  .address-section .form-content {
+    padding: 16px;
+  }
+  
+  .address-section .form-group {
+    margin-bottom: 16px;
+  }
+  
+  .address-section .form-group label {
+    font-size: 12px;
+  }
+  
+  .address-section .form-group input {
+    padding: 9px 32px 9px 12px;
+    font-size: 12px;
+  }
+  
+  .clear-field-btn {
+    font-size: 16px;
+    right: 6px;
+  }
+  
+  .clear-all-container {
+    margin-top: 16px;
+    padding-top: 12px;
+  }
+  
+  .clear-all-link {
+    font-size: 11px;
+  }
+}
+
+/* Very Small (≤ 320px) */
+@media (max-width: 320px) {
+  .address-section {
+    margin: 8px;
+  }
+  
+  .address-header {
+    padding: 14px;
+  }
+  
+  .address-section h2 {
+    font-size: 15px;
+  }
+  
+  .section-description {
+    font-size: 11px;
+  }
+  
+  .address-section .form-content {
+    padding: 14px;
+  }
+  
+  .address-section .form-group {
+    margin-bottom: 14px;
+  }
+  
+  .address-section .form-group label {
+    font-size: 11px;
+  }
+  
+  .address-section .form-group input {
+    padding: 8px 32px 8px 10px;
+    font-size: 11px;
+  }
+}
+
+/* ============================================================
+   PRINT STYLES
+============================================================ */
+@media print {
+  .address-section {
+    margin: 0;
+    background: white;
+    box-shadow: none;
+    border: 1px solid var(--border-light);
+  }
+  
+  .section-status-wrapper {
+    display: none;
+  }
+  
+  .clear-all-container,
+  .clear-field-btn {
+    display: none;
+  }
+  
+  .address-section .form-group input {
+    border: 1px solid var(--border-light);
+    background: white;
+    padding: 8px;
+  }
+}
+
+/* Animation for status changes */
+@keyframes statusPulse {
+  0% {
+    opacity: 0.6;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.address-section .section-status {
+  animation: statusPulse 0.3s ease-out;
+}
+
+/* Focus accessibility */
+.radio-option:focus-within,
+input:focus {
+  outline: none;
+}
