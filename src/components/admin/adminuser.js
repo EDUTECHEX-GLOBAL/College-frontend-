@@ -21,7 +21,7 @@ const AdminUserManagement = () => {
   });
 
   // ── Auth helpers ──────────────────────────────────────────
-  const getToken = () => localStorage.getItem("token");
+  const getToken = () => localStorage.getItem("admintoken");
 
   const authHeaders = () => ({
     Authorization: `Bearer ${getToken()}`,
