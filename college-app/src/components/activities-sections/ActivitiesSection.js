@@ -1,4 +1,3 @@
-// src/components/activities-sections/ActivitiesSection.js
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -31,18 +30,18 @@ const ActivitiesSection = () => {
   const navigate = useNavigate();
 
   // ── Form state ──────────────────────────────────────────────
-  const [hasActivities, setHasActivities]     = useState(null);
+  const [hasActivities, setHasActivities] = useState(null);
   const [showActivitiesForm, setShowActivitiesForm] = useState(false);
-  const [activities, setActivities]           = useState([emptyActivity()]);
-  const [loading, setLoading]                 = useState(false);
+  const [activities, setActivities] = useState([emptyActivity()]);
+  const [loading, setLoading] = useState(false);
 
   // ── CV upload state ─────────────────────────────────────────
-  const [cvUploading, setCvUploading]         = useState(false);
-  const [cvProgress, setCvProgress]           = useState(0);
-  const [cvFileName, setCvFileName]           = useState('');
-  const [cvProcessed, setCvProcessed]         = useState(false);
-  const [cvError, setCvError]                 = useState(null);
-  const fileInputRef                          = useRef(null);
+  const [cvUploading, setCvUploading] = useState(false);
+  const [cvProgress, setCvProgress] = useState(0);
+  const [cvFileName, setCvFileName] = useState('');
+  const [cvProcessed, setCvProcessed] = useState(false);
+  const [cvError, setCvError] = useState(null);
+  const fileInputRef = useRef(null);
 
   // ── Activity type options ───────────────────────────────────
   const activityTypes = [
@@ -215,20 +214,23 @@ const ActivitiesSection = () => {
     return extractedData.activities.map((a, idx) => ({
       id: idx + 1,
       type: a.type ? { value: a.type, label: a.type } : '',
-      position:         a.position         || '',
-      organization:     a.organization     || '',
-      description:      a.description      || '',
-      gradeLevels:      Array.isArray(a.gradeLevels) ? a.gradeLevels : [],
-      timing:           a.timing           || '',
-      hoursPerWeek:     a.hoursPerWeek     || '',
-      weeksPerYear:     a.weeksPerYear     || '',
+      position: a.position || '',
+      organization: a.organization || '',
+      description: a.description || '',
+      gradeLevels: Array.isArray(a.gradeLevels) ? a.gradeLevels : [],
+      timing: a.timing || '',
+      hoursPerWeek: String(a.hoursPerWeek) || '',
+      weeksPerYear: String(a.weeksPerYear) || '',
       continueInCollege: a.continueInCollege ?? null,
     }));
   };
 
   const processCVFile = async (file) => {
     const err = validateCVFile(file);
-    if (err) { setCvError(err); return; }
+    if (err) {
+      setCvError(err);
+      return;
+    }
 
     setCvFileName(file.name);
     setCvUploading(true);
@@ -236,9 +238,13 @@ const ActivitiesSection = () => {
     setCvError(null);
     setCvProcessed(false);
 
+    // Simulate progress bar
     const interval = setInterval(() => {
       setCvProgress(prev => {
-        if (prev >= 85) { clearInterval(interval); return 85; }
+        if (prev >= 85) {
+          clearInterval(interval);
+          return 85;
+        }
         return prev + 8;
       });
     }, 400);
@@ -247,6 +253,13 @@ const ActivitiesSection = () => {
       const formData = new FormData();
       formData.append('cv', file);
       const token = localStorage.getItem('token');
+
+      if (!token) {
+        clearInterval(interval);
+        setCvError('Authentication required. Please log in again.');
+        setCvUploading(false);
+        return;
+      }
 
       const response = await fetch(`${API_URL}/api/students/activities/parse-cv`, {
         method: 'POST',
@@ -263,9 +276,12 @@ const ActivitiesSection = () => {
         const mapped = mapCVDataToActivities(data.extractedData);
         if (mapped && mapped.length > 0) {
           setActivities(mapped);
+          setCvProcessed(true);
+          setCvError(null);
+        } else {
+          setCvError('No activities found in the CV. Please fill the form manually.');
+          setCvProcessed(false);
         }
-        setCvProcessed(true);
-        setCvError(null);
       } else {
         throw new Error(data.message || 'Failed to parse CV');
       }
@@ -281,9 +297,14 @@ const ActivitiesSection = () => {
   };
 
   const handleFileInputChange = (e) => {
-    const file = e.target.files[0];
-    if (file) processCVFile(file);
-    e.target.value = '';
+    const file = e.target.files?.[0];
+    if (file) {
+      processCVFile(file);
+    }
+    // Reset input value to allow re-uploading the same file
+    if (e.target) {
+      e.target.value = '';
+    }
   };
 
   // ── Activity CRUD helpers ───────────────────────────────────
@@ -306,11 +327,15 @@ const ActivitiesSection = () => {
   };
 
   const addActivity = () => {
-    if (activities.length < 10) setActivities(prev => [...prev, emptyActivity()]);
+    if (activities.length < 10) {
+      setActivities(prev => [...prev, emptyActivity()]);
+    }
   };
 
   const removeActivity = (index) => {
-    if (activities.length > 1) setActivities(prev => prev.filter((_, i) => i !== index));
+    if (activities.length > 1) {
+      setActivities(prev => prev.filter((_, i) => i !== index));
+    }
   };
 
   // ── Save & continue ─────────────────────────────────────────
@@ -318,17 +343,27 @@ const ActivitiesSection = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      if (!token) { navigate('/sign-in'); return; }
+      if (!token) {
+        navigate('/sign-in');
+        return;
+      }
 
+      // Convert activities for backend - extract type value from object
       const activitiesForBackend = activities.map(a => ({
         ...a,
-        type: a.type ? a.type.value : '',
+        type: a.type?.value || a.type || '',
       }));
 
+      // Validation: check for empty required fields
       const hasEmptyFields = activitiesForBackend.some(a =>
-        !a.type || !a.position || !a.description ||
-        a.gradeLevels.length === 0 || !a.timing ||
-        !a.hoursPerWeek || !a.weeksPerYear || a.continueInCollege === null,
+        !a.type ||
+        !a.position ||
+        !a.description ||
+        a.gradeLevels.length === 0 ||
+        !a.timing ||
+        !a.hoursPerWeek ||
+        !a.weeksPerYear ||
+        a.continueInCollege === null
       );
 
       if (hasEmptyFields) {
@@ -344,14 +379,19 @@ const ActivitiesSection = () => {
       );
 
       if (response.data.success) {
+        // Update local storage
         const stored = localStorage.getItem('userData');
         if (stored) {
           const userData = JSON.parse(stored);
           localStorage.setItem('userData', JSON.stringify({
             ...userData,
-            applicationProgress: { ...userData.applicationProgress, activities: 100 },
+            applicationProgress: {
+              ...userData.applicationProgress,
+              activities: response.data.applicationProgress?.activities || 100,
+            },
           }));
         }
+        // Navigate to next page
         navigate('/firstyear/dashboard/activities/responsibilities');
       }
     } catch (err) {
@@ -439,7 +479,10 @@ const ActivitiesSection = () => {
           <button
             type="button"
             className="act-cv-retry-btn"
-            onClick={() => { resetCV(); setTimeout(() => fileInputRef.current?.click(), 50); }}
+            onClick={() => {
+              resetCV();
+              setTimeout(() => fileInputRef.current?.click(), 50);
+            }}
           >
             Retry
           </button>
