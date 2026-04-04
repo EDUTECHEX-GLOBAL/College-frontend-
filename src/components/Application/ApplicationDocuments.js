@@ -4,11 +4,11 @@ import axios from 'axios';
 import Resume from './Resume';
 import './ApplicationDocuments.css';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL 
-  ? `${process.env.REACT_APP_API_BASE_URL}/api/application/documents`
+const API_URL = process.env.REACT_APP_API_URL 
+  ? `${process.env.REACT_APP_API_URL}/api/application/documents`
   : "http://localhost:5000/api/application/documents";
 
-const BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
+const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 // =====================================================
 // ✅ HELPER: Resolve any file URL to a viewable URL

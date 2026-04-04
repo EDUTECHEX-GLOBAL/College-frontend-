@@ -4,7 +4,7 @@ import axios from 'axios';
 import Select from 'react-select';
 import './ActivitiesSection.css';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
+const API_URL = process.env.REACT_APP_API_URL;
 
 const VALID_CV_TYPES = [
   'application/pdf',

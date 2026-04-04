@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./MyColleges.css";
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
+const API_URL = process.env.REACT_APP_API_URL;
 
 const MyColleges = () => {
   const [colleges, setColleges] = useState([]);

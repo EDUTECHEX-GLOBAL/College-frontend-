@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './StudentAnalytics.css';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL ;
+const API_URL = process.env.REACT_APP_API_URL ;
 
 const getAdminToken = () =>
   localStorage.getItem('adminToken') || localStorage.getItem('token') || '';

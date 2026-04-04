@@ -6,8 +6,8 @@ import "./ApplicationAddress.css";
 // =====================================================
 // API BASE URL
 // =====================================================
-const API_URL = process.env.REACT_APP_API_BASE_URL 
-  ? `${process.env.REACT_APP_API_BASE_URL}/api/application/address`
+const API_URL = process.env.REACT_APP_API_URL 
+  ? `${process.env.REACT_APP_API_URL}/api/application/address`
   : "http://localhost:5000/api/application/address";
 
 // =====================================================

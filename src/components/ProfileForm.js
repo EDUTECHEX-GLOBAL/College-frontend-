@@ -16,7 +16,7 @@ import ProfilePreview from './ProfilePreview';
 // Import EDUTECH Logo (adjust path as needed)
 import EdutechLogo from './../assets/Edutech-logo.svg';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
+const API_URL = process.env.REACT_APP_API_URL;
 
 const ProfileForm = () => {
   const navigate = useNavigate();

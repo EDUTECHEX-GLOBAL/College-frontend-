@@ -7,7 +7,7 @@ import Parent1Form from './Parent1Form';
 import Parent2Form from './Parent2Form';
 import SiblingForm from './SiblingForm';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
+const API_URL = process.env.REACT_APP_API_URL;
 
 const FamilySection = ({ onComplete }) => {
   const navigate = useNavigate();

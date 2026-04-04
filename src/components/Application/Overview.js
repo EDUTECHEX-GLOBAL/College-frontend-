@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import './Overview.css';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
+const API_URL = process.env.REACT_APP_API_URL;
 
 const Overview = ({ formData, selectedCourseData, onStartApplication, onChangeCourse }) => {
     const navigate = useNavigate();

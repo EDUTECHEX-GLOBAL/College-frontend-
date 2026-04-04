@@ -14,7 +14,7 @@ const AdditionalInformation = () => {
   const [loading, setLoading]     = useState(false);
   const [saveStatus, setSaveStatus] = useState('');
 
-  const API_URL = process.env.REACT_APP_API_BASE_URL;
+  const API_URL = process.env.REACT_APP_API_URL;
 
   const getAuthHeaders = () => {
     const token = localStorage.getItem('token');

@@ -28,7 +28,7 @@ const GusUniversity = () => {
 
     const apiRef = useRef(null);
     if (!apiRef.current) {
-        const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+        const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
         const instance = axios.create({ baseURL: API_BASE_URL, timeout: 15000 });
         instance.interceptors.request.use((config) => {
             const token =
@@ -181,7 +181,7 @@ const GusUniversity = () => {
     const openModal  = (app) => setSelectedApp({ ...app });
     const closeModal = ()    => setSelectedApp(null);
 
-    const API_BASE_URL_VIEW = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+    const API_BASE_URL_VIEW = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
     const DOC_FOLDER_MAP_VIEW = {
         'CV':'documents/cv','Photo':'documents/photo','Passport':'documents/personal',

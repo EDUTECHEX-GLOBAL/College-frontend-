@@ -4,7 +4,7 @@ import axios from 'axios';
 import Select from 'react-select';
 import './Parent1Form.css';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
+const API_URL = process.env.REACT_APP_API_URL;
 
 const Parent1Form = () => {
   const navigate = useNavigate();

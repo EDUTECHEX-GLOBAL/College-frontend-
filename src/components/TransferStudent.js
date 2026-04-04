@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import "./TransferStudent.css";
 import OtpVerificationTransfer from "./OtpVerificationTransfer";
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
+const API_URL = process.env.REACT_APP_API_URL;
 
 const TransferStudent = () => {
   const navigate = useNavigate();

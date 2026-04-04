@@ -18,7 +18,7 @@ import IELTSSection from './testing-sections/IELTSSection';
 import DuolingoEnglishTestSection from './testing-sections/DuolingoEnglishTestSection';
 import TestingPreview from './TestingPreview';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
+const API_URL = process.env.REACT_APP_API_URL;
 
 const TestingForm = () => {
   const navigate = useNavigate();

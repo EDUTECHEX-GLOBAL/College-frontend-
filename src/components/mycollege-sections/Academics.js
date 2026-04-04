@@ -16,7 +16,7 @@ import {
   hasSubplanSelection
 } from '../../data/collegeData';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
+const API_URL = process.env.REACT_APP_API_URL;
 
 const Academics = () => {
   const { collegeId } = useParams();

@@ -16,7 +16,7 @@ import FuturePlansSection from './education-sections/FuturePlansSection';
 import DocumentsUploadSection from './education-sections/DocumentsUploadSection';
 import EducationPreview from './EducationPreview';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
+const API_URL = process.env.REACT_APP_API_URL;
 
 // Section name mapping - URL names to database field names
 const SECTION_NAME_MAP = {

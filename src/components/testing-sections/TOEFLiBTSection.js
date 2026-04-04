@@ -130,7 +130,7 @@ const TestsTakenSection = ({
       formDataObj.append('cv', file);
 
       const token = localStorage.getItem('token');
-      const API_URL = process.env.REACT_APP_API_BASE_URL || '';
+      const API_URL = process.env.REACT_APP_API_URL || '';
 
       const response = await fetch(`${API_URL}/api/students/testing/parse-cv`, {
         method: 'POST',

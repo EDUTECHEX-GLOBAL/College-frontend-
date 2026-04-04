@@ -3,7 +3,7 @@ import React, { useRef, useState } from 'react';
 import axios from 'axios';
 import './DocumentsUploadSection.css';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
+const API_URL = process.env.REACT_APP_API_URL;
 
 const DocumentsUploadSection = ({ educationData, handleInputChange }) => {
   const { documents } = educationData;

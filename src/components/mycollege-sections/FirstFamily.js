@@ -6,7 +6,7 @@ import './FirstFamily.css';
 import { US_STATES } from '../../constants/states';
 import { COUNTRIES } from '../../constants/countries';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
+const API_URL = process.env.REACT_APP_API_URL;
 
 // Initialize empty address object
 const emptyAddress = {
