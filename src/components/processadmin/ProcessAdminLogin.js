@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./ProcessAdminLogin.css";
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 const ProcessAdminLogin = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -20,8 +22,9 @@ const ProcessAdminLogin = () => {
     console.log("Attempting login with:", email);
 
     try {
+      // ✅ Fixed: uses REACT_APP_API_URL instead of hardcoded localhost:5000
       const response = await axios.post(
-        "http://localhost:5000/api/process-admin/login",
+        `${API_URL}/api/process-admin/login`,
         { email, password }
       );
       console.log("Login response:", response.data);
@@ -40,8 +43,8 @@ const ProcessAdminLogin = () => {
       console.error("Login error:", err.response || err);
       if (err.response?.status === 401) {
         setError("Invalid email or password. Please try again.");
-      } else if (err.code === "ECONNREFUSED") {
-        setError("Cannot connect to server. Please ensure backend is running.");
+      } else if (err.code === "ECONNREFUSED" || err.message === "Network Error") {
+        setError("Cannot connect to server. Please try again later.");
       } else {
         setError("Login failed. Please try again.");
       }
