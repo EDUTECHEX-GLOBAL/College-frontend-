@@ -1,5 +1,4 @@
 import React, { useState, useRef } from 'react';
-import axiosInstance from '../api/axiosInstance'; // ✅ Use axiosInstance
 import './PersonalInfoSection.css';
 
 // ─────────────────────────────────────────────
@@ -34,44 +33,45 @@ const DocumentUploadBanner = ({
     setStatus('scanning');
 
     try {
-  const formData = new FormData();
-  formData.append(fieldName, file);
+      const formData = new FormData();
+      formData.append(fieldName, file);
 
-  // ✅ Correct axios call (no headers, no duplicate)
-  const res = await axiosInstance.post(endpoint, formData);
+      const res = await fetch(`http://localhost:5000${endpoint}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        body: formData,
+      });
 
-  console.log(`${fieldName} API result:`, res.data);
+      const result = await res.json();
+      console.log(`${fieldName} API result:`, result);
 
-  // ✅ Safer check
-  if (!res?.data?.success) {
-    throw new Error(res?.data?.message || 'Upload failed');
-  }
+      if (!result.success) throw new Error(result.message);
 
-  const mapped = res.data.data;
+      const mapped = result.data;
 
-  // Count only the flat profile fields (not arrays/objects)
-  const filled = Object.entries(mapped).filter(
-    ([key, val]) =>
-      !CV_SECTION_KEYS.has(key) &&
-      val &&
-      typeof val !== 'object' &&
-      String(val).trim() !== ''
-  ).length;
+      // Count only the flat profile fields (not arrays/objects)
+      const filled = Object.entries(mapped).filter(
+        ([key, val]) =>
+          !CV_SECTION_KEYS.has(key) &&
+          val &&
+          typeof val !== 'object' &&
+          String(val).trim() !== ''
+      ).length;
 
-  setAutofillCount(filled);
-  await onAutoFill(mapped);
-  setStatus('done');
+      setAutofillCount(filled);
+      await onAutoFill(mapped);
+      setStatus('done');
+    } catch (err) {
+      console.error(`${fieldName} parse error:`, err);
+      setStatus('error');
+    }
+  };
 
-} catch (err) {
-  console.error(`${fieldName} parse error:`, err);
-  setStatus('error');
-}
-}; // ✅ THIS WAS MISSING
+  const handleDrop = (e) => {
+    e.preventDefault();
+    handleFile(e.dataTransfer.files[0]);
+  };
 
-const handleDrop = (e) => {
-  e.preventDefault();
-  handleFile(e.dataTransfer.files[0]);
-};
   if (status === 'done') {
     return (
       <div className="passport-banner passport-banner--success">
@@ -304,15 +304,16 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
     // Step 3: persist to DB
     try {
       setSaveStatus('saving');
-      
-      // ✅ Use axiosInstance instead of fetch with hardcoded localhost
-      const res = await axiosInstance.put('/api/students/profile', {
-        ...formData,
-        ...payload,
+      const res = await fetch('http://localhost:5000/api/students/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({ ...formData, ...payload }),
       });
-      
-      if (!res.data.success) throw new Error(res.data.message || 'Save failed');
-      
+      const result = await res.json();
+      if (!result.success) throw new Error(result.message || 'Save failed');
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus(null), 3000);
     } catch (err) {
