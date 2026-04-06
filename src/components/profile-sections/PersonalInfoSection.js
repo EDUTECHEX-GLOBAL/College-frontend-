@@ -1,12 +1,13 @@
 import React, { useState, useRef } from 'react';
 import './PersonalInfoSection.css';
-
+import axiosInstance from '../../api/axiosInstance';
 // ─────────────────────────────────────────────
 // Keys that come back from the CV API but are
 // NOT simple form fields — handled by their own
 // sections (Education, Testing, Activities).
 // We must skip these when calling handleInputChange.
 // ─────────────────────────────────────────────
+const API_URL = process.env.REACT_APP_API_URL;
 const CV_SECTION_KEYS = new Set(['cvEducation', 'cvTesting', 'cvActivities', '_cvMeta', '_passportMeta']);
 
 // ─────────────────────────────────────────────
@@ -36,7 +37,7 @@ const DocumentUploadBanner = ({
       const formData = new FormData();
       formData.append(fieldName, file);
 
-      const res = await fetch(`http://localhost:5000${endpoint}`, {
+   const res = await fetch(`${API_URL}${endpoint}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         body: formData,
@@ -304,7 +305,7 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
     // Step 3: persist to DB
     try {
       setSaveStatus('saving');
-      const res = await fetch('http://localhost:5000/api/students/profile', {
+      const res = await fetch(`${API_URL}/api/students/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
