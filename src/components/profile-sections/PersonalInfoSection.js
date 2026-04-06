@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import axiosInstance from '../api/axiosInstance'; // ✅ Use axiosInstance
 import './PersonalInfoSection.css';
 
 // ─────────────────────────────────────────────
@@ -36,18 +37,18 @@ const DocumentUploadBanner = ({
       const formData = new FormData();
       formData.append(fieldName, file);
 
-      const res = await fetch(`http://localhost:5000${endpoint}`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        body: formData,
+      // ✅ Use axiosInstance instead of fetch with hardcoded localhost
+      const res = await axiosInstance.post(endpoint, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
 
-      const result = await res.json();
-      console.log(`${fieldName} API result:`, result);
+      console.log(`${fieldName} API result:`, res.data);
 
-      if (!result.success) throw new Error(result.message);
+      if (!res.data.success) throw new Error(res.data.message);
 
-      const mapped = result.data;
+      const mapped = res.data.data;
 
       // Count only the flat profile fields (not arrays/objects)
       const filled = Object.entries(mapped).filter(
@@ -304,16 +305,15 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
     // Step 3: persist to DB
     try {
       setSaveStatus('saving');
-      const res = await fetch('http://localhost:5000/api/students/profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({ ...formData, ...payload }),
+      
+      // ✅ Use axiosInstance instead of fetch with hardcoded localhost
+      const res = await axiosInstance.put('/api/students/profile', {
+        ...formData,
+        ...payload,
       });
-      const result = await res.json();
-      if (!result.success) throw new Error(result.message || 'Save failed');
+      
+      if (!res.data.success) throw new Error(res.data.message || 'Save failed');
+      
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus(null), 3000);
     } catch (err) {
