@@ -34,45 +34,44 @@ const DocumentUploadBanner = ({
     setStatus('scanning');
 
     try {
-      const formData = new FormData();
-      formData.append(fieldName, file);
+  const formData = new FormData();
+  formData.append(fieldName, file);
 
-      // ✅ Use axiosInstance instead of fetch with hardcoded localhost
-      const res = await axiosInstance.post(endpoint, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+  // ✅ Correct axios call (no headers, no duplicate)
+  const res = await axiosInstance.post(endpoint, formData);
 
-      console.log(`${fieldName} API result:`, res.data);
+  console.log(`${fieldName} API result:`, res.data);
 
-      if (!res.data.success) throw new Error(res.data.message);
+  // ✅ Safer check
+  if (!res?.data?.success) {
+    throw new Error(res?.data?.message || 'Upload failed');
+  }
 
-      const mapped = res.data.data;
+  const mapped = res.data.data;
 
-      // Count only the flat profile fields (not arrays/objects)
-      const filled = Object.entries(mapped).filter(
-        ([key, val]) =>
-          !CV_SECTION_KEYS.has(key) &&
-          val &&
-          typeof val !== 'object' &&
-          String(val).trim() !== ''
-      ).length;
+  // Count only the flat profile fields (not arrays/objects)
+  const filled = Object.entries(mapped).filter(
+    ([key, val]) =>
+      !CV_SECTION_KEYS.has(key) &&
+      val &&
+      typeof val !== 'object' &&
+      String(val).trim() !== ''
+  ).length;
 
-      setAutofillCount(filled);
-      await onAutoFill(mapped);
-      setStatus('done');
-    } catch (err) {
-      console.error(`${fieldName} parse error:`, err);
-      setStatus('error');
-    }
-  };
+  setAutofillCount(filled);
+  await onAutoFill(mapped);
+  setStatus('done');
 
-  const handleDrop = (e) => {
-    e.preventDefault();
-    handleFile(e.dataTransfer.files[0]);
-  };
+} catch (err) {
+  console.error(`${fieldName} parse error:`, err);
+  setStatus('error');
+}
+}; // ✅ THIS WAS MISSING
 
+const handleDrop = (e) => {
+  e.preventDefault();
+  handleFile(e.dataTransfer.files[0]);
+};
   if (status === 'done') {
     return (
       <div className="passport-banner passport-banner--success">

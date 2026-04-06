@@ -10,11 +10,10 @@ const BASE_URL = isProduction
   : 'http://localhost:5000';
 
 const axiosInstance = axios.create({
-  baseURL: process.env.REACT_APP_API_URL,
-  timeout: 20000, // increased for Render cold starts
+  baseURL: process.env.REACT_APP_API_URL || BASE_URL, // ✅ FIX
+  timeout: 20000,
   headers: {
     Accept: 'application/json',
-    'Content-Type': 'application/json',
   },
 });
 
