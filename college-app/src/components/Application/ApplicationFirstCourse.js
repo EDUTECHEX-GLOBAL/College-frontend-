@@ -4,22 +4,6 @@ import './ApplicationFirstCourse.css';
 const ApplicationFirstCourse = ({ formData, onInputChange, onNext, onPrev }) => {
     const [selectedCourseData, setSelectedCourseData] = useState(null);
 
-    // ─────────────────────────────────────────────────────────────
-    // HELPER — Map Course fields → Resume.js field names
-    // All field names in this form already match Resume.js exactly,
-    // so this just confirms they are written to central formData.
-    //
-    //  selectedCountry    → selectedCountry    ✅ same
-    //  selectedUniversity → selectedUniversity ✅ same
-    //  courseName         → courseName         ✅ same
-    //  campus             → campus             ✅ same
-    //  programLevel       → programLevel       ✅ same
-    //  studyMode          → studyMode          ✅ same
-    //  intakeMonth        → intakeMonth        ✅ same
-    //  intakeYear         → intakeYear         ✅ same
-    //  secondPreference   → secondPreference   ✅ same
-    //  thirdPreference    → thirdPreference    ✅ same
-    // ─────────────────────────────────────────────────────────────
     const mapToResumeFields = (data) => {
         onInputChange('selectedCountry',    data.selectedCountry    || '');
         onInputChange('selectedUniversity', data.selectedUniversity || '');

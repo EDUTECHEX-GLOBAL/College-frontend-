@@ -120,7 +120,7 @@ const Score = () => {
     }
   };
 
-  /* ── Grade helpers ── */
+  /* Grade helpers */
   const toggleGradeExpand = (grade) => {
     setExpandedGrades((prev) => ({ ...prev, [grade]: !prev[grade] }));
   };
@@ -161,7 +161,7 @@ const Score = () => {
     return (marks.reduce((a, b) => a + parseFloat(b), 0) / marks.length).toFixed(1);
   };
 
-  /* ── Submit ── */
+  /* Submit */
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -175,7 +175,7 @@ const Score = () => {
         body: JSON.stringify(payload),
       });
       const data = await response.json();
-      if (data.success) alert("Scores saved successfully ✅");
+      if (data.success) alert("Scores saved successfully");
       else alert(data.message || "Error saving scores");
     } catch (error) {
       console.error("Save Error:", error);
@@ -183,7 +183,7 @@ const Score = () => {
     }
   };
 
-  /* ── Delete ── */
+  /* Delete */
   const handleDelete = async () => {
     try {
       const response = await fetch("http://localhost:5000/api/application/score", {
@@ -199,7 +199,7 @@ const Score = () => {
           sat: false, psat: false, act: false, toefl: false,
           ielts: false, ap: false, pte: false, duolingo: false,
         });
-        alert("Scores deleted successfully ✅");
+        alert("Scores deleted successfully");
       }
     } catch (error) {
       console.error("Delete Error:", error);
@@ -211,14 +211,14 @@ const Score = () => {
   return (
     <div className="score-container">
       <div className="score-card">
-        <h2 className="score-title">🎓 Test Scores & Academic Grades</h2>
+        <h2 className="score-title">Test Scores and Academic Grades</h2>
 
         <form onSubmit={handleSubmit}>
 
-          {/* ══════════════ ACADEMIC GRADES ══════════════ */}
-          <div className="section">
-            <h3>Academic Scores</h3>
-            <p className="section-hint">
+          {/* Academic Grades Section */}
+          <div className="score-section">
+            <h3 className="score-section-title">Academic Scores</h3>
+            <p className="score-section-hint">
               Expand each grade, add your subjects, and enter marks out of 100.
             </p>
 
@@ -231,27 +231,27 @@ const Score = () => {
               );
 
               return (
-                <div key={grade} className="grade-accordion">
+                <div key={grade} className="score-grade-accordion">
 
                   {/* Header row */}
                   <div
-                    className="grade-header"
+                    className="score-grade-header"
                     onClick={() => toggleGradeExpand(grade)}
                   >
-                    <span className="grade-title-label">
+                    <span className="score-grade-title-label">
                       {gradeLabel(grade)}
                       {gradeSubjects[grade].length > 0 && (
-                        <span className="grade-subject-count">
+                        <span className="score-grade-subject-count">
                           {gradeSubjects[grade].length} subject
                           {gradeSubjects[grade].length > 1 ? "s" : ""}
                         </span>
                       )}
                     </span>
-                    <span className="grade-right">
+                    <span className="score-grade-right">
                       {avg !== null && (
-                        <span className="grade-avg-badge">Avg: {avg}%</span>
+                        <span className="score-grade-avg-badge">Avg: {avg}%</span>
                       )}
-                      <span className="accordion-arrow">
+                      <span className="score-accordion-arrow">
                         {expandedGrades[grade] ? "▲" : "▼"}
                       </span>
                     </span>
@@ -259,14 +259,14 @@ const Score = () => {
 
                   {/* Expanded body */}
                   {expandedGrades[grade] && (
-                    <div className="grade-body">
+                    <div className="score-grade-body">
 
                       {/* Subject search + add */}
-                      <div className="subject-add-row">
-                        <div className="subject-search-wrap">
+                      <div className="score-subject-add-row">
+                        <div className="score-subject-search-wrap">
                           <input
                             type="text"
-                            placeholder="Search & add a subject..."
+                            placeholder="Search and add a subject..."
                             value={subjectSearch[grade]}
                             onChange={(e) =>
                               setSubjectSearch((prev) => ({
@@ -274,14 +274,14 @@ const Score = () => {
                                 [grade]: e.target.value,
                               }))
                             }
-                            className="subject-search-input"
+                            className="score-subject-search-input"
                           />
                           {subjectSearch[grade] && filteredSubjects.length > 0 && (
-                            <div className="subject-dropdown">
+                            <div className="score-subject-dropdown">
                               {filteredSubjects.map((s) => (
                                 <div
                                   key={s}
-                                  className="subject-dropdown-item"
+                                  className="score-subject-dropdown-item"
                                   onClick={() => addSubjectToGrade(grade, s)}
                                 >
                                   {s}
@@ -291,14 +291,14 @@ const Score = () => {
                           )}
                         </div>
                         {/* Quick-add chips for common subjects */}
-                        <div className="quick-add-chips">
+                        <div className="score-quick-add-chips">
                           {["Mathematics", "Science", "English", "Physics", "Chemistry"].map(
                             (s) =>
                               !gradeSubjects[grade].includes(s) && (
                                 <button
                                   key={s}
                                   type="button"
-                                  className="chip-btn"
+                                  className="score-chip-btn"
                                   onClick={() => addSubjectToGrade(grade, s)}
                                 >
                                   + {s}
@@ -310,11 +310,11 @@ const Score = () => {
 
                       {/* Subject marks list */}
                       {gradeSubjects[grade].length === 0 ? (
-                        <p className="no-subjects-hint">
+                        <p className="score-no-subjects-hint">
                           No subjects added yet. Search above or use quick-add.
                         </p>
                       ) : (
-                        <div className="subject-marks-grid">
+                        <div className="score-subject-marks-grid">
                           {gradeSubjects[grade].map((subject) => {
                             const val = subjectMarks[grade][subject] || "";
                             const num = parseFloat(val);
@@ -330,12 +330,12 @@ const Score = () => {
                                 : "mark-low";
 
                             return (
-                              <div key={subject} className={`subject-mark-card ${colorClass}`}>
-                                <div className="subject-mark-top">
-                                  <span className="subject-name">{subject}</span>
+                              <div key={subject} className={`score-subject-mark-card ${colorClass}`}>
+                                <div className="score-subject-mark-top">
+                                  <span className="score-subject-name">{subject}</span>
                                   <button
                                     type="button"
-                                    className="remove-subject-btn"
+                                    className="score-remove-subject-btn"
                                     onClick={() => removeSubjectFromGrade(grade, subject)}
                                     title="Remove subject"
                                   >
@@ -351,10 +351,10 @@ const Score = () => {
                                   onChange={(e) =>
                                     handleSubjectMarkChange(grade, subject, e.target.value)
                                   }
-                                  className="subject-mark-input"
+                                  className="score-subject-mark-input"
                                 />
                                 {val !== "" && !isNaN(num) && (
-                                  <span className="mark-percent-label">{num}%</span>
+                                  <span className="score-mark-percent-label">{num}%</span>
                                 )}
                               </div>
                             );
@@ -368,12 +368,12 @@ const Score = () => {
             })}
           </div>
 
-          {/* ══════════════ TEST SELECTION ══════════════ */}
-          <div className="section">
-            <h3>Select Tests</h3>
-            <div className="checkbox-grid">
+          {/* Test Selection Section */}
+          <div className="score-section">
+            <h3 className="score-section-title">Select Tests</h3>
+            <div className="score-checkbox-grid">
               {Object.keys(selectedTests).map((test) => (
-                <label key={test} className="checkbox-card">
+                <label key={test} className="score-checkbox-card">
                   <input
                     type="checkbox"
                     name={test}
@@ -386,10 +386,10 @@ const Score = () => {
             </div>
           </div>
 
-          {/* ══════════════ TEST SCORES ══════════════ */}
-          <div className="section">
-            <h3>Test Scores</h3>
-            <div className="input-grid">
+          {/* Test Scores Section */}
+          <div className="score-section">
+            <h3 className="score-section-title">Test Scores</h3>
+            <div className="score-input-grid">
 
               {selectedTests.sat && (
                 <>
@@ -397,7 +397,7 @@ const Score = () => {
                     value={scores.satTotal || ""} onChange={handleScoreChange} />
                   <input type="number" name="satMath" placeholder="SAT Math"
                     value={scores.satMath || ""} onChange={handleScoreChange} />
-                  <input type="number" name="satReading" placeholder="SAT Reading & Writing"
+                  <input type="number" name="satReading" placeholder="SAT Reading and Writing"
                     value={scores.satReading || ""} onChange={handleScoreChange} />
                   <input type="date" name="satDate"
                     value={scores.satDate || ""} onChange={handleScoreChange} />
@@ -410,7 +410,7 @@ const Score = () => {
                     value={scores.psatTotal || ""} onChange={handleScoreChange} />
                   <input type="number" name="psatMath" placeholder="PSAT Math"
                     value={scores.psatMath || ""} onChange={handleScoreChange} />
-                  <input type="number" name="psatReading" placeholder="PSAT Reading & Writing"
+                  <input type="number" name="psatReading" placeholder="PSAT Reading and Writing"
                     value={scores.psatReading || ""} onChange={handleScoreChange} />
                   <input type="date" name="psatDate"
                     value={scores.psatDate || ""} onChange={handleScoreChange} />
@@ -474,10 +474,12 @@ const Score = () => {
             </div>
           </div>
 
-          <button type="submit" className="save-btn">Save Scores</button>
-          <button type="button" className="delete-btn" onClick={handleDelete}>
-            Delete Scores
-          </button>
+          <div className="score-button-group">
+            <button type="submit" className="score-save-btn">Save Scores</button>
+            <button type="button" className="score-delete-btn" onClick={handleDelete}>
+              Delete Scores
+            </button>
+          </div>
 
         </form>
       </div>

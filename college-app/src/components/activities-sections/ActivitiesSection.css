@@ -9,7 +9,7 @@
   --act-primary-light:    #3b82f6;
   --act-primary-pale:     #f0fdfa;
   --act-primary-border:   #b2e8e6;
-  --act-primary-gradient: linear-gradient(135deg, #3b82f6 0%, #0891b2 100%);
+  --act-primary-gradient: linear-gradient(135deg, #3b82f6 0%, #3b82f6 100%);
 
   --act-navy:             #1a7ce5;
   --act-success:          #3b82f6;

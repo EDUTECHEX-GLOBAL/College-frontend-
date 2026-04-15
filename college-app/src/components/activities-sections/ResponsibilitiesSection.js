@@ -8,14 +8,18 @@ const API_URL = process.env.REACT_APP_API_BASE_URL;
 const ResponsibilitiesSection = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [responsibilitiesData, setResponsibilitiesData] = useState({
     responsibilities: [],
     circumstances: []
   });
 
+  // Determine if user is first year or transfer
+  const isFirstYear = window.location.pathname.includes('/firstyear/');
+  const basePath = isFirstYear ? '/firstyear' : '/transfer';
+
   const handleBackToDashboard = () => {
-    const isFirstYear = window.location.pathname.includes('/firstyear/');
-    navigate(isFirstYear ? '/firstyear/dashboard' : '/transfer/dashboard');
+    navigate(`${basePath}/dashboard`);
   };
 
   const responsibilityOptions = [
@@ -42,11 +46,18 @@ const ResponsibilitiesSection = () => {
   useEffect(() => {
     const fetchResponsibilitiesData = async () => {
       try {
+        setLoading(true);
         const token = localStorage.getItem('token');
-        if (!token) return;
+        if (!token) {
+          navigate('/sign-in');
+          return;
+        }
 
         const response = await axios.get(`${API_URL}/api/students/responsibilities`, {
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+          headers: { 
+            'Authorization': `Bearer ${token}`, 
+            'Content-Type': 'application/json' 
+          }
         });
 
         if (response.data.success) {
@@ -57,86 +68,160 @@ const ResponsibilitiesSection = () => {
         }
       } catch (error) {
         console.error('Error fetching responsibilities data:', error);
+        // If error, keep default empty arrays
+      } finally {
+        setLoading(false);
       }
     };
     fetchResponsibilitiesData();
-  }, []);
+  }, [navigate]);
 
   const handleResponsibilityChange = (responsibility, checked) => {
     setResponsibilitiesData(prev => {
+      // Handle "None of these" selection
       if (responsibility === 'None of these') {
-        return { ...prev, responsibilities: checked ? [] : prev.responsibilities };
+        if (checked) {
+          return { ...prev, responsibilities: ['None of these'] };
+        } else {
+          return { ...prev, responsibilities: [] };
+        }
       }
-      if (checked) {
-        return {
-          ...prev,
-          responsibilities: [...prev.responsibilities.filter(r => r !== 'None of these'), responsibility]
-        };
-      }
-      return { ...prev, responsibilities: prev.responsibilities.filter(r => r !== responsibility) };
+      
+      // Remove "None of these" if it exists when selecting other options
+      let newResponsibilities = checked
+        ? [...prev.responsibilities.filter(r => r !== 'None of these'), responsibility]
+        : prev.responsibilities.filter(r => r !== responsibility);
+      
+      return { ...prev, responsibilities: newResponsibilities };
     });
   };
 
   const handleCircumstanceChange = (circumstance, checked) => {
     setResponsibilitiesData(prev => {
+      // Handle "None of these" selection
       if (circumstance === 'None of these') {
-        return { ...prev, circumstances: checked ? [] : prev.circumstances };
+        if (checked) {
+          return { ...prev, circumstances: ['None of these'] };
+        } else {
+          return { ...prev, circumstances: [] };
+        }
       }
-      if (checked) {
-        return {
-          ...prev,
-          circumstances: [...prev.circumstances.filter(c => c !== 'None of these'), circumstance]
-        };
-      }
-      return { ...prev, circumstances: prev.circumstances.filter(c => c !== circumstance) };
+      
+      // Remove "None of these" if it exists when selecting other options
+      let newCircumstances = checked
+        ? [...prev.circumstances.filter(c => c !== 'None of these'), circumstance]
+        : prev.circumstances.filter(c => c !== circumstance);
+      
+      return { ...prev, circumstances: newCircumstances };
     });
   };
 
   const handleSaveAndContinue = async () => {
-    setLoading(true);
+    setSaving(true);
     try {
       const token = localStorage.getItem('token');
-      if (!token) { navigate('/sign-in'); return; }
+      if (!token) {
+        navigate('/sign-in');
+        return;
+      }
 
       const response = await axios.post(
         `${API_URL}/api/students/responsibilities`,
         { responsibilitiesData },
-        { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } }
+        { 
+          headers: { 
+            'Authorization': `Bearer ${token}`, 
+            'Content-Type': 'application/json' 
+          } 
+        }
       );
 
       if (response.data.success) {
+        // Update local storage with progress
         const storedUserData = localStorage.getItem('userData');
         if (storedUserData) {
           const userData = JSON.parse(storedUserData);
           localStorage.setItem('userData', JSON.stringify({
             ...userData,
-            applicationProgress: { ...userData.applicationProgress, responsibilities: 100 }
+            applicationProgress: { 
+              ...userData.applicationProgress, 
+              responsibilities: 100 
+            }
           }));
         }
+        
+        // Dispatch event to update other components
+        window.dispatchEvent(new CustomEvent('responsibilitiesUpdated', { 
+          detail: { completed: true } 
+        }));
+        
+        // Navigate back to dashboard
         handleBackToDashboard();
+      } else {
+        alert('Error saving your information. Please try again.');
       }
     } catch (error) {
       console.error('Error saving responsibilities data:', error);
       alert('Error saving your information. Please try again.');
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
-  // Reusable checkbox option row
+  // Calculate progress percentage
+  const calculateProgress = () => {
+    let total = 0;
+    let completed = 0;
+    
+    if (responsibilitiesData.responsibilities.length > 0) {
+      total++;
+      completed++;
+    }
+    if (responsibilitiesData.circumstances.length > 0) {
+      total++;
+      completed++;
+    }
+    
+    return total === 0 ? 0 : Math.round((completed / total) * 100);
+  };
+
+  const progress = calculateProgress();
+
+  // Reusable checkbox option component
   const OptionRow = ({ label, checked, onChange, isNone = false }) => (
-    <label className={`option-label${isNone ? ' none-option' : ''}`}>
+    <label className={`option-label ${isNone ? 'none-option' : ''}`}>
       <input
         type="checkbox"
         checked={checked}
-        onChange={onChange}
+        onChange={(e) => onChange(e.target.checked)}
         className="option-input"
-        disabled={loading}
+        disabled={saving}
       />
       <span className="checkmark"></span>
       <span className="option-text">{label}</span>
     </label>
   );
+
+  if (loading) {
+    return (
+      <div className="responsibilities-container">
+        <div className="responsibilities-content">
+          <div className="responsibilities-card" style={{ textAlign: 'center', padding: '60px 32px' }}>
+            <div className="loading-spinner" style={{ 
+              width: '44px', 
+              height: '44px', 
+              border: '3px solid var(--resp-gray-200)', 
+              borderTop: '3px solid var(--resp-primary)', 
+              borderRadius: '50%', 
+              animation: 'spin 0.8s linear infinite',
+              margin: '0 auto 16px'
+            }}></div>
+            <p style={{ color: 'var(--resp-gray-600)' }}>Loading your information...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="responsibilities-container">
@@ -147,7 +232,7 @@ const ResponsibilitiesSection = () => {
             <button
               className="back-dashboard-btn"
               onClick={handleBackToDashboard}
-              disabled={loading}
+              disabled={saving}
             >
               ← Back to Dashboard
             </button>
@@ -156,7 +241,7 @@ const ResponsibilitiesSection = () => {
             <h1>Complete your Common Application</h1>
           </div>
           <div className="header-right">
-            <div className="progress-status">In progress</div>
+            <div className="progress-status">{progress}% Complete</div>
           </div>
         </div>
 
@@ -172,7 +257,7 @@ const ResponsibilitiesSection = () => {
             </p>
           </div>
 
-          {/* Responsibilities */}
+          {/* Responsibilities Section */}
           <div className="section-group">
             <div className="responsibilities-section-header">
               <h3>
@@ -184,22 +269,22 @@ const ResponsibilitiesSection = () => {
             <div className="options-group">
               {responsibilityOptions.map((option, index) => (
                 <OptionRow
-                  key={index}
+                  key={`resp-${index}`}
                   label={option}
                   checked={responsibilitiesData.responsibilities.includes(option)}
-                  onChange={(e) => handleResponsibilityChange(option, e.target.checked)}
+                  onChange={(checked) => handleResponsibilityChange(option, checked)}
                 />
               ))}
               <OptionRow
                 label="None of these"
-                isNone
+                isNone={true}
                 checked={responsibilitiesData.responsibilities.includes('None of these')}
-                onChange={(e) => handleResponsibilityChange('None of these', e.target.checked)}
+                onChange={(checked) => handleResponsibilityChange('None of these', checked)}
               />
             </div>
           </div>
 
-          {/* Circumstances */}
+          {/* Circumstances Section */}
           <div className="section-group">
             <div className="responsibilities-section-header">
               <h3>
@@ -211,28 +296,45 @@ const ResponsibilitiesSection = () => {
             <div className="options-group">
               {circumstanceOptions.map((option, index) => (
                 <OptionRow
-                  key={index}
+                  key={`circ-${index}`}
                   label={option}
                   checked={responsibilitiesData.circumstances.includes(option)}
-                  onChange={(e) => handleCircumstanceChange(option, e.target.checked)}
+                  onChange={(checked) => handleCircumstanceChange(option, checked)}
                 />
               ))}
               <OptionRow
                 label="None of these"
-                isNone
+                isNone={true}
                 checked={responsibilitiesData.circumstances.includes('None of these')}
-                onChange={(e) => handleCircumstanceChange('None of these', e.target.checked)}
+                onChange={(checked) => handleCircumstanceChange('None of these', checked)}
               />
             </div>
           </div>
 
+          {/* Continue Button */}
           <div className="continue-section">
             <button
               className="continue-btn"
               onClick={handleSaveAndContinue}
-              disabled={loading}
+              disabled={saving}
             >
-              {loading ? 'Saving...' : 'Continue'}
+              {saving ? (
+                <>
+                  <span className="spinner" style={{
+                    display: 'inline-block',
+                    width: '16px',
+                    height: '16px',
+                    border: '2px solid rgba(255,255,255,0.3)',
+                    borderTop: '2px solid white',
+                    borderRadius: '50%',
+                    animation: 'spin 0.6s linear infinite',
+                    marginRight: '8px'
+                  }}></span>
+                  Saving...
+                </>
+              ) : (
+                'Continue'
+              )}
             </button>
           </div>
         </div>

@@ -63,19 +63,19 @@ const Courses = ({ onCourseSelect }) => {
       setLoading(true);
       setError(null);
       
-      console.log('📥 Loading university data for ID:', universityId);
+      console.log('Loading university data for ID:', universityId);
       
       let universityData = null;
       let selectedCoursesData = [];
       
       if (location.state?.university) {
         universityData = location.state.university;
-        console.log('✅ Found university in navigation state:', universityData.INSTNM);
+        console.log('Found university in navigation state:', universityData.INSTNM);
       }
       
       if (location.state?.selectedCourses) {
         selectedCoursesData = location.state.selectedCourses;
-        console.log('✅ Found selected courses in navigation state:', selectedCoursesData.length);
+        console.log('Found selected courses in navigation state:', selectedCoursesData.length);
       }
       
       if (!universityData) {
@@ -83,9 +83,9 @@ const Courses = ({ onCourseSelect }) => {
         if (stored) {
           try {
             universityData = JSON.parse(stored);
-            console.log(`✅ Found university in localStorage:`, universityData.INSTNM);
+            console.log('Found university in localStorage:', universityData.INSTNM);
           } catch (e) {
-            console.error('❌ Error parsing localStorage data:', e);
+            console.error('Error parsing localStorage data:', e);
           }
         }
       }
@@ -95,9 +95,9 @@ const Courses = ({ onCourseSelect }) => {
         if (storedCourses) {
           try {
             selectedCoursesData = JSON.parse(storedCourses);
-            console.log(`✅ Found selected courses in localStorage:`, selectedCoursesData.length);
+            console.log('Found selected courses in localStorage:', selectedCoursesData.length);
           } catch (e) {
-            console.error('❌ Error parsing stored courses:', e);
+            console.error('Error parsing stored courses:', e);
           }
         }
       }
@@ -109,10 +109,10 @@ const Courses = ({ onCourseSelect }) => {
             const parsed = JSON.parse(current);
             if (parsed.UNITID?.toString() === universityId?.toString()) {
               universityData = parsed;
-              console.log('✅ Found university in currentUniversity:', universityData.INSTNM);
+              console.log('Found university in currentUniversity:', universityData.INSTNM);
             }
           } catch (e) {
-            console.error('❌ Error parsing currentUniversity:', e);
+            console.error('Error parsing currentUniversity:', e);
           }
         }
       }
@@ -123,12 +123,12 @@ const Courses = ({ onCourseSelect }) => {
         setUniversity(universityData);
         extractProgramsFromUniversity(universityData, selectedCoursesData);
       } else {
-        console.log('❌ No university data found, fetching from API...');
+        console.log('No university data found, fetching from API...');
         await fetchUniversityFromAPI();
       }
       
     } catch (err) {
-      console.error('❌ Error loading university data:', err);
+      console.error('Error loading university data:', err);
       setError('Failed to load university data. Please go back and try again.');
       setLoading(false);
     }
@@ -136,7 +136,7 @@ const Courses = ({ onCourseSelect }) => {
 
   const fetchUniversityFromAPI = async () => {
     try {
-      console.log('🔍 Fetching university from API with ID:', universityId);
+      console.log('Fetching university from API with ID:', universityId);
       
       const token = localStorage.getItem('token');
       const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
@@ -145,7 +145,7 @@ const Courses = ({ onCourseSelect }) => {
       
       if (response.data.success) {
         const uniData = response.data.data;
-        console.log('✅ Found university in college-search API:', uniData.INSTNM);
+        console.log('Found university in college-search API:', uniData.INSTNM);
         setUniversity(uniData);
         extractProgramsFromUniversity(uniData, []);
       } else {
@@ -153,14 +153,14 @@ const Courses = ({ onCourseSelect }) => {
         setLoading(false);
       }
     } catch (apiError) {
-      console.error('❌ API Error:', apiError);
+      console.error('API Error:', apiError);
       setError('Unable to load university details. Please try again later.');
       setLoading(false);
     }
   };
 
   const extractProgramsFromUniversity = (uniData, selectedCoursesData = []) => {
-    console.log('🔍 Extracting programs from university data:', uniData.INSTNM);
+    console.log('Extracting programs from university data:', uniData.INSTNM);
     
     let extractedPrograms = [];
     const debug = {
@@ -172,23 +172,23 @@ const Courses = ({ onCourseSelect }) => {
       selectedCoursesCount: selectedCoursesData.length
     };
     
-    console.log('📊 Debug info:', debug);
+    console.log('Debug info:', debug);
     
     if (selectedCoursesData && selectedCoursesData.length > 0) {
-      console.log(`📚 Using ${selectedCoursesData.length} selected courses from profile`);
+      console.log(`Using ${selectedCoursesData.length} selected courses from profile`);
       extractedPrograms = selectedCoursesData;
     } else {
       if (uniData.programs && Array.isArray(uniData.programs) && uniData.programs.length > 0) {
-        console.log(`📚 Found ${uniData.programs.length} programs in uniData.programs`);
+        console.log(`Found ${uniData.programs.length} programs in uniData.programs`);
         extractedPrograms = uniData.programs;
       } else if (uniData.metadata?.programs && Array.isArray(uniData.metadata.programs) && uniData.metadata.programs.length > 0) {
-        console.log(`📚 Found ${uniData.metadata.programs.length} programs in metadata.programs`);
+        console.log(`Found ${uniData.metadata.programs.length} programs in metadata.programs`);
         extractedPrograms = uniData.metadata.programs;
       } else if (uniData.GUS_DATA?.programs_data && Array.isArray(uniData.GUS_DATA.programs_data) && uniData.GUS_DATA.programs_data.length > 0) {
-        console.log(`📚 Found ${uniData.GUS_DATA.programs_data.length} programs in GUS_DATA.programs_data`);
+        console.log(`Found ${uniData.GUS_DATA.programs_data.length} programs in GUS_DATA.programs_data`);
         extractedPrograms = uniData.GUS_DATA.programs_data;
       } else if (uniData.data?.programs && Array.isArray(uniData.data.programs) && uniData.data.programs.length > 0) {
-        console.log(`📚 Found ${uniData.data.programs.length} programs in data.programs`);
+        console.log(`Found ${uniData.data.programs.length} programs in data.programs`);
         extractedPrograms = uniData.data.programs;
       }
     }
@@ -196,7 +196,7 @@ const Courses = ({ onCourseSelect }) => {
     if (extractedPrograms.length > 0) {
       processPrograms(extractedPrograms, uniData);
     } else {
-      console.log('⚠️ No programs found in any data source');
+      console.log('No programs found in any data source');
       setDebugInfo(debug);
       setPrograms([]);
       setFilteredPrograms([]);
@@ -210,7 +210,7 @@ const Courses = ({ onCourseSelect }) => {
     const modes = new Set();
     const levels = new Set();
 
-    console.log('🔄 Processing programs data:', programsData.length);
+    console.log('Processing programs data:', programsData.length);
 
     programsData.forEach((prog, index) => {
       const title = prog.title || prog.program_name || prog.name || 'Program';
@@ -269,7 +269,7 @@ const Courses = ({ onCourseSelect }) => {
       extractedPrograms.push(program);
     });
 
-    console.log(`✅ Processed ${extractedPrograms.length} programs`);
+    console.log(`Processed ${extractedPrograms.length} programs`);
     
     extractedPrograms.sort((a, b) => a.title.localeCompare(b.title));
     
@@ -388,7 +388,7 @@ const Courses = ({ onCourseSelect }) => {
         onCourseSelect(courseData);
       }
     } catch (error) {
-      console.error("❌ Error saving course:", error);
+      console.error("Error saving course:", error);
       alert("An error occurred while saving your course selection.");
     } finally {
       setSavingToBackend(false);
@@ -433,22 +433,22 @@ const Courses = ({ onCourseSelect }) => {
 
   if (loading) {
     return (
-      <div className="courses-loading">
-        <div className="loading-spinner"></div>
+      <div className="course-loading">
+        <div className="course-loading-spinner"></div>
         <p>Loading university details and programs...</p>
-        <p className="loading-subtitle">This may take a few moments</p>
+        <p className="course-loading-subtitle">This may take a few moments</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="courses-error">
-        <div className="error-icon">⚠️</div>
+      <div className="course-error">
+        <div className="course-error-icon">!</div>
         <h3>{error}</h3>
         <p>Please try again or contact support if the problem persists.</p>
-        <button onClick={handleBackToSearch} className="back-button">
-          ← Back to Search
+        <button onClick={handleBackToSearch} className="course-back-button">
+          Back to Search
         </button>
       </div>
     );
@@ -456,93 +456,88 @@ const Courses = ({ onCourseSelect }) => {
 
   if (!university) {
     return (
-      <div className="courses-error">
-        <div className="error-icon">❌</div>
+      <div className="course-error">
+        <div className="course-error-icon">!</div>
         <h3>University not found</h3>
         <p>The university you're looking for doesn't exist or has been removed.</p>
-        <button onClick={handleBackToSearch} className="back-button">
-          ← Back to Search
+        <button onClick={handleBackToSearch} className="course-back-button">
+          Back to Search
         </button>
       </div>
     );
   }
 
   return (
-    <div className="courses-container">
+    <div className="course-container">
       {/* Header */}
-      <div className="courses-header">
-        <div className="header-top">
-          <button onClick={handleBackToSearch} className="header-back-button">
-            <span className="back-arrow">←</span> Back to Search
+      <div className="course-header">
+        <div className="course-header-top">
+          <button onClick={handleBackToSearch} className="course-header-back-button">
+            Back to Search
           </button>
-          <div className="header-actions">
+          <div className="course-header-actions">
             {selectedCourses.length > 0 && (
-              <div className="selected-courses-badge">
-                <span className="badge-icon">📚</span>
+              <div className="course-selected-badge">
                 {selectedCourses.length} Selected {selectedCourses.length === 1 ? 'Course' : 'Courses'}
               </div>
             )}
             <button 
-              className="filter-toggle-btn"
+              className="course-filter-toggle-btn"
               onClick={() => setShowFilters(!showFilters)}
             >
-              <span className="filter-icon">🔍</span>
               {showFilters ? 'Hide Filters' : 'Show Filters'}
             </button>
           </div>
         </div>
         
-        <div className="university-header-card">
-          <div className="university-header-content">
-            <div className="university-logo-wrapper">
-              <div className="university-logo-placeholder">
-                <div className="university-logo-initials">
+        <div className="course-university-header-card">
+          <div className="course-university-header-content">
+            <div className="course-university-logo-wrapper">
+              <div className="course-university-logo-placeholder">
+                <div className="course-university-logo-initials">
                   {getInitials(university.INSTNM)}
                 </div>
               </div>
               {university.INSTNM.includes('University') && (
-                <div className="university-badge">🏛️ University</div>
+                <div className="course-university-badge">University</div>
               )}
             </div>
-            <div className="university-header-info">
-              <h1 className="university-title">{university.INSTNM}</h1>
-              <div className="university-meta">
-                <span className="university-location">
-                  <span className="meta-icon">📍</span>
+            <div className="course-university-header-info">
+              <h1 className="course-university-title">{university.INSTNM}</h1>
+              <div className="course-university-meta">
+                <span className="course-university-location">
                   {university.CITY || university.location?.city || 'City'}, {university.STABBR || university.location?.state || 'State'}
                 </span>
-                <span className="meta-separator">•</span>
-                <span className="university-country">
-                  <span className="meta-icon">🌎</span>
+                <span className="course-meta-separator">•</span>
+                <span className="course-university-country">
                   {university.COUNTRY || university.location?.country || 'USA'}
                 </span>
                 {university.website && (
                   <>
-                    <span className="meta-separator">•</span>
-                    <a href={university.website} target="_blank" rel="noopener noreferrer" className="university-website">
-                      <span className="meta-icon">🔗</span>
+                    <span className="course-meta-separator">•</span>
+                    <a href={university.website} target="_blank" rel="noopener noreferrer" className="course-university-website">
                       Visit Website
                     </a>
                   </>
                 )}
               </div>
               
-              <div className="university-stats">
-                <div className="stat-item">
-                  <span className="stat-value">{programs.length}</span>
-                  <span className="stat-label">Programmes</span>
+              <div className="course-university-stats">
+                <div className="course-stat-item">
+                  <span className="course-stat-value">{programs.length}</span>
+                  <span className="course-stat-label">Programmes</span>
                 </div>
-                <div className="stat-item">
-                  <span className="stat-value">{majorAreas.length}</span>
-                  <span className="stat-label">Fields of Study</span>
+                <div className="course-stat-item">
+                  <span className="course-stat-value">{majorAreas.length}</span>
+                  <span className="course-stat-label">Fields of Study</span>
                 </div>
-                <div className="stat-item">
-                  <span className="stat-value">{studyModes.length}</span>
-                  <span className="stat-label">Study Modes</span>
+                <div className="course-stat-item">
+                  <span className="course-stat-value">{studyModes.length}</span>
+                  <span className="course-stat-label">Study Modes</span>
                 </div>
-                <div className="stat-item">
-                  <span className="stat-value">{programLevels.length}</span>
-                  <span className="stat-label">Degree Levels</span>
+                <div className="course-stat-item">
+                  <span className="course-stat-value">{programLevels.length}</span>
+                  <span className="course-stat-label">Degree Levels</span>
                 </div>
               </div>
             </div>
@@ -552,55 +547,52 @@ const Courses = ({ onCourseSelect }) => {
 
       {/* Debug Info - Only show if no programs */}
       {programs.length === 0 && debugInfo && (
-        <div className="debug-info">
-          <div className="debug-header">
-            <span className="debug-icon">🔧</span>
+        <div className="course-debug-info">
+          <div className="course-debug-header">
             <h4>Debug Information - No Programs Found</h4>
           </div>
-          <div className="debug-content">
+          <div className="course-debug-content">
             <p><strong>University:</strong> {university.INSTNM}</p>
             <p><strong>Debug Info:</strong></p>
             <pre>{JSON.stringify(debugInfo, null, 2)}</pre>
-            <p className="debug-note">
+            <p className="course-debug-note">
               <strong>Note:</strong> This university has no programs in the database. 
               Showing selected courses from your profile instead.
             </p>
-            <button onClick={handleRetry} className="debug-retry-btn">
-              🔄 Retry Loading Programs
+            <button onClick={handleRetry} className="course-debug-retry-btn">
+              Retry Loading Programs
             </button>
           </div>
         </div>
       )}
 
       {/* Main Content */}
-      <div className="courses-content">
+      <div className="course-content">
         {/* Sidebar with Search and Filters */}
         {programs.length > 0 && showFilters && (
-          <div className="courses-sidebar">
-            <div className="sidebar-card">
-              <div className="sidebar-header">
-                <h3 className="sidebar-title">
-                  <span className="sidebar-icon">🔍</span>
-                  Search & Filter
+          <div className="course-sidebar">
+            <div className="course-sidebar-card">
+              <div className="course-sidebar-header">
+                <h3 className="course-sidebar-title">
+                  Search and Filter
                 </h3>
-                <div className="results-count">
+                <div className="course-results-count">
                   {filteredPrograms.length} of {programs.length} programs
                 </div>
               </div>
               
-              <div className="sidebar-search">
-                <div className="search-wrapper">
-                  <span className="search-icon">🔍</span>
+              <div className="course-sidebar-search">
+                <div className="course-search-wrapper">
                   <input
                     type="text"
                     placeholder="Search by program name, field, or keyword..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="search-input"
+                    className="course-search-input"
                   />
                   {searchTerm && (
                     <button 
-                      className="clear-search-btn"
+                      className="course-clear-search-btn"
                       onClick={() => setSearchTerm("")}
                       aria-label="Clear search"
                     >
@@ -610,16 +602,15 @@ const Courses = ({ onCourseSelect }) => {
                 </div>
               </div>
               
-              <div className="filters-section">
-                <div className="filter-group">
-                  <label className="filter-label">
-                    <span className="filter-icon">📚</span>
+              <div className="course-filters-section">
+                <div className="course-filter-group">
+                  <label className="course-filter-label">
                     FIELD OF STUDY
                   </label>
                   <select 
                     value={selectedMajorArea}
                     onChange={(e) => setSelectedMajorArea(e.target.value)}
-                    className="filter-select"
+                    className="course-filter-select"
                   >
                     <option value="All">All Fields</option>
                     {majorAreas.map((area, index) => (
@@ -630,15 +621,14 @@ const Courses = ({ onCourseSelect }) => {
                   </select>
                 </div>
                 
-                <div className="filter-group">
-                  <label className="filter-label">
-                    <span className="filter-icon">🎓</span>
+                <div className="course-filter-group">
+                  <label className="course-filter-label">
                     DEGREE LEVEL
                   </label>
                   <select 
                     value={selectedLevel}
                     onChange={(e) => setSelectedLevel(e.target.value)}
-                    className="filter-select"
+                    className="course-filter-select"
                   >
                     <option value="All">All Levels</option>
                     {programLevels.map((level, index) => (
@@ -649,15 +639,14 @@ const Courses = ({ onCourseSelect }) => {
                   </select>
                 </div>
                 
-                <div className="filter-group">
-                  <label className="filter-label">
-                    <span className="filter-icon">💻</span>
+                <div className="course-filter-group">
+                  <label className="course-filter-label">
                     STUDY MODE
                   </label>
                   <select 
                     value={selectedStudyMode}
                     onChange={(e) => setSelectedStudyMode(e.target.value)}
-                    className="filter-select"
+                    className="course-filter-select"
                   >
                     <option value="All">All Modes</option>
                     {studyModes.map((mode, index) => (
@@ -668,15 +657,14 @@ const Courses = ({ onCourseSelect }) => {
                   </select>
                 </div>
                 
-                <div className="filter-group">
-                  <label className="filter-label">
-                    <span className="filter-icon">📊</span>
+                <div className="course-filter-group">
+                  <label className="course-filter-label">
                     SORT BY
                   </label>
                   <select 
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
-                    className="filter-select"
+                    className="course-filter-select"
                   >
                     <option value="title">Program Name</option>
                     <option value="level">Degree Level</option>
@@ -684,20 +672,20 @@ const Courses = ({ onCourseSelect }) => {
                   </select>
                 </div>
                 
-                <div className="filter-group">
-                  <label className="filter-label checkbox-label">
+                <div className="course-filter-group">
+                  <label className="course-filter-label checkbox-label">
                     <input
                       type="checkbox"
                       checked={showFavoritesOnly}
                       onChange={(e) => setShowFavoritesOnly(e.target.checked)}
                     />
-                    <span className="checkbox-text">Show favorites only</span>
+                    <span className="course-checkbox-text">Show favorites only</span>
                   </label>
                 </div>
                 
                 {(searchTerm || selectedMajorArea !== "All" || selectedStudyMode !== "All" || selectedLevel !== "All" || showFavoritesOnly) && (
                   <button 
-                    className="reset-filters-btn"
+                    className="course-reset-filters-btn"
                     onClick={() => {
                       setSearchTerm("");
                       setSelectedMajorArea("All");
@@ -707,7 +695,6 @@ const Courses = ({ onCourseSelect }) => {
                       setSortBy("title");
                     }}
                   >
-                    <span className="reset-icon">↺</span>
                     Clear All Filters
                   </button>
                 )}
@@ -717,53 +704,53 @@ const Courses = ({ onCourseSelect }) => {
         )}
 
         {/* Programs Grid */}
-        <div className={`programs-content ${!showFilters ? 'full-width' : ''}`}>
+        <div className={`course-programs-content ${!showFilters ? 'full-width' : ''}`}>
           {programs.length === 0 ? (
-            <div className="no-programs-found">
-              <div className="no-programs-icon">📚</div>
+            <div className="course-no-programs-found">
+              <div className="course-no-programs-icon"></div>
               <h3>No Programs Available in Database</h3>
               <p>This university doesn't have programs in the database yet.</p>
-              <p className="no-programs-subtitle">
+              <p className="course-no-programs-subtitle">
                 You can still view your selected courses from your profile.
               </p>
               {selectedCourses.length > 0 && (
-                <div className="selected-courses-section">
+                <div className="course-selected-courses-section">
                   <h4>Your Selected Courses ({selectedCourses.length})</h4>
-                  <div className="selected-courses-grid">
+                  <div className="course-selected-courses-grid">
                     {selectedCourses.map((course, idx) => (
-                      <div key={idx} className="selected-course-card">
+                      <div key={idx} className="course-selected-course-card">
                         <div className="course-card-header">
                           <h5>{course.title || course.program_name}</h5>
                           <button 
-                            className={`favorite-btn ${favorites.includes(course.id) ? 'active' : ''}`}
+                            className={`course-favorite-btn ${favorites.includes(course.id) ? 'active' : ''}`}
                             onClick={() => toggleFavorite(course)}
                             aria-label={favorites.includes(course.id) ? "Remove from favorites" : "Add to favorites"}
                           >
-                            {favorites.includes(course.id) ? '🔵' : '⚪'}
+                            {favorites.includes(course.id) ? '★' : '☆'}
                           </button>
                         </div>
-                        <div className="course-details">
+                        <div className="course-course-details">
                           {course.level && (
-                            <div className="course-detail">
-                              <span className="detail-label">Level:</span>
-                              <span className="detail-value">{course.level}</span>
+                            <div className="course-course-detail">
+                              <span className="course-detail-label">Level:</span>
+                              <span className="course-detail-value">{course.level}</span>
                             </div>
                           )}
                           {course.studyMode && (
-                            <div className="course-detail">
-                              <span className="detail-label">Mode:</span>
-                              <span className="detail-value">{course.studyMode}</span>
+                            <div className="course-course-detail">
+                              <span className="course-detail-label">Mode:</span>
+                              <span className="course-detail-value">{course.studyMode}</span>
                             </div>
                           )}
                           {course.duration && (
-                            <div className="course-detail">
-                              <span className="detail-label">Duration:</span>
-                              <span className="detail-value">{course.duration}</span>
+                            <div className="course-course-detail">
+                              <span className="course-detail-label">Duration:</span>
+                              <span className="course-detail-value">{course.duration}</span>
                             </div>
                           )}
                         </div>
                         <button 
-                          className="select-program-btn"
+                          className="course-select-program-btn"
                           onClick={() => handleProgramSelect(course)}
                         >
                           Select Program
@@ -773,120 +760,111 @@ const Courses = ({ onCourseSelect }) => {
                   </div>
                 </div>
               )}
-              <button onClick={handleBackToSearch} className="back-button">
-                ← Back to Search
+              <button onClick={handleBackToSearch} className="course-back-button">
+                Back to Search
               </button>
             </div>
           ) : filteredPrograms.length > 0 ? (
             <>
-              <div className="programs-header">
-                <h2 className="programs-title">
+              <div className="course-programs-header">
+                <h2 className="course-programs-title">
                   Available Programs
-                  <span className="programs-count">({filteredPrograms.length})</span>
+                  <span className="course-programs-count">({filteredPrograms.length})</span>
                 </h2>
                 {!showFilters && (
                   <button 
-                    className="show-filters-btn"
+                    className="course-show-filters-btn"
                     onClick={() => setShowFilters(true)}
                   >
-                    <span className="filter-icon">🔍</span>
                     Show Filters
                   </button>
                 )}
               </div>
-              <div className="programs-grid">
+              <div className="course-programs-grid">
                 {filteredPrograms.map((program) => (
                   <div
                     key={program.id}
-                    className={`program-card ${selectedProgram?.id === program.id ? 'selected' : ''}`}
+                    className={`course-program-card ${selectedProgram?.id === program.id ? 'selected' : ''}`}
                     onClick={() => handleProgramSelect(program)}
                   >
-                    <div className="program-card-header">
-                      <h3 className="program-card-title">{program.title}</h3>
+                    <div className="course-program-card-header">
+                      <h3 className="course-program-card-title">{program.title}</h3>
                       <button 
-                        className={`favorite-btn ${favorites.includes(program.id) ? 'active' : ''}`}
+                        className={`course-favorite-btn ${favorites.includes(program.id) ? 'active' : ''}`}
                         onClick={(e) => {
                           e.stopPropagation();
                           toggleFavorite(program);
                         }}
                         aria-label={favorites.includes(program.id) ? "Remove from favorites" : "Add to favorites"}
                       >
-                        {favorites.includes(program.id) ? '🔵' : '⚪'}
+                        {favorites.includes(program.id) ? '★' : '☆'}
                       </button>
                     </div>
                     
-                    <div className="program-card-body">
-                      <div className="program-meta-tags">
-                        <span className="study-mode-badge">
-                          <span className="badge-icon">💻</span>
+                    <div className="course-program-card-body">
+                      <div className="course-program-meta-tags">
+                        <span className="course-study-mode-badge">
                           {program.studyMode}
                         </span>
-                        <span className="program-level-badge">
-                          <span className="badge-icon">🎓</span>
+                        <span className="course-program-level-badge">
                           {program.level}
                         </span>
                       </div>
                       
-                      <div className="program-locations">
-                        <span className="location-icon">📍</span>
-                        <span className="locations-text">
+                      <div className="course-program-locations">
+                        <span className="course-locations-text">
                           {program.locations.join(' • ')}
                         </span>
                       </div>
                       
-                      <div className="program-details-grid">
+                      <div className="course-program-details-grid">
                         {program.duration && (
-                          <div className="program-detail-item">
-                            <span className="detail-icon">⏱️</span>
-                            <div className="detail-content">
-                              <span className="detail-label">Duration</span>
-                              <span className="detail-value">{program.duration}</span>
+                          <div className="course-program-detail-item">
+                            <div className="course-detail-content">
+                              <span className="course-detail-label">Duration</span>
+                              <span className="course-detail-value">{program.duration}</span>
                             </div>
                           </div>
                         )}
                         
                         {program.tuition && (
-                          <div className="program-detail-item">
-                            <span className="detail-icon">💰</span>
-                            <div className="detail-content">
-                              <span className="detail-label">Tuition</span>
-                              <span className="detail-value">{formatCurrency(program.tuition)}</span>
+                          <div className="course-program-detail-item">
+                            <div className="course-detail-content">
+                              <span className="course-detail-label">Tuition</span>
+                              <span className="course-detail-value">{formatCurrency(program.tuition)}</span>
                             </div>
                           </div>
                         )}
                         
                         {program.startDates && program.startDates.length > 0 && (
-                          <div className="program-detail-item">
-                            <span className="detail-icon">📅</span>
-                            <div className="detail-content">
-                              <span className="detail-label">Start Dates</span>
-                              <span className="detail-value">{program.startDates.join(', ')}</span>
+                          <div className="course-program-detail-item">
+                            <div className="course-detail-content">
+                              <span className="course-detail-label">Start Dates</span>
+                              <span className="course-detail-value">{program.startDates.join(', ')}</span>
                             </div>
                           </div>
                         )}
                         
                         {program.applicationDeadline && (
-                          <div className="program-detail-item">
-                            <span className="detail-icon">⏰</span>
-                            <div className="detail-content">
-                              <span className="detail-label">Deadline</span>
-                              <span className="detail-value">{program.applicationDeadline}</span>
+                          <div className="course-program-detail-item">
+                            <div className="course-detail-content">
+                              <span className="course-detail-label">Deadline</span>
+                              <span className="course-detail-value">{program.applicationDeadline}</span>
                             </div>
                           </div>
                         )}
                       </div>
                       
                       {program.majorArea && program.majorArea !== 'General' && (
-                        <div className="program-major-area">
-                          <span className="major-area-tag">
-                            <span className="tag-icon">📚</span>
+                        <div className="course-program-major-area">
+                          <span className="course-major-area-tag">
                             {program.majorArea}
                           </span>
                         </div>
                       )}
                       
                       {program.description && (
-                        <p className="program-description">
+                        <p className="course-program-description">
                           {program.description.length > 120 
                             ? `${program.description.substring(0, 120)}...` 
                             : program.description}
@@ -894,9 +872,9 @@ const Courses = ({ onCourseSelect }) => {
                       )}
                       
                       {program.requirements && program.requirements.length > 0 && (
-                        <div className="program-requirements">
-                          <span className="requirements-label">Requirements:</span>
-                          <span className="requirements-text">
+                        <div className="course-program-requirements">
+                          <span className="course-requirements-label">Requirements:</span>
+                          <span className="course-requirements-text">
                             {program.requirements.slice(0, 2).join(' • ')}
                             {program.requirements.length > 2 && ' ...'}
                           </span>
@@ -904,9 +882,9 @@ const Courses = ({ onCourseSelect }) => {
                       )}
                     </div>
                     
-                    <div className="program-card-footer">
+                    <div className="course-program-card-footer">
                       <button 
-                        className="select-program-btn"
+                        className="course-select-program-btn"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleProgramSelect(program);
@@ -914,7 +892,6 @@ const Courses = ({ onCourseSelect }) => {
                       >
                         {selectedProgram?.id === program.id ? (
                           <>
-                            <span className="btn-icon">✓</span>
                             Selected
                           </>
                         ) : (
@@ -922,13 +899,12 @@ const Courses = ({ onCourseSelect }) => {
                         )}
                       </button>
                       <button 
-                        className="apply-now-btn"
+                        className="course-apply-now-btn"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleApplyNow(program);
                         }}
                       >
-                        <span className="btn-icon">→</span>
                         Apply Now
                       </button>
                     </div>
@@ -937,12 +913,12 @@ const Courses = ({ onCourseSelect }) => {
               </div>
             </>
           ) : (
-            <div className="no-programs-found">
-              <div className="no-programs-icon">🔍</div>
+            <div className="course-no-programs-found">
+              <div className="course-no-programs-icon"></div>
               <h3>No Programs Match Your Filters</h3>
               <p>Try adjusting your search criteria or filters to find more programs.</p>
               <button 
-                className="reset-filters-btn"
+                className="course-reset-filters-btn"
                 onClick={() => {
                   setSearchTerm("");
                   setSelectedMajorArea("All");
@@ -960,90 +936,89 @@ const Courses = ({ onCourseSelect }) => {
 
       {/* Selected Program Details Panel */}
       {selectedProgram && activeTab === 'selected' && (
-        <div className="selected-program-panel">
-          <div className="panel-header">
-            <div className="panel-title">
-              <span className="panel-icon">📋</span>
+        <div className="course-selected-panel">
+          <div className="course-panel-header">
+            <div className="course-panel-title">
               <h3>Selected Program</h3>
             </div>
-            <button className="close-panel-btn" onClick={() => setActiveTab('programs')}>
+            <button className="course-close-panel-btn" onClick={() => setActiveTab('programs')}>
               ×
             </button>
           </div>
           
-          <div className="panel-content">
-            <div className="selected-program-header">
+          <div className="course-panel-content">
+            <div className="course-selected-program-header">
               <h4>{selectedProgram.title}</h4>
               <button 
-                className={`favorite-btn ${favorites.includes(selectedProgram.id) ? 'active' : ''}`}
+                className={`course-favorite-btn ${favorites.includes(selectedProgram.id) ? 'active' : ''}`}
                 onClick={() => toggleFavorite(selectedProgram)}
                 aria-label={favorites.includes(selectedProgram.id) ? "Remove from favorites" : "Add to favorites"}
               >
-                {favorites.includes(selectedProgram.id) ? '🔵' : '⚪'}
+                {favorites.includes(selectedProgram.id) ? '★' : '☆'}
               </button>
             </div>
             
-            <div className="panel-details">
-              <div className="detail-row">
-                <span className="detail-row-label">Level:</span>
-                <span className="detail-row-value">
-                  <span className="badge">{selectedProgram.level}</span>
+            <div className="course-panel-details">
+              <div className="course-detail-row">
+                <span className="course-detail-row-label">Level:</span>
+                <span className="course-detail-row-value">
+                  <span className="course-badge">{selectedProgram.level}</span>
                 </span>
               </div>
               
-              <div className="detail-row">
-                <span className="detail-row-label">Study Mode:</span>
-                <span className="detail-row-value">{selectedProgram.studyMode}</span>
+              <div className="course-detail-row">
+                <span className="course-detail-row-label">Study Mode:</span>
+                <span className="course-detail-row-value">{selectedProgram.studyMode}</span>
               </div>
               
-              <div className="detail-row">
-                <span className="detail-row-label">Duration:</span>
-                <span className="detail-row-value">{selectedProgram.duration}</span>
+              <div className="course-detail-row">
+                <span className="course-detail-row-label">Duration:</span>
+                <span className="course-detail-row-value">{selectedProgram.duration}</span>
               </div>
               
-              <div className="detail-row">
-                <span className="detail-row-label">Location:</span>
-                <span className="detail-row-value">{selectedProgram.locations.join(', ')}</span>
+              <div className="course-detail-row">
+                <span className="course-detail-row-label">Location:</span>
+                <span className="course-detail-row-value">{selectedProgram.locations.join(', ')}</span>
               </div>
               
               {selectedProgram.tuition && (
-                <div className="detail-row">
-                  <span className="detail-row-label">Tuition:</span>
-                  <span className="detail-row-value tuition-value">
+                <div className="course-detail-row">
+                  <span className="course-detail-row-label">Tuition:</span>
+                  <span className="course-detail-row-value course-tuition-value">
                     {formatCurrency(selectedProgram.tuition)}
                   </span>
                 </div>
               )}
               
               {selectedProgram.majorArea && selectedProgram.majorArea !== 'General' && (
-                <div className="detail-row">
-                  <span className="detail-row-label">Field of Study:</span>
-                  <span className="detail-row-value">
-                    <span className="major-tag">{selectedProgram.majorArea}</span>
+                <div className="course-detail-row">
+                  <span className="course-detail-row-label">Field of Study:</span>
+                  <span className="course-detail-row-value">
+                    <span className="course-major-tag">{selectedProgram.majorArea}</span>
                   </span>
                 </div>
               )}
               
               {selectedProgram.startDates && selectedProgram.startDates.length > 0 && (
-                <div className="detail-row">
-                  <span className="detail-row-label">Start Dates:</span>
-                  <span className="detail-row-value">{selectedProgram.startDates.join(', ')}</span>
+                <div className="course-detail-row">
+                  <span className="course-detail-row-label">Start Dates:</span>
+                  <span className="course-detail-row-value">{selectedProgram.startDates.join(', ')}</span>
                 </div>
               )}
               
               {selectedProgram.applicationDeadline && (
-                <div className="detail-row">
-                  <span className="detail-row-label">Deadline:</span>
-                  <span className="detail-row-value deadline-value">
+                <div className="course-detail-row">
+                  <span className="course-detail-row-label">Deadline:</span>
+                  <span className="course-detail-row-value course-deadline-value">
                     {selectedProgram.applicationDeadline}
                   </span>
                 </div>
               )}
               
               {selectedProgram.requirements && selectedProgram.requirements.length > 0 && (
-                <div className="detail-section">
-                  <span className="detail-section-label">Requirements:</span>
-                  <ul className="requirements-list">
+                <div className="course-detail-section">
+                  <span className="course-detail-section-label">Requirements:</span>
+                  <ul className="course-requirements-list">
                     {selectedProgram.requirements.map((req, idx) => (
                       <li key={idx}>{req}</li>
                     ))}
@@ -1052,9 +1027,9 @@ const Courses = ({ onCourseSelect }) => {
               )}
               
               {selectedProgram.careerPaths && selectedProgram.careerPaths.length > 0 && (
-                <div className="detail-section">
-                  <span className="detail-section-label">Career Opportunities:</span>
-                  <ul className="career-list">
+                <div className="course-detail-section">
+                  <span className="course-detail-section-label">Career Opportunities:</span>
+                  <ul className="course-career-list">
                     {selectedProgram.careerPaths.map((career, idx) => (
                       <li key={idx}>{career}</li>
                     ))}
@@ -1063,30 +1038,29 @@ const Courses = ({ onCourseSelect }) => {
               )}
             </div>
             
-            <div className="panel-actions">
+            <div className="course-panel-actions">
               <button 
-                className="apply-button"
+                className="course-apply-button"
                 onClick={navigateToApplicationOverview}
                 disabled={savingToBackend}
               >
                 {savingToBackend ? (
                   <>
-                    <span className="spinner"></span>
+                    <span className="course-spinner"></span>
                     Saving...
                   </>
                 ) : (
                   <>
-                    <span className="btn-icon">📝</span>
                     Start Application
                   </>
                 )}
               </button>
               
               <button 
-                className="back-to-programs-btn"
+                className="course-back-to-programs-btn"
                 onClick={() => setActiveTab('programs')}
               >
-                ← Browse More Programs
+                Browse More Programs
               </button>
             </div>
           </div>

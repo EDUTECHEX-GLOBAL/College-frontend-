@@ -517,9 +517,9 @@ const ApplicationAddress = ({ onAddressChange }) => {
   // =====================================================
   if (isLoading) {
     return (
-      <div className="application-address">
-        <div className="loading-state">
-          <div className="loading-spinner"></div>
+      <div className="applicationaddress">
+        <div className="applicationaddress-loading-state">
+          <div className="applicationaddress-loading-spinner"></div>
           <p>Loading your address information...</p>
         </div>
       </div>
@@ -530,156 +530,150 @@ const ApplicationAddress = ({ onAddressChange }) => {
   // MAIN UI
   // =====================================================
   return (
-    <div className="application-address">
+    <div className="applicationaddress">
       {/* Header with Progress */}
-      <div className="address-header">
-        <div className="header-left">
+      <div className="applicationaddress-header">
+        <div className="applicationaddress-header-left">
           <h1>BA Communication Design</h1>
-          <div className="application-id">
-            <span className="id-label">APPLICATION ID</span>
-            <span className="id-value">UEG0000104849</span>
+          <div className="applicationaddress-application-id">
+            <span className="applicationaddress-id-label">APPLICATION ID</span>
+            <span className="applicationaddress-id-value">UEG0000104849</span>
           </div>
         </div>
-        <div className="progress-indicator">
-          <div className="progress-circle">
-            <svg viewBox="0 0 36 36" className="circular-chart">
+        <div className="applicationaddress-progress-indicator">
+          <div className="applicationaddress-progress-circle">
+            <svg viewBox="0 0 36 36" className="applicationaddress-circular-chart">
               <path
-                className="circle-bg"
-                d="M18 2.0845
-                  a 15.9155 15.9155 0 0 1 0 31.831
-                  a 15.9155 15.9155 0 0 1 0 -31.831"
+                className="applicationaddress-circle-bg"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
               />
               <path
-                className="circle"
+                className="applicationaddress-circle"
                 strokeDasharray={`${overallPercentage}, 100`}
-                d="M18 2.0845
-                  a 15.9155 15.9155 0 0 1 0 31.831
-                  a 15.9155 15.9155 0 0 1 0 -31.831"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
               />
-              <text x="18" y="20.35" className="percentage">{overallPercentage}%</text>
+              <text x="18" y="20.35" className="applicationaddress-percentage">{overallPercentage}%</text>
             </svg>
           </div>
-          <span className="progress-text">Completed</span>
+          <span className="applicationaddress-progress-text">Completed</span>
         </div>
       </div>
 
       {/* Navigation Steps */}
-      <div className="application-steps">
-        <div className="step completed">
-          <span className="step-number">1</span>
-          <span className="step-name">Study Programme</span>
+      <div className="applicationaddress-steps">
+        <div className="applicationaddress-step completed">
+          <span className="applicationaddress-step-number">1</span>
+          <span className="applicationaddress-step-name">Study Programme</span>
         </div>
-        <div className="step completed">
-          <span className="step-number">2</span>
-          <span className="step-name">Applicant Details</span>
+        <div className="applicationaddress-step completed">
+          <span className="applicationaddress-step-number">2</span>
+          <span className="applicationaddress-step-name">Applicant Details</span>
         </div>
-        <div className="step active">
-          <span className="step-number">3</span>
-          <span className="step-name">Address</span>
+        <div className="applicationaddress-step active">
+          <span className="applicationaddress-step-number">3</span>
+          <span className="applicationaddress-step-name">Address</span>
         </div>
-        <div className="step">
-          <span className="step-number">4</span>
-          <span className="step-name">Language</span>
+        <div className="applicationaddress-step">
+          <span className="applicationaddress-step-number">4</span>
+          <span className="applicationaddress-step-name">Language</span>
         </div>
-        <div className="step">
-          <span className="step-number">5</span>
-          <span className="step-name">Education</span>
+        <div className="applicationaddress-step">
+          <span className="applicationaddress-step-number">5</span>
+          <span className="applicationaddress-step-name">Education</span>
         </div>
-        <div className="step">
-          <span className="step-number">6</span>
-          <span className="step-name">Documents</span>
+        <div className="applicationaddress-step">
+          <span className="applicationaddress-step-number">6</span>
+          <span className="applicationaddress-step-name">Documents</span>
         </div>
-        <div className="step">
-          <span className="step-number">7</span>
-          <span className="step-name">Review</span>
+        <div className="applicationaddress-step">
+          <span className="applicationaddress-step-number">7</span>
+          <span className="applicationaddress-step-name">Review</span>
         </div>
       </div>
 
       {/* Error Banner */}
       {error && (
-        <div className="error-banner">
-          <svg className="error-icon" viewBox="0 0 24 24" width="20" height="20">
-            <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-          </svg>
+        <div className="applicationaddress-error-banner">
+          <span className="applicationaddress-error-icon">⚠</span>
           <span>{error}</span>
-          <button onClick={() => setError('')} className="error-close-btn">×</button>
+          <button onClick={() => setError('')} className="applicationaddress-error-close-btn">×</button>
         </div>
       )}
 
       {/* Main Form */}
-      <div className="address-form-container">
-        <div className="form-header">
+      <div className="applicationaddress-form-container">
+        <div className="applicationaddress-form-header">
           <h2>Address Information</h2>
-          <p className="form-subtitle">
+          <p className="applicationaddress-form-subtitle">
             Please provide your permanent address as it appears on official documents
           </p>
         </div>
 
         <form onSubmit={(e) => { e.preventDefault(); saveAddress(); }}>
           {/* Permanent Address Section */}
-          <div className="form-section">
-            <div className="section-title">
+          <div className="applicationaddress-form-section">
+            <div className="applicationaddress-section-title">
               <h3>Permanent Home Address</h3>
-              <span className="required-badge">Required</span>
+              <span className="applicationaddress-required-badge">Required</span>
             </div>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="careOf">
+            <div className="applicationaddress-form-group">
+              <label className="applicationaddress-form-label" htmlFor="careOf">
                 Care of (C/o)
-                <span className="label-hint">Optional</span>
+                <span className="applicationaddress-label-hint">Optional</span>
               </label>
               <input
                 type="text"
                 id="careOf"
-                className={`form-input ${validationErrors.careOf ? 'error' : ''}`}
+                className={`applicationaddress-form-input ${validationErrors.careOf ? 'error' : ''}`}
                 value={formData.careOf}
                 onChange={(e) => handleInputChange("careOf", e.target.value)}
                 placeholder="e.g., John Doe, c/o Jane Smith"
                 disabled={isSubmitting}
               />
-              <small className="field-hint">Leave blank if not applicable</small>
+              <small className="applicationaddress-field-hint">Leave blank if not applicable</small>
             </div>
 
-            <div className="form-group">
-              <label className="form-label required" htmlFor="streetAndHouseNumber">
+            <div className="applicationaddress-form-group">
+              <label className="applicationaddress-form-label required" htmlFor="streetAndHouseNumber">
                 Street and house number
               </label>
               <input
                 type="text"
                 id="streetAndHouseNumber"
-                className={`form-input ${validationErrors.streetAndHouseNumber ? 'error' : ''}`}
+                className={`applicationaddress-form-input ${validationErrors.streetAndHouseNumber ? 'error' : ''}`}
                 value={formData.streetAndHouseNumber}
                 onChange={(e) => handleInputChange("streetAndHouseNumber", e.target.value)}
                 placeholder="Enter street name and house number"
                 disabled={isSubmitting}
               />
               {validationErrors.streetAndHouseNumber && (
-                <span className="error-message">{validationErrors.streetAndHouseNumber}</span>
+                <span className="applicationaddress-error-message">{validationErrors.streetAndHouseNumber}</span>
               )}
             </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label className="form-label required" htmlFor="city">City</label>
+            <div className="applicationaddress-form-row">
+              <div className="applicationaddress-form-group">
+                <label className="applicationaddress-form-label required" htmlFor="city">City</label>
                 <input
                   type="text"
                   id="city"
-                  className={`form-input ${validationErrors.city ? 'error' : ''}`}
+                  className={`applicationaddress-form-input ${validationErrors.city ? 'error' : ''}`}
                   value={formData.city}
                   onChange={(e) => handleInputChange("city", e.target.value)}
                   placeholder="Enter city"
                   disabled={isSubmitting}
                 />
                 {validationErrors.city && (
-                  <span className="error-message">{validationErrors.city}</span>
+                  <span className="applicationaddress-error-message">{validationErrors.city}</span>
                 )}
               </div>
 
-              <div className="form-group">
-                <label className="form-label required" htmlFor="country">Country</label>
+              <div className="applicationaddress-form-group">
+                <label className="applicationaddress-form-label required" htmlFor="country">Country</label>
                 <select
                   id="country"
-                  className={`form-select ${validationErrors.country ? 'error' : ''}`}
+                  className={`applicationaddress-form-select ${validationErrors.country ? 'error' : ''}`}
                   value={formData.country}
                   onChange={(e) => handleInputChange("country", e.target.value)}
                   disabled={isSubmitting}
@@ -694,20 +688,20 @@ const ApplicationAddress = ({ onAddressChange }) => {
                   <option value="Australia">Australia</option>
                 </select>
                 {validationErrors.country && (
-                  <span className="error-message">{validationErrors.country}</span>
+                  <span className="applicationaddress-error-message">{validationErrors.country}</span>
                 )}
               </div>
             </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label className="form-label required" htmlFor="stateProvince">
+            <div className="applicationaddress-form-row">
+              <div className="applicationaddress-form-group">
+                <label className="applicationaddress-form-label required" htmlFor="stateProvince">
                   State / Province
                 </label>
                 {formData.country === 'India' ? (
                   <select
                     id="stateProvince"
-                    className={`form-select ${validationErrors.stateProvince ? 'error' : ''}`}
+                    className={`applicationaddress-form-select ${validationErrors.stateProvince ? 'error' : ''}`}
                     value={formData.stateProvince}
                     onChange={(e) => handleInputChange("stateProvince", e.target.value)}
                     disabled={isSubmitting}
@@ -727,7 +721,7 @@ const ApplicationAddress = ({ onAddressChange }) => {
                   <input
                     type="text"
                     id="stateProvince"
-                    className={`form-input ${validationErrors.stateProvince ? 'error' : ''}`}
+                    className={`applicationaddress-form-input ${validationErrors.stateProvince ? 'error' : ''}`}
                     value={formData.stateProvince}
                     onChange={(e) => handleInputChange("stateProvince", e.target.value)}
                     placeholder="Enter state/province"
@@ -735,40 +729,40 @@ const ApplicationAddress = ({ onAddressChange }) => {
                   />
                 )}
                 {validationErrors.stateProvince && (
-                  <span className="error-message">{validationErrors.stateProvince}</span>
+                  <span className="applicationaddress-error-message">{validationErrors.stateProvince}</span>
                 )}
               </div>
 
-              <div className="form-group">
-                <label className="form-label required" htmlFor="postcode">Postcode</label>
+              <div className="applicationaddress-form-group">
+                <label className="applicationaddress-form-label required" htmlFor="postcode">Postcode</label>
                 <input
                   type="text"
                   id="postcode"
-                  className={`form-input ${validationErrors.postcode ? 'error' : ''}`}
+                  className={`applicationaddress-form-input ${validationErrors.postcode ? 'error' : ''}`}
                   value={formData.postcode}
                   onChange={(e) => handleInputChange("postcode", e.target.value)}
                   placeholder="Enter postal code"
                   disabled={isSubmitting}
                 />
                 {validationErrors.postcode && (
-                  <span className="error-message">{validationErrors.postcode}</span>
+                  <span className="applicationaddress-error-message">{validationErrors.postcode}</span>
                 )}
               </div>
             </div>
           </div>
 
           {/* Correspondence Address Section */}
-          <div className="form-section">
-            <div className="section-title">
+          <div className="applicationaddress-form-section">
+            <div className="applicationaddress-section-title">
               <h3>Correspondence Address</h3>
             </div>
 
-            <div className="form-group full-width">
-              <label className="form-label">
+            <div className="applicationaddress-form-group full-width">
+              <label className="applicationaddress-form-label">
                 Do you have a different address for correspondence?
               </label>
-              <div className="radio-group">
-                <label className={`radio-option ${formData.hasDifferentCorrespondenceAddress === true ? 'selected' : ''}`}>
+              <div className="applicationaddress-radio-group">
+                <label className={`applicationaddress-radio-option ${formData.hasDifferentCorrespondenceAddress === true ? 'selected' : ''}`}>
                   <input
                     type="radio"
                     name="correspondenceAddress"
@@ -777,10 +771,10 @@ const ApplicationAddress = ({ onAddressChange }) => {
                     onChange={() => handleCorrespondenceToggle('yes')}
                     disabled={isSubmitting}
                   />
-                  <span className="radio-custom"></span>
-                  <span className="radio-label-text">Yes</span>
+                  <span className="applicationaddress-radio-custom"></span>
+                  <span className="applicationaddress-radio-label-text">Yes</span>
                 </label>
-                <label className={`radio-option ${formData.hasDifferentCorrespondenceAddress === false ? 'selected' : ''}`}>
+                <label className={`applicationaddress-radio-option ${formData.hasDifferentCorrespondenceAddress === false ? 'selected' : ''}`}>
                   <input
                     type="radio"
                     name="correspondenceAddress"
@@ -789,23 +783,23 @@ const ApplicationAddress = ({ onAddressChange }) => {
                     onChange={() => handleCorrespondenceToggle('no')}
                     disabled={isSubmitting}
                   />
-                  <span className="radio-custom"></span>
-                  <span className="radio-label-text">No, same as permanent address</span>
+                  <span className="applicationaddress-radio-custom"></span>
+                  <span className="applicationaddress-radio-label-text">No, same as permanent address</span>
                 </label>
               </div>
             </div>
 
             {formData.hasDifferentCorrespondenceAddress && (
-              <div className="correspondence-address-fields slide-in">
-                <div className="form-group">
-                  <label className="form-label" htmlFor="correspondenceCareOf">
+              <div className="applicationaddress-correspondence-fields">
+                <div className="applicationaddress-form-group">
+                  <label className="applicationaddress-form-label" htmlFor="correspondenceCareOf">
                     Care of (C/o)
-                    <span className="label-hint">Optional</span>
+                    <span className="applicationaddress-label-hint">Optional</span>
                   </label>
                   <input
                     type="text"
                     id="correspondenceCareOf"
-                    className={`form-input ${validationErrors.correspondenceCareOf ? 'error' : ''}`}
+                    className={`applicationaddress-form-input ${validationErrors.correspondenceCareOf ? 'error' : ''}`}
                     value={formData.correspondenceCareOf}
                     onChange={(e) => handleInputChange("correspondenceCareOf", e.target.value)}
                     placeholder="e.g., John Doe, c/o Jane Smith"
@@ -813,46 +807,46 @@ const ApplicationAddress = ({ onAddressChange }) => {
                   />
                 </div>
 
-                <div className="form-group">
-                  <label className="form-label required" htmlFor="correspondenceStreetAndHouseNumber">
+                <div className="applicationaddress-form-group">
+                  <label className="applicationaddress-form-label required" htmlFor="correspondenceStreetAndHouseNumber">
                     Street and house number
                   </label>
                   <input
                     type="text"
                     id="correspondenceStreetAndHouseNumber"
-                    className={`form-input ${validationErrors.correspondenceStreetAndHouseNumber ? 'error' : ''}`}
+                    className={`applicationaddress-form-input ${validationErrors.correspondenceStreetAndHouseNumber ? 'error' : ''}`}
                     value={formData.correspondenceStreetAndHouseNumber}
                     onChange={(e) => handleInputChange("correspondenceStreetAndHouseNumber", e.target.value)}
                     placeholder="Enter street name and house number"
                     disabled={isSubmitting}
                   />
                   {validationErrors.correspondenceStreetAndHouseNumber && (
-                    <span className="error-message">{validationErrors.correspondenceStreetAndHouseNumber}</span>
+                    <span className="applicationaddress-error-message">{validationErrors.correspondenceStreetAndHouseNumber}</span>
                   )}
                 </div>
 
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label required" htmlFor="correspondenceCity">City</label>
+                <div className="applicationaddress-form-row">
+                  <div className="applicationaddress-form-group">
+                    <label className="applicationaddress-form-label required" htmlFor="correspondenceCity">City</label>
                     <input
                       type="text"
                       id="correspondenceCity"
-                      className={`form-input ${validationErrors.correspondenceCity ? 'error' : ''}`}
+                      className={`applicationaddress-form-input ${validationErrors.correspondenceCity ? 'error' : ''}`}
                       value={formData.correspondenceCity}
                       onChange={(e) => handleInputChange("correspondenceCity", e.target.value)}
                       placeholder="Enter city"
                       disabled={isSubmitting}
                     />
                     {validationErrors.correspondenceCity && (
-                      <span className="error-message">{validationErrors.correspondenceCity}</span>
+                      <span className="applicationaddress-error-message">{validationErrors.correspondenceCity}</span>
                     )}
                   </div>
 
-                  <div className="form-group">
-                    <label className="form-label required" htmlFor="correspondenceCountry">Country</label>
+                  <div className="applicationaddress-form-group">
+                    <label className="applicationaddress-form-label required" htmlFor="correspondenceCountry">Country</label>
                     <select
                       id="correspondenceCountry"
-                      className={`form-select ${validationErrors.correspondenceCountry ? 'error' : ''}`}
+                      className={`applicationaddress-form-select ${validationErrors.correspondenceCountry ? 'error' : ''}`}
                       value={formData.correspondenceCountry}
                       onChange={(e) => handleInputChange("correspondenceCountry", e.target.value)}
                       disabled={isSubmitting}
@@ -867,43 +861,43 @@ const ApplicationAddress = ({ onAddressChange }) => {
                       <option value="Australia">Australia</option>
                     </select>
                     {validationErrors.correspondenceCountry && (
-                      <span className="error-message">{validationErrors.correspondenceCountry}</span>
+                      <span className="applicationaddress-error-message">{validationErrors.correspondenceCountry}</span>
                     )}
                   </div>
                 </div>
 
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label required" htmlFor="correspondenceStateProvince">
+                <div className="applicationaddress-form-row">
+                  <div className="applicationaddress-form-group">
+                    <label className="applicationaddress-form-label required" htmlFor="correspondenceStateProvince">
                       State / Province
                     </label>
                     <input
                       type="text"
                       id="correspondenceStateProvince"
-                      className={`form-input ${validationErrors.correspondenceStateProvince ? 'error' : ''}`}
+                      className={`applicationaddress-form-input ${validationErrors.correspondenceStateProvince ? 'error' : ''}`}
                       value={formData.correspondenceStateProvince}
                       onChange={(e) => handleInputChange("correspondenceStateProvince", e.target.value)}
                       placeholder="Enter state/province"
                       disabled={isSubmitting}
                     />
                     {validationErrors.correspondenceStateProvince && (
-                      <span className="error-message">{validationErrors.correspondenceStateProvince}</span>
+                      <span className="applicationaddress-error-message">{validationErrors.correspondenceStateProvince}</span>
                     )}
                   </div>
 
-                  <div className="form-group">
-                    <label className="form-label required" htmlFor="correspondencePostcode">Postcode</label>
+                  <div className="applicationaddress-form-group">
+                    <label className="applicationaddress-form-label required" htmlFor="correspondencePostcode">Postcode</label>
                     <input
                       type="text"
                       id="correspondencePostcode"
-                      className={`form-input ${validationErrors.correspondencePostcode ? 'error' : ''}`}
+                      className={`applicationaddress-form-input ${validationErrors.correspondencePostcode ? 'error' : ''}`}
                       value={formData.correspondencePostcode}
                       onChange={(e) => handleInputChange("correspondencePostcode", e.target.value)}
                       placeholder="Enter postal code"
                       disabled={isSubmitting}
                     />
                     {validationErrors.correspondencePostcode && (
-                      <span className="error-message">{validationErrors.correspondencePostcode}</span>
+                      <span className="applicationaddress-error-message">{validationErrors.correspondencePostcode}</span>
                     )}
                   </div>
                 </div>
@@ -912,64 +906,48 @@ const ApplicationAddress = ({ onAddressChange }) => {
           </div>
 
           {/* National ID Upload Section */}
-          <div className="form-section">
-            <div className="section-title">
+          <div className="applicationaddress-form-section">
+            <div className="applicationaddress-section-title">
               <h3>National ID Document</h3>
-              <span className="optional-badge">Optional</span>
+              <span className="applicationaddress-optional-badge">Optional</span>
             </div>
             
-            <div className="form-group">
-              <label className="form-label">Upload National ID (Aadhaar, Passport, etc.)</label>
-              <div className={`upload-area ${uploading ? 'uploading' : ''}`}>
+            <div className="applicationaddress-form-group">
+              <label className="applicationaddress-form-label">Upload National ID (Aadhaar, Passport, etc.)</label>
+              <div className={`applicationaddress-upload-area ${uploading ? 'uploading' : ''}`}>
                 {uploading && (
-                  <div className="upload-progress">
-                    <div className="progress-bar">
-                      <div className="progress-fill"></div>
+                  <div className="applicationaddress-upload-progress">
+                    <div className="applicationaddress-progress-bar">
+                      <div className="applicationaddress-progress-fill"></div>
                     </div>
                     <span>Uploading...</span>
                   </div>
                 )}
                 
                 {formData.nationalIdFile ? (
-                  <div className="file-info">
-                    <div className="file-icon-container">
-                      {formData.nationalIdFile.fileType?.includes('pdf') ? (
-                        <svg className="file-icon pdf" viewBox="0 0 24 24" width="32" height="32">
-                          <path fill="currentColor" d="M20 2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM8 14H6v-4h2v4zm3-4h2v4h-2v-4zm8 4h-2v-4h2v4z"/>
-                        </svg>
-                      ) : (
-                        <svg className="file-icon image" viewBox="0 0 24 24" width="32" height="32">
-                          <path fill="currentColor" d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
-                        </svg>
-                      )}
-                    </div>
-                    <div className="file-details">
-                      <span className="file-name">{formData.nationalIdFile.originalName || formData.nationalIdFile.fileName}</span>
+                  <div className="applicationaddress-file-info">
+                    <div className="applicationaddress-file-details">
+                      <span className="applicationaddress-file-name">{formData.nationalIdFile.originalName || formData.nationalIdFile.fileName}</span>
                       {formData.nationalIdFile.fileSize && (
-                        <span className="file-size">
+                        <span className="applicationaddress-file-size">
                           {(formData.nationalIdFile.fileSize / 1024 / 1024).toFixed(2)} MB
                         </span>
                       )}
                     </div>
                     <button
                       type="button"
-                      className="remove-file-btn"
+                      className="applicationaddress-remove-file-btn"
                       onClick={removeNationalId}
                       disabled={uploading || isSubmitting}
                       title="Remove file"
                     >
-                      <svg viewBox="0 0 24 24" width="20" height="20">
-                        <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                      </svg>
+                      ×
                     </button>
                   </div>
                 ) : (
-                  <div className="upload-prompt">
-                    <svg className="upload-icon" viewBox="0 0 24 24" width="48" height="48">
-                      <path fill="currentColor" d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
-                    </svg>
-                    <p className="upload-instruction">Drag and drop your file here, or click to browse</p>
-                    <p className="upload-hint">Supported formats: JPG, PNG, PDF (Max size: 5MB)</p>
+                  <div className="applicationaddress-upload-prompt">
+                    <p className="applicationaddress-upload-instruction">Drag and drop your file here, or click to browse</p>
+                    <p className="applicationaddress-upload-hint">Supported formats: JPG, PNG, PDF (Max size: 5MB)</p>
                     <input
                       type="file"
                       id="nationalIdUpload"
@@ -980,7 +958,7 @@ const ApplicationAddress = ({ onAddressChange }) => {
                     />
                     <button
                       type="button"
-                      className="upload-button"
+                      className="applicationaddress-upload-button"
                       onClick={() => document.getElementById('nationalIdUpload').click()}
                       disabled={uploading || isSubmitting}
                     >
@@ -990,10 +968,7 @@ const ApplicationAddress = ({ onAddressChange }) => {
                 )}
               </div>
               {!addressSaved && (
-                <p className="upload-warning">
-                  <svg viewBox="0 0 24 24" width="16" height="16">
-                    <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-                  </svg>
+                <p className="applicationaddress-upload-warning">
                   Please save your address before uploading documents
                 </p>
               )}
@@ -1001,23 +976,20 @@ const ApplicationAddress = ({ onAddressChange }) => {
           </div>
 
           {/* Navigation Buttons */}
-          <div className="form-actions">
+          <div className="applicationaddress-form-actions">
             <button
               type="button"
-              className="btn-secondary"
+              className="applicationaddress-btn-secondary"
               onClick={handleBack}
               disabled={isSubmitting}
             >
-              <svg viewBox="0 0 24 24" width="20" height="20">
-                <path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
-              </svg>
               Back
             </button>
 
-            <div className="action-group">
+            <div className="applicationaddress-action-group">
               <button
                 type="button"
-                className="btn-outline"
+                className="applicationaddress-btn-outline"
                 onClick={handleSaveLater}
                 disabled={isSubmitting}
               >
@@ -1026,20 +998,17 @@ const ApplicationAddress = ({ onAddressChange }) => {
 
               <button
                 type="submit"
-                className="btn-primary"
+                className="applicationaddress-btn-primary"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
                   <>
-                    <span className="spinner"></span>
+                    <span className="applicationaddress-spinner"></span>
                     Saving...
                   </>
                 ) : (
                   <>
                     Next Step
-                    <svg viewBox="0 0 24 24" width="20" height="20">
-                      <path fill="currentColor" d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
-                    </svg>
                   </>
                 )}
               </button>

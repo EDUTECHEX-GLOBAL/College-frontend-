@@ -358,7 +358,7 @@ const Application = () => {
                         <div className="header-top-row">
                             <div className="header-left">
                                 <h1>GUS University Application Portal</h1>
-                                <p>Complete your application in {steps.length - 1} steps</p>
+                                
                             </div>
                             <div className="header-right">
                                 <button className="dashboard-btn" onClick={navigateToDashboard}>

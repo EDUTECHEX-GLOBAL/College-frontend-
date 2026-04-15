@@ -1,18 +1,11 @@
-/* ProcessAdminLogin.css */
+/* ProcessAdminLogin.css — scoped with .process- prefix */
 
-/* ══════════════════════════════
-   BASE RESET
-══════════════════════════════ */
 *,
 *::before,
-*::after {
-  box-sizing: border-box;
-}
+*::after { box-sizing: border-box; }
 
-/* ══════════════════════════════
-   WRAPPER
-══════════════════════════════ */
-.pal-wrapper {
+/* ── Wrapper ── */
+.process-wrapper {
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -22,18 +15,14 @@
   font-family: 'Outfit', 'Segoe UI', sans-serif;
 }
 
-/* ══════════════════════════════
-   CONTAINER
-══════════════════════════════ */
-.pal-container {
+/* ── Container ── */
+.process-container {
   width: 100%;
   max-width: 960px;
 }
 
-/* ══════════════════════════════
-   CARD
-══════════════════════════════ */
-.pal-card {
+/* ── Card ── */
+.process-card {
   display: flex;
   background: #fff;
   border-radius: 18px;
@@ -46,7 +35,7 @@
 /* ══════════════════════════════
    LEFT — FORM SIDE
 ══════════════════════════════ */
-.pal-form-side {
+.process-form-side {
   flex: 1;
   padding: 40px 36px;
   background: #fff;
@@ -54,64 +43,39 @@
   flex-direction: column;
 }
 
-/* ── Brand block ── */
-.pal-brand-block {
-  background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
-  border-radius: 14px;
-  padding: 26px 26px 22px;
+/* ── Logo block — no box, just image + role tag ── */
+.process-logo-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
   margin-bottom: 32px;
-  position: relative;
-  overflow: hidden;
 }
 
-.pal-brand-block::before {
-  content: '';
-  position: absolute;
-  top: -28px; right: -28px;
-  width: 90px; height: 90px;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 50%;
+.process-logo {
+  height: 48px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
 }
 
-.pal-brand-block::after {
-  content: '';
-  position: absolute;
-  bottom: -18px; left: -18px;
-  width: 72px; height: 72px;
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 50%;
-}
-
-.pal-brand-title {
-  font-size: 1.85rem;
-  font-weight: 800;
-  color: #fff;
-  margin: 0 0 6px;
-  letter-spacing: -0.4px;
-  line-height: 1;
-  position: relative;
-  z-index: 1;
-}
-
-.pal-brand-tag {
+.process-role-tag {
   font-size: 0.7rem;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.58);
+  color: #94a3b8;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  position: relative;
-  z-index: 1;
 }
 
 /* ── Field group ── */
-.pal-field-group {
+.process-field-group {
   display: flex;
   flex-direction: column;
   gap: 7px;
   margin-bottom: 18px;
 }
 
-.pal-label {
+.process-label {
   font-size: 0.83rem;
   font-weight: 600;
   color: #374151;
@@ -119,7 +83,7 @@
 }
 
 /* ── Input wrap ── */
-.pal-input-wrap {
+.process-input-wrap {
   display: flex;
   align-items: center;
   background: #f8fafc;
@@ -129,13 +93,13 @@
   transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
 }
 
-.pal-input-wrap.pal-focused {
+.process-input-wrap.process-focused {
   border-color: #14b8a6;
   background: #fff;
   box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.12);
 }
 
-.pal-input-icon {
+.process-input-icon {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -145,11 +109,11 @@
   transition: color 0.15s;
 }
 
-.pal-input-wrap.pal-focused .pal-input-icon {
+.process-input-wrap.process-focused .process-input-icon {
   color: #14b8a6;
 }
 
-.pal-input {
+.process-input {
   flex: 1;
   height: 46px;
   border: none;
@@ -161,28 +125,26 @@
   font-family: inherit;
 }
 
-.pal-input::placeholder {
+.process-input::placeholder {
   color: #b0bec5;
   font-size: 0.86rem;
 }
 
-.pal-input:disabled {
+.process-input:disabled {
   cursor: not-allowed;
   opacity: 0.65;
 }
 
-.pal-input-pass {
-  padding-right: 44px;
+.process-input-pass {
   letter-spacing: 0.1em;
 }
 
-.pal-input-pass::placeholder {
+.process-input-pass::placeholder {
   letter-spacing: 0;
 }
 
-/* ── Show/hide password btn ── */
-.pal-show-btn {
-  position: relative;
+/* ── Show/hide password button ── */
+.process-show-btn {
   background: none;
   border: none;
   cursor: pointer;
@@ -196,17 +158,11 @@
   transition: color 0.15s;
 }
 
-.pal-show-btn:hover:not(:disabled) {
-  color: #14b8a6;
-}
-
-.pal-show-btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
+.process-show-btn:hover:not(:disabled) { color: #14b8a6; }
+.process-show-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
 /* ── Error banner ── */
-.pal-error {
+.process-error {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -220,11 +176,9 @@
   line-height: 1.45;
 }
 
-.pal-error span {
-  flex: 1;
-}
+.process-error span { flex: 1; }
 
-.pal-error-close {
+.process-error-close {
   background: none;
   border: none;
   cursor: pointer;
@@ -237,12 +191,10 @@
   transition: opacity 0.15s;
 }
 
-.pal-error-close:hover {
-  opacity: 1;
-}
+.process-error-close:hover { opacity: 1; }
 
 /* ── Submit button ── */
-.pal-submit-btn {
+.process-submit-btn {
   width: 100%;
   height: 48px;
   background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
@@ -263,40 +215,40 @@
   transition: opacity 0.18s, transform 0.18s, box-shadow 0.18s;
 }
 
-.pal-submit-btn:hover:not(:disabled) {
+.process-submit-btn:hover:not(:disabled) {
   opacity: 0.9;
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(20, 184, 166, 0.38);
 }
 
-.pal-submit-btn:active:not(:disabled) {
+.process-submit-btn:active:not(:disabled) {
   transform: translateY(0);
   box-shadow: 0 2px 8px rgba(20, 184, 166, 0.25);
 }
 
-.pal-submit-btn:disabled,
-.pal-submit-btn.pal-loading {
+.process-submit-btn:disabled,
+.process-submit-btn.process-loading {
   opacity: 0.7;
   cursor: not-allowed;
 }
 
 /* ── Spinner ── */
-.pal-spinner {
+.process-spinner {
   width: 16px;
   height: 16px;
   border: 2.5px solid rgba(255, 255, 255, 0.35);
   border-top-color: #fff;
   border-radius: 50%;
-  animation: pal-spin 0.75s linear infinite;
+  animation: process-spin 0.75s linear infinite;
   flex-shrink: 0;
 }
 
-@keyframes pal-spin {
+@keyframes process-spin {
   to { transform: rotate(360deg); }
 }
 
 /* ── Back button ── */
-.pal-back-btn {
+.process-back-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -313,20 +265,13 @@
   align-self: flex-start;
 }
 
-.pal-back-btn:hover:not(:disabled) {
-  color: #14b8a6;
-  gap: 9px;
-}
-
-.pal-back-btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
+.process-back-btn:hover:not(:disabled) { color: #14b8a6; gap: 9px; }
+.process-back-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
 /* ══════════════════════════════
    RIGHT — ILLUSTRATION SIDE
 ══════════════════════════════ */
-.pal-info-side {
+.process-info-side {
   flex: 1;
   background: #f8fafc;
   padding: 40px 36px;
@@ -339,8 +284,7 @@
   overflow: hidden;
 }
 
-/* Dot grid background */
-.pal-info-side::before {
+.process-info-side::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -349,7 +293,7 @@
   opacity: 0.55;
 }
 
-.pal-illustration-wrap {
+.process-illustration-wrap {
   position: relative;
   z-index: 1;
   width: 100%;
@@ -357,13 +301,14 @@
   margin-bottom: 24px;
 }
 
-.pal-illustration-svg {
+.process-illustration-img {
   width: 100%;
   height: auto;
+  object-fit: contain;
   filter: drop-shadow(0 8px 24px rgba(37, 99, 235, 0.1));
 }
 
-.pal-info-title {
+.process-info-title {
   position: relative;
   z-index: 1;
   font-size: 1.32rem;
@@ -375,7 +320,7 @@
   letter-spacing: -0.3px;
 }
 
-.pal-info-desc {
+.process-info-desc {
   position: relative;
   z-index: 1;
   font-size: 0.86rem;
@@ -386,10 +331,8 @@
   max-width: 320px;
 }
 
-/* ══════════════════════════════
-   COPYRIGHT
-══════════════════════════════ */
-.pal-copyright {
+/* ── Copyright ── */
+.process-copyright {
   text-align: center;
   margin-top: 14px;
   color: #94a3b8;
@@ -399,22 +342,17 @@
 
 /* ══════════════════════════════
    RESPONSIVE — Tablet (≤ 768px)
-   Card stacks: form on top, illustration below
 ══════════════════════════════ */
 @media (max-width: 768px) {
-  .pal-wrapper {
-    align-items: flex-start;
-    padding-top: 24px;
-  }
+  .process-wrapper { align-items: flex-start; padding-top: 24px; }
 
-  .pal-card {
+  .process-card {
     flex-direction: column-reverse;
     border-radius: 14px;
     min-height: auto;
   }
 
-  /* Illustration becomes compact horizontal banner */
-  .pal-info-side {
+  .process-info-side {
     border-left: none;
     border-bottom: 1px solid #eef0f4;
     padding: 20px 24px;
@@ -423,79 +361,46 @@
     gap: 16px;
   }
 
-  .pal-illustration-wrap {
-    flex-shrink: 0;
-    width: 100px;
-    margin-bottom: 0;
-  }
-
-  .pal-info-title {
-    font-size: 0.98rem;
-    text-align: left;
-    margin-bottom: 5px;
-  }
-
-  .pal-info-desc {
-    font-size: 0.78rem;
-    text-align: left;
-    max-width: none;
-  }
-
-  /* Form side */
-  .pal-form-side {
-    padding: 28px 24px;
-  }
-
-  .pal-brand-title  { font-size: 1.6rem; }
-  .pal-brand-block  { margin-bottom: 24px; }
+  .process-illustration-wrap { flex-shrink: 0; width: 100px; margin-bottom: 0; }
+  .process-info-title { font-size: 0.98rem; text-align: left; margin-bottom: 5px; }
+  .process-info-desc  { font-size: 0.78rem; text-align: left; max-width: none; }
+  .process-form-side  { padding: 28px 24px; }
+  .process-logo       { height: 38px; }
+  .process-logo-block { margin-bottom: 24px; }
 }
 
 /* ══════════════════════════════
    RESPONSIVE — Mobile (≤ 540px)
 ══════════════════════════════ */
 @media (max-width: 540px) {
-  .pal-wrapper { padding: 12px; padding-top: 16px; }
-
-  .pal-card { border-radius: 12px; }
-
-  /* Slim illustration strip */
-  .pal-info-side { padding: 14px 16px; gap: 12px; }
-  .pal-illustration-wrap { width: 76px; }
-  .pal-info-title { font-size: 0.88rem; }
-  .pal-info-desc  { display: none; }
-
-  /* Form */
-  .pal-form-side  { padding: 22px 18px 26px; }
-
-  .pal-brand-title  { font-size: 1.48rem; }
-  .pal-brand-tag    { font-size: 0.64rem; letter-spacing: 0.14em; }
-  .pal-brand-block  { padding: 20px 20px 16px; margin-bottom: 20px; border-radius: 12px; }
-
-  .pal-field-group  { margin-bottom: 14px; }
-  .pal-label        { font-size: 0.78rem; }
-  .pal-input        { height: 42px; font-size: 0.87rem; }
-  .pal-submit-btn   { height: 44px; font-size: 0.88rem; border-radius: 9px; }
-  .pal-error        { font-size: 0.77rem; padding: 8px 10px; }
-  .pal-back-btn     { font-size: 0.77rem; }
-  .pal-copyright    { font-size: 0.68rem; margin-top: 10px; }
+  .process-wrapper    { padding: 12px; padding-top: 16px; }
+  .process-card       { border-radius: 12px; }
+  .process-info-side  { padding: 14px 16px; gap: 12px; }
+  .process-illustration-wrap { width: 76px; }
+  .process-info-title { font-size: 0.88rem; }
+  .process-info-desc  { display: none; }
+  .process-form-side  { padding: 22px 18px 26px; }
+  .process-logo       { height: 32px; }
+  .process-logo-block { margin-bottom: 20px; }
+  .process-field-group { margin-bottom: 14px; }
+  .process-label      { font-size: 0.78rem; }
+  .process-input      { height: 42px; font-size: 0.87rem; }
+  .process-submit-btn { height: 44px; font-size: 0.88rem; border-radius: 9px; }
+  .process-error      { font-size: 0.77rem; padding: 8px 10px; }
+  .process-back-btn   { font-size: 0.77rem; }
+  .process-copyright  { font-size: 0.68rem; margin-top: 10px; }
 }
 
 /* ══════════════════════════════
    RESPONSIVE — Very Small (≤ 360px)
 ══════════════════════════════ */
 @media (max-width: 360px) {
-  .pal-wrapper { padding: 8px; }
-
-  .pal-card { border-radius: 10px; }
-
-  /* Hide illustration completely on tiny screens */
-  .pal-info-side { display: none; }
-
-  .pal-form-side { padding: 20px 16px 24px; }
-
-  .pal-brand-title  { font-size: 1.32rem; }
-  .pal-brand-block  { margin-bottom: 16px; border-radius: 10px; }
-
-  .pal-input      { height: 40px; font-size: 0.85rem; }
-  .pal-submit-btn { height: 42px; font-size: 0.85rem; }
+  .process-wrapper    { padding: 8px; }
+  .process-card       { border-radius: 10px; }
+  .process-info-side  { display: none; }
+  .process-form-side  { padding: 20px 16px 24px; }
+  .process-logo       { height: 28px; }
+  .process-logo-block { margin-bottom: 16px; }
+  .process-input      { height: 40px; font-size: 0.85rem; }
+  .process-submit-btn { height: 42px; font-size: 0.85rem; }
 }

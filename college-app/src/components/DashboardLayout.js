@@ -1,169 +1,7 @@
-// src/components/DashboardLayout.js - UPDATED WITH EDUTECH STYLE SIDEBAR
+// src/components/DashboardLayout.js - NO SVG, NO ICONS, NO EMOJIS - Pure CSS styling
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import logo from '../assets/Edutech-logo.svg';
-
-// ─── SVG Icon Components for Sidebar ───
-const Icons = {
-  Dashboard: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="7" height="7" rx="1"/>
-      <rect x="14" y="3" width="7" height="7" rx="1"/>
-      <rect x="3" y="14" width="7" height="7" rx="1"/>
-      <rect x="14" y="14" width="7" height="7" rx="1"/>
-    </svg>
-  ),
-  Profile: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-      <circle cx="12" cy="7" r="4"/>
-    </svg>
-  ),
-  Contact: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
-    </svg>
-  ),
-  Address: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-      <circle cx="12" cy="10" r="3"/>
-    </svg>
-  ),
-  Demographics: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-      <circle cx="9" cy="7" r="4"/>
-      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-    </svg>
-  ),
-  Language: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M5 8h14M12 3v5M8 8v10M16 8v10M6 18h12M9 21h6"/>
-      <path d="M4 8h16"/>
-    </svg>
-  ),
-  Geography: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10"/>
-      <line x1="2" y1="12" x2="22" y2="12"/>
-      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-    </svg>
-  ),
-  Family: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-      <circle cx="9" cy="7" r="4"/>
-      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-    </svg>
-  ),
-  Education: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-      <path d="M6 12v5c3 3 9 3 12 0v-5"/>
-    </svg>
-  ),
-  Testing: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="9 11 12 14 22 4"/>
-      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-    </svg>
-  ),
-  Activities: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-    </svg>
-  ),
-  Writing: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 20h9"/>
-      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-    </svg>
-  ),
-  Colleges: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-      <polyline points="9 22 9 12 15 12 15 22"/>
-    </svg>
-  ),
-  Courses: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-    </svg>
-  ),
-  Search: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="11" cy="11" r="8"/>
-      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-    </svg>
-  ),
-  Application: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-      <polyline points="14 2 14 8 20 8"/>
-      <line x1="16" y1="13" x2="8" y2="13"/>
-      <line x1="16" y1="17" x2="8" y2="17"/>
-      <polyline points="10 9 9 9 8 9"/>
-    </svg>
-  ),
-  DirectAdmissions: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-      <polyline points="22 4 12 14.01 9 11.01"/>
-    </svg>
-  ),
-  Financial: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="12" y1="1" x2="12" y2="23"/>
-      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-    </svg>
-  ),
-  Settings: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="3"/>
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-    </svg>
-  ),
-  SignOut: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-      <polyline points="16 17 21 12 16 7"/>
-      <line x1="21" y1="12" x2="9" y2="12"/>
-    </svg>
-  ),
-  ChevronDown: () => (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="6 9 12 15 18 9"/>
-    </svg>
-  ),
-  ChevronRight: () => (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="9 18 15 12 9 6"/>
-    </svg>
-  ),
-  Menu: () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="3" y1="12" x2="21" y2="12"/>
-      <line x1="3" y1="6" x2="21" y2="6"/>
-      <line x1="3" y1="18" x2="21" y2="18"/>
-    </svg>
-  ),
-  Close: () => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="18" y1="6" x2="6" y2="18"/>
-      <line x1="6" y1="6" x2="18" y2="18"/>
-    </svg>
-  ),
-  College: () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-      <polyline points="9 22 9 12 15 12 15 22"/>
-    </svg>
-  ),
-};
 
 const DashboardLayout = ({ 
   userData, 
@@ -376,20 +214,23 @@ const DashboardLayout = ({
     return (
       <li className="nav-college-item">
         <div className={`nav-college-header ${isCollegeActive ? 'active' : ''}`} onClick={onToggle}>
-          <Icons.College />
+          <span className="nav-dot"></span>
           <span className="nav-text">{college.name}</span>
-          <span className="expand-icon">{isExpanded ? <Icons.ChevronDown /> : <Icons.ChevronRight />}</span>
+          <span className="nav-chevron">{isExpanded ? '▼' : '▶'}</span>
         </div>
         {isExpanded && (
           <ul className="nav-college-submenu">
             <li className="nav-college-subitem">
-              <div className="nav-college-subheader"><span className="nav-text">APPLICATION</span></div>
+              <div className="nav-college-subheader">
+                <span className="nav-text">APPLICATION</span>
+              </div>
               <ul className="nav-application-submenu">
                 {applicationSubsections.map((sub) => {
                   const isActive = location.pathname === `${basePath}/colleges/${college.collegeId}/${sub.id}`;
                   return (
                     <li key={sub.id} className={`nav-application-subitem ${isActive ? 'active' : ''}`}>
                       <div className={`nav-content ${isActive ? 'active' : ''}`} onClick={() => onNavigate(`college-${college.collegeId}-${sub.id}`)}>
+                        <span className="nav-dot"></span>
                         <span className="nav-text">{sub.name}</span>
                       </div>
                     </li>
@@ -399,6 +240,7 @@ const DashboardLayout = ({
             </li>
             <li className={`nav-college-subitem ${location.pathname === `${basePath}/colleges/${college.collegeId}/review` ? 'active' : ''}`}>
               <div className={`nav-content ${location.pathname === `${basePath}/colleges/${college.collegeId}/review` ? 'active' : ''}`} onClick={() => onNavigate(`college-${college.collegeId}-review`)}>
+                <span className="nav-dot"></span>
                 <span className="nav-text">Review and submit application</span>
               </div>
             </li>
@@ -415,26 +257,26 @@ const DashboardLayout = ({
     navigate(`${basePath}/colleges/${collegeId}/${subsection}`);
   };
 
-  // Reusable NavItem component with icon
-  const NavItem = ({ icon: Icon, label, isActive, onClick, badge, hint }) => (
+  // Reusable NavItem component - No icons, uses CSS dot
+  const NavItem = ({ label, isActive, onClick, badge, hint }) => (
     <li className={`nav-item ${isActive ? 'active' : ''}`} onClick={onClick}>
       <div className="nav-content">
-        {Icon && <span className="nav-icon"><Icon /></span>}
+        <span className="nav-dot"></span>
         <span className="nav-text">{hint || label}</span>
         {badge !== undefined && badge !== '' && <div className="nav-progress">{badge}</div>}
       </div>
     </li>
   );
 
-  // Expandable nav section with icon
-  const ExpandableNav = ({ icon: Icon, label, isExpanded, onToggle, badge, children }) => (
+  // Expandable nav section - No icons
+  const ExpandableNav = ({ label, isExpanded, onToggle, badge, children }) => (
     <li className="nav-section-expandable">
       <div className={`nav-header ${isExpanded ? 'expanded' : ''}`} onClick={onToggle}>
-        {Icon && <span className="nav-icon"><Icon /></span>}
+        <span className="nav-dot"></span>
         <span className="nav-text">{label}</span>
         <div className="nav-header-right">
           {badge !== undefined && badge !== '' && <span className="nav-progress-small">{badge}</span>}
-          <span className="expand-icon">{isExpanded ? <Icons.ChevronDown /> : <Icons.ChevronRight />}</span>
+          <span className="nav-chevron">{isExpanded ? '▼' : '▶'}</span>
         </div>
       </div>
       {isExpanded && <ul className="nav-submenu">{children}</ul>}
@@ -444,6 +286,7 @@ const DashboardLayout = ({
   const SubItem = ({ label, isActive, onClick, badge }) => (
     <li className={`nav-subitem ${isActive ? 'active' : ''}`}>
       <div className="nav-content" onClick={onClick}>
+        <span className="nav-dot"></span>
         <span className="nav-text">{label}</span>
         {badge !== undefined && <div className="nav-progress-tiny">{badge}</div>}
       </div>
@@ -451,44 +294,38 @@ const DashboardLayout = ({
   );
 
   const getSidebarContent = () => {
-    // PROFILE Section - This is the main sidebar for profile sections
+    // PROFILE Section
     if (activeMainSection === 'profile') {
       return (
         <div className="nav-section">
           <h4 className="nav-section-title">PROFILE</h4>
           <ul className="nav-menu">
             <NavItem 
-              icon={Icons.Profile}
               label="Personal Information" 
               isActive={location.pathname.includes('/personal')} 
               onClick={() => onSectionChange('personal')} 
             />
             <NavItem 
-              icon={Icons.Contact}
               label="Contact Details" 
               isActive={location.pathname.includes('/contact')} 
               onClick={() => onSectionChange('contact')} 
             />
             <NavItem 
-              icon={Icons.Address}
               label="Address" 
               isActive={location.pathname.includes('/address')} 
               onClick={() => onSectionChange('address')} 
             />
             <NavItem 
-              icon={Icons.Demographics}
               label="Demographics" 
               isActive={location.pathname.includes('/demographics')} 
               onClick={() => onSectionChange('demographics')} 
             />
             <NavItem 
-              icon={Icons.Language}
               label="Language" 
               isActive={location.pathname.includes('/language')} 
               onClick={() => onSectionChange('language')} 
             />
             <NavItem 
-              icon={Icons.Geography}
               label="Geography & Nationality" 
               isActive={location.pathname.includes('/geography')} 
               onClick={() => onSectionChange('geography')} 
@@ -511,7 +348,6 @@ const DashboardLayout = ({
             ].map(([key, label]) => (
               <NavItem 
                 key={key} 
-                icon={Icons.Family}
                 label={label} 
                 isActive={location.pathname.includes(`/${key}`)} 
                 onClick={() => navigate(`${basePath}/family/${key}`)} 
@@ -539,7 +375,6 @@ const DashboardLayout = ({
             ].map(([key, label]) => (
               <NavItem 
                 key={key} 
-                icon={Icons.Education}
                 label={label} 
                 isActive={location.pathname.includes(`/${key}`)} 
                 onClick={() => navigate(`${basePath}/education/${key}`)} 
@@ -556,13 +391,11 @@ const DashboardLayout = ({
           <h4 className="nav-section-title">WRITING</h4>
           <ul className="nav-menu">
             <NavItem 
-              icon={Icons.Writing}
               label="Personal Essay" 
               isActive={location.pathname.includes('/personal-essay')} 
               onClick={() => navigate(`${basePath}/writing/personal-essay`)} 
             />
             <NavItem 
-              icon={Icons.Writing}
               label="Additional Information" 
               isActive={location.pathname.includes('/additional-information')} 
               onClick={() => navigate(`${basePath}/writing/additional-information`)} 
@@ -578,13 +411,11 @@ const DashboardLayout = ({
           <h4 className="nav-section-title">ACTIVITIES</h4>
           <ul className="nav-menu">
             <NavItem 
-              icon={Icons.Activities}
               label="Activities" 
               isActive={location.pathname.includes('/activities/activities')} 
               onClick={() => navigate(`${basePath}/activities/activities`)} 
             />
             <NavItem 
-              icon={Icons.Activities}
               label="Responsibilities and circumstances" 
               isActive={location.pathname.includes('/responsibilities')} 
               onClick={() => navigate(`${basePath}/activities/responsibilities`)} 
@@ -616,7 +447,6 @@ const DashboardLayout = ({
             {sectionsToShow.map(s => (
               <NavItem 
                 key={s} 
-                icon={Icons.Testing}
                 label={sectionDisplayNames[s] || s} 
                 isActive={location.pathname.includes(`/${s}`)} 
                 onClick={() => navigate(`${basePath}/testing/${s}`)} 
@@ -644,7 +474,6 @@ const DashboardLayout = ({
           <h4 className="nav-section-title">UNIVERSITY APPLICATION</h4>
           <ul className="nav-menu">
             <NavItem 
-              icon={Icons.Application}
               label="Application Overview" 
               isActive={location.pathname.includes('/application/overview')} 
               onClick={() => navigate(`${basePath}/application/overview`)} 
@@ -657,7 +486,6 @@ const DashboardLayout = ({
               return (
                 <NavItem 
                   key={step.id} 
-                  icon={Icons.Application}
                   label={step.name} 
                   isActive={isActive} 
                   onClick={() => navigate(step.route)}
@@ -670,14 +498,13 @@ const DashboardLayout = ({
       );
     }
 
-    // Default sidebar - Main Dashboard Menu with PROFILE section
+    // Default sidebar - Main Dashboard Menu
     return (
       <>
         <div className="nav-section">
           <h4 className="nav-section-title">MAIN MENU</h4>
           <ul className="nav-menu">
             <NavItem 
-              icon={Icons.Dashboard} 
               label="Dashboard" 
               isActive={activeMainSection === 'dashboard'}
               onClick={() => onSectionChange('dashboard')} 
@@ -690,38 +517,32 @@ const DashboardLayout = ({
           <h4 className="nav-section-title">PROFILE</h4>
           <ul className="nav-menu">
             <NavItem 
-              icon={Icons.Profile} 
               label="Personal Information" 
               isActive={activeMainSection === 'profile' && location.pathname.includes('/personal')}
               onClick={() => navigate(`${basePath}/profile/personal`)} 
               badge={userData?.profileProgress >= 100 ? '✓' : userData?.profileProgress > 0 ? `${userData.profileProgress}%` : 'Start'} 
             />
             <NavItem 
-              icon={Icons.Contact} 
               label="Contact Details" 
               isActive={activeMainSection === 'profile' && location.pathname.includes('/contact')}
               onClick={() => navigate(`${basePath}/profile/contact`)} 
             />
             <NavItem 
-              icon={Icons.Address} 
               label="Address" 
               isActive={activeMainSection === 'profile' && location.pathname.includes('/address')}
               onClick={() => navigate(`${basePath}/profile/address`)} 
             />
             <NavItem 
-              icon={Icons.Demographics} 
               label="Demographics" 
               isActive={activeMainSection === 'profile' && location.pathname.includes('/demographics')}
               onClick={() => navigate(`${basePath}/profile/demographics`)} 
             />
             <NavItem 
-              icon={Icons.Language} 
               label="Language" 
               isActive={activeMainSection === 'profile' && location.pathname.includes('/language')}
               onClick={() => navigate(`${basePath}/profile/language`)} 
             />
             <NavItem 
-              icon={Icons.Geography} 
               label="Geography & Nationality" 
               isActive={activeMainSection === 'profile' && location.pathname.includes('/geography')}
               onClick={() => navigate(`${basePath}/profile/geography`)} 
@@ -733,7 +554,6 @@ const DashboardLayout = ({
           <h4 className="nav-section-title">APPLICATION</h4>
           <ul className="nav-menu">
             <ExpandableNav 
-              icon={Icons.Application} 
               label="University Application" 
               isExpanded={expandedSections.application}
               onToggle={() => toggleSection('application')} 
@@ -765,7 +585,6 @@ const DashboardLayout = ({
             </ExpandableNav>
 
             <NavItem 
-              icon={Icons.Family} 
               label="Family" 
               isActive={activeMainSection === 'family'}
               onClick={() => onSectionChange('family')}
@@ -773,7 +592,6 @@ const DashboardLayout = ({
             />
 
             <NavItem 
-              icon={Icons.Education} 
               label="Education" 
               isActive={activeMainSection === 'education'}
               onClick={() => onSectionChange('education')}
@@ -781,7 +599,6 @@ const DashboardLayout = ({
             />
 
             <ExpandableNav 
-              icon={Icons.Testing} 
               label="Testing" 
               isExpanded={expandedSections.testing}
               onToggle={() => toggleSection('testing')}
@@ -800,12 +617,11 @@ const DashboardLayout = ({
                   onClick={() => navigate(t.route)} 
                 />
               )) : (
-                <li className="nav-subitem"><div className="nav-content"><span className="nav-text nav-text--muted">No tests selected</span></div></li>
+                <li className="nav-subitem"><div className="nav-content"><span className="nav-dot"></span><span className="nav-text nav-text--muted">No tests selected</span></div></li>
               )}
             </ExpandableNav>
 
             <ExpandableNav 
-              icon={Icons.Activities} 
               label="Activities" 
               isExpanded={expandedSections.activities}
               onToggle={() => toggleSection('activities')}
@@ -824,7 +640,6 @@ const DashboardLayout = ({
             </ExpandableNav>
 
             <ExpandableNav 
-              icon={Icons.Writing} 
               label="Writing" 
               isExpanded={expandedSections.writing}
               onToggle={() => toggleSection('writing')}
@@ -848,14 +663,12 @@ const DashboardLayout = ({
           <h4 className="nav-section-title">COLLEGES</h4>
           <ul className="nav-menu">
             <NavItem 
-              icon={Icons.Search} 
               label="College Search" 
               isActive={location.pathname.includes('/college-search')} 
               onClick={() => navigate(`${basePath}/college-search`)} 
             />
             
             <ExpandableNav 
-              icon={Icons.Colleges} 
               label="My Colleges" 
               isExpanded={expandedSections.colleges} 
               onToggle={() => toggleSection('colleges')}
@@ -874,12 +687,11 @@ const DashboardLayout = ({
                   onNavigate={handleCollegeSubsectionNavigate} 
                 />
               )) : (
-                <li className="nav-subitem"><div className="nav-content"><span className="nav-text nav-text--muted">No colleges added</span></div></li>
+                <li className="nav-subitem"><div className="nav-content"><span className="nav-dot"></span><span className="nav-text nav-text--muted">No colleges added</span></div></li>
               )}
             </ExpandableNav>
 
             <ExpandableNav 
-              icon={Icons.Courses} 
               label="Courses & Programs" 
               isExpanded={expandedSections.courses} 
               onToggle={() => toggleSection('courses')}
@@ -904,6 +716,7 @@ const DashboardLayout = ({
                     onSectionChange('courses');
                   }
                 }}>
+                  <span className="nav-dot"></span>
                   <span className="nav-text">Saved Programs</span>
                   {(() => { const c = JSON.parse(localStorage.getItem('savedPrograms') || '[]').length; return c > 0 ? <span className="nav-count-small">{c}</span> : null; })()}
                 </div>
@@ -916,19 +729,16 @@ const DashboardLayout = ({
           <h4 className="nav-section-title">RESOURCES</h4>
           <ul className="nav-menu">
             <NavItem 
-              icon={Icons.DirectAdmissions} 
               label="Direct Admissions" 
               isActive={false} 
               onClick={() => {}} 
             />
             <NavItem 
-              icon={Icons.Financial} 
               label="Financial Aid" 
               isActive={false} 
               onClick={() => {}} 
             />
             <NavItem 
-              icon={Icons.Settings} 
               label="Settings" 
               isActive={false} 
               onClick={() => {}} 
@@ -941,10 +751,10 @@ const DashboardLayout = ({
 
   return (
     <div className="dashboard-container">
-      {/* Mobile Top Bar */}
+      {/* Mobile Top Bar - No SVG icons, using CSS hamburger */}
       <div className="mobile-topbar">
         <button className="mobile-menu-btn" onClick={() => setSidebarOpen(true)} aria-label="Open navigation menu">
-          <Icons.Menu />
+          <span className="mobile-menu-icon"></span>
         </button>
         <div className="mobile-brand-logo">
           <img 
@@ -965,7 +775,7 @@ const DashboardLayout = ({
       {/* Sidebar */}
       <div className={`dashboard-sidebar ${sidebarOpen ? 'sidebar-open' : ''}`}>
         <button className="sidebar-close-btn" onClick={() => setSidebarOpen(false)} aria-label="Close navigation menu">
-          <Icons.Close />
+          <span className="sidebar-close-icon"></span>
         </button>
 
         <div className="sidebar-header">
@@ -1003,9 +813,9 @@ const DashboardLayout = ({
           {getSidebarContent()}
           <div className="nav-footer">
             <ul className="nav-menu">
-              <li className="nav-item sign-out" onClick={handleSignOut}>
+              <li className="nav-item nav-item--signout" onClick={handleSignOut}>
                 <div className="nav-content">
-                  <span className="nav-icon"><Icons.SignOut /></span>
+                  <span className="nav-dot nav-dot--danger"></span>
                   <span className="nav-text">Sign Out</span>
                 </div>
               </li>

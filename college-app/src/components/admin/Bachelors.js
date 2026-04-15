@@ -55,24 +55,20 @@ const UniversityAdminTemplate = () => {
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState(null);
   
-  // API Base URL
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
   
-  // Dynamic Available Intakes (Current Year + Next 3 Years)
   const getAvailableIntakes = () => {
     const currentYear = new Date().getFullYear();
     const intakes = [];
     const seasons = ["Fall", "Spring", "Summer"];
-    const currentMonth = new Date().getMonth(); // 0 = January, 11 = December
+    const currentMonth = new Date().getMonth();
     
     for (let year = currentYear; year <= currentYear + 3; year++) {
       seasons.forEach(season => {
-        // Skip past seasons in the current year
         if (year === currentYear) {
-          if (season === "Spring" && currentMonth > 4) return; // Skip Spring if past May (month 4)
-          if (season === "Summer" && currentMonth > 7) return; // Skip Summer if past August (month 7)
+          if (season === "Spring" && currentMonth > 4) return;
+          if (season === "Summer" && currentMonth > 7) return;
           if (season === "Fall" && currentMonth > 10) {
-            // If we're past November, show Fall of next year instead
             if (year === currentYear) return;
           }
         }
@@ -80,12 +76,10 @@ const UniversityAdminTemplate = () => {
       });
     }
     
-    // Sort intakes chronologically
     return intakes.sort((a, b) => {
       const yearA = parseInt(a.split(' ')[1]);
       const yearB = parseInt(b.split(' ')[1]);
       if (yearA !== yearB) return yearA - yearB;
-      
       const seasonOrder = { "Spring": 0, "Summer": 1, "Fall": 2 };
       const seasonA = seasonOrder[a.split(' ')[0]];
       const seasonB = seasonOrder[b.split(' ')[0]];
@@ -95,7 +89,6 @@ const UniversityAdminTemplate = () => {
 
   const availableIntakes = getAvailableIntakes();
 
-  // Program Categories with ONLY Bachelor's programs
   const programCategories = [
     // ========== COMPUTER SCIENCE & IT ==========
     { name: "Computer Science (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
@@ -112,7 +105,6 @@ const UniversityAdminTemplate = () => {
     { name: "Game Development (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Network Engineering (BEng)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Bioinformatics (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
-    
     // ========== ENGINEERING ==========
     { name: "Mechanical Engineering (BEng)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Electrical Engineering (BEng)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
@@ -128,7 +120,6 @@ const UniversityAdminTemplate = () => {
     { name: "Robotics Engineering (BEng)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Mechatronics Engineering (BEng)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Nuclear Engineering (BEng)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
-    
     // ========== BUSINESS & MANAGEMENT ==========
     { name: "Business Administration (BBA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Finance (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
@@ -142,7 +133,6 @@ const UniversityAdminTemplate = () => {
     { name: "E-commerce (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Real Estate (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Hospitality Management (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
-    
     // ========== ARTS & HUMANITIES ==========
     { name: "English Literature (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Creative Writing (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
@@ -164,7 +154,6 @@ const UniversityAdminTemplate = () => {
     { name: "American Studies (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Asian Studies (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "European Studies (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
-    
     // ========== SOCIAL SCIENCES ==========
     { name: "Psychology (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Sociology (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
@@ -182,7 +171,6 @@ const UniversityAdminTemplate = () => {
     { name: "African Studies (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Latin American Studies (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Middle Eastern Studies (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
-    
     // ========== NATURAL SCIENCES ==========
     { name: "Physics (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Chemistry (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
@@ -206,7 +194,6 @@ const UniversityAdminTemplate = () => {
     { name: "Physical Chemistry (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Theoretical Physics (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Quantum Physics (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
-    
     // ========== MEDICAL & HEALTH SCIENCES ==========
     { name: "Medicine (MBBS)", level: "Bachelor", duration: "5 years", studyMode: "On Campus" },
     { name: "Nursing (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
@@ -223,13 +210,11 @@ const UniversityAdminTemplate = () => {
     { name: "Public Health (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Health Sciences (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Medical Laboratory Science (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
-    
     // ========== LAW ==========
     { name: "Law (LLB)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Criminal Justice (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Legal Studies (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Paralegal Studies (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
-    
     // ========== EDUCATION ==========
     { name: "Education (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Early Childhood Education (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
@@ -239,7 +224,6 @@ const UniversityAdminTemplate = () => {
     { name: "Physical Education (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Music Education (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Art Education (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
-    
     // ========== ARCHITECTURE & DESIGN ==========
     { name: "Architecture (BArch)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Interior Design (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
@@ -250,7 +234,6 @@ const UniversityAdminTemplate = () => {
     { name: "Game Design (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "UX/UI Design (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Fashion Merchandising (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
-    
     // ========== MEDIA & COMMUNICATIONS ==========
     { name: "Journalism (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Media Studies (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
@@ -262,7 +245,6 @@ const UniversityAdminTemplate = () => {
     { name: "Film Production (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Radio Production (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Television Production (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
-    
     // ========== AGRICULTURE & ENVIRONMENT ==========
     { name: "Agriculture (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Forestry (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
@@ -274,7 +256,6 @@ const UniversityAdminTemplate = () => {
     { name: "Environmental Studies (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Marine Science (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Ecology (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
-    
     // ========== LANGUAGES & LINGUISTICS ==========
     { name: "English Language (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "French (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
@@ -295,7 +276,6 @@ const UniversityAdminTemplate = () => {
     { name: "Applied Linguistics (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Translation Studies (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Interpretation (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
-    
     // ========== ADDITIONAL ENGLISH/HUMANITIES ==========
     { name: "English with Creative Writing (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "English with Drama (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
@@ -307,7 +287,6 @@ const UniversityAdminTemplate = () => {
     { name: "British Literature (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "World Literature (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Children's Literature (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
-    
     // ========== ADDITIONAL MATHEMATICS ==========
     { name: "Mathematics with Statistics (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Mathematics with Finance (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
@@ -319,7 +298,6 @@ const UniversityAdminTemplate = () => {
     { name: "Operations Research (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Computational Mathematics (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Discrete Mathematics (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
-    
     // ========== ADDITIONAL PHYSICS ==========
     { name: "Applied Physics (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Engineering Physics (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
@@ -331,7 +309,6 @@ const UniversityAdminTemplate = () => {
     { name: "Acoustics (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Geophysics (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Space Physics (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
-    
     // ========== ADDITIONAL CHEMISTRY ==========
     { name: "Analytical Chemistry (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Synthetic Chemistry (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
@@ -343,7 +320,6 @@ const UniversityAdminTemplate = () => {
     { name: "Forensic Chemistry (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Food Chemistry (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Industrial Chemistry (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
-    
     // ========== ADDITIONAL SOCIAL SCIENCES ==========
     { name: "Social Anthropology (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Cultural Anthropology (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
@@ -362,7 +338,6 @@ const UniversityAdminTemplate = () => {
     { name: "Family Studies (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Aging Studies (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Disability Studies (BA)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
-    
     // ========== ADDITIONAL PSYCHOLOGY ==========
     { name: "Clinical Psychology (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
     { name: "Cognitive Psychology (BSc)", level: "Bachelor", duration: "3 years", studyMode: "On Campus" },
@@ -379,64 +354,15 @@ const UniversityAdminTemplate = () => {
   ];
 
   const [formData, setFormData] = useState({
-    // Basic Information
-    universityName: "",
-    universityCode: "",
-    establishedYear: "",
-    universityType: "",
-    accreditation: "",
-    ranking: "",
-    website: "",
-    
-    // Location (International)
-    country: "",
-    state: "",
-    city: "",
-    address: "",
-    zipCode: "",
-    
-    // Contact
-    adminEmail: "",
-    adminPhone: "",
-    admissionEmail: "",
-    admissionPhone: "",
-    
-    // Academic Details
-    programs: [],
-    intakes: availableIntakes.slice(0, 3),
-    applicationDeadlines: {
-      earlyDecision: "",
-      earlyAction: "",
-      regularDecision: "",
-      rolling: ""
-    },
-    tuitionFees: {
-      inState: "",
-      outOfState: "",
-      international: "",
-      roomAndBoard: ""
-    },
-    
-    // Requirements
-    minimumGPA: "",
-    satRequirements: {
-      math: "",
-      reading: "",
-      total: ""
-    },
-    actRequirements: {
-      composite: ""
-    },
-    englishTests: ["TOEFL iBT", "IELTS Academic"],
-    applicationRequirements: [],
-    
-    // Media
-    universityLogo: null,
-    coverImage: null,
-    
-    // Status
-    isActive: true,
-    featured: false
+    universityName: "", universityCode: "", establishedYear: "", universityType: "",
+    accreditation: "", ranking: "", website: "", country: "", state: "", city: "",
+    address: "", zipCode: "", adminEmail: "", adminPhone: "", admissionEmail: "", admissionPhone: "",
+    programs: [], intakes: availableIntakes.slice(0, 3),
+    applicationDeadlines: { earlyDecision: "", earlyAction: "", regularDecision: "", rolling: "" },
+    tuitionFees: { inState: "", outOfState: "", international: "", roomAndBoard: "" },
+    minimumGPA: "", satRequirements: { math: "", reading: "", total: "" },
+    actRequirements: { composite: "" }, englishTests: ["TOEFL iBT", "IELTS Academic"],
+    applicationRequirements: [], universityLogo: null, coverImage: null, isActive: true, featured: false
   });
 
   const [errors, setErrors] = useState({});
@@ -444,7 +370,6 @@ const UniversityAdminTemplate = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [isOtherSelected, setIsOtherSelected] = useState(false);
 
-  // All Countries List
   const countries = [
     "United States","United Kingdom","Canada","Australia","New Zealand","Germany",
     "France","Netherlands","Sweden","Switzerland","Ireland","Singapore","Japan",
@@ -456,7 +381,6 @@ const UniversityAdminTemplate = () => {
     "Ukraine","Poland","Czech Republic","Hungary","Greece","Portugal"
   ].sort();
 
-  // All 50 US States
   const usStates = [
     "Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut",
     "Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa",
@@ -468,7 +392,6 @@ const UniversityAdminTemplate = () => {
     "Virginia","Washington","West Virginia","Wisconsin","Wyoming","District of Columbia"
   ];
 
-  // Enhanced statesByCountry
   const statesByCountry = {
     "United States": [...usStates, "Other"],
     "United Kingdom": ["England","Scotland","Wales","Northern Ireland","Other"],
@@ -609,7 +532,7 @@ const UniversityAdminTemplate = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (currentStep !== 5) { console.log('Form cannot be submitted on step', currentStep); return; }
+    if (currentStep !== 5) { return; }
     const newErrors = validateForm();
     if (Object.keys(newErrors).length === 0) {
       const token = getAuthToken();
@@ -623,7 +546,6 @@ const UniversityAdminTemplate = () => {
         const universityData = { ...formData, programs: selectedPrograms, intakes: formData.intakes.length > 0 ? formData.intakes : availableIntakes.slice(0, 3), source: 'bachelors', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), programCount: selectedPrograms.length };
         delete universityData.universityLogo;
         delete universityData.coverImage;
-        console.log("Submitting university with programs:", selectedPrograms);
         const url = editingUniversity ? `${API_BASE_URL}/bachelors/universities/${editingUniversity._id}` : `${API_BASE_URL}/bachelors/universities`;
         const method = editingUniversity ? 'PUT' : 'POST';
         const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(universityData) });
@@ -637,7 +559,6 @@ const UniversityAdminTemplate = () => {
           if (data.errors) { const backendErrors = {}; data.errors.forEach(err => { if (err.path) backendErrors[err.path] = err.msg; }); setErrors(backendErrors); }
         }
       } catch (error) {
-        console.error('Error saving university:', error);
         setApiError('Network error. Please check if backend is running.');
       } finally { setLoading(false); }
     } else { setErrors(newErrors); }
@@ -673,59 +594,50 @@ const UniversityAdminTemplate = () => {
 
   const getYearRange = () => { const y = new Date().getFullYear(); return `${y} - ${y + 3}`; };
 
-  const getLevelColor = (level) => {
-    const levelStr = level?.toLowerCase() || '';
-    if (levelStr.includes('bachelor') || levelStr.includes('undergraduate') || levelStr.includes('ba') || levelStr.includes('bs') || levelStr.includes('bsc') || levelStr.includes('beng')) return '#10b981';
-    if (levelStr.includes('master') || levelStr.includes('graduate') || levelStr.includes('ma') || levelStr.includes('ms') || levelStr.includes('msc') || levelStr.includes('meng') || levelStr.includes('mba') || levelStr.includes('llm') || levelStr.includes('mph') || levelStr.includes('mfa') || levelStr.includes('march')) return '#6366f1';
-    if (levelStr.includes('phd') || levelStr.includes('doctorate') || levelStr.includes('dclinpsy') || levelStr.includes('md')) return '#ef4444';
-    if (levelStr.includes('foundation')) return '#6366f1';
-    return '#64748b';
-  };
-
   const renderStep1 = () => (
-    <div className="form-section">
-      <h3 className="section-title">Basic Information</h3>
-      <div className="form-row">
-        <div className="form-group">
+    <div className="bachelor-form-section">
+      <h3 className="bachelor-section-title">Basic Information</h3>
+      <div className="bachelor-form-row">
+        <div className="bachelor-form-group">
           <label>University Name *</label>
           <input type="text" name="universityName" value={formData.universityName} onChange={handleChange} placeholder="e.g., Harvard University" className={errors.universityName ? "error" : ""}/>
-          {errors.universityName && <span className="error-message">{errors.universityName}</span>}
+          {errors.universityName && <span className="bachelor-error-message">{errors.universityName}</span>}
         </div>
-        <div className="form-group">
+        <div className="bachelor-form-group">
           <label>University Code *</label>
           <input type="text" name="universityCode" value={formData.universityCode} onChange={handleChange} placeholder="e.g., HARV001" className={errors.universityCode ? "error" : ""}/>
-          {errors.universityCode && <span className="error-message">{errors.universityCode}</span>}
+          {errors.universityCode && <span className="bachelor-error-message">{errors.universityCode}</span>}
         </div>
       </div>
-      <div className="form-row">
-        <div className="form-group">
+      <div className="bachelor-form-row">
+        <div className="bachelor-form-group">
           <label>Established Year *</label>
           <input type="number" name="establishedYear" value={formData.establishedYear} onChange={handleChange} placeholder="e.g., 1636" min="1000" max={new Date().getFullYear()} className={errors.establishedYear ? "error" : ""}/>
-          {errors.establishedYear && <span className="error-message">{errors.establishedYear}</span>}
+          {errors.establishedYear && <span className="bachelor-error-message">{errors.establishedYear}</span>}
         </div>
-        <div className="form-group">
+        <div className="bachelor-form-group">
           <label>University Type *</label>
           <select name="universityType" value={formData.universityType} onChange={handleChange} className={errors.universityType ? "error" : ""}>
             <option value="">Select type</option>
             {universityTypes.map(type => <option key={type} value={type}>{type}</option>)}
           </select>
-          {errors.universityType && <span className="error-message">{errors.universityType}</span>}
+          {errors.universityType && <span className="bachelor-error-message">{errors.universityType}</span>}
         </div>
       </div>
-      <div className="form-row">
-        <div className="form-group">
+      <div className="bachelor-form-row">
+        <div className="bachelor-form-group">
           <label>Accreditation</label>
           <input type="text" name="accreditation" value={formData.accreditation} onChange={handleChange} placeholder="e.g., AACSB, ABET, NECHE"/>
         </div>
-        <div className="form-group">
+        <div className="bachelor-form-group">
           <label>National/Global Ranking</label>
           <input type="text" name="ranking" value={formData.ranking} onChange={handleChange} placeholder="e.g., #15 in National Universities"/>
         </div>
       </div>
-      <div className="form-group">
+      <div className="bachelor-form-group">
         <label>Website *</label>
         <input type="url" name="website" value={formData.website} onChange={handleChange} placeholder="https://www.university.edu" className={errors.website ? "error" : ""}/>
-        {errors.website && <span className="error-message">{errors.website}</span>}
+        {errors.website && <span className="bachelor-error-message">{errors.website}</span>}
       </div>
     </div>
   );
@@ -737,79 +649,79 @@ const UniversityAdminTemplate = () => {
     };
     const availableStates = formData.country ? getStatesForCountry(formData.country) : [];
     return (
-      <div className="form-section">
-        <h3 className="section-title">Location Details</h3>
-        <div className="form-row">
-          <div className="form-group">
+      <div className="bachelor-form-section">
+        <h3 className="bachelor-section-title">Location Details</h3>
+        <div className="bachelor-form-row">
+          <div className="bachelor-form-group">
             <label>Country *</label>
             <select name="country" value={formData.country} onChange={handleChange} className={errors.country ? "error" : ""}>
               <option value="">Select country</option>
               {countries.map(country => <option key={country} value={country}>{country}</option>)}
             </select>
-            {errors.country && <span className="error-message">{errors.country}</span>}
+            {errors.country && <span className="bachelor-error-message">{errors.country}</span>}
           </div>
-          <div className="form-group">
+          <div className="bachelor-form-group">
             <label>State/Province/Region *</label>
             <select name="state" value={isOtherSelected ? "Other" : formData.state} onChange={handleChange} className={errors.state ? "error" : ""} disabled={!formData.country}>
               <option value="">{formData.country ? "Select state/province" : "First select country"}</option>
               {availableStates.map(state => <option key={state} value={state}>{state}</option>)}
             </select>
-            {errors.state && <span className="error-message">{errors.state}</span>}
-            {!formData.country && <small className="field-hint">Please select a country first</small>}
+            {errors.state && <span className="bachelor-error-message">{errors.state}</span>}
+            {!formData.country && <small className="bachelor-field-hint">Please select a country first</small>}
           </div>
         </div>
         {isOtherSelected && (
-          <div className="form-row">
-            <div className="form-group" style={{ gridColumn: '2 / 3' }}>
+          <div className="bachelor-form-row">
+            <div className="bachelor-form-group" style={{ gridColumn: '2 / 3' }}>
               <label>Enter State/Province/Region *</label>
               <input type="text" value={formData.state === "Other" ? "" : formData.state} onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))} placeholder="Type your state/province/region" className={errors.state ? "error" : ""}/>
-              {errors.state && <span className="error-message">{errors.state}</span>}
+              {errors.state && <span className="bachelor-error-message">{errors.state}</span>}
             </div>
           </div>
         )}
-        <div className="form-row">
-          <div className="form-group">
+        <div className="bachelor-form-row">
+          <div className="bachelor-form-group">
             <label>City *</label>
             <input type="text" name="city" value={formData.city} onChange={handleChange} placeholder="Enter city" className={errors.city ? "error" : ""}/>
-            {errors.city && <span className="error-message">{errors.city}</span>}
+            {errors.city && <span className="bachelor-error-message">{errors.city}</span>}
           </div>
-          <div className="form-group">
+          <div className="bachelor-form-group">
             <label>Postal/ZIP Code *</label>
             <input type="text" name="zipCode" value={formData.zipCode} onChange={handleChange} placeholder="e.g., 02138 or SW1A 1AA" className={errors.zipCode ? "error" : ""}/>
-            {errors.zipCode && <span className="error-message">{errors.zipCode}</span>}
+            {errors.zipCode && <span className="bachelor-error-message">{errors.zipCode}</span>}
           </div>
         </div>
-        <div className="form-group">
+        <div className="bachelor-form-group">
           <label>Address *</label>
           <textarea name="address" value={formData.address} onChange={handleChange} rows="3" placeholder="Street address, building, etc." className={errors.address ? "error" : ""}/>
-          {errors.address && <span className="error-message">{errors.address}</span>}
+          {errors.address && <span className="bachelor-error-message">{errors.address}</span>}
         </div>
       </div>
     );
   };
 
   const renderStep3 = () => (
-    <div className="form-section">
-      <h3 className="section-title">Contact Information</h3>
-      <div className="form-row">
-        <div className="form-group">
+    <div className="bachelor-form-section">
+      <h3 className="bachelor-section-title">Contact Information</h3>
+      <div className="bachelor-form-row">
+        <div className="bachelor-form-group">
           <label>Admin Email *</label>
           <input type="email" name="adminEmail" value={formData.adminEmail} onChange={handleChange} placeholder="admin@university.edu" className={errors.adminEmail ? "error" : ""}/>
-          {errors.adminEmail && <span className="error-message">{errors.adminEmail}</span>}
+          {errors.adminEmail && <span className="bachelor-error-message">{errors.adminEmail}</span>}
         </div>
-        <div className="form-group">
+        <div className="bachelor-form-group">
           <label>Admin Phone *</label>
           <input type="tel" name="adminPhone" value={formData.adminPhone} onChange={handleChange} placeholder="+1 617-495-1000" className={errors.adminPhone ? "error" : ""}/>
-          {errors.adminPhone && <span className="error-message">{errors.adminPhone}</span>}
+          {errors.adminPhone && <span className="bachelor-error-message">{errors.adminPhone}</span>}
         </div>
       </div>
-      <div className="form-row">
-        <div className="form-group">
+      <div className="bachelor-form-row">
+        <div className="bachelor-form-group">
           <label>Admission Email *</label>
           <input type="email" name="admissionEmail" value={formData.admissionEmail} onChange={handleChange} placeholder="admissions@university.edu" className={errors.admissionEmail ? "error" : ""}/>
-          {errors.admissionEmail && <span className="error-message">{errors.admissionEmail}</span>}
+          {errors.admissionEmail && <span className="bachelor-error-message">{errors.admissionEmail}</span>}
         </div>
-        <div className="form-group">
+        <div className="bachelor-form-group">
           <label>Admission Phone</label>
           <input type="tel" name="admissionPhone" value={formData.admissionPhone} onChange={handleChange} placeholder="+1 617-495-1551"/>
         </div>
@@ -926,26 +838,26 @@ const UniversityAdminTemplate = () => {
     };
 
     return (
-      <div className="form-section">
-        <h3 className="section-title">Academic Details</h3>
-        <div className="form-group">
+      <div className="bachelor-form-section">
+        <h3 className="bachelor-section-title">Academic Details</h3>
+        <div className="bachelor-form-group">
           <label>Programs Offered *</label>
-          <div className="programs-by-category">
+          <div className="bachelor-programs-by-category">
             {Object.entries(groupedPrograms).map(([category, programs]) => (
               programs.length > 0 && (
-                <div key={category} className="program-category">
-                  <h4 className="category-title">
+                <div key={category} className="bachelor-program-category">
+                  <h4 className="bachelor-category-title">
                     {category}
-                    <span className="category-count">{programs.length}</span>
+                    <span className="bachelor-category-count">{programs.length}</span>
                   </h4>
-                  <div className="checkbox-grid">
+                  <div className="bachelor-checkbox-grid">
                     {programs.map(program => (
-                      <label key={program.name} className="checkbox-label program-checkbox">
+                      <label key={program.name} className="bachelor-checkbox-label bachelor-program-checkbox">
                         <input type="checkbox" value={program.name} checked={formData.programs.includes(program.name)} onChange={() => handleArrayInput('programs', program.name)}/>
-                        <span className="program-name">{program.name}</span>
-                        <div className="program-badges-row">
-                          <span className="program-badge">{program.level}</span>
-                          <span className="program-mode">{program.studyMode}</span>
+                        <span className="bachelor-program-name">{program.name}</span>
+                        <div className="bachelor-program-badges-row">
+                          <span className="bachelor-program-badge">{program.level}</span>
+                          <span className="bachelor-program-mode">{program.studyMode}</span>
                         </div>
                       </label>
                     ))}
@@ -954,96 +866,96 @@ const UniversityAdminTemplate = () => {
               )
             ))}
           </div>
-          {errors.programs && <span className="error-message">{errors.programs}</span>}
+          {errors.programs && <span className="bachelor-error-message">{errors.programs}</span>}
         </div>
 
-        <div className="form-group">
+        <div className="bachelor-form-group">
           <label>Available Intakes ({getYearRange()})</label>
-          <div className="checkbox-grid">
+          <div className="bachelor-checkbox-grid">
             {availableIntakes.map(intake => (
-              <label key={intake} className="checkbox-label">
+              <label key={intake} className="bachelor-checkbox-label">
                 <input type="checkbox" value={intake} checked={formData.intakes.includes(intake)} onChange={() => handleArrayInput('intakes', intake)}/>
                 <span>{intake}</span>
               </label>
             ))}
           </div>
-          <small className="field-hint">Select the intakes your university is accepting applications for</small>
+          <small className="bachelor-field-hint">Select the intakes your university is accepting applications for</small>
         </div>
 
-        <div className="form-section">
+        <div className="bachelor-form-section">
           <h4>Application Deadlines</h4>
-          <div className="form-row">
-            <div className="form-group">
+          <div className="bachelor-form-row">
+            <div className="bachelor-form-group">
               <label>Early Decision</label>
               <input type="text" value={formData.applicationDeadlines.earlyDecision} onChange={(e) => handleNestedChange('applicationDeadlines', 'earlyDecision', e.target.value)} placeholder="e.g., Nov 1, 2026"/>
             </div>
-            <div className="form-group">
+            <div className="bachelor-form-group">
               <label>Early Action</label>
               <input type="text" value={formData.applicationDeadlines.earlyAction} onChange={(e) => handleNestedChange('applicationDeadlines', 'earlyAction', e.target.value)} placeholder="e.g., Nov 15, 2026"/>
             </div>
           </div>
-          <div className="form-row">
-            <div className="form-group">
+          <div className="bachelor-form-row">
+            <div className="bachelor-form-group">
               <label>Regular Decision</label>
               <input type="text" value={formData.applicationDeadlines.regularDecision} onChange={(e) => handleNestedChange('applicationDeadlines', 'regularDecision', e.target.value)} placeholder="e.g., Jan 1, 2027"/>
             </div>
-            <div className="form-group">
+            <div className="bachelor-form-group">
               <label>Rolling Admission</label>
               <input type="text" value={formData.applicationDeadlines.rolling} onChange={(e) => handleNestedChange('applicationDeadlines', 'rolling', e.target.value)} placeholder="e.g., Ongoing"/>
             </div>
           </div>
         </div>
 
-        <div className="form-section">
+        <div className="bachelor-form-section">
           <h4>Tuition Fees (Annual)</h4>
-          <div className="form-row">
-            <div className="form-group">
+          <div className="bachelor-form-row">
+            <div className="bachelor-form-group">
               <label>In-State/Local *</label>
               <input type="text" value={formData.tuitionFees.inState} onChange={(e) => handleNestedChange('tuitionFees', 'inState', e.target.value)} placeholder="$" className={errors.tuitionInState ? "error" : ""}/>
             </div>
-            <div className="form-group">
+            <div className="bachelor-form-group">
               <label>Out-of-State/International</label>
               <input type="text" value={formData.tuitionFees.outOfState} onChange={(e) => handleNestedChange('tuitionFees', 'outOfState', e.target.value)} placeholder="$"/>
             </div>
           </div>
-          <div className="form-row">
-            <div className="form-group">
+          <div className="bachelor-form-row">
+            <div className="bachelor-form-group">
               <label>International (if different)</label>
               <input type="text" value={formData.tuitionFees.international} onChange={(e) => handleNestedChange('tuitionFees', 'international', e.target.value)} placeholder="$"/>
             </div>
-            <div className="form-group">
+            <div className="bachelor-form-group">
               <label>Room &amp; Board</label>
               <input type="text" value={formData.tuitionFees.roomAndBoard} onChange={(e) => handleNestedChange('tuitionFees', 'roomAndBoard', e.target.value)} placeholder="$"/>
             </div>
           </div>
         </div>
 
-        <div className="form-section">
+        <div className="bachelor-form-section">
           <h4>Test Score Requirements</h4>
-          <div className="form-row">
-            <div className="form-group">
+          <div className="bachelor-form-row">
+            <div className="bachelor-form-group">
               <label>Minimum GPA</label>
               <input type="text" name="minimumGPA" value={formData.minimumGPA} onChange={handleChange} placeholder="e.g., 3.0 on 4.0 scale"/>
             </div>
           </div>
           <h5>SAT Requirements (if applicable)</h5>
-          <div className="form-row">
-            <div className="form-group">
+          <div className="bachelor-form-row">
+            <div className="bachelor-form-group">
               <label>Math</label>
               <input type="text" value={formData.satRequirements.math} onChange={(e) => handleNestedChange('satRequirements', 'math', e.target.value)} placeholder="e.g., 600-800"/>
             </div>
-            <div className="form-group">
+            <div className="bachelor-form-group">
               <label>Reading/Writing</label>
               <input type="text" value={formData.satRequirements.reading} onChange={(e) => handleNestedChange('satRequirements', 'reading', e.target.value)} placeholder="e.g., 600-800"/>
             </div>
-            <div className="form-group">
+            <div className="bachelor-form-group">
               <label>Total</label>
               <input type="text" value={formData.satRequirements.total} onChange={(e) => handleNestedChange('satRequirements', 'total', e.target.value)} placeholder="e.g., 1200-1600"/>
             </div>
           </div>
           <h5>ACT Requirements (if applicable)</h5>
-          <div className="form-row">
-            <div className="form-group">
+          <div className="bachelor-form-row">
+            <div className="bachelor-form-group">
               <label>Composite</label>
               <input type="text" value={formData.actRequirements.composite} onChange={(e) => handleNestedChange('actRequirements', 'composite', e.target.value)} placeholder="e.g., 25-32"/>
             </div>
@@ -1054,55 +966,55 @@ const UniversityAdminTemplate = () => {
   };
 
   const renderStep5 = () => (
-    <div className="form-section">
-      <h3 className="section-title">Requirements &amp; Media</h3>
-      <div className="form-group">
+    <div className="bachelor-form-section">
+      <h3 className="bachelor-section-title">Requirements &amp; Media</h3>
+      <div className="bachelor-form-group">
         <label>Application Requirements</label>
-        <div className="requirement-selector">
+        <div className="bachelor-requirement-selector">
           <select id="requirementSelect" onChange={(e) => handleRequirementAdd(e.target.value)} value="">
             <option value="">Add common requirement...</option>
             {commonRequirements.map(req => <option key={req} value={req}>{req}</option>)}
           </select>
         </div>
-        <div className="requirements-list">
+        <div className="bachelor-requirements-list">
           {formData.applicationRequirements.map((req, index) => (
-            <div key={index} className="requirement-tag">
+            <div key={index} className="bachelor-requirement-tag">
               <span>{req}</span>
               <button type="button" onClick={() => handleRequirementRemove(index)}><IconX size={13}/></button>
             </div>
           ))}
         </div>
       </div>
-      <div className="form-group">
+      <div className="bachelor-form-group">
         <label>English Tests Accepted</label>
-        <div className="checkbox-group">
+        <div className="bachelor-checkbox-grid">
           {["TOEFL iBT","IELTS Academic","PTE Academic","Duolingo English Test","Cambridge English","GRE","GMAT"].map(test => (
-            <label key={test} className="checkbox-label">
+            <label key={test} className="bachelor-checkbox-label">
               <input type="checkbox" value={test} checked={formData.englishTests.includes(test)} onChange={() => handleArrayInput('englishTests', test)}/>
               <span>{test}</span>
             </label>
           ))}
         </div>
       </div>
-      <div className="form-row">
-        <div className="form-group">
+      <div className="bachelor-form-row">
+        <div className="bachelor-form-group">
           <label>University Logo</label>
           <input type="file" name="universityLogo" onChange={handleChange} accept="image/*"/>
         </div>
-        <div className="form-group">
+        <div className="bachelor-form-group">
           <label>Cover Image</label>
           <input type="file" name="coverImage" onChange={handleChange} accept="image/*"/>
         </div>
       </div>
-      <div className="form-row">
-        <div className="form-group checkbox-single">
-          <label className="checkbox-label">
+      <div className="bachelor-form-row">
+        <div className="bachelor-form-group bachelor-checkbox-single">
+          <label className="bachelor-checkbox-label">
             <input type="checkbox" name="isActive" checked={formData.isActive} onChange={handleChange}/>
             <span>Active (Visible to students)</span>
           </label>
         </div>
-        <div className="form-group checkbox-single">
-          <label className="checkbox-label">
+        <div className="bachelor-form-group bachelor-checkbox-single">
+          <label className="bachelor-checkbox-label">
             <input type="checkbox" name="featured" checked={formData.featured} onChange={handleChange}/>
             <span>Featured University</span>
           </label>
@@ -1112,95 +1024,95 @@ const UniversityAdminTemplate = () => {
   );
 
   const renderPreview = () => (
-    <div className="preview-modal-overlay" onClick={() => setShowPreview(false)}>
-      <div className="preview-modal" onClick={e => e.stopPropagation()}>
-        <div className="preview-modal-header" style={{ justifyContent: 'flex-end', padding: '16px 24px' }}>
-          <button className="preview-close-btn" onClick={() => setShowPreview(false)}><IconX size={14}/></button>
+    <div className="bachelor-preview-modal-overlay" onClick={() => setShowPreview(false)}>
+      <div className="bachelor-preview-modal" onClick={e => e.stopPropagation()}>
+        <div className="bachelor-preview-modal-header">
+          <button className="bachelor-preview-close-btn" onClick={() => setShowPreview(false)}><IconX size={14}/></button>
         </div>
-        <div className="preview-modal-body">
-          <div className="preview-university-header">
-            <div className="preview-title-section">
+        <div className="bachelor-preview-modal-body">
+          <div className="bachelor-preview-university-header">
+            <div className="bachelor-preview-title-section">
               <h1>{formData.universityName || "University Name"}</h1>
-              <span className="preview-badge">{formData.universityCode || "N/A"}</span>
+              <span className="bachelor-preview-badge">{formData.universityCode || "N/A"}</span>
             </div>
-            <div className="preview-status">
+            <div className="bachelor-preview-status">
               {formData.isActive
-                ? <span className="status-badge active">● Active</span>
-                : <span className="status-badge inactive">● Inactive</span>}
-              {formData.featured && <span className="featured-badge">Featured</span>}
+                ? <span className="bachelor-status-badge active">● Active</span>
+                : <span className="bachelor-status-badge inactive">● Inactive</span>}
+              {formData.featured && <span className="bachelor-featured-badge">Featured</span>}
             </div>
           </div>
 
-          <div className="preview-section">
-            <div className="preview-section-header"><h3>University Details</h3></div>
-            <div className="preview-grid">
-              <div className="preview-item"><span className="preview-label">Established Year</span><span className="preview-value">{formData.establishedYear || 'N/A'}</span></div>
-              <div className="preview-item"><span className="preview-label">University Type</span><span className="preview-value">{formData.universityType || 'N/A'}</span></div>
-              <div className="preview-item full-width">
-                <span className="preview-label">Location</span>
-                <span className="preview-value">{formData.address || 'N/A'}, {formData.city || 'N/A'}, {formData.state || 'N/A'}, {formData.country || 'N/A'} {formData.zipCode ? `(${formData.zipCode})` : ''}</span>
+          <div className="bachelor-preview-section">
+            <div className="bachelor-preview-section-header"><h3>University Details</h3></div>
+            <div className="bachelor-preview-grid">
+              <div className="bachelor-preview-item"><span className="bachelor-preview-label">Established Year</span><span className="bachelor-preview-value">{formData.establishedYear || 'N/A'}</span></div>
+              <div className="bachelor-preview-item"><span className="bachelor-preview-label">University Type</span><span className="bachelor-preview-value">{formData.universityType || 'N/A'}</span></div>
+              <div className="bachelor-preview-item full-width">
+                <span className="bachelor-preview-label">Location</span>
+                <span className="bachelor-preview-value">{formData.address || 'N/A'}, {formData.city || 'N/A'}, {formData.state || 'N/A'}, {formData.country || 'N/A'} {formData.zipCode ? `(${formData.zipCode})` : ''}</span>
               </div>
-              <div className="preview-item">
-                <span className="preview-label">Website</span>
-                <span className="preview-value">
-                  {formData.website ? <a href={formData.website} target="_blank" rel="noopener noreferrer" className="preview-link">{formData.website}</a> : 'N/A'}
+              <div className="bachelor-preview-item">
+                <span className="bachelor-preview-label">Website</span>
+                <span className="bachelor-preview-value">
+                  {formData.website ? <a href={formData.website} target="_blank" rel="noopener noreferrer" className="bachelor-preview-link">{formData.website}</a> : 'N/A'}
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="preview-section">
-            <div className="preview-section-header"><h3>Programs Offered ({formData.programs.length})</h3></div>
+          <div className="bachelor-preview-section">
+            <div className="bachelor-preview-section-header"><h3>Programs Offered ({formData.programs.length})</h3></div>
             {formData.programs.length > 0 ? (
-              <div className="program-tags-container">
+              <div className="bachelor-program-tags-container">
                 {formData.programs.map((prog, index) => {
                   const detail = programCategories.find(p => p.name === prog) || { level: "Bachelor", studyMode: "On Campus" };
                   return (
-                    <span key={index} className="program-tag">
+                    <span key={index} className="bachelor-program-tag">
                       {prog}
-                      <span className="program-tag-detail">{detail.level} • {detail.studyMode}</span>
+                      <span className="bachelor-program-tag-detail">{detail.level} • {detail.studyMode}</span>
                     </span>
                   );
                 })}
               </div>
-            ) : <p className="preview-empty">No programs selected yet</p>}
+            ) : <p className="bachelor-preview-empty">No programs selected yet</p>}
           </div>
 
-          <div className="preview-section">
-            <div className="preview-section-header"><h3>Available Intakes</h3></div>
-            <div className="intakes-container">
+          <div className="bachelor-preview-section">
+            <div className="bachelor-preview-section-header"><h3>Available Intakes</h3></div>
+            <div className="bachelor-intakes-container">
               {formData.intakes.length > 0
-                ? formData.intakes.map((intake, idx) => <span key={idx} className="intake-tag">{intake}</span>)
-                : <p className="preview-empty">No intakes selected</p>}
+                ? formData.intakes.map((intake, idx) => <span key={idx} className="bachelor-intake-tag">{intake}</span>)
+                : <p className="bachelor-preview-empty">No intakes selected</p>}
             </div>
           </div>
 
-          <div className="preview-section">
-            <div className="preview-section-header"><h3>Tuition Fees</h3></div>
-            <div className="preview-grid">
-              <div className="preview-item"><span className="preview-label">In-State/Local:</span><span className="preview-value">${formData.tuitionFees.inState || 'N/A'}</span></div>
-              <div className="preview-item"><span className="preview-label">Out-of-State/International:</span><span className="preview-value">${formData.tuitionFees.outOfState || formData.tuitionFees.international || 'N/A'}</span></div>
+          <div className="bachelor-preview-section">
+            <div className="bachelor-preview-section-header"><h3>Tuition Fees</h3></div>
+            <div className="bachelor-preview-grid">
+              <div className="bachelor-preview-item"><span className="bachelor-preview-label">In-State/Local:</span><span className="bachelor-preview-value">${formData.tuitionFees.inState || 'N/A'}</span></div>
+              <div className="bachelor-preview-item"><span className="bachelor-preview-label">Out-of-State/International:</span><span className="bachelor-preview-value">${formData.tuitionFees.outOfState || formData.tuitionFees.international || 'N/A'}</span></div>
             </div>
           </div>
 
-          <div className="preview-section">
-            <div className="preview-section-header"><h3>Contact Information</h3></div>
-            <div className="preview-grid">
-              <div className="preview-item"><span className="preview-label">Admin Email:</span><span className="preview-value">{formData.adminEmail || 'N/A'}</span></div>
-              <div className="preview-item"><span className="preview-label">Admin Phone:</span><span className="preview-value">{formData.adminPhone || 'N/A'}</span></div>
-              <div className="preview-item"><span className="preview-label">Admission Email:</span><span className="preview-value">{formData.admissionEmail || 'N/A'}</span></div>
-              <div className="preview-item"><span className="preview-label">Admission Phone:</span><span className="preview-value">{formData.admissionPhone || 'N/A'}</span></div>
+          <div className="bachelor-preview-section">
+            <div className="bachelor-preview-section-header"><h3>Contact Information</h3></div>
+            <div className="bachelor-preview-grid">
+              <div className="bachelor-preview-item"><span className="bachelor-preview-label">Admin Email:</span><span className="bachelor-preview-value">{formData.adminEmail || 'N/A'}</span></div>
+              <div className="bachelor-preview-item"><span className="bachelor-preview-label">Admin Phone:</span><span className="bachelor-preview-value">{formData.adminPhone || 'N/A'}</span></div>
+              <div className="bachelor-preview-item"><span className="bachelor-preview-label">Admission Email:</span><span className="bachelor-preview-value">{formData.admissionEmail || 'N/A'}</span></div>
+              <div className="bachelor-preview-item"><span className="bachelor-preview-label">Admission Phone:</span><span className="bachelor-preview-value">{formData.admissionPhone || 'N/A'}</span></div>
             </div>
           </div>
         </div>
 
-        <div className="preview-modal-footer">
-          <button className="preview-edit-footer-btn" onClick={() => { setShowPreview(false); setCurrentStep(1); }}>
+        <div className="bachelor-preview-modal-footer">
+          <button className="bachelor-preview-edit-footer-btn" onClick={() => { setShowPreview(false); setCurrentStep(1); }}>
             <IconEdit size={13}/> Edit
           </button>
-          <button className="preview-create-footer-btn" onClick={() => { handleSubmit({ preventDefault: () => {} }); setShowPreview(false); }} disabled={loading}>
+          <button className="bachelor-preview-create-footer-btn" onClick={() => { handleSubmit({ preventDefault: () => {} }); setShowPreview(false); }} disabled={loading}>
             {loading
-              ? <><span className="spinner-small"></span> Creating...</>
+              ? <><span className="bachelor-spinner-small"></span> Creating...</>
               : <><IconCheckCircle size={13}/> Confirm &amp; Create University</>}
           </button>
         </div>
@@ -1209,15 +1121,15 @@ const UniversityAdminTemplate = () => {
   );
 
   return (
-    <div className="university-admin-container">
+    <div className="bachelor-admin-container">
       {loading && (
-        <div className="loading-overlay">
-          <div className="loading-spinner">Loading...</div>
+        <div className="bachelor-loading-overlay">
+          <div className="bachelor-loading-spinner">Loading...</div>
         </div>
       )}
 
       {apiError && (
-        <div className="error-banner">
+        <div className="bachelor-error-banner">
           <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
             <IconWarning size={15}/> {apiError}
           </span>
@@ -1225,26 +1137,26 @@ const UniversityAdminTemplate = () => {
         </div>
       )}
 
-      <div className="admin-header">
+      <div className="bachelor-admin-header">
         <h1><IconBuilding size={26} color="#0891b2"/> University Management</h1>
         <p>Create and manage university profiles for student applications</p>
       </div>
 
-      <div className="university-form-container">
+      <div className="bachelor-form-container">
         <h2>{editingUniversity ? 'Edit University' : 'Create New University'}</h2>
 
         {/* Progress Steps */}
-        <div className="progress-steps">
+        <div className="bachelor-progress-steps">
           {['Basic Info', 'Location', 'Contact', 'Academics', 'Requirements'].map((step, index) => (
             <div
               key={step}
-              className={`step ${currentStep === index + 1 ? 'active' : ''} ${index + 1 < currentStep ? 'completed' : ''}`}
+              className={`bachelor-step ${currentStep === index + 1 ? 'active' : ''} ${index + 1 < currentStep ? 'completed' : ''}`}
               onClick={() => setCurrentStep(index + 1)}
             >
-              <span className="step-number">
+              <span className="bachelor-step-number">
                 {index + 1 < currentStep ? <IconCheck size={13} color="#fff"/> : index + 1}
               </span>
-              <span className="step-label">{step}</span>
+              <span className="bachelor-step-label">{step}</span>
             </div>
           ))}
         </div>
@@ -1257,29 +1169,29 @@ const UniversityAdminTemplate = () => {
           {currentStep === 5 && renderStep5()}
 
           {/* Form Navigation */}
-          <div className="form-navigation">
+          <div className="bachelor-form-navigation">
             {currentStep > 1 && (
-              <button type="button" onClick={() => setCurrentStep(currentStep - 1)} className="btn-prev">
-                <span className="btn-icon"><IconArrowLeft size={13}/></span> Previous
+              <button type="button" onClick={() => setCurrentStep(currentStep - 1)} className="bachelor-btn-prev">
+                <span className="bachelor-btn-icon"><IconArrowLeft size={13}/></span> Previous
               </button>
             )}
 
             {currentStep < 5 && (
-              <button type="button" onClick={() => setCurrentStep(currentStep + 1)} className="btn-next">
-                Next <span className="btn-icon"><IconArrowRight size={13}/></span>
+              <button type="button" onClick={() => setCurrentStep(currentStep + 1)} className="bachelor-btn-next">
+                Next <span className="bachelor-btn-icon"><IconArrowRight size={13}/></span>
               </button>
             )}
 
             {currentStep === 5 && (
-              <button type="submit" className="btn-submit" disabled={loading}>
+              <button type="submit" className="bachelor-btn-submit" disabled={loading}>
                 {loading
-                  ? <><span className="spinner-small"></span> Saving...</>
-                  : <><span className="btn-icon"><IconCheckCircle size={13}/></span> {editingUniversity ? 'Update University' : 'Create University'}</>}
+                  ? <><span className="bachelor-spinner-small"></span> Saving...</>
+                  : <><span className="bachelor-btn-icon"><IconCheckCircle size={13}/></span> {editingUniversity ? 'Update University' : 'Create University'}</>}
               </button>
             )}
 
-            <button type="button" onClick={() => setShowPreview(true)} className="btn-preview">
-              <span className="btn-icon"><IconEye size={13}/></span> Preview
+            <button type="button" onClick={() => setShowPreview(true)} className="bachelor-btn-preview">
+              <span className="bachelor-btn-icon"><IconEye size={13}/></span> Preview
             </button>
           </div>
         </form>

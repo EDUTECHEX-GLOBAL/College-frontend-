@@ -1,73 +1,77 @@
 /* =========================================
-   College Search — Modern Teal/Orange Theme
+   College Search — Plalite Colour Scheme
+   Primary: #0891b2 (Teal/Cyan)
+   Accent: #f59e0b (Amber/Orange)
    ======================================== */
 
-.college-search-container {
+.collegesearch-container {
   padding: 40px;
-  background: linear-gradient(135deg, #f0f9ff 0%, #e6f7f0 100%);
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
   min-height: 100vh;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.college-search-header {
+.collegesearch-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
 }
 
-.college-search-title {
+.collegesearch-title {
   font-size: 32px;
-  font-weight: 700;
-  background: linear-gradient(135deg, #0b2b8b 0%, #0d9488 100%);
+  font-weight: 800;
+  background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin: 0;
+  font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
 }
 
-.college-search-count {
-  background: #ccfbf1;
-  color: #466aad;
-  font-weight: 600;
+.collegesearch-count {
+  background: #f0f9ff;
+  color: #0891b2;
+  font-weight: 700;
   font-size: 14px;
   padding: 6px 14px;
   border-radius: 30px;
-  border: 1px solid #9e99f6;
+  border: 1px solid #bae6fd;
 }
 
-.college-search-bar {
+.collegesearch-bar {
   margin-bottom: 30px;
 }
 
-.college-search-input {
+.collegesearch-input {
   width: 100%;
   padding: 16px 20px;
-  border: 2px solid #e2e8f0;
+  border: 1.5px solid #e2e8f0;
   border-radius: 16px;
-  font-size: 16px;
+  font-size: 15px;
   transition: all 0.3s ease;
   outline: none;
   background: white;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-.college-search-input:focus {
-  border-color: #0d3e94;
-  box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.1);
+.collegesearch-input:focus {
+  border-color: #0891b2;
+  box-shadow: 0 0 0 4px rgba(8, 145, 178, 0.1);
 }
 
 /* =============================
    List layout for college items
    ============================= */
 
-.college-list {
+.collegesearch-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.college-list-item {
+.collegesearch-list-item {
   background: white;
   border: 1px solid #e2e8f0;
   border-radius: 20px;
@@ -76,34 +80,34 @@
   justify-content: space-between;
   align-items: center;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
-.college-list-item:hover {
-  border-color: #0d9488;
-  box-shadow: 0 10px 25px -5px rgba(13, 148, 136, 0.2);
+.collegesearch-list-item:hover {
+  border-color: #0891b2;
+  box-shadow: 0 10px 25px -5px rgba(8, 145, 178, 0.15);
   transform: translateY(-2px);
 }
 
-.college-info {
+.collegesearch-info {
   display: flex;
   align-items: center;
   gap: 20px;
 }
 
-.college-logo-small {
+.collegesearch-logo-small {
   width: 60px;
   height: 60px;
   border-radius: 16px;
-  background: linear-gradient(135deg, #3f6ccf 0%, #45cfc4 100%);
+  background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 6px -1px rgba(13, 85, 148, 0.3);
+  box-shadow: 0 4px 12px rgba(8, 145, 178, 0.25);
 }
 
-.college-logo-initials {
+.collegesearch-logo-initials {
   width: 100%;
   height: 100%;
   color: white;
@@ -111,22 +115,22 @@
   align-items: center;
   justify-content: center;
   font-size: 24px;
-  font-weight: bold;
+  font-weight: 800;
 }
 
-.college-logo-small img {
+.collegesearch-logo-small img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.college-text {
+.collegesearch-text {
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-.college-name-wrapper {
+.collegesearch-name-wrapper {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -134,131 +138,132 @@
   margin-bottom: 4px;
 }
 
-.college-name-link {
+.collegesearch-name-link {
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 700;
   margin: 0;
   transition: color 0.2s ease;
 }
 
-.college-name-link.kansas-university {
+.collegesearch-name-link.kansas-university {
   color: #334155;
   cursor: default;
 }
 
-.college-name-link.gus-university {
-  color: #0d1f94;
+.collegesearch-name-link.gus-university {
+  color: #0891b2;
   cursor: pointer;
   position: relative;
 }
 
-.college-name-link.gus-university:hover {
-  color: #200f76;
+.collegesearch-name-link.gus-university:hover {
+  color: #0e7490;
   text-decoration: none;
 }
 
-.college-name-link.gus-university::after {
+.collegesearch-name-link.gus-university::after {
   content: '';
   position: absolute;
   bottom: -2px;
   left: 0;
   width: 0;
   height: 2px;
-  background: linear-gradient(90deg, #0d2694, #f97316);
+  background: linear-gradient(90deg, #0891b2, #f59e0b);
   transition: width 0.3s ease;
 }
 
-.college-name-link.gus-university:hover::after {
+.collegesearch-name-link.gus-university:hover::after {
   width: 100%;
 }
 
-.college-location-small {
-  font-size: 14px;
+.collegesearch-location-small {
+  font-size: 13px;
   color: #64748b;
   margin: 0 0 6px 0;
 }
 
 /* University Type Badge */
-.university-type-badge {
+.collegesearch-type-badge {
   display: inline-block;
-  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
   color: white;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   padding: 4px 8px;
   border-radius: 30px;
   letter-spacing: 0.3px;
   text-transform: uppercase;
-  box-shadow: 0 2px 4px rgba(249, 115, 22, 0.3);
+  box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
 }
 
 /* Program Count Badge */
-.college-programs-preview {
+.collegesearch-programs-preview {
   margin-top: 4px;
 }
 
-.programs-count {
-  font-size: 13px;
-  color: #0d1494;
-  background: #ccfbf1;
+.collegesearch-programs-count {
+  font-size: 12px;
+  color: #0891b2;
+  background: #f0f9ff;
   padding: 4px 12px;
   border-radius: 30px;
   display: inline-block;
-  font-weight: 500;
-  border: 1px solid #99f6e4;
+  font-weight: 600;
+  border: 1px solid #bae6fd;
 }
 
 /* College Status Badge */
-.college-status-badge {
+.collegesearch-status-badge {
   font-size: 12px;
-  color: #0d1f94;
+  color: #10b981;
   font-weight: 600;
-  background: #ccfbf1;
+  background: #ecfdf5;
   padding: 4px 12px;
   border-radius: 30px;
   margin-top: 6px;
   display: inline-block;
-  border: 1px solid #99f6e4;
+  border: 1px solid #a7f3d0;
 }
 
 /* =============================
-   Action Buttons - Teal/Orange Theme
+   Action Buttons - Plalite Theme
    ============================= */
 
 /* Add Button */
-.add-circle-button {
-  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+.collegesearch-add-circle-button {
+  background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
   color: white;
   border: none;
   border-radius: 40px;
   padding: 10px 24px 10px 20px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   display: flex;
   align-items: center;
   gap: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 6px -1px rgba(13, 148, 136, 0.3);
+  box-shadow: 0 4px 12px rgba(8, 145, 178, 0.25);
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-.add-circle-button:hover {
-  background: linear-gradient(135deg, #0f2076 0%, #115e59 100%);
+.collegesearch-add-circle-button:hover {
+  background: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
   transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(42, 13, 148, 0.4);
+  box-shadow: 0 10px 15px -3px rgba(8, 145, 178, 0.35);
 }
 
-.add-circle-button:disabled {
+.collegesearch-add-circle-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
 }
 
-.add-icon {
+.collegesearch-add-icon {
   background: white;
-  color: #160d94;
-  font-weight: 700;
+  color: #0891b2;
+  font-weight: 800;
   font-size: 16px;
   border-radius: 50%;
   width: 22px;
@@ -270,36 +275,37 @@
 }
 
 /* Remove Button */
-.remove-circle-button {
-  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+.collegesearch-remove-circle-button {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
   color: white;
   border: none;
   border-radius: 40px;
   padding: 10px 24px 10px 20px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   display: flex;
   align-items: center;
   gap: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.3);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-.remove-circle-button:hover {
-  background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+.collegesearch-remove-circle-button:hover {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
   transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.4);
+  box-shadow: 0 10px 15px -3px rgba(245, 158, 11, 0.35);
 }
 
-.remove-circle-button:disabled {
+.collegesearch-remove-circle-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
 }
 
-.remove-circle-button.small {
+.collegesearch-remove-circle-button.small {
   width: 40px;
   height: 40px;
   padding: 0;
@@ -310,10 +316,10 @@
   justify-content: center;
 }
 
-.remove-icon {
+.collegesearch-remove-icon {
   background: white;
-  color: #f97316;
-  font-weight: 700;
+  color: #f59e0b;
+  font-weight: 800;
   font-size: 16px;
   border-radius: 50%;
   width: 22px;
@@ -325,14 +331,14 @@
 }
 
 /* View Courses Button */
-.view-courses-button {
+.collegesearch-view-courses-button {
   background: white;
-  color: #2f0d94;
-  border: 2px solid #120d94;
+  color: #0891b2;
+  border: 1.5px solid #0891b2;
   padding: 10px 20px;
   border-radius: 40px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
@@ -340,35 +346,32 @@
   gap: 8px;
   min-width: 140px;
   justify-content: center;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-.view-courses-button:hover {
-  background: #ccfbf1;
+.collegesearch-view-courses-button:hover {
+  background: #f0f9ff;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(56, 13, 148, 0.2);
+  box-shadow: 0 4px 12px rgba(8, 145, 178, 0.15);
 }
 
-.view-courses-button.primary {
-  background: linear-gradient(135deg, #210d94 0%, #0f766e 100%);
+.collegesearch-view-courses-button.primary {
+  background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
   color: white;
   border: none;
-  box-shadow: 0 4px 6px -1px rgba(13, 148, 136, 0.3);
+  box-shadow: 0 4px 12px rgba(8, 145, 178, 0.25);
 }
 
-.view-courses-button.primary:hover {
-  background: linear-gradient(135deg, #0f2076 0%, #11125e 100%);
-  box-shadow: 0 10px 15px -3px rgba(13, 148, 136, 0.4);
-}
-
-.courses-icon {
-  font-size: 16px;
+.collegesearch-view-courses-button.primary:hover {
+  background: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
+  box-shadow: 0 10px 15px -3px rgba(8, 145, 178, 0.35);
 }
 
 /* Add GUS Button */
-.add-gus-button.secondary {
+.collegesearch-add-gus-button.secondary {
   background: white;
-  color: #0d0d94;
-  border: 2px solid #0d1d94;
+  color: #0891b2;
+  border: 1.5px solid #0891b2;
   width: 40px;
   height: 40px;
   padding: 0;
@@ -379,24 +382,24 @@
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 20px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
-.add-gus-button.secondary:hover {
-  background: #7173e4;
-  color: white;
+.collegesearch-add-gus-button.secondary:hover {
+  background: #f0f9ff;
+  color: #0e7490;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
+  box-shadow: 0 4px 12px rgba(8, 145, 178, 0.2);
 }
 
-.add-gus-button.secondary:disabled {
+.collegesearch-add-gus-button.secondary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
 }
 
 /* GUS University Buttons Container */
-.gus-university-buttons {
+.collegesearch-gus-buttons {
   display: flex;
   gap: 10px;
   align-items: center;
@@ -406,79 +409,77 @@
    Loading States
    ============================= */
 
-.adding-spinner,
-.removing-spinner {
+.collegesearch-adding-spinner,
+.collegesearch-removing-spinner {
   width: 16px;
   height: 16px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-top: 2px solid white;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: collegesearch-spin 1s linear infinite;
   display: inline-block;
 }
 
-@keyframes spin {
+@keyframes collegesearch-spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
-.loading-message,
-.empty-message {
+.collegesearch-loading-message,
+.collegesearch-empty-message {
   text-align: center;
-  font-size: 18px;
+  font-size: 16px;
   color: #64748b;
   margin-top: 60px;
   padding: 40px;
   background: white;
   border-radius: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e2e8f0;
+  font-weight: 500;
 }
 
 /* =============================
    Info Banner
    ============================= */
 
-.info-banner {
-  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
-  border: 1px solid #fed7aa;
+.collegesearch-info-banner {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 1px solid #fde68a;
   border-radius: 20px;
   padding: 20px 24px;
   margin-top: 40px;
-  box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.1);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.08);
 }
 
-.info-banner-content {
+.collegesearch-info-banner-content {
   display: flex;
   align-items: flex-start;
   gap: 16px;
 }
 
-.info-icon {
-  font-size: 24px;
-  flex-shrink: 0;
-}
-
-.info-text {
-  color: #7b341e;
+.collegesearch-info-text {
+  color: #78350f;
   font-size: 14px;
   line-height: 1.6;
   flex: 1;
+  font-weight: 500;
 }
 
-.info-list {
+.collegesearch-info-list {
   margin: 10px 0 0 20px;
   padding: 0;
 }
 
-.info-list li {
+.collegesearch-info-list li {
   margin-bottom: 8px;
-  color: #9a3412;
+  color: #92400e;
 }
 
 .gus-highlight {
-  color: #0d9488;
-  font-weight: 600;
-  background: #ccfbf1;
+  color: #0891b2;
+  font-weight: 700;
+  background: #f0f9ff;
   padding: 2px 8px;
   border-radius: 30px;
   display: inline-block;
@@ -489,85 +490,122 @@
    ============================= */
 
 @media (max-width: 768px) {
-  .college-search-container {
+  .collegesearch-container {
     padding: 20px;
   }
 
-  .college-search-title {
+  .collegesearch-title {
     font-size: 24px;
   }
 
-  .college-list-item {
+  .collegesearch-list-item {
     padding: 16px;
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
   }
 
-  .college-info {
+  .collegesearch-info {
     width: 100%;
   }
 
-  .gus-university-buttons {
+  .collegesearch-gus-buttons {
     width: 100%;
     justify-content: space-between;
   }
 
-  .view-courses-button {
+  .collegesearch-view-courses-button {
     flex: 1;
   }
 
-  .info-banner-content {
+  .collegesearch-info-banner-content {
     flex-direction: column;
     align-items: flex-start;
   }
 }
 
 @media (max-width: 480px) {
-  .college-info {
+  .collegesearch-info {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
   }
 
-  .college-logo-small {
+  .collegesearch-logo-small {
     width: 50px;
     height: 50px;
   }
 
-  .college-logo-initials {
+  .collegesearch-logo-initials {
     font-size: 20px;
   }
 
-  .college-name-link {
+  .collegesearch-name-link {
     font-size: 16px;
   }
 
-  .college-name-wrapper {
+  .collegesearch-name-wrapper {
     flex-direction: column;
     align-items: flex-start;
     gap: 6px;
   }
 
-  .programs-count {
-    font-size: 12px;
+  .collegesearch-programs-count {
+    font-size: 11px;
     padding: 3px 10px;
   }
 
-  .gus-university-buttons {
+  .collegesearch-gus-buttons {
     flex-wrap: wrap;
   }
 
-  .view-courses-button,
-  .add-circle-button,
-  .remove-circle-button {
+  .collegesearch-view-courses-button,
+  .collegesearch-add-circle-button,
+  .collegesearch-remove-circle-button {
     width: 100%;
   }
 
-  .remove-circle-button.small,
-  .add-gus-button.secondary {
+  .collegesearch-remove-circle-button.small,
+  .collegesearch-add-gus-button.secondary {
     width: 100%;
     height: 44px;
     border-radius: 40px;
+  }
+}
+
+/* =============================
+   Accessibility - Reduced Motion
+   ============================= */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* =============================
+   Print Styles
+   ============================= */
+@media print {
+  .collegesearch-container {
+    background: white;
+    padding: 20px;
+  }
+
+  .collegesearch-add-circle-button,
+  .collegesearch-remove-circle-button,
+  .collegesearch-view-courses-button,
+  .collegesearch-add-gus-button,
+  .collegesearch-info-banner {
+    display: none;
+  }
+
+  .collegesearch-list-item {
+    break-inside: avoid;
+    border: 1px solid #e2e8f0;
+    box-shadow: none;
   }
 }

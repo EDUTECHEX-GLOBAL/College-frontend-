@@ -10,13 +10,16 @@ const API_URL = process.env.REACT_APP_API_BASE_URL
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
 
-// =====================================================
-// ✅ HELPER: Resolve any file URL to a viewable URL
-// Handles:
-//   1. Full S3 URL (new uploads)     → return as-is
-//   2. Local /uploads/... path (old) → prepend BASE_URL (server will redirect to S3)
-//   3. null/undefined                → return null
-// =====================================================
+// Helper component for document type icons - removed
+const DocIcon = ({ type, className = "" }) => {
+  return <span className={className}></span>;
+};
+
+// Helper for category icons - removed
+const CategoryIcon = ({ category }) => {
+  return <span></span>;
+};
+
 const resolveFileUrl = (fileUrl) => {
   if (!fileUrl) return null;
   if (fileUrl.startsWith('https://') || fileUrl.startsWith('http://')) return fileUrl;
@@ -96,91 +99,91 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
       id: 'cv', field: 'cv',
       label: 'Curriculum Vitae (Signed and dated)',
       description: 'Your updated CV/resume with your educational and professional background',
-      required: true, accept: '.pdf,.jpg,.jpeg,.png', maxSize: 5, category: 'personal', icon: '📄'
+      required: true, accept: '.pdf,.jpg,.jpeg,.png', maxSize: 5, category: 'personal', iconType: 'cv'
     },
     {
       id: 'photo', field: 'photo',
       label: 'Photo',
       description: 'Recent passport-size photograph',
-      required: true, accept: '.jpg,.jpeg,.png', maxSize: 5, category: 'personal', icon: '📷'
+      required: true, accept: '.jpg,.jpeg,.png', maxSize: 5, category: 'personal', iconType: 'photo'
     },
     {
       id: 'passport', field: 'passport',
       label: 'Passport / ID Proof',
       description: 'Upload your passport or government-issued ID.',
-      required: true, accept: '.pdf,.jpg,.jpeg,.png', maxSize: 10, category: 'personal', icon: '🪪'
+      required: true, accept: '.pdf,.jpg,.jpeg,.png', maxSize: 10, category: 'personal', iconType: 'passport'
     },
     {
       id: 'transcript', field: 'transcript',
       label: 'High School Transcript',
       description: 'Upload your official high school transcript. Must be translated if not in English.',
-      required: true, accept: '.pdf,.jpg,.jpeg,.png,.doc,.docx', maxSize: 10, category: 'academic', icon: '📋'
+      required: true, accept: '.pdf,.jpg,.jpeg,.png,.doc,.docx', maxSize: 10, category: 'academic', iconType: 'transcript'
     },
     {
       id: 'diploma', field: 'diploma',
       label: 'High School Diploma / Graduation Certificate',
       description: 'Upload your Diploma/Graduation Certificate.',
-      required: true, accept: '.pdf,.jpg,.jpeg,.png,.doc,.docx', maxSize: 10, category: 'academic', icon: '🎓'
+      required: true, accept: '.pdf,.jpg,.jpeg,.png,.doc,.docx', maxSize: 10, category: 'academic', iconType: 'diploma'
     },
     {
       id: 'cert9th', field: 'cert9th',
       label: '9th Grade Certificate',
       description: 'Official certificate / marksheet from your 9th grade',
-      required: true, accept: '.pdf,.jpg,.jpeg,.png', maxSize: 5, category: 'certificates', icon: '📜'
+      required: true, accept: '.pdf,.jpg,.jpeg,.png', maxSize: 5, category: 'certificates', iconType: 'cert9th'
     },
     {
       id: 'cert10th', field: 'cert10th',
       label: '10th Grade Certificate',
       description: 'Official certificate / marksheet from your 10th grade (Secondary School)',
-      required: true, accept: '.pdf,.jpg,.jpeg,.png', maxSize: 5, category: 'certificates', icon: '📜'
+      required: true, accept: '.pdf,.jpg,.jpeg,.png', maxSize: 5, category: 'certificates', iconType: 'cert10th'
     },
     {
       id: 'cert11th', field: 'cert11th',
       label: '11th Grade Certificate',
       description: 'Official certificate / marksheet from your 11th grade',
-      required: true, accept: '.pdf,.jpg,.jpeg,.png', maxSize: 5, category: 'certificates', icon: '📜'
+      required: true, accept: '.pdf,.jpg,.jpeg,.png', maxSize: 5, category: 'certificates', iconType: 'cert11th'
     },
     {
       id: 'cert12th', field: 'cert12th',
       label: '12th Grade Certificate',
       description: 'Official certificate / marksheet from your 12th grade (Higher Secondary / A-Level)',
-      required: true, accept: '.pdf,.jpg,.jpeg,.png', maxSize: 5, category: 'certificates', icon: '🎓'
+      required: true, accept: '.pdf,.jpg,.jpeg,.png', maxSize: 5, category: 'certificates', iconType: 'cert12th'
     },
     {
       id: 'testScores', field: 'testScores',
       label: 'Standardized Test Scores (Optional)',
       description: 'Upload SAT or ACT score report if required.',
-      required: false, accept: '.pdf,.jpg,.jpeg,.png,.doc,.docx', maxSize: 10, category: 'optional', icon: '📊'
+      required: false, accept: '.pdf,.jpg,.jpeg,.png,.doc,.docx', maxSize: 10, category: 'optional', iconType: 'testScores'
     },
     {
       id: 'languageProficiency', field: 'languageProficiency',
       label: 'English Language Proficiency (International Students)',
       description: 'Upload TOEFL, IELTS, or Duolingo scores.',
-      required: false, accept: '.pdf,.jpg,.jpeg,.png,.doc,.docx', maxSize: 10, category: 'optional', icon: '🌐'
+      required: false, accept: '.pdf,.jpg,.jpeg,.png,.doc,.docx', maxSize: 10, category: 'optional', iconType: 'languageProficiency'
     },
     {
       id: 'recommendationLetter', field: 'recommendationLetter',
       label: 'Letters of Recommendation (Optional)',
       description: 'Upload your letters of recommendation & personal statement about academic goals and motivations.',
-      required: false, accept: '.pdf,.jpg,.jpeg,.png,.doc,.docx', maxSize: 10, category: 'optional', icon: '✉️'
+      required: false, accept: '.pdf,.jpg,.jpeg,.png,.doc,.docx', maxSize: 10, category: 'optional', iconType: 'recommendationLetter'
     },
   ];
 
   const documentCategories = {
     personal: {
-      title: 'Personal Documents', icon: '👤', color: '#4299e1',
+      title: 'Personal Documents', icon: 'personal', color: '#0891b2',
       documents: documentTypes.filter(doc => doc.category === 'personal')
     },
     academic: {
-      title: 'Academic Documents', icon: '🏫', color: '#ed8936',
+      title: 'Academic Documents', icon: 'academic', color: '#f59e0b',
       documents: documentTypes.filter(doc => doc.category === 'academic')
     },
     certificates: {
-      title: 'School Certificates', icon: '📚', color: '#48bb78',
+      title: 'School Certificates', icon: 'certificate', color: '#10b981',
       documents: documentTypes.filter(doc => doc.category === 'certificates')
     },
     optional: {
-      title: 'Optional Documents', icon: '📎', color: '#9f7aea',
+      title: 'Optional Documents', icon: 'optional', color: '#8b5cf6',
       documents: documentTypes.filter(doc => doc.category === 'optional')
     },
   };
@@ -196,7 +199,7 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
       }, {})
     : documentCategories;
 
-  // ── Fetch documents ──────────────────────────────────────────
+  // Fetch documents
   useEffect(() => {
     let isMounted = true;
     if (token) fetchDocuments(isMounted);
@@ -258,7 +261,7 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
     }
   };
 
-  // ── Cert availability handlers ───────────────────────────────
+  // Cert availability handlers
   const handleCertAvailability = (field, answer) => {
     setCertAvailability(prev => ({ ...prev, [field]: answer }));
     if (answer === 'yes') {
@@ -328,7 +331,7 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
     return m && y ? `${y}-${m}` : '';
   };
 
-  // ── Drag and drop ────────────────────────────────────────────
+  // Drag and drop
   const handleDrag = (e, field) => {
     e.preventDefault(); e.stopPropagation();
     if (e.type === "dragenter" || e.type === "dragover") setDragActive(field);
@@ -342,7 +345,7 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
     if (files && files[0]) await handleFileUpload(files[0], field, docType);
   };
 
-  // ── File upload ──────────────────────────────────────────────
+  // File upload
   const handleFileUpload = async (file, field, docType) => {
     if (!file) return;
     if (file.size > docType.maxSize * 1024 * 1024) {
@@ -373,7 +376,6 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
       });
       if (res.data.success) {
-        // ✅ Resolve S3 URL properly
         const rawUrl = res.data.fileData?.fileUrl || res.data.fileUrl || null;
         const updatedFile = {
           name:         file.name,
@@ -381,7 +383,7 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
           type:         file.type,
           fileName:     res.data.fileData?.fileName   || res.data.fileName,
           fileKey:      res.data.fileData?.fileKey    || null,
-          fileUrl:      resolveFileUrl(rawUrl),         // ✅ always a valid URL
+          fileUrl:      resolveFileUrl(rawUrl),
           originalName: res.data.fileData?.originalName || file.name,
           uploadedAt:   new Date().toISOString()
         };
@@ -415,7 +417,7 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
     if (file) await handleFileUpload(file, field, docType);
   };
 
-  // ── Remove file ──────────────────────────────────────────────
+  // Remove file
   const handleRemoveFile = async (field) => {
     if (!window.confirm('Are you sure you want to remove this file?')) return;
     try {
@@ -456,8 +458,29 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
     }
   };
 
-  // ── CV generated ─────────────────────────────────────────────
   const handleCVGenerated = (cvData) => {
+    if (cvData?._uploadedFile) {
+      const f = cvData._uploadedFile;
+      const uploadedCV = {
+        name:         f.originalName || f.name || `CV_Generated.pdf`,
+        size:         f.size         || 0,
+        type:         'application/pdf',
+        fileName:     f.fileName     || '',
+        fileKey:      f.fileKey      || null,
+        fileUrl:      f.fileUrl      || null,
+        originalName: f.originalName || f.name || `CV_Generated.pdf`,
+        generated:    true,
+        uploadedAt:   f.uploadedAt   || new Date().toISOString(),
+      };
+      setLocalFormData(prev => ({ ...prev, cv: uploadedCV }));
+      if (onFileUpload) onFileUpload('cv', uploadedCV);
+      if (f.completionPercentage !== undefined) {
+        setCompletionPercentage(f.completionPercentage);
+      }
+      setShowCVModal(false);
+      setCvMode('generate');
+      return;
+    }
     const generatedCV = {
       name:       `CV_${cvData.firstName || 'Student'}_${cvData.lastName || ''}.pdf`,
       size:       0,
@@ -465,7 +488,7 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
       fileName:   `generated_cv_${Date.now()}`,
       fileUrl:    null,
       generated:  true,
-      uploadedAt: new Date().toISOString()
+      uploadedAt: new Date().toISOString(),
     };
     setLocalFormData(prev => ({ ...prev, cv: generatedCV }));
     if (onFileUpload) onFileUpload('cv', generatedCV);
@@ -473,7 +496,7 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
     setCvMode('generate');
   };
 
-  // ── Completion ───────────────────────────────────────────────
+  // Completion calculation
   const calculateCompletion = useCallback(() => {
     const requiredDocs = documentTypes.filter(doc => doc.required);
     const uploadedOrDeclared = requiredDocs.filter(doc => {
@@ -494,7 +517,7 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
     setExpandedCategories(prev => ({ ...prev, [category]: !prev[category] }));
   };
 
-  // ── Navigation ───────────────────────────────────────────────
+  // Navigation
   const handleNext = async () => {
     const missingRequired = documentTypes.filter(doc => {
       if (!doc.required) return false;
@@ -548,14 +571,14 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
     if (!localFormData.cv?.fileName) setCvMode('choose');
   };
 
-  // ── Helpers ──────────────────────────────────────────────────
-  const getFileIcon = (fileName) => {
+  // Helpers
+  const getFileIconName = (fileName) => {
     const ext = fileName?.split('.').pop()?.toLowerCase();
     switch (ext) {
-      case 'pdf':  return '📕';
-      case 'jpg': case 'jpeg': case 'png': case 'gif': return '🖼️';
-      case 'doc': case 'docx': return '📘';
-      default: return '📄';
+      case 'pdf':  return 'file-pdf';
+      case 'jpg': case 'jpeg': case 'png': case 'gif': return 'file-image';
+      case 'doc': case 'docx': return 'file';
+      default: return 'file';
     }
   };
 
@@ -566,13 +589,12 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
-  // ✅ Helper to get viewable URL for any file field
   const getViewUrl = (fileData) => {
     if (!fileData) return null;
     return resolveFileUrl(fileData.fileUrl) || null;
   };
 
-  // ── Certificate Upload Area ──────────────────────────────────
+  // Certificate Upload Area Component
   const CertUploadArea = ({ doc }) => {
     const field        = doc.field;
     const availability = certAvailability[field];
@@ -580,46 +602,44 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
     const year         = certExpectedYear[field];
     const fileData     = localFormData[field];
     const expectedDate = getCertExpectedDate(field);
-    const viewUrl      = getViewUrl(fileData); // ✅ resolved S3 URL
+    const viewUrl      = getViewUrl(fileData);
 
     if (fileData?.fileName) {
       return (
-        <div className="file-preview">
+        <div className="applicationdocuments-file-preview">
           {localFormData[`${field}Preview`] ? (
-            <div className="image-preview-container">
-              <img src={localFormData[`${field}Preview`]} alt={doc.label} className="image-preview" />
-              <div className="image-preview-overlay">
-                <button type="button" className="view-image-btn"
+            <div className="applicationdocuments-image-preview-container">
+              <img src={localFormData[`${field}Preview`]} alt={doc.label} className="applicationdocuments-image-preview" />
+              <div className="applicationdocuments-image-preview-overlay">
+                <button type="button" className="applicationdocuments-view-image-btn"
                   onClick={() => window.open(localFormData[`${field}Preview`], '_blank')}>
-                  <i className="fas fa-eye"></i>
+                  View
                 </button>
-                <button type="button" className="remove-image-btn"
+                <button type="button" className="applicationdocuments-remove-image-btn"
                   onClick={() => { handleRemoveFile(field); handleCertAvailReset(field); }}
                   disabled={isSubmitting}>
-                  <i className="fas fa-trash"></i>
+                  Remove
                 </button>
               </div>
             </div>
           ) : (
-            <div className="file-info">
-              <span className="file-icon-large">{getFileIcon(fileData.name || fileData.fileName)}</span>
-              <div className="file-details">
-                <span className="file-name" title={fileData.originalName || fileData.name || fileData.fileName}>
+            <div className="applicationdocuments-file-info">
+              <div className="applicationdocuments-file-details">
+                <span className="applicationdocuments-file-name" title={fileData.originalName || fileData.name || fileData.fileName}>
                   {fileData.originalName || fileData.name || fileData.fileName || 'Uploaded file'}
                 </span>
-                {fileData.size > 0 && <span className="file-size">{formatFileSize(fileData.size)}</span>}
+                {fileData.size > 0 && <span className="applicationdocuments-file-size">{formatFileSize(fileData.size)}</span>}
               </div>
-              <div className="file-actions">
-                {/* ✅ Use resolved S3 URL */}
+              <div className="applicationdocuments-file-actions">
                 {viewUrl && (
-                  <a href={viewUrl} target="_blank" rel="noopener noreferrer" className="view-link">
-                    <i className="fas fa-eye"></i> View
+                  <a href={viewUrl} target="_blank" rel="noopener noreferrer" className="applicationdocuments-view-link">
+                    View
                   </a>
                 )}
-                <button type="button" className="remove-btn"
+                <button type="button" className="applicationdocuments-remove-btn"
                   onClick={() => { handleRemoveFile(field); handleCertAvailReset(field); }}
                   disabled={isSubmitting}>
-                  <i className="fas fa-times"></i> Remove
+                  Remove
                 </button>
               </div>
             </div>
@@ -630,19 +650,18 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
 
     if (availability === null) {
       return (
-        <div className="cert-availability-question">
-          <div className="cert-question-icon">🎓</div>
-          <p className="cert-question-text">
+        <div className="applicationdocuments-cert-availability-question">
+          <p className="applicationdocuments-cert-question-text">
             Do you currently have your <strong>{doc.label}</strong>?
           </p>
-          <div className="cert-yn-buttons">
-            <button type="button" className="cert-yn-btn cert-yn-yes"
+          <div className="applicationdocuments-cert-yn-buttons">
+            <button type="button" className="applicationdocuments-cert-yn-btn cert-yn-yes"
               onClick={() => handleCertAvailability(field, 'yes')}>
-              ✅ Yes, I have it
+              Yes, I have it
             </button>
-            <button type="button" className="cert-yn-btn cert-yn-no"
+            <button type="button" className="applicationdocuments-cert-yn-btn cert-yn-no"
               onClick={() => handleCertAvailability(field, 'no')}>
-              ❌ No, not yet
+              No, not yet
             </button>
           </div>
         </div>
@@ -651,21 +670,20 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
 
     if (availability === 'yes') {
       return (
-        <div className="upload-placeholder">
-          <button type="button" className="cert-change-answer"
+        <div className="applicationdocuments-upload-placeholder">
+          <button type="button" className="applicationdocuments-cert-change-answer"
             onClick={() => handleCertAvailReset(field)}>
-            ← Change answer
+            Change answer
           </button>
           <div
-            className={`upload-prompt ${dragActive === field ? 'drag-active' : ''}`}
+            className={`applicationdocuments-upload-prompt ${dragActive === field ? 'drag-active' : ''}`}
             onDragEnter={(e) => handleDrag(e, field)}
             onDragLeave={(e) => handleDrag(e, field)}
             onDragOver={(e) => handleDrag(e, field)}
             onDrop={(e) => handleDrop(e, field, doc)}
           >
-            <i className="fas fa-cloud-upload-alt upload-icon"></i>
-            <p>Drag &amp; drop or click to upload</p>
-            <p className="upload-hint">
+            <p>Drag and drop or click to upload</p>
+            <p className="applicationdocuments-upload-hint">
               {doc.accept.replace(/\./g, '').toUpperCase()} • Max {doc.maxSize}MB
             </p>
           </div>
@@ -673,16 +691,16 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
             type="file"
             id={`${field}Upload`}
             accept={doc.accept}
-            className="file-input-hidden"
+            className="applicationdocuments-file-input-hidden"
             onChange={(e) => handleFileChange(e, field, doc)}
             disabled={uploading[field] || isSubmitting}
           />
-          <button type="button" className="upload-button"
+          <button type="button" className="applicationdocuments-upload-button"
             onClick={() => document.getElementById(`${field}Upload`).click()}
             disabled={uploading[field] || isSubmitting}>
             {uploading[field]
-              ? <><span className="spinner-small"></span> Uploading...</>
-              : <><i className="fas fa-upload"></i> Browse Files</>
+              ? <> Uploading...</>
+              : <> Browse Files</>
             }
           </button>
         </div>
@@ -691,23 +709,22 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
 
     if (availability === 'no') {
       return (
-        <div className="cert-expected-date-wrapper">
-          <button type="button" className="cert-change-answer"
+        <div className="applicationdocuments-cert-expected-date-wrapper">
+          <button type="button" className="applicationdocuments-cert-change-answer"
             onClick={() => handleCertAvailReset(field)}>
-            ← Change answer
+            Change answer
           </button>
-          <div className="cert-no-icon">📅</div>
-          <p className="cert-no-title">No problem! When do you expect to receive it?</p>
-          <p className="cert-no-subtitle">
+          <p className="applicationdocuments-cert-no-title">No problem! When do you expect to receive it?</p>
+          <p className="applicationdocuments-cert-no-subtitle">
             Please provide the expected month and year you will receive your{' '}
             <strong>{doc.label}</strong>. You can upload the document later once you have it.
           </p>
-          <div className="cert-date-input-group cert-monthyear-row">
-            <div className="cert-select-wrap">
-              <label className="cert-date-label" htmlFor={`${field}_month`}>Month</label>
+          <div className="applicationdocuments-cert-date-input-group cert-monthyear-row">
+            <div className="applicationdocuments-cert-select-wrap">
+              <label className="applicationdocuments-cert-date-label" htmlFor={`${field}_month`}>Month</label>
               <select
                 id={`${field}_month`}
-                className="cert-date-select"
+                className="applicationdocuments-cert-date-select"
                 value={month}
                 onChange={(e) => handleExpectedMonthChange(field, e.target.value)}
               >
@@ -717,11 +734,11 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
                 ))}
               </select>
             </div>
-            <div className="cert-select-wrap">
-              <label className="cert-date-label" htmlFor={`${field}_year`}>Year</label>
+            <div className="applicationdocuments-cert-select-wrap">
+              <label className="applicationdocuments-cert-date-label" htmlFor={`${field}_year`}>Year</label>
               <select
                 id={`${field}_year`}
-                className="cert-date-select"
+                className="applicationdocuments-cert-date-select"
                 value={year}
                 onChange={(e) => handleExpectedYearChange(field, e.target.value)}
               >
@@ -733,8 +750,7 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
             </div>
           </div>
           {expectedDate ? (
-            <div className="cert-date-confirmed">
-              <span className="cert-date-confirmed-icon">✅</span>
+            <div className="applicationdocuments-cert-date-confirmed">
               <span>
                 Expected by:{' '}
                 <strong>
@@ -743,8 +759,8 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
               </span>
             </div>
           ) : (
-            <p className="cert-date-hint">
-              ⚠️ Please select both a month and a year to continue
+            <p className="applicationdocuments-cert-date-hint">
+              Please select both a month and a year to continue
             </p>
           )}
         </div>
@@ -754,64 +770,62 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
     return null;
   };
 
-  // ── Loading ──────────────────────────────────────────────────
+  // Loading state
   if (isLoading) {
     return (
-      <div className="application-documents">
-        <div className="loading-state">
-          <div className="loading-spinner"></div>
+      <div className="applicationdocuments">
+        <div className="applicationdocuments-loading-state">
+          <div className="applicationdocuments-loading-spinner"></div>
           <p>Loading your documents...</p>
         </div>
       </div>
     );
   }
 
-  // ════════════════════════════════════════════════════════════
-  // MAIN UI
-  // ════════════════════════════════════════════════════════════
+  // MAIN UI RENDER
   return (
-    <div className="application-documents">
+    <div className="applicationdocuments">
 
       {/* Header */}
-      <div className="documents-header">
-        <div className="header-left">
+      <div className="applicationdocuments-header">
+        <div className="applicationdocuments-header-left">
           <h1>BA Communication Design</h1>
-          <div className="application-id">
-            <span className="id-label">APPLICATION ID</span>
-            <span className="id-value">UEG0000104849</span>
+          <div className="applicationdocuments-application-id">
+            <span className="applicationdocuments-id-label">APPLICATION ID</span>
+            <span className="applicationdocuments-id-value">UEG0000104849</span>
           </div>
         </div>
-        <div className="progress-container">
-          <div className="progress-badge">
-            <div className="progress-circle">
-              <svg viewBox="0 0 36 36" className="circular-chart">
-                <path className="circle-bg"
+        <div className="applicationdocuments-progress-container">
+          <div className="applicationdocuments-progress-badge">
+            <div className="applicationdocuments-progress-circle">
+              <svg viewBox="0 0 36 36" className="applicationdocuments-circular-chart">
+                <path className="applicationdocuments-circle-bg"
                   d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                <path className="circle"
+                <path className="applicationdocuments-circle"
                   strokeDasharray={`${completionPercentage}, 100`}
                   d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                <text x="18" y="20.35" className="percentage">{completionPercentage}%</text>
+                <text x="18" y="20.35" className="applicationdocuments-percentage">{completionPercentage}%</text>
               </svg>
             </div>
-            <span className="progress-text">Completed</span>
+            <span className="applicationdocuments-progress-text">Completed</span>
           </div>
         </div>
       </div>
 
       {/* Navigation Steps */}
-      <div className="application-steps">
+      <div className="applicationdocuments-steps">
         {[
           "Study programme","Applicant Details","Address",
           "Entrance qualification","Higher Education",
           "Application Documents","Special Needs","Declaration","Review"
         ].map((step, index) => {
-          let stepClass = "step";
+          let stepClass = "applicationdocuments-step";
           if (index < 5) stepClass += " completed";
           if (index === 5) stepClass += " active";
           return (
             <div key={step} className={stepClass}>
-              <span className="step-number">{index < 5 ? "✓" : index + 1}</span>
-              <span className="step-name">{step}</span>
+              <span className="applicationdocuments-step-number">{index < 5 ? "✓" : index + 1}</span>
+              <span className="applicationdocuments-step-name">{step}</span>
             </div>
           );
         })}
@@ -819,32 +833,31 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
 
       {/* Error Banner */}
       {error && (
-        <div className="error-banner">
-          <i className="fas fa-exclamation-triangle"></i>
+        <div className="applicationdocuments-error-banner">
+          <span className="applicationdocuments-error-icon">!</span>
           <span>{error}</span>
-          <button type="button" onClick={() => setError('')} className="error-close-btn">×</button>
+          <button type="button" onClick={() => setError('')} className="applicationdocuments-error-close-btn">×</button>
         </div>
       )}
 
       {/* Main Form */}
-      <div className="documents-form-container">
-        <div className="form-header">
+      <div className="applicationdocuments-form-container">
+        <div className="applicationdocuments-form-header">
           <h2>Application Documents</h2>
-          <div className="info-message">
-            <i className="fas fa-info-circle"></i>
+          <div className="applicationdocuments-info-message">
             <span>Upload all required documents marked with <span className="required-star">*</span></span>
           </div>
-          <div className="search-container">
-            <i className="fas fa-search search-icon"></i>
+          <div className="applicationdocuments-search-container">
+            <div className="applicationdocuments-search-icon"></div>
             <input
               type="text"
               placeholder="Search documents..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
+              className="applicationdocuments-search-input"
             />
             {searchTerm && (
-              <button className="clear-search" onClick={() => setSearchTerm('')}>×</button>
+              <button className="applicationdocuments-clear-search" onClick={() => setSearchTerm('')}>×</button>
             )}
           </div>
         </div>
@@ -853,16 +866,16 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
 
           {Object.entries(filteredCategories).map(([key, category]) => (
             category.documents.length > 0 && (
-              <div key={key} className="document-category">
+              <div key={key} className="applicationdocuments-document-category">
                 <div
-                  className="category-header"
+                  className="applicationdocuments-category-header"
                   onClick={() => toggleCategory(key)}
                   style={{ borderLeftColor: category.color }}
                 >
-                  <div className="category-title-wrapper">
-                    <span className="category-icon">{category.icon}</span>
-                    <h3 className="category-title">{category.title}</h3>
-                    <span className="category-count">
+                  <div className="applicationdocuments-category-title-wrapper">
+                    <div className="applicationdocuments-category-icon"></div>
+                    <h3 className="applicationdocuments-category-title">{category.title}</h3>
+                    <span className="applicationdocuments-category-count">
                       {category.documents.filter(doc => {
                         if (localFormData[doc.field]) return true;
                         if (CERT_FIELDS.includes(doc.field) && getCertExpectedDate(doc.field)) return true;
@@ -870,73 +883,72 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
                       }).length}/{category.documents.length}
                     </span>
                   </div>
-                  <div className="category-actions">
-                    <span className="expand-icon">{expandedCategories[key] ? '▼' : '▶'}</span>
+                  <div className="applicationdocuments-category-actions">
+                    <span className="applicationdocuments-expand-icon">
+                      {expandedCategories[key] ? "▲" : "▼"}
+                    </span>
                   </div>
                 </div>
 
                 {expandedCategories[key] && (
-                  <div className="documents-grid">
+                  <div className="applicationdocuments-documents-grid">
                     {category.documents.map((doc) => {
 
-                      /* ── SPECIAL CV CARD ── */
+                      // CV CARD
                       if (doc.id === 'cv') {
-                        const cvViewUrl = getViewUrl(localFormData.cv); // ✅ resolved S3 URL
+                        const cvViewUrl = getViewUrl(localFormData.cv);
                         return (
-                          <div key={doc.id} className="document-card cv-document-card">
-                            <div className="document-header">
-                              <div className="document-icon">{doc.icon}</div>
-                              <div className="document-title-wrapper">
-                                <h4 className="document-title">
+                          <div key={doc.id} className="applicationdocuments-document-card cv-document-card">
+                            <div className="applicationdocuments-document-header">
+                              <div className="applicationdocuments-document-icon">
+                                <DocIcon type={doc.iconType} />
+                              </div>
+                              <div className="applicationdocuments-document-title-wrapper">
+                                <h4 className="applicationdocuments-document-title">
                                   {doc.label}
                                   {doc.required && <span className="required-badge">*</span>}
                                 </h4>
-                                <p className="document-description">{doc.description}</p>
+                                <p className="applicationdocuments-document-description">{doc.description}</p>
                               </div>
                             </div>
 
-                            <div className="document-upload-area">
+                            <div className="applicationdocuments-document-upload-area">
                               {localFormData.cv?.fileName ? (
                                 localFormData.cv.generated ? (
-                                  <div className="cv-generated-badge">
-                                    <span className="cv-gen-check">✅</span>
-                                    <div className="cv-gen-info">
-                                      <span className="cv-gen-name">{localFormData.cv.name}</span>
-                                      <span className="cv-gen-tag">Generated CV</span>
+                                  <div className="applicationdocuments-cv-generated-badge">
+                                    <div className="applicationdocuments-cv-gen-info">
+                                      <span className="applicationdocuments-cv-gen-name">{localFormData.cv.name}</span>
+                                      <span className="applicationdocuments-cv-gen-tag">Generated CV</span>
                                     </div>
-                                    <div className="cv-gen-actions">
-                                      <button type="button" className="cv-action-btn cv-action-edit"
+                                    <div className="applicationdocuments-cv-gen-actions">
+                                      <button type="button" className="applicationdocuments-cv-action-btn cv-action-edit"
                                         onClick={() => { setCvMode('generate'); setShowCVModal(true); }}>
-                                        ✏️ Edit / Re-download
+                                        Edit
                                       </button>
-                                      <button type="button" className="cv-action-btn cv-action-remove"
+                                      <button type="button" className="applicationdocuments-cv-action-btn cv-action-remove"
                                         onClick={() => handleRemoveFile('cv')}>
-                                        🗑 Remove
+                                        Remove
                                       </button>
                                     </div>
                                   </div>
                                 ) : (
-                                  <div className="file-info">
-                                    <span className="file-icon-large">
-                                      {getFileIcon(localFormData.cv.name || localFormData.cv.fileName)}
-                                    </span>
-                                    <div className="file-details">
-                                      <span className="file-name">
+                                  <div className="applicationdocuments-file-info">
+                                    <div className="applicationdocuments-file-details">
+                                      <span className="applicationdocuments-file-name">
                                         {localFormData.cv.originalName || localFormData.cv.name || localFormData.cv.fileName || 'Uploaded file'}
                                       </span>
                                       {localFormData.cv.size > 0 && (
-                                        <span className="file-size">{formatFileSize(localFormData.cv.size)}</span>
+                                        <span className="applicationdocuments-file-size">{formatFileSize(localFormData.cv.size)}</span>
                                       )}
                                     </div>
-                                    <div className="file-actions">
-                                      {/* ✅ Use resolved S3 URL */}
+                                    <div className="applicationdocuments-file-actions">
                                       {cvViewUrl && (
-                                        <a href={cvViewUrl} target="_blank" rel="noopener noreferrer" className="view-link">
-                                          <i className="fas fa-eye"></i> View
+                                        <a href={cvViewUrl} target="_blank" rel="noopener noreferrer" className="applicationdocuments-view-link">
+                                          View
                                         </a>
                                       )}
-                                      <button type="button" className="remove-btn" onClick={() => handleRemoveFile('cv')}>
-                                        <i className="fas fa-times"></i> Remove
+                                      <button type="button" className="applicationdocuments-remove-btn" onClick={() => handleRemoveFile('cv')}>
+                                        Remove
                                       </button>
                                     </div>
                                   </div>
@@ -944,41 +956,40 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
                               ) : (
                                 <>
                                   {cvMode === 'choose' && (
-                                    <div className="cv-choice-wrapper">
-                                      <p className="cv-choice-prompt">How would you like to provide your CV?</p>
-                                      <div className="cv-choice-row">
-                                        <button type="button" className="cv-choice-card"
+                                    <div className="applicationdocuments-cv-choice-wrapper">
+                                      <p className="applicationdocuments-cv-choice-prompt">How would you like to provide your CV?</p>
+                                      <div className="applicationdocuments-cv-choice-row">
+                                        <button type="button" className="applicationdocuments-cv-choice-card"
                                           onClick={() => setCvMode('upload')}>
-                                          <span className="cv-choice-emoji">📤</span>
-                                          <span className="cv-choice-title">Upload CV</span>
-                                          <span className="cv-choice-desc">Upload your existing CV as PDF or image</span>
+                                          <div className="applicationdocuments-cv-choice-emoji"></div>
+                                          <span className="applicationdocuments-cv-choice-title">Upload CV</span>
+                                          <span className="applicationdocuments-cv-choice-desc">Upload your existing CV as PDF or image</span>
                                         </button>
-                                        <div className="cv-choice-or">OR</div>
-                                        <button type="button" className="cv-choice-card cv-choice-card--generate"
+                                        <div className="applicationdocuments-cv-choice-or">OR</div>
+                                        <button type="button" className="applicationdocuments-cv-choice-card cv-choice-card--generate"
                                           onClick={() => { setCvMode('generate'); setShowCVModal(true); }}>
-                                          <span className="cv-choice-emoji">✨</span>
-                                          <span className="cv-choice-title">Generate CV</span>
-                                          <span className="cv-choice-desc">Auto-fill from your form data, edit &amp; download as PDF</span>
+                                          <div className="applicationdocuments-cv-choice-emoji"></div>
+                                          <span className="applicationdocuments-cv-choice-title">Generate CV</span>
+                                          <span className="applicationdocuments-cv-choice-desc">Auto-fill from your form data, edit & download as PDF</span>
                                         </button>
                                       </div>
                                     </div>
                                   )}
                                   {cvMode === 'upload' && (
-                                    <div className="upload-placeholder">
-                                      <button type="button" className="cv-back-link"
+                                    <div className="applicationdocuments-upload-placeholder">
+                                      <button type="button" className="applicationdocuments-cv-back-link"
                                         onClick={() => setCvMode('choose')}>
-                                        ← Choose differently
+                                        Choose differently
                                       </button>
                                       <div
-                                        className={`upload-prompt ${dragActive === doc.field ? 'drag-active' : ''}`}
+                                        className={`applicationdocuments-upload-prompt ${dragActive === doc.field ? 'drag-active' : ''}`}
                                         onDragEnter={(e) => handleDrag(e, doc.field)}
                                         onDragLeave={(e) => handleDrag(e, doc.field)}
                                         onDragOver={(e) => handleDrag(e, doc.field)}
                                         onDrop={(e) => handleDrop(e, doc.field, doc)}
                                       >
-                                        <i className="fas fa-cloud-upload-alt upload-icon"></i>
-                                        <p>Drag &amp; drop or click to upload</p>
-                                        <p className="upload-hint">
+                                        <p>Drag and drop or click to upload</p>
+                                        <p className="applicationdocuments-upload-hint">
                                           {doc.accept.replace(/\./g, '').toUpperCase()} • Max {doc.maxSize}MB
                                         </p>
                                       </div>
@@ -986,33 +997,33 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
                                         type="file"
                                         id="cvFileInput"
                                         accept={doc.accept}
-                                        className="file-input-hidden"
+                                        className="applicationdocuments-file-input-hidden"
                                         onChange={(e) => handleFileChange(e, doc.field, doc)}
                                         disabled={uploading[doc.field] || isSubmitting}
                                       />
-                                      <button type="button" className="upload-button"
+                                      <button type="button" className="applicationdocuments-upload-button"
                                         onClick={() => document.getElementById('cvFileInput').click()}
                                         disabled={uploading[doc.field] || isSubmitting}>
                                         {uploading[doc.field]
-                                          ? <><span className="spinner-small"></span> Uploading...</>
-                                          : <><i className="fas fa-upload"></i> Browse Files</>
+                                          ? <> Uploading...</>
+                                          : <> Browse Files</>
                                         }
                                       </button>
                                     </div>
                                   )}
                                   {cvMode === 'generate' && (
-                                    <div className="cv-choice-wrapper">
-                                      <p className="cv-choice-prompt">CV Generator is ready</p>
-                                      <button type="button" className="cv-choice-card cv-choice-card--generate"
+                                    <div className="applicationdocuments-cv-choice-wrapper">
+                                      <p className="applicationdocuments-cv-choice-prompt">CV Generator is ready</p>
+                                      <button type="button" className="applicationdocuments-cv-choice-card cv-choice-card--generate"
                                         onClick={() => setShowCVModal(true)}>
-                                        <span className="cv-choice-emoji">✨</span>
-                                        <span className="cv-choice-title">Open CV Generator</span>
-                                        <span className="cv-choice-desc">Click to edit and download your CV as PDF</span>
+                                        <div className="applicationdocuments-cv-choice-emoji"></div>
+                                        <span className="applicationdocuments-cv-choice-title">Open CV Generator</span>
+                                        <span className="applicationdocuments-cv-choice-desc">Click to edit and download your CV as PDF</span>
                                       </button>
-                                      <button type="button" className="cv-back-link"
+                                      <button type="button" className="applicationdocuments-cv-back-link"
                                         style={{ marginTop: '8px' }}
                                         onClick={() => setCvMode('choose')}>
-                                        ← Choose differently
+                                        Choose differently
                                       </button>
                                     </div>
                                   )}
@@ -1023,116 +1034,110 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
                         );
                       }
 
-                      /* ── CERTIFICATE CARDS (9th–12th) ── */
+                      // CERTIFICATE CARDS
                       if (CERT_FIELDS.includes(doc.field)) {
                         const hasFile = localFormData[doc.field]?.fileName;
                         const hasDate = certAvailability[doc.field] === 'no' && getCertExpectedDate(doc.field);
                         return (
                           <div
                             key={doc.id}
-                            className={`document-card cert-card
+                            className={`applicationdocuments-document-card cert-card
                               ${hasFile ? 'uploaded' : ''}
                               ${hasDate ? 'cert-card--pending' : ''}
                               ${dragActive === doc.field ? 'drag-active' : ''}
                             `}
                           >
-                            <div className="document-header">
-                              <div className="document-icon">{doc.icon}</div>
-                              <div className="document-title-wrapper">
-                                <h4 className="document-title">
+                            <div className="applicationdocuments-document-header">
+                              <div className="applicationdocuments-document-icon">
+                                <DocIcon type={doc.iconType} />
+                              </div>
+                              <div className="applicationdocuments-document-title-wrapper">
+                                <h4 className="applicationdocuments-document-title">
                                   {doc.label}
                                   {doc.required && <span className="required-badge">*</span>}
-                                  {hasFile && <span className="cert-status-pill cert-status-pill--done">✅ Uploaded</span>}
-                                  {hasDate && <span className="cert-status-pill cert-status-pill--pending">🕐 Pending</span>}
+                                  {hasFile && <span className="cert-status-pill cert-status-pill--done">Uploaded</span>}
+                                  {hasDate && <span className="cert-status-pill cert-status-pill--pending">Pending</span>}
                                 </h4>
-                                <p className="document-description">{doc.description}</p>
+                                <p className="applicationdocuments-document-description">{doc.description}</p>
                               </div>
                             </div>
-                            <div className="document-upload-area">
+                            <div className="applicationdocuments-document-upload-area">
                               <CertUploadArea doc={doc} />
                             </div>
                           </div>
                         );
                       }
 
-                      /* ── ALL OTHER DOCUMENT CARDS ── */
-                      const docViewUrl = getViewUrl(localFormData[doc.field]); // ✅ resolved S3 URL
+                      // OTHER DOCUMENT CARDS
+                      const docViewUrl = getViewUrl(localFormData[doc.field]);
                       return (
                         <div
                           key={doc.id}
-                          className={`document-card ${localFormData[doc.field] ? 'uploaded' : ''} ${dragActive === doc.field ? 'drag-active' : ''}`}
+                          className={`applicationdocuments-document-card ${localFormData[doc.field] ? 'uploaded' : ''} ${dragActive === doc.field ? 'drag-active' : ''}`}
                           onDragEnter={(e) => handleDrag(e, doc.field)}
                           onDragLeave={(e) => handleDrag(e, doc.field)}
                           onDragOver={(e) => handleDrag(e, doc.field)}
                           onDrop={(e) => handleDrop(e, doc.field, doc)}
                         >
-                          <div className="document-header">
-                            <div className="document-icon">{doc.icon}</div>
-                            <div className="document-title-wrapper">
-                              <h4 className="document-title">
+                          <div className="applicationdocuments-document-header">
+                            <div className="applicationdocuments-document-icon">
+                              <DocIcon type={doc.iconType} />
+                            </div>
+                            <div className="applicationdocuments-document-title-wrapper">
+                              <h4 className="applicationdocuments-document-title">
                                 {doc.label}
                                 {doc.required && <span className="required-badge">*</span>}
                                 {!doc.required && <span className="optional-badge">Optional</span>}
                               </h4>
-                              <p className="document-description">{doc.description}</p>
-                              {doc.note && (
-                                <p className="document-note">
-                                  <i className="fas fa-info-circle"></i>{doc.note}
-                                </p>
-                              )}
+                              <p className="applicationdocuments-document-description">{doc.description}</p>
                             </div>
                           </div>
-                          <div className="document-upload-area">
+                          <div className="applicationdocuments-document-upload-area">
                             {localFormData[doc.field] && localFormData[doc.field].fileName ? (
-                              <div className="file-preview">
+                              <div className="applicationdocuments-file-preview">
                                 {localFormData[`${doc.field}Preview`] ? (
-                                  <div className="image-preview-container">
-                                    <img src={localFormData[`${doc.field}Preview`]} alt={doc.label} className="image-preview" />
-                                    <div className="image-preview-overlay">
-                                      <button type="button" className="view-image-btn"
+                                  <div className="applicationdocuments-image-preview-container">
+                                    <img src={localFormData[`${doc.field}Preview`]} alt={doc.label} className="applicationdocuments-image-preview" />
+                                    <div className="applicationdocuments-image-preview-overlay">
+                                      <button type="button" className="applicationdocuments-view-image-btn"
                                         onClick={() => window.open(localFormData[`${doc.field}Preview`], '_blank')}>
-                                        <i className="fas fa-eye"></i>
+                                        View
                                       </button>
-                                      <button type="button" className="remove-image-btn"
+                                      <button type="button" className="applicationdocuments-remove-image-btn"
                                         onClick={() => handleRemoveFile(doc.field)} disabled={isSubmitting}>
-                                        <i className="fas fa-trash"></i>
+                                        Remove
                                       </button>
                                     </div>
                                   </div>
                                 ) : (
-                                  <div className="file-info">
-                                    <span className="file-icon-large">
-                                      {getFileIcon(localFormData[doc.field].name || localFormData[doc.field].fileName)}
-                                    </span>
-                                    <div className="file-details">
-                                      <span className="file-name" title={localFormData[doc.field].originalName || localFormData[doc.field].name || localFormData[doc.field].fileName}>
+                                  <div className="applicationdocuments-file-info">
+                                    <div className="applicationdocuments-file-details">
+                                      <span className="applicationdocuments-file-name" title={localFormData[doc.field].originalName || localFormData[doc.field].name || localFormData[doc.field].fileName}>
                                         {localFormData[doc.field].originalName || localFormData[doc.field].name || localFormData[doc.field].fileName || 'Uploaded file'}
                                       </span>
                                       {localFormData[doc.field].size && (
-                                        <span className="file-size">{formatFileSize(localFormData[doc.field].size)}</span>
+                                        <span className="applicationdocuments-file-size">{formatFileSize(localFormData[doc.field].size)}</span>
                                       )}
                                     </div>
-                                    <div className="file-actions">
-                                      {/* ✅ Use resolved S3 URL */}
+                                    <div className="applicationdocuments-file-actions">
                                       {docViewUrl && (
-                                        <a href={docViewUrl} target="_blank" rel="noopener noreferrer" className="view-link">
-                                          <i className="fas fa-eye"></i> View
+                                        <a href={docViewUrl} target="_blank" rel="noopener noreferrer" className="applicationdocuments-view-link">
+                                          View
                                         </a>
                                       )}
-                                      <button type="button" className="remove-btn"
+                                      <button type="button" className="applicationdocuments-remove-btn"
                                         onClick={() => handleRemoveFile(doc.field)} disabled={isSubmitting}>
-                                        <i className="fas fa-times"></i> Remove
+                                        Remove
                                       </button>
                                     </div>
                                   </div>
                                 )}
                               </div>
                             ) : (
-                              <div className="upload-placeholder">
-                                <div className="upload-prompt">
-                                  <i className="fas fa-cloud-upload-alt upload-icon"></i>
-                                  <p>Drag &amp; drop or click to upload</p>
-                                  <p className="upload-hint">
+                              <div className="applicationdocuments-upload-placeholder">
+                                <div className="applicationdocuments-upload-prompt">
+                                  <p>Drag and drop or click to upload</p>
+                                  <p className="applicationdocuments-upload-hint">
                                     {doc.accept.replace(/\./g, '').toUpperCase()} • Max {doc.maxSize}MB
                                   </p>
                                 </div>
@@ -1140,16 +1145,16 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
                                   type="file"
                                   id={`${doc.field}Upload`}
                                   accept={doc.accept}
-                                  className="file-input-hidden"
+                                  className="applicationdocuments-file-input-hidden"
                                   onChange={(e) => handleFileChange(e, doc.field, doc)}
                                   disabled={uploading[doc.field] || isSubmitting}
                                 />
-                                <button type="button" className="upload-button"
+                                <button type="button" className="applicationdocuments-upload-button"
                                   onClick={() => document.getElementById(`${doc.field}Upload`).click()}
                                   disabled={uploading[doc.field] || isSubmitting}>
                                   {uploading[doc.field]
-                                    ? <><span className="spinner-small"></span> Uploading...</>
-                                    : <><i className="fas fa-upload"></i> Browse</>
+                                    ? <> Uploading...</>
+                                    : <> Browse</>
                                   }
                                 </button>
                               </div>
@@ -1165,28 +1170,27 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
           ))}
 
           {/* Upload Summary */}
-          <div className="documents-summary">
-            <div className="summary-header">
-              <i className="fas fa-chart-pie"></i>
+          <div className="applicationdocuments-summary">
+            <div className="applicationdocuments-summary-header">
               <h3>Upload Summary</h3>
             </div>
-            <div className="summary-stats">
-              <div className="stat-item">
-                <span className="stat-label">Required Documents:</span>
-                <span className="stat-value">{documentTypes.filter(doc => doc.required).length}</span>
+            <div className="applicationdocuments-summary-stats">
+              <div className="applicationdocuments-stat-item">
+                <span className="applicationdocuments-stat-label">Required Documents:</span>
+                <span className="applicationdocuments-stat-value">{documentTypes.filter(doc => doc.required).length}</span>
               </div>
-              <div className="stat-item">
-                <span className="stat-label">Uploaded:</span>
-                <span className="stat-value">
+              <div className="applicationdocuments-stat-item">
+                <span className="applicationdocuments-stat-label">Uploaded:</span>
+                <span className="applicationdocuments-stat-value">
                   {documentTypes.filter(doc =>
                     localFormData[doc.field] ||
                     (CERT_FIELDS.includes(doc.field) && getCertExpectedDate(doc.field))
                   ).length}
                 </span>
               </div>
-              <div className="stat-item">
-                <span className="stat-label">Remaining:</span>
-                <span className="stat-value">
+              <div className="applicationdocuments-stat-item">
+                <span className="applicationdocuments-stat-label">Remaining:</span>
+                <span className="applicationdocuments-stat-value">
                   {documentTypes.filter(doc => {
                     if (localFormData[doc.field]) return false;
                     if (CERT_FIELDS.includes(doc.field) && getCertExpectedDate(doc.field)) return false;
@@ -1195,57 +1199,55 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
                 </span>
               </div>
             </div>
-            <div className="summary-progress">
-              <div className="summary-progress-bar" style={{ width: `${completionPercentage}%` }}></div>
+            <div className="applicationdocuments-summary-progress">
+              <div className="applicationdocuments-summary-progress-bar" style={{ width: `${completionPercentage}%` }}></div>
             </div>
           </div>
 
           {/* Navigation Buttons */}
-          <div className="form-actions">
-            <button type="button" className="btn-secondary" onClick={handleBack} disabled={isSubmitting}>
-              <i className="fas fa-arrow-left"></i> Back
+          <div className="applicationdocuments-form-actions">
+            <button type="button" className="applicationdocuments-btn-secondary" onClick={handleBack} disabled={isSubmitting}>
+              Back
             </button>
-            <button type="submit" className="btn-primary" disabled={isSubmitting}>
+            <button type="submit" className="applicationdocuments-btn-primary" disabled={isSubmitting}>
               {isSubmitting
-                ? <><span className="spinner-small"></span> Saving...</>
-                : <>Next <i className="fas fa-arrow-right"></i></>
+                ? <> Saving...</>
+                : <>Next</>
               }
             </button>
           </div>
 
-          <div className="language-selector">
-            <i className="fas fa-globe"></i>
+          <div className="applicationdocuments-language-selector">
             <span>English</span>
-            <i className="fas fa-chevron-down"></i>
+            <span className="applicationdocuments-dropdown-arrow">▼</span>
           </div>
         </form>
       </div>
 
       {/* Upload Modal */}
       {showUploadModal && selectedDoc && (
-        <div className="modal-overlay" onClick={() => setShowUploadModal(false)}>
-          <div className="upload-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+        <div className="applicationdocuments-modal-overlay" onClick={() => setShowUploadModal(false)}>
+          <div className="applicationdocuments-upload-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="applicationdocuments-modal-header">
               <h3>Upload {selectedDoc.label}</h3>
-              <button className="modal-close" onClick={() => setShowUploadModal(false)}>×</button>
+              <button className="applicationdocuments-modal-close" onClick={() => setShowUploadModal(false)}>×</button>
             </div>
-            <div className="modal-body">
-              <div className="modal-icon">{selectedDoc.icon}</div>
-              <p className="modal-description">{selectedDoc.description}</p>
-              {selectedDoc.note && <p className="modal-note">{selectedDoc.note}</p>}
-              <div className="modal-requirements">
-                <p><i className="fas fa-file"></i> Accepted formats: {selectedDoc.accept.replace(/\./g, '').toUpperCase()}</p>
-                <p><i className="fas fa-weight-hanging"></i> Maximum size: {selectedDoc.maxSize}MB</p>
+            <div className="applicationdocuments-modal-body">
+              <div className="applicationdocuments-modal-icon"></div>
+              <p className="applicationdocuments-modal-description">{selectedDoc.description}</p>
+              <div className="applicationdocuments-modal-requirements">
+                <p>Accepted formats: {selectedDoc.accept.replace(/\./g, '').toUpperCase()}</p>
+                <p>Maximum size: {selectedDoc.maxSize}MB</p>
               </div>
               <input
                 type="file"
                 id="modalFileInput"
                 accept={selectedDoc.accept}
-                className="file-input-hidden"
+                className="applicationdocuments-file-input-hidden"
                 onChange={(e) => { handleFileChange(e, selectedDoc.field, selectedDoc); setShowUploadModal(false); }}
               />
-              <button className="modal-upload-btn" onClick={() => document.getElementById('modalFileInput').click()}>
-                <i className="fas fa-upload"></i> Select File
+              <button className="applicationdocuments-modal-upload-btn" onClick={() => document.getElementById('modalFileInput').click()}>
+                Select File
               </button>
             </div>
           </div>
@@ -1254,15 +1256,15 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
 
       {/* CV Generator Modal */}
       {showCVModal && (
-        <div className="resume-modal-backdrop" onClick={handleCloseCV}>
-          <div className="resume-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="applicationdocuments-resume-modal-backdrop" onClick={handleCloseCV}>
+          <div className="applicationdocuments-resume-modal" onClick={(e) => e.stopPropagation()}>
             <button
               type="button"
-              className="resume-modal-close"
+              className="applicationdocuments-resume-modal-close"
               onClick={handleCloseCV}
               aria-label="Close CV Generator"
             >
-              ✕
+              ×
             </button>
             <Resume
               formData={formData}

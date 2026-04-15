@@ -139,30 +139,30 @@ const LanguageSection = ({
   const proficientCount = parseInt(formData.languagesProficient) || 0;
 
   return (
-    <div className="language-section-component">
-      <div className="language-header">
+    <div className="languagesection">
+      <div className="languagesection-header">
         <h2>Language</h2>
-        <div className="section-description">
+        <div className="languagesection-description">
           Tell us about the languages you are proficient in
         </div>
       </div>
       
-      <div className="section-status-wrapper">
-        <div className={`section-status ${isFormValid ? 'complete' : 'in-progress'}`}>
-          <span className="status-indicator"></span>
+      <div className="languagesection-status-wrapper">
+        <div className={`languagesection-status ${isFormValid ? 'complete' : 'in-progress'}`}>
+          <span className="languagesection-status-indicator"></span>
           {isFormValid ? 'Complete' : 'In Progress'}
         </div>
       </div>
 
-      <div className="form-content">
-        <div className="form-group">
+      <div className="languagesection-form-content">
+        <div className="languagesection-form-group">
           <label className="required">Number of languages you are proficient in</label>
-          <div className="select-container">
+          <div className="languagesection-select-container">
             <select
               name="languagesProficient"
               value={formData.languagesProficient || ''}
               onChange={handleInputChange}
-              className="language-select"
+              className="languagesection-language-select"
             >
               <option value="">Select number</option>
               {[1, 2, 3, 4, 5].map(num => (
@@ -172,7 +172,7 @@ const LanguageSection = ({
             {formData.languagesProficient && (
               <button 
                 type="button" 
-                className="clear-field-btn"
+                className="languagesection-clear-field-btn"
                 onClick={() => handleClearAllLanguages()}
                 aria-label="Clear selection"
               >
@@ -183,12 +183,12 @@ const LanguageSection = ({
         </div>
 
         {formData.languages && formData.languages.slice(0, proficientCount).map((lang, index) => (
-          <div key={index} className="language-section">
+          <div key={index} className="languagesection-language-item">
             {/* Language Selection with Autocomplete */}
-            <div className="form-group">
+            <div className="languagesection-form-group">
               <label className="required">Select Language</label>
               <div 
-                className="language-input-wrapper"
+                className="languagesection-language-input-wrapper"
                 ref={el => dropdownRefs.current[index] = el}
               >
                 <input
@@ -197,13 +197,13 @@ const LanguageSection = ({
                   onChange={(e) => handleSearchChange(index, e.target.value)}
                   onFocus={() => handleInputFocus(index)}
                   placeholder="Start typing language name..."
-                  className="language-input"
+                  className="languagesection-language-input"
                   autoComplete="off"
                 />
                 {lang.language && (
                   <button 
                     type="button" 
-                    className="clear-field-btn"
+                    className="languagesection-clear-field-btn"
                     onClick={() => handleClearLanguage(index)}
                     aria-label="Clear language"
                   >
@@ -213,19 +213,19 @@ const LanguageSection = ({
                 
                 {/* Dropdown List */}
                 {openDropdown === index && (
-                  <div className="language-dropdown">
+                  <div className="languagesection-language-dropdown">
                     {getCurrentFilteredLanguages(index).length > 0 ? (
                       getCurrentFilteredLanguages(index).map((language) => (
                         <div
                           key={language}
-                          className="dropdown-item"
+                          className="languagesection-dropdown-item"
                           onClick={() => handleSelectLanguage(index, language)}
                         >
                           {language}
                         </div>
                       ))
                     ) : (
-                      <div className="dropdown-item disabled">No languages found</div>
+                      <div className="languagesection-dropdown-item disabled">No languages found</div>
                     )}
                   </div>
                 )}
@@ -233,9 +233,9 @@ const LanguageSection = ({
             </div>
 
             {/* Language Proficiency Checkboxes */}
-            <div className="form-group">
+            <div className="languagesection-form-group">
               <label className="required">Language Proficiency</label>
-              <div className="checkbox-group horizontal">
+              <div className="languagesection-checkbox-group horizontal">
                 {[
                   { key: 'firstLanguage', label: 'First Language' },
                   { key: 'speak', label: 'Speak' },
@@ -251,7 +251,7 @@ const LanguageSection = ({
                         handleLanguageChange(index, `proficiency.${proficiency.key}`, e.target.checked)
                       }
                     />
-                    <span className="checkbox-label">{proficiency.label}</span>
+                    <span className="languagesection-checkbox-label">{proficiency.label}</span>
                   </label>
                 ))}
               </div>
@@ -262,7 +262,7 @@ const LanguageSection = ({
                 lang.proficiency?.spokenAtHome) && (
                 <button 
                   type="button" 
-                  className="clear-link"
+                  className="languagesection-clear-link"
                   onClick={() => handleClearProficiency(index)}
                 >
                   Clear all proficiency selections
@@ -274,7 +274,7 @@ const LanguageSection = ({
             {index > 0 && (
               <button
                 type="button"
-                className="remove-button"
+                className="languagesection-remove-button"
                 onClick={() => removeLanguage(index)}
               >
                 Remove Language
@@ -288,7 +288,7 @@ const LanguageSection = ({
           formData.languages.length < proficientCount && (
             <button
               type="button"
-              className="add-button"
+              className="languagesection-add-button"
               onClick={addLanguage}
             >
               + Add Another Language
@@ -297,8 +297,8 @@ const LanguageSection = ({
 
         {/* Clear All Button */}
         {hasAnyLanguageData() && (
-          <div className="clear-all-container">
-            <button type="button" className="clear-all-link" onClick={handleClearAllLanguages}>
+          <div className="languagesection-clear-all-container">
+            <button type="button" className="languagesection-clear-all-link" onClick={handleClearAllLanguages}>
               Clear all language fields
             </button>
           </div>

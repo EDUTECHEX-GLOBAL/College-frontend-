@@ -84,26 +84,26 @@ const GeographySection = ({
   };
 
   return (
-    <div className="geography-section">
-      <div className="geography-header">
+    <div className="geographysection">
+      <div className="geographysection-header">
         <h2>Geography and Nationality</h2>
-        <div className="section-description">
+        <div className="geographysection-description">
           Help us understand your geographic background
         </div>
       </div>
       
-      <div className="section-status-wrapper">
-        <div className={`section-status ${isFormValid ? 'complete' : 'in-progress'}`}>
-          <span className="status-indicator"></span>
+      <div className="geographysection-status-wrapper">
+        <div className={`geographysection-status ${isFormValid ? 'complete' : 'in-progress'}`}>
+          <span className="geographysection-status-indicator"></span>
           {isFormValid ? 'Complete' : 'In Progress'}
         </div>
       </div>
 
-      <div className="form-content">
+      <div className="geographysection-form-content">
         {/* Birth Country */}
-        <div className="form-group">
+        <div className="geographysection-form-group">
           <label>Birth Country/Region/Territory</label>
-          <div className="input-container">
+          <div className="geographysection-input-container">
             <input
               type="text"
               name="birthCountry"
@@ -114,7 +114,7 @@ const GeographySection = ({
             {formData.birthCountry && (
               <button 
                 type="button" 
-                className="clear-field-btn"
+                className="geographysection-clear-field-btn"
                 onClick={() => handleClearField('birthCountry')}
                 aria-label="Clear birth country"
               >
@@ -125,9 +125,9 @@ const GeographySection = ({
         </div>
 
         {/* City of Birth */}
-        <div className="form-group">
+        <div className="geographysection-form-group">
           <label>City of Birth</label>
-          <div className="input-container">
+          <div className="geographysection-input-container">
             <input
               type="text"
               name="cityOfBirth"
@@ -138,7 +138,7 @@ const GeographySection = ({
             {formData.cityOfBirth && (
               <button 
                 type="button" 
-                className="clear-field-btn"
+                className="geographysection-clear-field-btn"
                 onClick={() => handleClearField('cityOfBirth')}
                 aria-label="Clear city of birth"
               >
@@ -149,9 +149,9 @@ const GeographySection = ({
         </div>
 
         {/* Years in US */}
-        <div className="form-group">
+        <div className="geographysection-form-group">
           <label>Number of years you have lived in the United States</label>
-          <div className="input-container">
+          <div className="geographysection-input-container">
             <input
               type="number"
               name="yearsInUS"
@@ -165,7 +165,7 @@ const GeographySection = ({
             {formData.yearsInUS && (
               <button 
                 type="button" 
-                className="clear-field-btn"
+                className="geographysection-clear-field-btn"
                 onClick={() => handleClearField('yearsInUS')}
                 aria-label="Clear years"
               >
@@ -173,13 +173,13 @@ const GeographySection = ({
               </button>
             )}
           </div>
-          {errors.yearsInUS && <div className="error-message">{errors.yearsInUS}</div>}
+          {errors.yearsInUS && <div className="geographysection-error-message">{errors.yearsInUS}</div>}
         </div>
 
         {/* Citizenship Status */}
-        <div className="form-group">
+        <div className="geographysection-form-group">
           <label className="required">Select your citizenship status</label>
-          <div className="radio-group">
+          <div className="geographysection-radio-group">
             {citizenshipOptions.map(option => (
               <label key={option.value}>
                 <input
@@ -189,21 +189,21 @@ const GeographySection = ({
                   checked={formData.citizenshipStatus === option.value}
                   onChange={handleFieldChange}
                 />
-                <span className="radio-label">{option.label}</span>
+                <span className="geographysection-radio-label">{option.label}</span>
               </label>
             ))}
           </div>
           {formData.citizenshipStatus && (
             <button 
               type="button" 
-              className="clear-link"
+              className="geographysection-clear-link"
               onClick={handleClearCitizenship}
             >
               Clear answer
             </button>
           )}
           {!isFormValid && (
-            <div className="validation-hint">
+            <div className="geographysection-validation-hint">
               Please select your citizenship status to complete this section
             </div>
           )}
@@ -211,8 +211,8 @@ const GeographySection = ({
 
         {/* Clear All Button */}
         {hasAnyValue() && (
-          <div className="clear-all-container">
-            <button type="button" className="clear-all-link" onClick={handleClearAll}>
+          <div className="geographysection-clear-all-container">
+            <button type="button" className="geographysection-clear-all-link" onClick={handleClearAll}>
               Clear all geography fields
             </button>
           </div>

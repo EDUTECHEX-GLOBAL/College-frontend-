@@ -1,15 +1,15 @@
 /* src/components/GeographySection.css */
 /* ============================================================
-   GeographySection.css — EDUTECH-X Modern UI
-   Primary Teal: #0ba5a0 | Clean White | Minimalist Design
+   GeographySection.css — EDUTECH-X Plalite Colour Scheme
+   Primary Teal: #0891b2 | Clean White | Minimalist Design
    ============================================================ */
 
 :root {
-  --primary: #3b82f6;
-  --primary-dark: #3b82f6;
-  --primary-light: #3b82f6;
-  --primary-pale: #f0fdfa;
-  --success: #3b82f6;
+  --primary: #0891b2;
+  --primary-dark: #0e7490;
+  --primary-light: #22d3ee;
+  --primary-pale: #f0f9ff;
+  --success: #10b981;
   --success-pale: #ecfdf5;
   --error: #ef4444;
   --gray-50: #fafafa;
@@ -21,22 +21,23 @@
   --gray-600: #525252;
   --gray-700: #404040;
   --bg-secondary: #ffffff;
-  --text-primary: #171717;
-  --text-secondary: #404040;
-  --text-tertiary: #737373;
-  --text-muted: #a3a3a3;
-  --border-light: #e5e5e5;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-tertiary: #64748b;
+  --text-muted: #94a3b8;
+  --border-light: #e2e8f0;
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
   --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-full: 9999px;
   --transition-fast: 150ms ease;
-  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
+  --font: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
+  --font-head: 'Sora', 'Plus Jakarta Sans', sans-serif;
 }
 
 /* Main Container */
-.geography-section {
+.geographysection {
   background: var(--bg-secondary);
   border-radius: var(--radius-lg);
   max-width: 100%;
@@ -48,20 +49,21 @@
 }
 
 /* Header */
-.geography-header {
+.geographysection-header {
   padding: 24px 28px;
   border-bottom: 1px solid var(--border-light);
 }
 
-.geography-section h2 {
+.geographysection h2 {
   font-size: 22px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-primary);
   margin: 0 0 8px 0;
   letter-spacing: -0.3px;
+  font-family: var(--font-head);
 }
 
-.section-description {
+.geographysection-description {
   font-size: 14px;
   color: var(--text-tertiary);
   line-height: 1.5;
@@ -69,63 +71,63 @@
 }
 
 /* Section Status Badge */
-.section-status-wrapper {
+.geographysection-status-wrapper {
   padding: 0 28px;
   margin: 16px 0 8px;
 }
 
-.geography-section .section-status {
+.geographysection-status {
   padding: 6px 14px;
   border-radius: var(--radius-full);
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   width: fit-content;
 }
 
-.geography-section .section-status.in-progress {
+.geographysection-status.in-progress {
   background: var(--primary-pale);
   color: var(--primary-dark);
 }
 
-.geography-section .section-status.complete {
+.geographysection-status.complete {
   background: var(--success-pale);
   color: var(--success);
 }
 
-.status-indicator {
+.geographysection-status-indicator {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   display: inline-block;
 }
 
-.section-status.in-progress .status-indicator {
+.geographysection-status.in-progress .geographysection-status-indicator {
   background: var(--primary);
 }
 
-.section-status.complete .status-indicator {
+.geographysection-status.complete .geographysection-status-indicator {
   background: var(--success);
 }
 
 /* Form Content */
-.geography-section .form-content {
+.geographysection-form-content {
   padding: 28px;
 }
 
 /* Form Group */
-.geography-section .form-group {
+.geographysection-form-group {
   margin-bottom: 28px;
   position: relative;
 }
 
-.geography-section .form-group:last-of-type {
+.geographysection-form-group:last-of-type {
   margin-bottom: 0;
 }
 
-.geography-section .form-group label {
+.geographysection-form-group label {
   display: block;
   margin-bottom: 10px;
   font-weight: 600;
@@ -134,19 +136,19 @@
   line-height: 1.4;
 }
 
-.geography-section .form-group label.required::after {
+.geographysection-form-group label.required::after {
   content: " *";
   color: var(--error);
 }
 
 /* Input Container with Clear Button */
-.input-container {
+.geographysection-input-container {
   position: relative;
   width: 100%;
 }
 
 /* Input Fields */
-.geography-section .form-group input {
+.geographysection-form-group input {
   width: 100%;
   padding: 12px 32px 12px 16px;
   border: 1.5px solid var(--border-light);
@@ -159,35 +161,35 @@
   box-sizing: border-box;
 }
 
-.geography-section .form-group input:hover {
+.geographysection-form-group input:hover {
   border-color: var(--gray-400);
 }
 
-.geography-section .form-group input:focus {
+.geographysection-form-group input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(11, 165, 160, 0.1);
+  box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
 }
 
-.geography-section .form-group input.error {
+.geographysection-form-group input.error {
   border-color: var(--error);
 }
 
-.geography-section .form-group input.error:focus {
+.geographysection-form-group input.error:focus {
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
 
-.geography-section .form-group input::placeholder {
+.geographysection-form-group input::placeholder {
   color: var(--text-muted);
   font-size: 13px;
 }
 
-.geography-section .form-group input[type="number"] {
+.geographysection-form-group input[type="number"] {
   width: 160px;
 }
 
 /* Clear Field Button */
-.clear-field-btn {
+.geographysection-clear-field-btn {
   background: none;
   border: none;
   color: var(--gray-400);
@@ -203,19 +205,19 @@
   border-radius: var(--radius-sm);
 }
 
-.clear-field-btn:hover {
+.geographysection-clear-field-btn:hover {
   color: var(--error);
 }
 
 /* Radio Group */
-.geography-section .radio-group {
+.geographysection-radio-group {
   display: flex;
   flex-direction: column;
   gap: 12px;
   margin-top: 4px;
 }
 
-.geography-section .radio-group label {
+.geographysection-radio-group label {
   display: flex;
   align-items: flex-start;
   gap: 10px;
@@ -228,12 +230,12 @@
   color: var(--text-secondary);
 }
 
-.geography-section .radio-group label:hover {
+.geographysection-radio-group label:hover {
   background: var(--gray-50);
   color: var(--primary);
 }
 
-.geography-section .radio-group input[type="radio"] {
+.geographysection-radio-group input[type="radio"] {
   width: 18px;
   height: 18px;
   margin: 0;
@@ -243,13 +245,13 @@
   accent-color: var(--primary);
 }
 
-.radio-label {
+.geographysection-radio-label {
   flex: 1;
   line-height: 1.4;
 }
 
 /* Clear Link */
-.clear-link {
+.geographysection-clear-link {
   background: none;
   border: none;
   color: var(--primary);
@@ -263,13 +265,13 @@
   border-radius: var(--radius-sm);
 }
 
-.clear-link:hover {
+.geographysection-clear-link:hover {
   color: var(--primary-dark);
   background: var(--gray-50);
 }
 
 /* Validation Hint */
-.validation-hint {
+.geographysection-validation-hint {
   margin-top: 10px;
   font-size: 12px;
   color: var(--error);
@@ -280,7 +282,7 @@
 }
 
 /* Error Message */
-.error-message {
+.geographysection-error-message {
   font-size: 12px;
   color: var(--error);
   margin-top: 6px;
@@ -289,14 +291,14 @@
 }
 
 /* Clear All Container */
-.clear-all-container {
+.geographysection-clear-all-container {
   margin-top: 28px;
   padding-top: 24px;
   border-top: 1px solid var(--border-light);
   text-align: right;
 }
 
-.clear-all-link {
+.geographysection-clear-all-link {
   background: none;
   border: none;
   color: var(--error);
@@ -308,225 +310,225 @@
   border-radius: var(--radius-sm);
 }
 
-.clear-all-link:hover {
+.geographysection-clear-all-link:hover {
   color: #dc2626;
   background: #fef2f2;
 }
 
 /* Responsive Design */
 @media (max-width: 1023px) {
-  .geography-section {
+  .geographysection {
     margin: 20px 24px;
   }
   
-  .geography-header {
+  .geographysection-header {
     padding: 20px 24px;
   }
   
-  .geography-section h2 {
+  .geographysection h2 {
     font-size: 20px;
   }
   
-  .section-status-wrapper {
+  .geographysection-status-wrapper {
     padding: 0 24px;
   }
   
-  .geography-section .form-content {
+  .geographysection-form-content {
     padding: 24px;
   }
 }
 
 @media (max-width: 767px) {
-  .geography-section {
+  .geographysection {
     margin: 16px;
   }
   
-  .geography-header {
+  .geographysection-header {
     padding: 18px 20px;
   }
   
-  .geography-section h2 {
+  .geographysection h2 {
     font-size: 18px;
   }
   
-  .section-description {
+  .geographysection-description {
     font-size: 13px;
   }
   
-  .section-status-wrapper {
+  .geographysection-status-wrapper {
     padding: 0 20px;
     margin: 12px 0 6px;
   }
   
-  .geography-section .section-status {
+  .geographysection-status {
     font-size: 12px;
     padding: 5px 12px;
   }
   
-  .geography-section .form-content {
+  .geographysection-form-content {
     padding: 20px;
   }
   
-  .geography-section .form-group {
+  .geographysection-form-group {
     margin-bottom: 24px;
   }
   
-  .geography-section .form-group label {
+  .geographysection-form-group label {
     font-size: 13px;
     margin-bottom: 8px;
   }
   
-  .geography-section .form-group input {
+  .geographysection-form-group input {
     padding: 10px 32px 10px 14px;
     font-size: 13px;
   }
   
-  .geography-section .form-group input[type="number"] {
+  .geographysection-form-group input[type="number"] {
     width: 140px;
   }
   
-  .radio-group {
+  .geographysection-radio-group {
     gap: 10px;
   }
   
-  .radio-group label {
+  .geographysection-radio-group label {
     padding: 6px 10px;
     font-size: 13px;
   }
   
-  .validation-hint {
+  .geographysection-validation-hint {
     font-size: 11px;
     padding: 5px 10px;
   }
   
-  .clear-all-container {
+  .geographysection-clear-all-container {
     margin-top: 24px;
     padding-top: 20px;
   }
 }
 
 @media (max-width: 480px) {
-  .geography-section {
+  .geographysection {
     margin: 12px;
   }
   
-  .geography-header {
+  .geographysection-header {
     padding: 14px 16px;
   }
   
-  .geography-section h2 {
+  .geographysection h2 {
     font-size: 16px;
   }
   
-  .section-description {
+  .geographysection-description {
     font-size: 12px;
   }
   
-  .section-status-wrapper {
+  .geographysection-status-wrapper {
     padding: 0 16px;
   }
   
-  .geography-section .section-status {
+  .geographysection-status {
     font-size: 11px;
     padding: 4px 10px;
   }
   
-  .geography-section .form-content {
+  .geographysection-form-content {
     padding: 16px;
   }
   
-  .geography-section .form-group {
+  .geographysection-form-group {
     margin-bottom: 20px;
   }
   
-  .geography-section .form-group label {
+  .geographysection-form-group label {
     font-size: 12px;
     margin-bottom: 6px;
   }
   
-  .geography-section .form-group input {
+  .geographysection-form-group input {
     padding: 9px 32px 9px 12px;
     font-size: 12px;
   }
   
-  .geography-section .form-group input[type="number"] {
+  .geographysection-form-group input[type="number"] {
     width: 120px;
   }
   
-  .radio-group {
+  .geographysection-radio-group {
     gap: 8px;
   }
   
-  .radio-group label {
+  .geographysection-radio-group label {
     padding: 5px 8px;
     font-size: 12px;
   }
   
-  .radio-group input[type="radio"] {
+  .geographysection-radio-group input[type="radio"] {
     width: 16px;
     height: 16px;
   }
   
-  .validation-hint {
+  .geographysection-validation-hint {
     font-size: 10px;
     padding: 4px 8px;
   }
   
-  .clear-link,
-  .clear-all-link {
+  .geographysection-clear-link,
+  .geographysection-clear-all-link {
     font-size: 11px;
   }
   
-  .clear-all-container {
+  .geographysection-clear-all-container {
     margin-top: 20px;
     padding-top: 16px;
   }
 }
 
 @media (max-width: 320px) {
-  .geography-section {
+  .geographysection {
     margin: 8px;
   }
   
-  .geography-header {
+  .geographysection-header {
     padding: 12px 14px;
   }
   
-  .geography-section h2 {
+  .geographysection h2 {
     font-size: 15px;
   }
   
-  .section-description {
+  .geographysection-description {
     font-size: 11px;
   }
   
-  .geography-section .form-content {
+  .geographysection-form-content {
     padding: 14px;
   }
   
-  .geography-section .form-group {
+  .geographysection-form-group {
     margin-bottom: 16px;
   }
   
-  .geography-section .form-group label {
+  .geographysection-form-group label {
     font-size: 11px;
   }
   
-  .geography-section .form-group input {
+  .geographysection-form-group input {
     padding: 8px 32px 8px 10px;
     font-size: 11px;
   }
   
-  .geography-section .form-group input[type="number"] {
+  .geographysection-form-group input[type="number"] {
     width: 100px;
   }
   
-  .radio-group label {
+  .geographysection-radio-group label {
     padding: 4px 6px;
     font-size: 11px;
   }
   
-  .validation-hint {
+  .geographysection-validation-hint {
     font-size: 9px;
     padding: 3px 6px;
   }
@@ -534,22 +536,35 @@
 
 /* Print Styles */
 @media print {
-  .geography-section {
+  .geographysection {
     margin: 0;
     background: white;
     border: 1px solid var(--border-light);
     box-shadow: none;
   }
   
-  .section-status-wrapper,
-  .clear-all-container,
-  .clear-link,
-  .clear-field-btn,
-  .validation-hint {
+  .geographysection-status-wrapper,
+  .geographysection-clear-all-container,
+  .geographysection-clear-link,
+  .geographysection-clear-field-btn,
+  .geographysection-validation-hint {
     display: none;
   }
   
-  .geography-section .radio-group input[type="radio"] {
+  .geographysection-radio-group input[type="radio"] {
     accent-color: black;
+  }
+}
+
+/* ============================================================
+   ACCESSIBILITY - REDUCED MOTION
+============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

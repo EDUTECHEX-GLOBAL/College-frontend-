@@ -96,7 +96,7 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
         };
 
         fetchExistingData();
-    }, [studentId, mapToResumeFields, onInputChange]); // ✅ stable, always same size
+    }, [studentId, mapToResumeFields, onInputChange]);
 
     // ─────────────────────────────────────────────────────────────
     // FILE CHANGE
@@ -379,9 +379,9 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
     // ─────────────────────────────────────────────────────────────
     if (isLoading) {
         return (
-            <div className="language-container">
-                <div className="loading-state">
-                    <div className="loading-spinner"></div>
+            <div className="applicationlanguage-container">
+                <div className="applicationlanguage-loading-state">
+                    <div className="applicationlanguage-loading-spinner"></div>
                     <p>Loading your EQHE information...</p>
                 </div>
             </div>
@@ -392,80 +392,70 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
     // RENDER
     // ─────────────────────────────────────────────────────────────
     return (
-        <div className="language-container">
+        <div className="applicationlanguage-container">
 
             {/* Success Toast */}
             {saveSuccess && (
-                <div className="success-toast">
-                    <span className="success-icon">✓</span>
+                <div className="applicationlanguage-success-toast">
+                    <span className="applicationlanguage-success-icon">✓</span>
                     <span>EQHE information saved successfully!</span>
                 </div>
             )}
 
             {/* Error Toast */}
             {saveError && (
-                <div className="error-toast">
-                    <span className="error-icon">⚠️</span>
+                <div className="applicationlanguage-error-toast">
+                    <span className="applicationlanguage-error-icon">⚠</span>
                     <span>{saveError}</span>
-                    <button className="toast-close" onClick={() => setSaveError('')}>×</button>
+                    <button className="applicationlanguage-toast-close" onClick={() => setSaveError('')}>×</button>
                 </div>
             )}
 
             {/* Upload Progress */}
             {showUploadProgress && (
-                <div className="upload-progress">
-                    <div className="progress-bar-container">
-                        <div className="progress-bar" style={{ width: `${uploadProgress}%` }}></div>
+                <div className="applicationlanguage-upload-progress">
+                    <div className="applicationlanguage-progress-bar-container">
+                        <div className="applicationlanguage-progress-bar" style={{ width: `${uploadProgress}%` }}></div>
                     </div>
                     <p>Uploading: {uploadProgress}%</p>
                 </div>
             )}
 
-            <div className="language-content">
+            <div className="applicationlanguage-content">
 
-                {/* ── Header ── */}
-                <div className="section-header">
-                    <div className="header-left">
-                        <div className="section-number">3</div>
+                {/* Header */}
+                <div className="applicationlanguage-section-header">
+                    <div className="applicationlanguage-header-left">
+                        <div className="applicationlanguage-section-number">3</div>
                         <div>
-                            <h2 className="section-title">Entrance Qualification of Higher Education</h2>
-                            <p className="section-subtitle">Provide your educational qualification that allows you to study at a university</p>
+                            <h2 className="applicationlanguage-section-title">Entrance Qualification of Higher Education</h2>
+                            <p className="applicationlanguage-section-subtitle">Provide your educational qualification that allows you to study at a university</p>
                         </div>
                     </div>
-                    <div className="header-icon">🎓</div>
                 </div>
 
-                {/* ── Info Box ── */}
-                <div className="info-card">
-                    <div className="info-icon">ℹ️</div>
-                    <div className="info-content">
-                        <p>The entrance qualification of higher education (EQHE) is an educational qualification that allows you to study at a university. In some countries a university exam is required in addition to the secondary school certificate.</p>
-                        <p className="info-examples">Examples: High School Diploma and SAT/ACT (USA), secondary de-registration certificate and Gaokao (China), Titulo di Bachiller and Examen de Estado (Colombia), Bachiller and Prueba di Acceso (Mexico), Attestat and Unified State Exam (Russia), High School Certificate and College Scholastic Aptitude Test (South Korea), etc.</p>
-                    </div>
-                </div>
-
-                {/* ── Main Form Card ── */}
-                <div className="form-card">
+                
+                {/* Main Form Card */}
+                <div className="applicationlanguage-form-card">
 
                     {/* Primary EQHE Section */}
-                    <div className="form-section">
-                        <h3 className="section-heading">
-                            <span className="heading-icon">📋</span>
+                    <div className="applicationlanguage-form-section">
+                        <h3 className="applicationlanguage-section-heading">
                             Primary EQHE Information
                         </h3>
 
-                        <div className="form-grid">
+                        <div className="applicationlanguage-form-grid">
 
                             {/* Date of EQHE */}
-                            <div className="form-group">
-                                <label className="form-label" htmlFor="eqheDate">
+                            <div className="applicationlanguage-form-group">
+                                <label className="applicationlanguage-form-label" htmlFor="eqheDate">
                                     Date of EQHE
-                                    {validationErrors.eqheDate && <span className="error-star">*</span>}
+                                    {validationErrors.eqheDate && <span className="applicationlanguage-error-star">*</span>}
                                 </label>
                                 <input
                                     type="date"
                                     id="eqheDate"
-                                    className={`form-input ${validationErrors.eqheDate ? 'error' : ''}`}
+                                    className={`applicationlanguage-form-input ${validationErrors.eqheDate ? 'error' : ''}`}
                                     value={formData.eqheDate || ''}
                                     onChange={(e) => {
                                         onInputChange('eqheDate', e.target.value);
@@ -476,20 +466,20 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                                     }}
                                 />
                                 {validationErrors.eqheDate && (
-                                    <div className="field-error">{validationErrors.eqheDate}</div>
+                                    <div className="applicationlanguage-field-error">{validationErrors.eqheDate}</div>
                                 )}
-                                <p className="field-helper">
+                                <p className="applicationlanguage-field-helper">
                                     If you have not yet finished school, please select the expected completion date
                                 </p>
                             </div>
 
                             {/* City of EQHE */}
-                            <div className="form-group">
-                                <label className="form-label" htmlFor="eqheCity">City of EQHE</label>
+                            <div className="applicationlanguage-form-group">
+                                <label className="applicationlanguage-form-label" htmlFor="eqheCity">City of EQHE</label>
                                 <input
                                     type="text"
                                     id="eqheCity"
-                                    className="form-input"
+                                    className="applicationlanguage-form-input"
                                     value={formData.eqheCity || ''}
                                     onChange={(e) => onInputChange('eqheCity', e.target.value)}
                                     placeholder="Enter city"
@@ -497,14 +487,14 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                             </div>
 
                             {/* Country of EQHE */}
-                            <div className="form-group">
-                                <label className="form-label required" htmlFor="eqheCountry">
+                            <div className="applicationlanguage-form-group">
+                                <label className="applicationlanguage-form-label required" htmlFor="eqheCountry">
                                     Country of EQHE *
-                                    {validationErrors.eqheCountry && <span className="error-star">*</span>}
+                                    {validationErrors.eqheCountry && <span className="applicationlanguage-error-star">*</span>}
                                 </label>
                                 <select
                                     id="eqheCountry"
-                                    className={`form-select ${validationErrors.eqheCountry ? 'error' : ''}`}
+                                    className={`applicationlanguage-form-select ${validationErrors.eqheCountry ? 'error' : ''}`}
                                     value={formData.eqheCountry || ''}
                                     onChange={(e) => {
                                         onInputChange('eqheCountry', e.target.value);
@@ -521,21 +511,21 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                                     ))}
                                 </select>
                                 {validationErrors.eqheCountry && (
-                                    <div className="field-error">{validationErrors.eqheCountry}</div>
+                                    <div className="applicationlanguage-field-error">{validationErrors.eqheCountry}</div>
                                 )}
                             </div>
 
                         </div>
 
                         {/* Original Title of EQHE */}
-                        <div className="form-group full-width">
-                            <label className="form-label required" htmlFor="eqheOriginalTitle">
+                        <div className="applicationlanguage-form-group full-width">
+                            <label className="applicationlanguage-form-label required" htmlFor="eqheOriginalTitle">
                                 Original title of EQHE *
-                                {validationErrors.eqheOriginalTitle && <span className="error-star">*</span>}
+                                {validationErrors.eqheOriginalTitle && <span className="applicationlanguage-error-star">*</span>}
                             </label>
                             <select
                                 id="eqheOriginalTitle"
-                                className={`form-select ${validationErrors.eqheOriginalTitle ? 'error' : ''}`}
+                                className={`applicationlanguage-form-select ${validationErrors.eqheOriginalTitle ? 'error' : ''}`}
                                 value={formData.eqheOriginalTitle || ''}
                                 onChange={(e) => {
                                     onInputChange('eqheOriginalTitle', e.target.value);
@@ -552,49 +542,48 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                                 ))}
                             </select>
                             {validationErrors.eqheOriginalTitle && (
-                                <div className="field-error">{validationErrors.eqheOriginalTitle}</div>
+                                <div className="applicationlanguage-field-error">{validationErrors.eqheOriginalTitle}</div>
                             )}
-                            <p className="field-helper">
+                            <p className="applicationlanguage-field-helper">
                                 Please do not translate the title, but use Latin script. Select the option that matches your qualification.
                             </p>
                         </div>
                     </div>
 
-                    {/* ── Another EQHE Checkbox ── */}
-                    <div className="checkbox-section">
-                        <label className="checkbox-wrapper">
+                    {/* Another EQHE Checkbox */}
+                    <div className="applicationlanguage-checkbox-section">
+                        <label className="applicationlanguage-checkbox-wrapper">
                             <input
                                 type="checkbox"
-                                className="checkbox-input"
+                                className="applicationlanguage-checkbox-input"
                                 checked={showAnotherEQHE}
                                 onChange={handleAnotherEQHEChange}
                             />
-                            <span className="checkbox-custom"></span>
-                            <span className="checkbox-label">
+                            <span className="applicationlanguage-checkbox-custom"></span>
+                            <span className="applicationlanguage-checkbox-label">
                                 I have another EQHE that I obtained at an earlier date
                             </span>
                         </label>
                     </div>
 
-                    {/* ── Another EQHE Section ── */}
+                    {/* Another EQHE Section */}
                     {showAnotherEQHE && (
-                        <div className="form-section another-section">
-                            <h3 className="section-heading">
-                                <span className="heading-icon">📋</span>
+                        <div className="applicationlanguage-form-section another-section">
+                            <h3 className="applicationlanguage-section-heading">
                                 Additional EQHE Details
                             </h3>
 
-                            <div className="form-grid">
+                            <div className="applicationlanguage-form-grid">
 
-                                <div className="form-group">
-                                    <label className="form-label" htmlFor="anotherEqheDate">
+                                <div className="applicationlanguage-form-group">
+                                    <label className="applicationlanguage-form-label" htmlFor="anotherEqheDate">
                                         Date of EQHE
-                                        {validationErrors.anotherEqheDate && <span className="error-star">*</span>}
+                                        {validationErrors.anotherEqheDate && <span className="applicationlanguage-error-star">*</span>}
                                     </label>
                                     <input
                                         type="date"
                                         id="anotherEqheDate"
-                                        className={`form-input ${validationErrors.anotherEqheDate ? 'error' : ''}`}
+                                        className={`applicationlanguage-form-input ${validationErrors.anotherEqheDate ? 'error' : ''}`}
                                         value={formData.anotherEqheDate || ''}
                                         onChange={(e) => {
                                             onInputChange('anotherEqheDate', e.target.value);
@@ -604,30 +593,30 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                                         }}
                                     />
                                     {validationErrors.anotherEqheDate && (
-                                        <div className="field-error">{validationErrors.anotherEqheDate}</div>
+                                        <div className="applicationlanguage-field-error">{validationErrors.anotherEqheDate}</div>
                                     )}
                                 </div>
 
-                                <div className="form-group">
-                                    <label className="form-label" htmlFor="anotherEqheCity">City of EQHE</label>
+                                <div className="applicationlanguage-form-group">
+                                    <label className="applicationlanguage-form-label" htmlFor="anotherEqheCity">City of EQHE</label>
                                     <input
                                         type="text"
                                         id="anotherEqheCity"
-                                        className="form-input"
+                                        className="applicationlanguage-form-input"
                                         value={formData.anotherEqheCity || ''}
                                         onChange={(e) => onInputChange('anotherEqheCity', e.target.value)}
                                         placeholder="Enter city"
                                     />
                                 </div>
 
-                                <div className="form-group">
-                                    <label className="form-label required" htmlFor="anotherEqheCountry">
+                                <div className="applicationlanguage-form-group">
+                                    <label className="applicationlanguage-form-label required" htmlFor="anotherEqheCountry">
                                         Country of EQHE *
-                                        {validationErrors.anotherEqheCountry && <span className="error-star">*</span>}
+                                        {validationErrors.anotherEqheCountry && <span className="applicationlanguage-error-star">*</span>}
                                     </label>
                                     <select
                                         id="anotherEqheCountry"
-                                        className={`form-select ${validationErrors.anotherEqheCountry ? 'error' : ''}`}
+                                        className={`applicationlanguage-form-select ${validationErrors.anotherEqheCountry ? 'error' : ''}`}
                                         value={formData.anotherEqheCountry || ''}
                                         onChange={(e) => {
                                             onInputChange('anotherEqheCountry', e.target.value);
@@ -642,18 +631,18 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                                         ))}
                                     </select>
                                     {validationErrors.anotherEqheCountry && (
-                                        <div className="field-error">{validationErrors.anotherEqheCountry}</div>
+                                        <div className="applicationlanguage-field-error">{validationErrors.anotherEqheCountry}</div>
                                     )}
                                 </div>
 
-                                <div className="form-group full-width">
-                                    <label className="form-label required" htmlFor="anotherEqheOriginalTitle">
+                                <div className="applicationlanguage-form-group full-width">
+                                    <label className="applicationlanguage-form-label required" htmlFor="anotherEqheOriginalTitle">
                                         Original title of EQHE *
-                                        {validationErrors.anotherEqheOriginalTitle && <span className="error-star">*</span>}
+                                        {validationErrors.anotherEqheOriginalTitle && <span className="applicationlanguage-error-star">*</span>}
                                     </label>
                                     <select
                                         id="anotherEqheOriginalTitle"
-                                        className={`form-select ${validationErrors.anotherEqheOriginalTitle ? 'error' : ''}`}
+                                        className={`applicationlanguage-form-select ${validationErrors.anotherEqheOriginalTitle ? 'error' : ''}`}
                                         value={formData.anotherEqheOriginalTitle || ''}
                                         onChange={(e) => {
                                             onInputChange('anotherEqheOriginalTitle', e.target.value);
@@ -668,7 +657,7 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                                         ))}
                                     </select>
                                     {validationErrors.anotherEqheOriginalTitle && (
-                                        <div className="field-error">{validationErrors.anotherEqheOriginalTitle}</div>
+                                        <div className="applicationlanguage-field-error">{validationErrors.anotherEqheOriginalTitle}</div>
                                     )}
                                 </div>
 
@@ -676,26 +665,23 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                         </div>
                     )}
 
-                    {/* ── Certificate Upload ── */}
+                    {/* Certificate Upload */}
                     {showAnotherEQHE && (
-                        <div className="form-section upload-section">
-                            <h3 className="section-heading">
-                                <span className="heading-icon">📎</span>
+                        <div className="applicationlanguage-form-section upload-section">
+                            <h3 className="applicationlanguage-section-heading">
                                 EQHE Certificate
                             </h3>
 
-                            <div className="upload-area">
+                            <div className="applicationlanguage-upload-area">
                                 {!formData.eqheCertificate ? (
-                                    <div className="upload-prompt">
-                                        <div className="upload-icon">📄</div>
+                                    <div className="applicationlanguage-upload-prompt">
                                         <h4>Upload EQHE Certificate</h4>
                                         <p>PDF format (Max: 2MB)</p>
                                         <button
-                                            className="upload-btn"
+                                            className="applicationlanguage-upload-btn"
                                             onClick={() => document.getElementById('eqheCertificateUpload').click()}
                                             disabled={isSaving}
                                         >
-                                            <span className="btn-icon">📎</span>
                                             Choose File
                                         </button>
                                         <input
@@ -707,30 +693,27 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                                         />
                                     </div>
                                 ) : (
-                                    <div className="file-preview">
-                                        <div className="file-info">
-                                            <div className="file-icon">📄</div>
-                                            <div className="file-details">
-                                                <span className="file-name">{formData.eqheCertificate.name}</span>
-                                                <span className="file-size">
+                                    <div className="applicationlanguage-file-preview">
+                                        <div className="applicationlanguage-file-info">
+                                            <div className="applicationlanguage-file-details">
+                                                <span className="applicationlanguage-file-name">{formData.eqheCertificate.name}</span>
+                                                <span className="applicationlanguage-file-size">
                                                     {(formData.eqheCertificate.size / 1024 / 1024).toFixed(2)} MB
                                                 </span>
                                             </div>
                                         </div>
-                                        <div className="file-actions">
+                                        <div className="applicationlanguage-file-actions">
                                             <button
-                                                className="file-action-btn view"
+                                                className="applicationlanguage-file-action-btn view"
                                                 onClick={() => window.open(URL.createObjectURL(formData.eqheCertificate))}
                                             >
-                                                <span className="btn-icon">👁️</span>
                                                 View
                                             </button>
                                             <button
-                                                className="file-action-btn remove"
+                                                className="applicationlanguage-file-action-btn remove"
                                                 onClick={() => onFileUpload('eqheCertificate', null)}
                                                 disabled={isSaving}
                                             >
-                                                <span className="btn-icon">🗑️</span>
                                                 Remove
                                             </button>
                                         </div>
@@ -740,21 +723,18 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                         </div>
                     )}
 
-                    {/* ── Requirements Box ── */}
+                    {/* Requirements Box */}
                     {!showAnotherEQHE && (
-                        <div className="requirements-box">
+                        <div className="applicationlanguage-requirements-box">
                             <h4>Document Requirements</h4>
-                            <ul className="requirements-list">
+                            <ul className="applicationlanguage-requirements-list">
                                 <li>
-                                    <span className="requirement-icon">📄</span>
                                     <span>Official EQHE certificate/transcript</span>
                                 </li>
                                 <li>
-                                    <span className="requirement-icon">🌐</span>
                                     <span>If not in English/German, provide certified translation</span>
                                 </li>
                                 <li>
-                                    <span className="requirement-icon">📎</span>
                                     <span>PDF format, max 2MB</span>
                                 </li>
                             </ul>
@@ -762,38 +742,51 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                     )}
 
                 </div>
-                {/* end form-card */}
 
-                {/* ── Progress Steps ── */}
-                <div className="progress-steps">
-                    <div className="progress-step completed"><span className="step-number">1</span><span className="step-label">Personal</span></div>
-                    <div className="progress-step completed"><span className="step-number">2</span><span className="step-label">Education</span></div>
-                    <div className="progress-step active">   <span className="step-number">3</span><span className="step-label">EQHE</span></div>
-                    <div className="progress-step">          <span className="step-number">4</span><span className="step-label">Special Needs</span></div>
-                    <div className="progress-step">          <span className="step-number">5</span><span className="step-label">Review</span></div>
+                {/* Progress Steps */}
+                <div className="applicationlanguage-progress-steps">
+                    <div className="applicationlanguage-progress-step completed">
+                        <span className="applicationlanguage-step-number">1</span>
+                        <span className="applicationlanguage-step-label">Personal</span>
+                    </div>
+                    <div className="applicationlanguage-progress-step completed">
+                        <span className="applicationlanguage-step-number">2</span>
+                        <span className="applicationlanguage-step-label">Education</span>
+                    </div>
+                    <div className="applicationlanguage-progress-step active">
+                        <span className="applicationlanguage-step-number">3</span>
+                        <span className="applicationlanguage-step-label">EQHE</span>
+                    </div>
+                    <div className="applicationlanguage-progress-step">
+                        <span className="applicationlanguage-step-number">4</span>
+                        <span className="applicationlanguage-step-label">Special Needs</span>
+                    </div>
+                    <div className="applicationlanguage-progress-step">
+                        <span className="applicationlanguage-step-number">5</span>
+                        <span className="applicationlanguage-step-label">Review</span>
+                    </div>
                 </div>
 
-                {/* ── Action Buttons ── */}
-                <div className="form-actions">
-                    <button className="btn btn-secondary" onClick={handleSave} disabled={isSaving}>
+                {/* Action Buttons */}
+                <div className="applicationlanguage-form-actions">
+                    <button className="applicationlanguage-btn-secondary" onClick={handleSave} disabled={isSaving}>
                         {isSaving ? (
-                            <><span className="spinner-small"></span>Saving...</>
+                            <>Saving...</>
                         ) : (
-                            <><span className="btn-icon">💾</span>Save</>
+                            <>Save</>
                         )}
                     </button>
 
-                    <button className="btn btn-primary" onClick={handleSaveAndContinue} disabled={isSaving}>
+                    <button className="applicationlanguage-btn-primary" onClick={handleSaveAndContinue} disabled={isSaving}>
                         {isSaving ? (
-                            <><span className="spinner-small"></span>Saving...</>
+                            <>Saving...</>
                         ) : (
-                            <>Save & Continue<span className="btn-icon">→</span></>
+                            <>Save & Continue</>
                         )}
                     </button>
                 </div>
 
             </div>
-            {/* end language-content */}
 
         </div>
     );

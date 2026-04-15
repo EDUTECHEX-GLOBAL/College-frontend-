@@ -63,9 +63,7 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
 
   const getAuthToken = () => localStorage.getItem('token');
 
-  // ─────────────────────────────────────────────
   // COMPLETION CALCULATION
-  // ─────────────────────────────────────────────
   const calculateCompletion = (data) => {
     const textFields = [
       'firstName', 'lastName', 'email', 'dateOfBirth',
@@ -93,9 +91,7 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
     setCompletionPercentage(calculateCompletion(formData));
   }, [formData, isEUCitizen, needVisa]);
 
-  // ─────────────────────────────────────────────
   // LOAD DATA
-  // ─────────────────────────────────────────────
   useEffect(() => {
     const loadPersonalData = async () => {
       try {
@@ -122,7 +118,6 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
           if (d.passportFileUrl)            setPassportPreview(d.passportFileUrl);
           if (d.photographFileUrl)          setPhotoPreview(d.photographFileUrl);
 
-          // Resume field mapping
           const resumeFields = [
             'title','firstName','lastName','email','mobile','dateOfBirth',
             'placeOfBirth','countryOfBirth','citizenship','passportNumber',
@@ -143,9 +138,7 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
     loadPersonalData();
   }, []);
 
-  // ─────────────────────────────────────────────
   // FILE UPLOAD
-  // ─────────────────────────────────────────────
   const handleFileChange = async (e, field) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -207,9 +200,7 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
   const hasFile    = (field) => formData[`${field}FileName`] || formData[`${field}OriginalName`];
   const getFileName = (field) => formData[`${field}OriginalName`] || formData[`${field}FileName`] || 'Uploaded file';
 
-  // ─────────────────────────────────────────────
   // REMOVE FILE
-  // ─────────────────────────────────────────────
   const handleRemoveFile = async (field) => {
     try {
       const token = getAuthToken();
@@ -247,9 +238,7 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
     }
   };
 
-  // ─────────────────────────────────────────────
   // VALIDATE
-  // ─────────────────────────────────────────────
   const validateForm = () => {
     const requiredFields = [
       'firstName','lastName','email','dateOfBirth','placeOfBirth',
@@ -271,9 +260,7 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
     return { isValid: missingFields.length === 0 && missingFiles.length === 0, missingFields, missingFiles };
   };
 
-  // ─────────────────────────────────────────────
   // SUBMIT
-  // ─────────────────────────────────────────────
   const handleContinue = async () => {
     if (isSubmitting) return;
     setIsSubmitting(true);
@@ -324,7 +311,6 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
       });
 
       if (response.data.success) {
-        // Resume field mapping
         const resumeMap = { title, firstName: formData.firstName, lastName: formData.lastName,
           email: formData.email, mobile: formData.mobile, dateOfBirth: formData.dateOfBirth,
           placeOfBirth: formData.placeOfBirth, countryOfBirth: formData.countryOfBirth,
@@ -356,75 +342,71 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
     navigate(backPath);
   };
 
-  // ─────────────────────────────────────────────
   // LOADING
-  // ─────────────────────────────────────────────
   if (isLoading) {
     return (
-      <div className="application-personal">
-        <div className="loading-state">
-          <div className="loading-spinner"></div>
+      <div className="applicationpersonal">
+        <div className="applicationpersonal-loading-state">
+          <div className="applicationpersonal-loading-spinner"></div>
           <p>Loading your personal information...</p>
         </div>
       </div>
     );
   }
 
-  // ─────────────────────────────────────────────
   // RENDER
-  // ─────────────────────────────────────────────
   return (
-    <div className="application-personal">
+    <div className="applicationpersonal">
 
-      {/* ── Header ── */}
-      <header className="personal-header">
-        <div className="header-left">
+      {/* Header */}
+      <header className="applicationpersonal-header">
+        <div className="applicationpersonal-header-left">
           <h1>BA Communication Design</h1>
-          <div className="application-id">APPLICATION ID - UEG0000104849</div>
+          <div className="applicationpersonal-application-id">APPLICATION ID - UEG0000104849</div>
         </div>
         <div className="applicationpersonal-progress-indicator">
-          <div className="progress-circle">
-            <svg viewBox="0 0 36 36" className="circular-chart">
-              <path className="circle-bg"
+          <div className="applicationpersonal-progress-circle">
+            <svg viewBox="0 0 36 36" className="applicationpersonal-circular-chart">
+              <path className="applicationpersonal-circle-bg"
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-              <path className="circle"
+              <path className="applicationpersonal-circle"
                 strokeDasharray={`${completionPercentage}, 100`}
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-              <text x="18" y="20.35" className="percentage">{completionPercentage}%</text>
+              <text x="18" y="20.35" className="applicationpersonal-percentage">{completionPercentage}%</text>
             </svg>
           </div>
           <span className="applicationpersonal-progress-badge">{completionPercentage}% Completed</span>
         </div>
       </header>
 
-      {/* ── Step Navigation ── */}
-      <nav className="application-steps">
+      {/* Step Navigation */}
+      <nav className="applicationpersonal-steps">
         {[
           'Study programme','Applicant Details','Address',
           'Entrance qualification','Higher Education',
           'Documents','Special Needs','Declaration','Review'
         ].map((step, i) => (
-          <div key={step} className={`step${i < 1 ? ' completed' : i === 1 ? ' active' : ''}`}>
-            <span className="step-number">{i < 1 ? '✓' : i + 1}</span>
-            <span className="step-name">{step}</span>
+          <div key={step} className={`applicationpersonal-step${i < 1 ? ' completed' : i === 1 ? ' active' : ''}`}>
+            <span className="applicationpersonal-step-number">{i < 1 ? '✓' : i + 1}</span>
+            <span className="applicationpersonal-step-name">{step}</span>
           </div>
         ))}
       </nav>
 
-      {/* ── Error Banner ── */}
+      {/* Error Banner */}
       {error && (
-        <div className="error-banner" role="alert">
-          <i className="fas fa-exclamation-triangle"></i>
+        <div className="applicationpersonal-error-banner" role="alert">
+          <span className="applicationpersonal-error-icon">⚠</span>
           <span>{error}</span>
-          <button onClick={() => setError('')} className="error-close-btn" aria-label="Dismiss error">×</button>
+          <button onClick={() => setError('')} className="applicationpersonal-error-close-btn" aria-label="Dismiss error">×</button>
         </div>
       )}
 
-      {/* ── Form Container ── */}
-      <main className="personal-form-container">
-        <div className="form-header">
+      {/* Form Container */}
+      <main className="applicationpersonal-form-container">
+        <div className="applicationpersonal-form-header">
           <h2>Applicant Details</h2>
-          <p className="form-subtitle">
+          <p className="applicationpersonal-form-subtitle">
             Please fill in all information exactly as it appears on your passport or official documents.
             Do not use abbreviations or shortenings.
           </p>
@@ -432,38 +414,38 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
 
         <form onSubmit={(e) => { e.preventDefault(); handleContinue(); }} noValidate>
 
-          {/* ── Citizenship Status Section ── */}
+          {/* Citizenship Status Section */}
           <section className="applicationpersonal-form-section">
-            <h3 className="section-heading">
-              <span className="section-icon">🌍</span> Citizenship Status
+            <h3 className="applicationpersonal-section-heading">
+              Citizenship Status
             </h3>
 
             <div className="applicationpersonal-form-group full-width">
-              <label className="form-label required">Are you an EU Citizen?</label>
-              <div className="radio-group">
-                <label className="radio-label">
+              <label className="applicationpersonal-form-label required">Are you an EU Citizen?</label>
+              <div className="applicationpersonal-radio-group">
+                <label className="applicationpersonal-radio-label">
                   <input type="radio" name="euCitizen"
                     checked={isEUCitizen === true}
                     onChange={() => { setIsEUCitizen(true); onInputChange('isEUCitizen', true); }}
                     disabled={isSubmitting} />
-                  <span className="radio-text">Yes</span>
+                  <span className="applicationpersonal-radio-text">Yes</span>
                 </label>
-                <label className="radio-label">
+                <label className="applicationpersonal-radio-label">
                   <input type="radio" name="euCitizen"
                     checked={isEUCitizen === false}
                     onChange={() => { setIsEUCitizen(false); onInputChange('isEUCitizen', false); }}
                     disabled={isSubmitting} />
-                  <span className="radio-text">No</span>
+                  <span className="applicationpersonal-radio-text">No</span>
                 </label>
               </div>
             </div>
 
             {isEUCitizen === true && (
               <div className="applicationpersonal-form-group full-width">
-                <label className="form-label required" htmlFor="documentType">
+                <label className="applicationpersonal-form-label required" htmlFor="documentType">
                   Please choose a document to upload
                 </label>
-                <select id="documentType" className="form-select"
+                <select id="documentType" className="applicationpersonal-form-select"
                   value={selectedDocumentType}
                   onChange={(e) => { setSelectedDocumentType(e.target.value); onInputChange('documentType', e.target.value); }}
                   disabled={isSubmitting}>
@@ -476,16 +458,16 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
             )}
           </section>
 
-          {/* ── Personal Information Section ── */}
+          {/* Personal Information Section */}
           <section className="applicationpersonal-form-section">
-            <h3 className="section-heading">
-              <span className="section-icon">👤</span> Personal Information
+            <h3 className="applicationpersonal-section-heading">
+              Personal Information
             </h3>
             <div className="applicationpersonal-form-grid">
 
               <div className="applicationpersonal-form-group">
-                <label className="form-label" htmlFor="title">Title</label>
-                <select id="title" className="form-select" value={title}
+                <label className="applicationpersonal-form-label" htmlFor="title">Title</label>
+                <select id="title" className="applicationpersonal-form-select" value={title}
                   onChange={(e) => { setTitle(e.target.value); onInputChange('title', e.target.value); }}
                   disabled={isSubmitting}>
                   <option value="">Select</option>
@@ -498,10 +480,10 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
               </div>
 
               <div className="applicationpersonal-form-group">
-                <label className="form-label required" htmlFor="firstName">
-                  First name <span className="field-hint">(FNU if missing)</span>
+                <label className="applicationpersonal-form-label required" htmlFor="firstName">
+                  First name <span className="applicationpersonal-field-hint">(FNU if missing)</span>
                 </label>
-                <input type="text" id="firstName" className="form-input"
+                <input type="text" id="firstName" className="applicationpersonal-form-input"
                   value={formData.firstName || ''}
                   onChange={(e) => onInputChange('firstName', e.target.value)}
                   placeholder="As appears on passport"
@@ -511,10 +493,10 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
               </div>
 
               <div className="applicationpersonal-form-group">
-                <label className="form-label required" htmlFor="lastName">
-                  Surname <span className="field-hint">(LNU if missing)</span>
+                <label className="applicationpersonal-form-label required" htmlFor="lastName">
+                  Surname <span className="applicationpersonal-field-hint">(LNU if missing)</span>
                 </label>
-                <input type="text" id="lastName" className="form-input"
+                <input type="text" id="lastName" className="applicationpersonal-form-input"
                   value={formData.lastName || ''}
                   onChange={(e) => onInputChange('lastName', e.target.value)}
                   placeholder="As appears on passport"
@@ -524,8 +506,8 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
               </div>
 
               <div className="applicationpersonal-form-group">
-                <label className="form-label required" htmlFor="email">Email address</label>
-                <input type="email" id="email" className="form-input"
+                <label className="applicationpersonal-form-label required" htmlFor="email">Email address</label>
+                <input type="email" id="email" className="applicationpersonal-form-input"
                   value={formData.email || ''}
                   onChange={(e) => onInputChange('email', e.target.value)}
                   placeholder="example@email.com"
@@ -535,8 +517,8 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
               </div>
 
               <div className="applicationpersonal-form-group">
-                <label className="form-label required" htmlFor="dateOfBirth">Date of birth</label>
-                <input type="date" id="dateOfBirth" className="form-input"
+                <label className="applicationpersonal-form-label required" htmlFor="dateOfBirth">Date of birth</label>
+                <input type="date" id="dateOfBirth" className="applicationpersonal-form-input"
                   value={formData.dateOfBirth || ''}
                   onChange={(e) => onInputChange('dateOfBirth', e.target.value)}
                   autoComplete="bday"
@@ -545,8 +527,8 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
               </div>
 
               <div className="applicationpersonal-form-group">
-                <label className="form-label required" htmlFor="placeOfBirth">Place of birth</label>
-                <input type="text" id="placeOfBirth" className="form-input"
+                <label className="applicationpersonal-form-label required" htmlFor="placeOfBirth">Place of birth</label>
+                <input type="text" id="placeOfBirth" className="applicationpersonal-form-input"
                   value={formData.placeOfBirth || ''}
                   onChange={(e) => onInputChange('placeOfBirth', e.target.value)}
                   placeholder="City / Town"
@@ -555,8 +537,8 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
               </div>
 
               <div className="applicationpersonal-form-group">
-                <label className="form-label required" htmlFor="countryOfBirth">Country of birth</label>
-                <select id="countryOfBirth" className="form-select"
+                <label className="applicationpersonal-form-label required" htmlFor="countryOfBirth">Country of birth</label>
+                <select id="countryOfBirth" className="applicationpersonal-form-select"
                   value={formData.countryOfBirth || ''}
                   onChange={(e) => onInputChange('countryOfBirth', e.target.value)}
                   required disabled={isSubmitting}>
@@ -566,8 +548,8 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
               </div>
 
               <div className="applicationpersonal-form-group">
-                <label className="form-label required" htmlFor="citizenship">Citizenship</label>
-                <select id="citizenship" className="form-select"
+                <label className="applicationpersonal-form-label required" htmlFor="citizenship">Citizenship</label>
+                <select id="citizenship" className="applicationpersonal-form-select"
                   value={formData.citizenship || ''}
                   onChange={(e) => onInputChange('citizenship', e.target.value)}
                   required disabled={isSubmitting}>
@@ -579,16 +561,16 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
             </div>
           </section>
 
-          {/* ── Passport Details Section ── */}
+          {/* Passport Details Section */}
           <section className="applicationpersonal-form-section">
-            <h3 className="section-heading">
-              <span className="section-icon">🛂</span> Passport Details
+            <h3 className="applicationpersonal-section-heading">
+              Passport Details
             </h3>
             <div className="applicationpersonal-form-grid">
 
               <div className="applicationpersonal-form-group">
-                <label className="form-label required" htmlFor="passportNumber">Passport Number</label>
-                <input type="text" id="passportNumber" className="form-input"
+                <label className="applicationpersonal-form-label required" htmlFor="passportNumber">Passport Number</label>
+                <input type="text" id="passportNumber" className="applicationpersonal-form-input"
                   value={formData.passportNumber || ''}
                   onChange={(e) => onInputChange('passportNumber', e.target.value.toUpperCase())}
                   placeholder="e.g. A1234567"
@@ -598,8 +580,8 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
               </div>
 
               <div className="applicationpersonal-form-group">
-                <label className="form-label required" htmlFor="passportIssueDate">Issue date</label>
-                <input type="date" id="passportIssueDate" className="form-input"
+                <label className="applicationpersonal-form-label required" htmlFor="passportIssueDate">Issue date</label>
+                <input type="date" id="passportIssueDate" className="applicationpersonal-form-input"
                   value={formData.passportIssueDate || ''}
                   onChange={(e) => onInputChange('passportIssueDate', e.target.value)}
                   required disabled={isSubmitting}
@@ -607,8 +589,8 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
               </div>
 
               <div className="applicationpersonal-form-group">
-                <label className="form-label required" htmlFor="passportExpiryDate">Expiry date</label>
-                <input type="date" id="passportExpiryDate" className="form-input"
+                <label className="applicationpersonal-form-label required" htmlFor="passportExpiryDate">Expiry date</label>
+                <input type="date" id="passportExpiryDate" className="applicationpersonal-form-input"
                   value={formData.passportExpiryDate || ''}
                   onChange={(e) => onInputChange('passportExpiryDate', e.target.value)}
                   required disabled={isSubmitting}
@@ -616,8 +598,8 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
               </div>
 
               <div className="applicationpersonal-form-group">
-                <label className="form-label required" htmlFor="issuingCountry">Issuing Country</label>
-                <select id="issuingCountry" className="form-select"
+                <label className="applicationpersonal-form-label required" htmlFor="issuingCountry">Issuing Country</label>
+                <select id="issuingCountry" className="applicationpersonal-form-select"
                   value={formData.issuingCountry || ''}
                   onChange={(e) => onInputChange('issuingCountry', e.target.value)}
                   required disabled={isSubmitting}>
@@ -631,39 +613,39 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
             {/* Visa requirement (non-EU only) */}
             {isEUCitizen === false && (
               <div className="applicationpersonal-form-group full-width visa-question">
-                <label className="form-label required">Do you need a visa for this course?</label>
-                <div className="radio-group">
-                  <label className="radio-label">
+                <label className="applicationpersonal-form-label required">Do you need a visa for this course?</label>
+                <div className="applicationpersonal-radio-group">
+                  <label className="applicationpersonal-radio-label">
                     <input type="radio" name="needVisa" value="yes"
                       checked={needVisa === 'yes'}
                       onChange={(e) => { setNeedVisa(e.target.value); onInputChange('needVisa', e.target.value); }}
                       disabled={isSubmitting} />
-                    <span className="radio-text">Yes</span>
+                    <span className="applicationpersonal-radio-text">Yes</span>
                   </label>
-                  <label className="radio-label">
+                  <label className="applicationpersonal-radio-label">
                     <input type="radio" name="needVisa" value="no"
                       checked={needVisa === 'no'}
                       onChange={(e) => { setNeedVisa(e.target.value); onInputChange('needVisa', e.target.value); }}
                       disabled={isSubmitting} />
-                    <span className="radio-text">No</span>
+                    <span className="applicationpersonal-radio-text">No</span>
                   </label>
                 </div>
               </div>
             )}
           </section>
 
-          {/* ── Contact Information Section ── */}
+          {/* Contact Information Section */}
           <section className="applicationpersonal-form-section">
-            <h3 className="section-heading">
-              <span className="section-icon">📞</span> Contact Information
+            <h3 className="applicationpersonal-section-heading">
+              Contact Information
             </h3>
             <div className="applicationpersonal-form-grid">
 
               <div className="applicationpersonal-form-group">
-                <label className="form-label" htmlFor="landline">Landline / Home phone</label>
-                <div className="phone-input">
-                  <span className="country-code">+1</span>
-                  <input type="tel" id="landline" className="form-input phone-number"
+                <label className="applicationpersonal-form-label" htmlFor="landline">Landline / Home phone</label>
+                <div className="applicationpersonal-phone-input">
+                  <span className="applicationpersonal-country-code">+1</span>
+                  <input type="tel" id="landline" className="applicationpersonal-form-input applicationpersonal-phone-number"
                     value={formData.landline || ''}
                     onChange={(e) => onInputChange('landline', e.target.value)}
                     placeholder="Home phone number"
@@ -674,10 +656,10 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
               </div>
 
               <div className="applicationpersonal-form-group">
-                <label className="form-label required" htmlFor="mobile">Mobile number</label>
-                <div className="phone-input">
-                  <span className="country-code">+91</span>
-                  <input type="tel" id="mobile" className="form-input phone-number"
+                <label className="applicationpersonal-form-label required" htmlFor="mobile">Mobile number</label>
+                <div className="applicationpersonal-phone-input">
+                  <span className="applicationpersonal-country-code">+91</span>
+                  <input type="tel" id="mobile" className="applicationpersonal-form-input applicationpersonal-phone-number"
                     value={formData.mobile || ''}
                     onChange={(e) => onInputChange('mobile', e.target.value)}
                     placeholder="Mobile number"
@@ -688,10 +670,10 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
               </div>
 
               <div className="applicationpersonal-form-group">
-                <label className="form-label required" htmlFor="correspondenceLanguage">
+                <label className="applicationpersonal-form-label required" htmlFor="correspondenceLanguage">
                   Correspondence language
                 </label>
-                <select id="correspondenceLanguage" className="form-select"
+                <select id="correspondenceLanguage" className="applicationpersonal-form-select"
                   value={formData.correspondenceLanguage || ''}
                   onChange={(e) => onInputChange('correspondenceLanguage', e.target.value)}
                   required disabled={isSubmitting}>
@@ -704,41 +686,39 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
             </div>
           </section>
 
-          {/* ── Document Upload Section ── */}
+          {/* Document Upload Section */}
           <section className="applicationpersonal-form-section">
-            <h3 className="section-heading">
-              <span className="section-icon">📎</span> Document Upload
+            <h3 className="applicationpersonal-section-heading">
+              Document Upload
             </h3>
             <div className="applicationpersonal-form-grid">
 
               {/* Passport */}
               <div className="applicationpersonal-form-group">
-                <label className="form-label required">Upload Passport</label>
-                <div className="upload-area">
-                  <i className="fas fa-cloud-upload-alt upload-prompt"></i>
-                  <p className="upload-instruction">Drop file to attach, or browse</p>
-                  <p className="upload-hint">JPG, JPEG, PNG or PDF · Max 5 MB</p>
+                <label className="applicationpersonal-form-label required">Upload Passport</label>
+                <div className="applicationpersonal-upload-area">
+                  <p className="applicationpersonal-upload-instruction">Drop file to attach, or browse</p>
+                  <p className="applicationpersonal-upload-hint">JPG, JPEG, PNG or PDF · Max 5 MB</p>
 
                   {passportPreview ? (
-                    <div className="image-preview">
+                    <div className="applicationpersonal-image-preview">
                       <img src={passportPreview} alt="Passport preview" />
-                      <button type="button" className="remove-image-btn"
+                      <button type="button" className="applicationpersonal-remove-image-btn"
                         aria-label="Remove passport"
                         onClick={() => handleRemoveFile('passport')}
                         disabled={isSubmitting}>×</button>
                     </div>
                   ) : hasFile('passport') ? (
-                    <div className="file-info">
-                      <i className="fas fa-file-pdf file-icon"></i>
-                      <div className="file-details">
-                        <span className="file-name">{getFileName('passport')}</span>
+                    <div className="applicationpersonal-file-info">
+                      <div className="applicationpersonal-file-details">
+                        <span className="applicationpersonal-file-name">{getFileName('passport')}</span>
                         {formData.passportFileSize > 0 && (
-                          <span className="file-size">
+                          <span className="applicationpersonal-file-size">
                             {(formData.passportFileSize / 1024 / 1024).toFixed(2)} MB
                           </span>
                         )}
                       </div>
-                      <button type="button" className="remove-file-btn"
+                      <button type="button" className="applicationpersonal-remove-file-btn"
                         aria-label="Remove passport file"
                         onClick={() => handleRemoveFile('passport')}
                         disabled={isSubmitting}>×</button>
@@ -747,12 +727,11 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
 
                   <input type="file" id="passportUpload" accept=".jpg,.jpeg,.png,.pdf"
                     onChange={(e) => handleFileChange(e, 'passport')}
-                    className="file-input-hidden"
+                    className="applicationpersonal-file-input-hidden"
                     disabled={isSubmitting} />
-                  <button type="button" className="upload-button"
+                  <button type="button" className="applicationpersonal-upload-button"
                     onClick={() => document.getElementById('passportUpload').click()}
                     disabled={isSubmitting}>
-                    <i className="fas fa-upload"></i>
                     {hasFile('passport') ? ' Change File' : ' Browse'}
                   </button>
                 </div>
@@ -760,32 +739,30 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
 
               {/* Photograph */}
               <div className="applicationpersonal-form-group">
-                <label className="form-label required">Photograph</label>
-                <div className="upload-area">
-                  <i className="fas fa-camera upload-prompt"></i>
-                  <p className="upload-instruction">Drop files to attach, or browse</p>
-                  <p className="upload-hint">JPG, JPEG or PNG · Max 5 MB · Passport-size</p>
+                <label className="applicationpersonal-form-label required">Photograph</label>
+                <div className="applicationpersonal-upload-area">
+                  <p className="applicationpersonal-upload-instruction">Drop files to attach, or browse</p>
+                  <p className="applicationpersonal-upload-hint">JPG, JPEG or PNG · Max 5 MB · Passport-size</p>
 
                   {photoPreview ? (
-                    <div className="image-preview">
+                    <div className="applicationpersonal-image-preview">
                       <img src={photoPreview} alt="Photo preview" />
-                      <button type="button" className="remove-image-btn"
+                      <button type="button" className="applicationpersonal-remove-image-btn"
                         aria-label="Remove photo"
                         onClick={() => handleRemoveFile('photograph')}
                         disabled={isSubmitting}>×</button>
                     </div>
                   ) : hasFile('photograph') ? (
-                    <div className="file-info">
-                      <i className="fas fa-image file-icon"></i>
-                      <div className="file-details">
-                        <span className="file-name">{getFileName('photograph')}</span>
+                    <div className="applicationpersonal-file-info">
+                      <div className="applicationpersonal-file-details">
+                        <span className="applicationpersonal-file-name">{getFileName('photograph')}</span>
                         {formData.photographFileSize > 0 && (
-                          <span className="file-size">
+                          <span className="applicationpersonal-file-size">
                             {(formData.photographFileSize / 1024 / 1024).toFixed(2)} MB
                           </span>
                         )}
                       </div>
-                      <button type="button" className="remove-file-btn"
+                      <button type="button" className="applicationpersonal-remove-file-btn"
                         aria-label="Remove photo file"
                         onClick={() => handleRemoveFile('photograph')}
                         disabled={isSubmitting}>×</button>
@@ -794,12 +771,11 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
 
                   <input type="file" id="photoUpload" accept=".jpg,.jpeg,.png"
                     onChange={(e) => handleFileChange(e, 'photograph')}
-                    className="file-input-hidden"
+                    className="applicationpersonal-file-input-hidden"
                     disabled={isSubmitting} />
-                  <button type="button" className="upload-button"
+                  <button type="button" className="applicationpersonal-upload-button"
                     onClick={() => document.getElementById('photoUpload').click()}
                     disabled={isSubmitting}>
-                    <i className="fas fa-upload"></i>
                     {hasFile('photograph') ? ' Change Photo' : ' Browse'}
                   </button>
                 </div>
@@ -808,50 +784,48 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
             </div>
           </section>
 
-          {/* ── Refer a Friend Section ── */}
+          {/* Refer a Friend Section */}
           <section className="applicationpersonal-form-section">
-            <h3 className="section-heading">
-              <span className="section-icon">🤝</span> Refer a Friend Scheme
+            <h3 className="applicationpersonal-section-heading">
+              Refer a Friend Scheme
             </h3>
             <div className="applicationpersonal-form-group full-width">
-              <label className="form-label">Are you applying for a Refer a Friend Scheme?</label>
-              <div className="radio-group">
-                <label className="radio-label">
+              <label className="applicationpersonal-form-label">Are you applying for a Refer a Friend Scheme?</label>
+              <div className="applicationpersonal-radio-group">
+                <label className="applicationpersonal-radio-label">
                   <input type="radio" name="referFriend" value="no"
                     checked={referFriend === 'no'}
                     onChange={(e) => { setReferFriend(e.target.value); onInputChange('referFriend', e.target.value); }}
                     disabled={isSubmitting} />
-                  <span className="radio-text">No</span>
+                  <span className="applicationpersonal-radio-text">No</span>
                 </label>
-                <label className="radio-label">
+                <label className="applicationpersonal-radio-label">
                   <input type="radio" name="referFriend" value="yes"
                     checked={referFriend === 'yes'}
                     onChange={(e) => { setReferFriend(e.target.value); onInputChange('referFriend', e.target.value); }}
                     disabled={isSubmitting} />
-                  <span className="radio-text">Yes</span>
+                  <span className="applicationpersonal-radio-text">Yes</span>
                 </label>
               </div>
             </div>
           </section>
 
-          {/* ── Navigation Buttons ── */}
+          {/* Navigation Buttons */}
           <div className="applicationpersonal-form-actions">
-            <button type="button" className="btn-secondary"
+            <button type="button" className="applicationpersonal-btn-secondary"
               onClick={handleBack} disabled={isSubmitting}>
-              <i className="fas fa-arrow-left"></i> Back
+              Back
             </button>
             <button type="submit" className="applicationpersonal-btn-primary" disabled={isSubmitting}>
               {isSubmitting
-                ? <><span className="loading-spinner"></span> Saving...</>
-                : <>Next <i className="fas fa-arrow-right"></i></>
+                ? <> Saving...</>
+                : <>Next </>
               }
             </button>
           </div>
 
-          <div className="language-selector">
-            <i className="fas fa-globe"></i>
+          <div className="applicationpersonal-language-selector">
             <span>English</span>
-            <i className="fas fa-chevron-down"></i>
           </div>
 
         </form>

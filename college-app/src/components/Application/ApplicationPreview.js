@@ -22,106 +22,64 @@ const SuccessModal = ({ applicationId, loginEmail, personalEmail, onClose }) => 
   const primaryEmail = loginEmail || '';
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 9999,
-      background: 'rgba(15,23,42,0.7)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      backdropFilter: 'blur(4px)',
-      animation: 'fadeIn .25s ease',
-    }}>
-      <div style={{
-        background: '#fff', borderRadius: 16, padding: '40px 36px',
-        maxWidth: 500, width: '90%', textAlign: 'center',
-        boxShadow: '0 25px 60px rgba(0,0,0,.25)',
-        animation: 'slideUp .3s ease',
-      }}>
-        <div style={{
-          width: 72, height: 72, borderRadius: '50%',
-          background: 'linear-gradient(135deg,#16a34a,#22c55e)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          margin: '0 auto 20px', fontSize: 32,
-          boxShadow: '0 8px 24px rgba(22,163,74,.35)',
-        }}>✓</div>
+    <div className="applicationpreview-success-modal-overlay">
+      <div className="applicationpreview-success-modal">
+        <div className="applicationpreview-success-icon">✓</div>
 
-        <h2 style={{ margin: '0 0 8px', color: '#0f172a', fontSize: 22, fontWeight: 700 }}>
+        <h2 className="applicationpreview-success-title">
           Application Submitted!
         </h2>
-        <p style={{ margin: '0 0 24px', color: '#64748b', fontSize: 14, lineHeight: 1.6 }}>
+        <p className="applicationpreview-success-subtitle">
           Your application has been received and is under review.
         </p>
 
         {/* App ID */}
-        <div style={{
-          background: '#eff6ff', border: '1px solid #bfdbfe',
-          borderRadius: 10, padding: '14px 20px', marginBottom: 20,
-        }}>
-          <p style={{ margin: '0 0 4px', color: '#1e40af', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>
+        <div className="applicationpreview-app-id-card">
+          <p className="applicationpreview-app-id-label">
             Application ID
           </p>
-          <p style={{ margin: 0, color: '#1e3a5f', fontSize: 24, fontWeight: 800, letterSpacing: 2 }}>
+          <p className="applicationpreview-app-id-value">
             {applicationId}
           </p>
         </div>
 
         {/* Email info */}
         {primaryEmail && (
-          <div style={{
-            background: '#f0fdf4', border: '1px solid #bbf7d0',
-            borderRadius: 8, padding: '12px 16px', marginBottom: 24, textAlign: 'left',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-              <span style={{ fontSize: 18, flexShrink: 0 }}>📧</span>
+          <div className="applicationpreview-email-card">
+            <div className="applicationpreview-email-content">
               <div>
-                <p style={{ margin: '0 0 4px', color: '#166534', fontSize: 13 }}>
+                <p className="applicationpreview-email-label">
                   Confirmation email sent to:
                 </p>
-                <p style={{ margin: 0, color: '#166534', fontSize: 13, fontWeight: 700 }}>
+                <p className="applicationpreview-email-address">
                   {primaryEmail}
                 </p>
-
               </div>
             </div>
           </div>
         )}
 
-        <div style={{
-          background: '#fefce8', border: '1px solid #fde68a',
-          borderRadius: 8, padding: '14px 16px', marginBottom: 28, textAlign: 'left',
-        }}>
-          <p style={{ margin: '0 0 8px', color: '#92400e', fontWeight: 700, fontSize: 13 }}>
+        <div className="applicationpreview-next-steps-card">
+          <p className="applicationpreview-next-steps-title">
             What happens next?
           </p>
-          <ul style={{ margin: 0, paddingLeft: 18, color: '#78350f', fontSize: 13, lineHeight: 1.8 }}>
+          <ul className="applicationpreview-next-steps-list">
             <li>Our team will review your application within <strong>4–6 weeks</strong>.</li>
             <li>You will receive an email if additional info is needed.</li>
             <li>A final decision letter will be sent to your email.</li>
           </ul>
         </div>
 
-        <button onClick={onClose} style={{
-          width: '100%', padding: '14px 0',
-          background: 'linear-gradient(135deg,#1e3a5f,#2563eb)',
-          color: '#fff', border: 'none', borderRadius: 10,
-          fontSize: 15, fontWeight: 700, cursor: 'pointer',
-          boxShadow: '0 4px 14px rgba(37,99,235,.4)',
-        }}>
+        <button onClick={onClose} className="applicationpreview-success-button">
           Go to Confirmation Page →
         </button>
       </div>
-      <style>{`
-        @keyframes fadeIn  { from{opacity:0} to{opacity:1} }
-        @keyframes slideUp { from{transform:translateY(30px);opacity:0} to{transform:translateY(0);opacity:1} }
-      `}</style>
     </div>
   );
 };
 
 /* ──────────────────────────────────────────────────
-   RESEND EMAIL MODAL  ← NEW
-   Shows when "View Confirmation" is clicked on an
-   already-submitted application. Lets admin / student
-   verify which email will receive the confirmation
-   and re-trigger the send.
+   RESEND EMAIL MODAL
 ────────────────────────────────────────────────── */
 const ResendEmailModal = ({ applicationId, loginEmail, personalEmail, onClose }) => {
   const [isSending,  setIsSending]  = useState(false);
@@ -150,114 +108,68 @@ const ResendEmailModal = ({ applicationId, loginEmail, personalEmail, onClose })
     }
   };
 
-  // Only show login email — personal info email is irrelevant for sending
   const primaryEmail = loginEmail || '';
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 9999,
-      background: 'rgba(15,23,42,0.7)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      backdropFilter: 'blur(4px)',
-    }}>
-      <div style={{
-        background: '#fff', borderRadius: 16, padding: '36px 32px',
-        maxWidth: 480, width: '90%',
-        boxShadow: '0 25px 60px rgba(0,0,0,.25)',
-      }}>
+    <div className="applicationpreview-resend-modal-overlay">
+      <div className="applicationpreview-resend-modal">
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <h2 style={{ margin: 0, color: '#0f172a', fontSize: 20, fontWeight: 700 }}>
+        <div className="applicationpreview-resend-modal-header">
+          <h2 className="applicationpreview-resend-modal-title">
             Confirmation Email
           </h2>
-          <button onClick={onClose} style={{
-            background: 'none', border: 'none', fontSize: 22,
-            cursor: 'pointer', color: '#94a3b8', lineHeight: 1,
-          }}>×</button>
+          <button onClick={onClose} className="applicationpreview-resend-modal-close">
+            ×
+          </button>
         </div>
 
         {/* App ID */}
-        <div style={{
-          background: '#f8fafc', borderRadius: 8, padding: '12px 16px', marginBottom: 20,
-          border: '1px solid #e2e8f0',
-        }}>
-          <p style={{ margin: '0 0 2px', color: '#64748b', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5 }}>Application ID</p>
-          <p style={{ margin: 0, color: '#1e3a5f', fontSize: 18, fontWeight: 800, letterSpacing: 1 }}>{applicationId}</p>
+        <div className="applicationpreview-resend-app-id">
+          <p className="applicationpreview-resend-app-id-label">Application ID</p>
+          <p className="applicationpreview-resend-app-id-value">{applicationId}</p>
         </div>
 
         {/* Email recipients */}
-        <p style={{ margin: '0 0 10px', color: '#374151', fontSize: 14, fontWeight: 600 }}>
+        <p className="applicationpreview-resend-email-heading">
           Email will be sent to:
         </p>
 
         {/* Login email */}
-        <div style={{
-          background: primaryEmail ? '#f0fdf4' : '#fef2f2',
-          border: `1px solid ${primaryEmail ? '#bbf7d0' : '#fecaca'}`,
-          borderRadius: 8, padding: '10px 14px', marginBottom: 10,
-          display: 'flex', alignItems: 'center', gap: 10,
-        }}>
-          <span style={{ fontSize: 16 }}>📧</span>
+        <div className={`applicationpreview-resend-email-row ${primaryEmail ? 'success' : 'error'}`}>
           <div>
-            <p style={{ margin: '0 0 2px', color: '#374151', fontSize: 11, fontWeight: 600, textTransform: 'uppercase' }}>
+            <p className="applicationpreview-resend-email-type">
               Login / Account Email
             </p>
-            <p style={{ margin: 0, color: '#166534', fontSize: 14, fontWeight: 700 }}>
-              {loginEmail || <span style={{ color: '#dc2626', fontStyle: 'italic' }}>Not found in token</span>}
+            <p className="applicationpreview-resend-email-value">
+              {loginEmail || <span className="applicationpreview-resend-email-missing">Not found in token</span>}
             </p>
           </div>
         </div>
 
-        {/* Only login email is used for sending */}
-
         {/* Success / Error states */}
         {sent && (
-          <div style={{
-            background: '#dcfce7', border: '1px solid #16a34a',
-            borderRadius: 8, padding: '12px 16px', marginBottom: 16,
-            color: '#166534', fontSize: 14, fontWeight: 600, textAlign: 'center',
-          }}>
-            ✅ Email sent successfully! Check your inbox.
+          <div className="applicationpreview-resend-success">
+            Email sent successfully! Check your inbox.
           </div>
         )}
 
         {sendError && (
-          <div style={{
-            background: '#fef2f2', border: '1px solid #fecaca',
-            borderRadius: 8, padding: '12px 16px', marginBottom: 16,
-            color: '#dc2626', fontSize: 13,
-          }}>
-            ❌ {sendError}
+          <div className="applicationpreview-resend-error">
+            {sendError}
           </div>
         )}
 
         {/* Buttons */}
-        <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={onClose} style={{
-            flex: 1, padding: '12px 0',
-            background: '#f1f5f9', color: '#374151',
-            border: '1px solid #e2e8f0', borderRadius: 8,
-            fontSize: 14, fontWeight: 600, cursor: 'pointer',
-          }}>
+        <div className="applicationpreview-resend-buttons">
+          <button onClick={onClose} className="applicationpreview-resend-close-btn">
             Close
           </button>
           <button
             onClick={handleResend}
             disabled={isSending || sent}
-            style={{
-              flex: 2, padding: '12px 0',
-              background: sent
-                ? '#dcfce7'
-                : isSending
-                  ? '#94a3b8'
-                  : 'linear-gradient(135deg,#1e3a5f,#2563eb)',
-              color: sent ? '#166534' : '#fff',
-              border: 'none', borderRadius: 8,
-              fontSize: 14, fontWeight: 700, cursor: isSending || sent ? 'not-allowed' : 'pointer',
-              boxShadow: isSending || sent ? 'none' : '0 4px 12px rgba(37,99,235,.35)',
-            }}
+            className={`applicationpreview-resend-send-btn ${sent ? 'sent' : ''}`}
           >
-            {isSending ? '⏳ Sending…' : sent ? '✅ Sent!' : '📧 Resend Confirmation Email'}
+            {isSending ? 'Sending…' : sent ? 'Sent!' : 'Resend Confirmation Email'}
           </button>
         </div>
       </div>
@@ -439,9 +351,9 @@ const ApplicationPreview = ({ onInputChange }) => {
 
   if (isLoading) {
     return (
-      <div className="form-section">
-        <div className="loading-state">
-          <div className="loading-spinner"></div>
+      <div className="applicationpreview-form-section">
+        <div className="applicationpreview-loading-state">
+          <div className="applicationpreview-loading-spinner"></div>
           <p>Loading your application preview…</p>
         </div>
       </div>
@@ -452,7 +364,7 @@ const ApplicationPreview = ({ onInputChange }) => {
   const overallComplete = completionStatus.overall;
 
   return (
-    <div className="form-section">
+    <div className="applicationpreview-form-section">
 
       {/* Success modal — shown after fresh submit */}
       {showSuccessModal && (
@@ -475,30 +387,25 @@ const ApplicationPreview = ({ onInputChange }) => {
       )}
 
       {/* Header */}
-      <div className="section-header">
-        <div className="section-number">9</div>
+      <div className="applicationpreview-section-header">
+        <div className="applicationpreview-section-number">9</div>
         <div>
-          <h2 className="section-title">Application Preview</h2>
-          <p className="section-subtitle">Review all information before final submission</p>
+          <h2 className="applicationpreview-section-title">Application Preview</h2>
+          <p className="applicationpreview-section-subtitle">Review all information before final submission</p>
         </div>
       </div>
 
       {/* Submitted banner */}
       {isSubmitted && (
-        <div style={{
-          background: '#f0fdf4', border: '2px solid #16a34a',
-          borderRadius: 10, padding: '16px 22px', marginBottom: 20,
-          display: 'flex', alignItems: 'flex-start', gap: 14,
-        }}>
-          <span style={{ fontSize: 26 }}>✅</span>
+        <div className="applicationpreview-submitted-banner">
           <div>
-            <p style={{ margin: '0 0 4px', color: '#166534', fontWeight: 700, fontSize: 15 }}>
+            <p className="applicationpreview-submitted-title">
               Application Already Submitted
             </p>
-            <p style={{ margin: '0 0 2px', color: '#166534', fontSize: 13 }}>
+            <p className="applicationpreview-submitted-id">
               Application ID: <strong>{applicationId}</strong>
             </p>
-            <p style={{ margin: 0, color: '#166534', fontSize: 13 }}>
+            <p className="applicationpreview-submitted-email">
               Confirmation sent to: <strong>{loginEmail || 'your login email'}</strong>
             </p>
           </div>
@@ -506,60 +413,60 @@ const ApplicationPreview = ({ onInputChange }) => {
       )}
 
       {error && (
-        <div className="error-banner" role="alert" style={{ whiteSpace: 'pre-line' }}>
+        <div className="applicationpreview-error-banner" role="alert">
           <span>{error}</span>
-          <button onClick={() => setError('')} className="error-close-btn">×</button>
+          <button onClick={() => setError('')} className="applicationpreview-error-close-btn">×</button>
         </div>
       )}
 
       {!isSubmitted && (
-        <div className="info-box">
-          <p className="info-text">
+        <div className="applicationpreview-info-box">
+          <p className="applicationpreview-info-text">
             Please review all your information carefully. Once submitted, you <strong>cannot edit</strong> your application.
           </p>
         </div>
       )}
 
-      <div className="preview-actions">
-        <button className="action-btn print-btn" onClick={() => window.print()}>Print</button>
-        <button className="action-btn pdf-btn"   onClick={() => alert('Use Print → Save as PDF')}>PDF</button>
-        <button className="action-btn refresh-btn" onClick={loadPreview} disabled={isLoading}>Refresh</button>
+      <div className="applicationpreview-preview-actions">
+        <button className="applicationpreview-action-btn print-btn" onClick={() => window.print()}>Print</button>
+        <button className="applicationpreview-action-btn pdf-btn"   onClick={() => alert('Use Print → Save as PDF')}>PDF</button>
+        <button className="applicationpreview-action-btn refresh-btn" onClick={loadPreview} disabled={isLoading}>Refresh</button>
       </div>
 
-      <div className="application-summary">
+      <div className="applicationpreview-application-summary">
 
         <div className="applicationpreview-summary-header">
-          <div className="applicant-id">
-            <span className="id-label">Application ID:</span>
-            <span className="id-value">{applicationId || '—'}</span>
+          <div className="applicationpreview-applicant-id">
+            <span className="applicationpreview-id-label">Application ID:</span>
+            <span className="applicationpreview-id-value">{applicationId || '—'}</span>
           </div>
-          <div className="submission-date">
-            <span className="date-label">Preview Date:</span>
-            <span className="date-value">{previewDate}</span>
+          <div className="applicationpreview-submission-date">
+            <span className="applicationpreview-date-label">Preview Date:</span>
+            <span className="applicationpreview-date-value">{previewDate}</span>
           </div>
-          <div className="app-status-badge">
-            <span className={`status-pill status-${applicationStatus}`}>
+          <div className="applicationpreview-app-status-badge">
+            <span className={`applicationpreview-status-pill status-${applicationStatus}`}>
               {applicationStatus.replace('_', ' ')}
             </span>
           </div>
         </div>
 
         {sections.length === 0 ? (
-          <div className="no-data-message">
+          <div className="applicationpreview-no-data-message">
             <p>No application data found. Please fill in your details first.</p>
           </div>
         ) : (
           sections.map((section, si) => (
-            <div key={si} className="preview-section">
-              <h3 className="preview-section-title">
-                <span className="section-number">{si + 1}</span>
+            <div key={si} className="applicationpreview-preview-section">
+              <h3 className="applicationpreview-preview-section-title">
+                <span className="applicationpreview-section-number-small">{si + 1}</span>
                 {section.title}
               </h3>
-              <div className="preview-grid">
+              <div className="applicationpreview-preview-grid">
                 {section.data.map((item, ii) => (
-                  <div key={ii} className="preview-item">
-                    <div className="preview-label">{item.label}:</div>
-                    <div className={`preview-value ${!item.value || item.value === 'Not provided' || item.value === 'Not uploaded' ? 'empty-value' : ''}`}>
+                  <div key={ii} className="applicationpreview-preview-item">
+                    <div className="applicationpreview-preview-label">{item.label}:</div>
+                    <div className={`applicationpreview-preview-value ${(!item.value || item.value === 'Not provided' || item.value === 'Not uploaded') ? 'empty-value' : ''}`}>
                       {formatValue(item.value)}
                     </div>
                   </div>
@@ -570,16 +477,16 @@ const ApplicationPreview = ({ onInputChange }) => {
         )}
 
         {Object.keys(completionStatus).filter(k => k !== 'overall').length > 0 && (
-          <div className="preview-section">
-            <h3 className="preview-section-title">
-              <span className="section-number">{sections.length + 1}</span>
+          <div className="applicationpreview-preview-section">
+            <h3 className="applicationpreview-preview-section-title">
+              <span className="applicationpreview-section-number-small">{sections.length + 1}</span>
               Completion Status
             </h3>
-            <div className="completion-status-bar">
+            <div className="applicationpreview-completion-status-bar">
               {Object.entries(completionStatus)
                 .filter(([key]) => key !== 'overall')
                 .map(([key, done]) => (
-                  <span key={key} className={`completion-pill ${done ? 'complete' : 'incomplete'}`}>
+                  <span key={key} className={`applicationpreview-completion-pill ${done ? 'complete' : 'incomplete'}`}>
                     {COMPLETION_LABELS[key] || key}
                   </span>
                 ))}
@@ -588,18 +495,18 @@ const ApplicationPreview = ({ onInputChange }) => {
         )}
 
         {!isSubmitted && (
-          <div className="declaration-section">
-            <h3 className="preview-section-title">
-              <span className="section-number">{sections.length + 2}</span>
+          <div className="applicationpreview-declaration-section">
+            <h3 className="applicationpreview-preview-section-title">
+              <span className="applicationpreview-section-number-small">{sections.length + 2}</span>
               Declaration
             </h3>
-            <div className="declaration-card">
-              <div className="declaration-text">
+            <div className="applicationpreview-declaration-card">
+              <div className="applicationpreview-declaration-text">
                 <p>I hereby declare that all information provided in this application is true, complete, and accurate to the best of my knowledge.</p>
                 <p>I agree to abide by the rules and regulations of the university and understand that all decisions made by the admissions committee are final.</p>
               </div>
-              <div className="declaration-agreement">
-                <div className="checkbox-option large">
+              <div className="applicationpreview-declaration-agreement">
+                <div className="applicationpreview-checkbox-option large">
                   <input
                     type="checkbox"
                     id="agreedToTerms"
@@ -609,13 +516,13 @@ const ApplicationPreview = ({ onInputChange }) => {
                   />
                   <label htmlFor="agreedToTerms">
                     I have read and agree to the terms and conditions
-                    {isSavingTerms && <span className="saving-indicator"> (saving…)</span>}
+                    {isSavingTerms && <span className="applicationpreview-saving-indicator"> (saving…)</span>}
                   </label>
                 </div>
               </div>
-              <div className="applicant-signature">
-                <div className="signature-line"></div>
-                <div className="signature-label">Applicant's Signature</div>
+              <div className="applicationpreview-applicant-signature">
+                <div className="applicationpreview-signature-line"></div>
+                <div className="applicationpreview-signature-label">Applicant's Signature</div>
               </div>
             </div>
           </div>
@@ -623,10 +530,10 @@ const ApplicationPreview = ({ onInputChange }) => {
       </div>
 
       {!isSubmitted && (
-        <div className="final-submission">
-          <div className="submission-checklist">
-            <h3 className="subsection-title">Final Checklist</h3>
-            <div className="checklist">
+        <div className="applicationpreview-final-submission">
+          <div className="applicationpreview-submission-checklist">
+            <h3 className="applicationpreview-subsection-title">Final Checklist</h3>
+            <div className="applicationpreview-checklist">
               {[
                 { label: 'Personal information completed',      done: completionStatus.personalDone },
                 { label: 'Address provided',                    done: completionStatus.addressDone },
@@ -636,15 +543,15 @@ const ApplicationPreview = ({ onInputChange }) => {
                 { label: 'Special needs declaration completed', done: completionStatus.specialNeedDone },
                 { label: 'Terms and conditions agreed',         done: agreedToTerms },
               ].map(({ label, done }, i) => (
-                <div key={i} className={`checklist-item ${done ? 'done' : 'pending'}`}>
-                  <span className="checklist-marker">{done ? '✓' : '○'}</span>
+                <div key={i} className={`applicationpreview-checklist-item ${done ? 'done' : 'pending'}`}>
+                  <span className="applicationpreview-checklist-marker">{done ? '✓' : '○'}</span>
                   <span>{label}</span>
                 </div>
               ))}
             </div>
           </div>
-          <div className="submission-note">
-            <div className="note-content">
+          <div className="applicationpreview-submission-note">
+            <div className="applicationpreview-note-content">
               <h4>Important Notice</h4>
               <p>After submission you will receive a confirmation email. Keep your Application ID for all future communications. Processing may take 4–6 weeks.</p>
             </div>
@@ -653,31 +560,30 @@ const ApplicationPreview = ({ onInputChange }) => {
       )}
 
       {/* Nav buttons */}
-      <div className="applicationpersonal-form-actions">
-        <button type="button" className="btn-secondary" onClick={handleBack} disabled={isSubmitting}>
+      <div className="applicationpreview-form-actions">
+        <button type="button" className="applicationpreview-btn-secondary" onClick={handleBack} disabled={isSubmitting}>
           Back
         </button>
 
         {!isSubmitted ? (
           <button
             type="button"
-            className="applicationpersonal-btn-primary"
+            className="applicationpreview-btn-primary"
             onClick={handleSubmit}
             disabled={isSubmitting || !agreedToTerms || !overallComplete}
             title={!overallComplete ? 'Complete all sections before submitting' : ''}
           >
             {isSubmitting
-              ? <><span className="spinner-small" style={{ marginRight: 8 }}></span>Submitting…</>
-              : '🚀 Submit Application'}
+              ? <>Submitting…</>
+              : 'Submit Application'}
           </button>
         ) : (
-          /* Opens ResendEmailModal so student can verify email & resend */
           <button
             type="button"
-            className="applicationpersonal-btn-primary"
+            className="applicationpreview-btn-primary"
             onClick={() => setShowResendModal(true)}
           >
-            📧 View Confirmation & Resend Email
+            View Confirmation and Resend Email
           </button>
         )}
       </div>

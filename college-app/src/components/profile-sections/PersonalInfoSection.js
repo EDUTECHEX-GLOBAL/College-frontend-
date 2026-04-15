@@ -15,7 +15,6 @@ const CV_SECTION_KEYS = new Set(['cvEducation', 'cvTesting', 'cvActivities', '_c
 const DocumentUploadBanner = ({
   endpoint,
   fieldName,
-  icon,
   idleTitle,
   idleSub,
   badgeText,
@@ -74,24 +73,15 @@ const DocumentUploadBanner = ({
 
   if (status === 'done') {
     return (
-      <div className="passport-banner passport-banner--success">
-        <div className="passport-banner__icon">
-          <svg width="16" height="16" fill="none" viewBox="0 0 16 16">
-            <circle cx="8" cy="8" r="7" fill="#10b981" />
-            <polyline points="4.5,8.5 7,11 11.5,5.5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </div>
-        <div className="passport-banner__text">
-          <span className="passport-banner__title">{successTitle}</span>
-          <span className="passport-banner__sub">
+      <div className="personalinfosection-banner personalinfosection-banner--success">
+        <div className="personalinfosection-banner__text">
+          <span className="personalinfosection-banner__title">{successTitle}</span>
+          <span className="personalinfosection-banner__sub">
             {successSub.replace('{count}', autofillCount)}
           </span>
         </div>
-        <button className="passport-banner__dismiss" onClick={onDismiss} aria-label="Dismiss">
-          <svg width="14" height="14" fill="none" viewBox="0 0 14 14">
-            <line x1="2" y1="2" x2="12" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            <line x1="12" y1="2" x2="2" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
+        <button className="personalinfosection-banner__dismiss" onClick={onDismiss} aria-label="Dismiss">
+          <span className="personalinfosection-banner__dismiss-icon">×</span>
         </button>
       </div>
     );
@@ -99,11 +89,11 @@ const DocumentUploadBanner = ({
 
   if (status === 'scanning') {
     return (
-      <div className="passport-banner passport-banner--scanning">
-        <div className="passport-banner__spinner" />
-        <div className="passport-banner__text">
-          <span className="passport-banner__title">Reading your document…</span>
-          <span className="passport-banner__sub">Extracting your details automatically</span>
+      <div className="personalinfosection-banner personalinfosection-banner--scanning">
+        <div className="personalinfosection-banner__spinner"></div>
+        <div className="personalinfosection-banner__text">
+          <span className="personalinfosection-banner__title">Reading your document…</span>
+          <span className="personalinfosection-banner__sub">Extracting your details automatically</span>
         </div>
       </div>
     );
@@ -111,19 +101,12 @@ const DocumentUploadBanner = ({
 
   if (status === 'error') {
     return (
-      <div className="passport-banner passport-banner--error">
-        <div className="passport-banner__icon">
-          <svg width="16" height="16" fill="none" viewBox="0 0 16 16">
-            <circle cx="8" cy="8" r="7" fill="#ef4444" />
-            <line x1="8" y1="4.5" x2="8" y2="8.5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" />
-            <circle cx="8" cy="11" r="0.8" fill="#fff" />
-          </svg>
+      <div className="personalinfosection-banner personalinfosection-banner--error">
+        <div className="personalinfosection-banner__text">
+          <span className="personalinfosection-banner__title">Could not read document</span>
+          <span className="personalinfosection-banner__sub">Please try a clearer image or fill in details manually</span>
         </div>
-        <div className="passport-banner__text">
-          <span className="passport-banner__title">Could not read document</span>
-          <span className="passport-banner__sub">Please try a clearer image or fill in details manually</span>
-        </div>
-        <button className="passport-banner__retry" onClick={() => setStatus('idle')}>
+        <button className="personalinfosection-banner__retry" onClick={() => setStatus('idle')}>
           Try again
         </button>
       </div>
@@ -133,7 +116,7 @@ const DocumentUploadBanner = ({
   // idle / upload state
   return (
     <div
-      className="passport-banner passport-banner--upload"
+      className="personalinfosection-banner personalinfosection-banner--upload"
       onDragOver={(e) => e.preventDefault()}
       onDrop={handleDrop}
       onClick={() => fileRef.current?.click()}
@@ -148,15 +131,14 @@ const DocumentUploadBanner = ({
         style={{ display: 'none' }}
         onChange={(e) => handleFile(e.target.files[0])}
       />
-      <div className="passport-banner__upload-icon">{icon}</div>
-      <div className="passport-banner__text">
-        <span className="passport-banner__title">
+      <div className="personalinfosection-banner__text">
+        <span className="personalinfosection-banner__title">
           {idleTitle}
-          {badgeText && <span className="passport-banner__badge">{badgeText}</span>}
+          {badgeText && <span className="personalinfosection-banner__badge">{badgeText}</span>}
         </span>
-        <span className="passport-banner__sub">{idleSub}</span>
+        <span className="personalinfosection-banner__sub">{idleSub}</span>
       </div>
-      <div className="passport-banner__cta">Upload</div>
+      <div className="personalinfosection-banner__cta">Upload</div>
     </div>
   );
 };
@@ -168,22 +150,11 @@ const CVUploadBanner = ({ onAutoFill, onDismiss }) => (
   <DocumentUploadBanner
     endpoint="/api/students/cv/parse"
     fieldName="cv"
-    icon={
-      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#0ba5a0" strokeWidth="1.5">
-        <rect x="4" y="2" width="16" height="20" rx="2" />
-        <line x1="8" y1="7" x2="16" y2="7" />
-        <line x1="8" y1="11" x2="16" y2="11" />
-        <line x1="8" y1="15" x2="13" y2="15" />
-        <circle cx="17" cy="17" r="3" fill="#fff" stroke="#0ba5a0" strokeWidth="1.5" />
-        <line x1="17" y1="15.5" x2="17" y2="18.5" strokeWidth="1.2" />
-        <line x1="15.5" y1="17" x2="18.5" y2="17" strokeWidth="1.2" />
-      </svg>
-    }
     idleTitle="Upload your CV / Résumé to auto-fill everything"
     idleSub="We'll fill your profile, education, test scores and activities in one go · PDF, JPG or PNG"
     badgeText="Auto-fill all sections"
     successTitle="CV scanned successfully"
-    successSub="{count} profile fields filled — education, tests & activities also extracted"
+    successSub="{count} profile fields filled — education, tests and activities also extracted"
     onAutoFill={onAutoFill}
     onDismiss={onDismiss}
   />
@@ -196,13 +167,6 @@ const PassportUploadBanner = ({ onAutoFill, onDismiss }) => (
   <DocumentUploadBanner
     endpoint="/api/students/passport/parse"
     fieldName="passport"
-    icon={
-      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#0ba5a0" strokeWidth="1.5">
-        <rect x="3" y="5" width="18" height="14" rx="2" />
-        <line x1="7" y1="10" x2="17" y2="10" />
-        <line x1="7" y1="14" x2="13" y2="14" />
-      </svg>
-    }
     idleTitle="Save time — upload your passport"
     idleSub="We'll fill in your name, date of birth, nationality, citizenship and more instantly · JPG, PNG or PDF"
     badgeText="Auto-fill"
@@ -220,13 +184,6 @@ const AadhaarUploadBanner = ({ onAutoFill, onDismiss }) => (
   <DocumentUploadBanner
     endpoint="/api/students/aadhaar/parse"
     fieldName="aadhaar"
-    icon={
-      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#0ba5a0" strokeWidth="1.5">
-        <rect x="2" y="4" width="20" height="16" rx="2" />
-        <circle cx="8" cy="12" r="2.5" />
-        <path d="M12 10h6M12 14h4" strokeLinecap="round" />
-      </svg>
-    }
     idleTitle="Upload Aadhaar / Govt ID to auto-fill address"
     idleSub="We'll extract your address, phone number and contact details instantly · JPG, PNG or PDF"
     badgeText="Auto-fill"
@@ -317,7 +274,7 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus(null), 3000);
     } catch (err) {
-      console.error('❌ Failed to persist autofill:', err);
+      console.error('Failed to persist autofill:', err);
       setSaveStatus('error');
       setTimeout(() => setSaveStatus(null), 4000);
     }
@@ -327,50 +284,41 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
     autofillFields.has(fieldName) ? 'input--autofilled' : '';
 
   const autoLabel = (fieldName, source = 'passport') =>
-    autofillFields.has(fieldName) ? <span className="autofill-tag">{source}</span> : null;
+    autofillFields.has(fieldName) ? <span className="personalinfosection-autofill-tag">{source}</span> : null;
 
   return (
-    <div className="personal-info-section">
+    <div className="personalinfosection">
       <h2>Personal Information</h2>
 
-      <div className="section-status">
-        {formData.profileCompletion?.personalInfo ? '✓ Complete' : '◌ In Progress'}
+      <div className="personalinfosection-status">
+        {formData.profileCompletion?.personalInfo ? 'Complete' : 'In Progress'}
       </div>
 
       {/* Background save indicator */}
       {saveStatus === 'saving' && (
-        <div className="autofill-save-status autofill-save-status--saving">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '8px', animation: 'spin 0.8s linear infinite' }}>
-            <circle cx="12" cy="12" r="10" />
-            <path d="M12 6v6l4 2" />
-          </svg>
+        <div className="personalinfosection-save-status personalinfosection-save-status--saving">
+          <span className="personalinfosection-spinner"></span>
           Saving data…
         </div>
       )}
       {saveStatus === 'saved' && (
-        <div className="autofill-save-status autofill-save-status--saved">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '8px' }}>
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-          ✓ Data saved
+        <div className="personalinfosection-save-status personalinfosection-save-status--saved">
+          <span className="personalinfosection-check-icon">✓</span>
+          Data saved
         </div>
       )}
       {saveStatus === 'error' && (
-        <div className="autofill-save-status autofill-save-status--error">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '8px' }}>
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="8" x2="12" y2="12" />
-            <line x1="12" y1="16" x2="12.01" y2="16" />
-          </svg>
-          ⚠ Could not save — your changes are visible but may not persist. Try saving manually.
+        <div className="personalinfosection-save-status personalinfosection-save-status--error">
+          <span className="personalinfosection-error-icon">!</span>
+          Could not save — your changes are visible but may not persist. Try saving manually.
         </div>
       )}
 
-      {/* ── Document upload banners ── */}
-      <div className="document-banners-wrapper">
+      {/* Document upload banners */}
+      <div className="personalinfosection-document-banners">
 
         {cvBannerVisible && (
-          <div className="passport-banner-wrapper">
+          <div className="personalinfosection-banner-wrapper">
             <CVUploadBanner
               onAutoFill={async (mapped) => {
                 await handleAutoFill(mapped);
@@ -378,31 +326,31 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
               }}
               onDismiss={handleCvDismiss}
             />
-            <button className="passport-skip-link" onClick={handleCvSkip}>
+            <button className="personalinfosection-skip-link" onClick={handleCvSkip}>
               Skip — I don't have a CV, use passport / Aadhaar instead
             </button>
           </div>
         )}
 
         {passportBannerVisible && (
-          <div className="passport-banner-wrapper">
+          <div className="personalinfosection-banner-wrapper">
             <PassportUploadBanner
               onAutoFill={handleAutoFill}
               onDismiss={() => setPassportBannerVisible(false)}
             />
-            <button className="passport-skip-link" onClick={() => setPassportBannerVisible(false)}>
+            <button className="personalinfosection-skip-link" onClick={() => setPassportBannerVisible(false)}>
               Skip — I'll fill in manually
             </button>
           </div>
         )}
 
         {aadhaarBannerVisible && (
-          <div className="passport-banner-wrapper">
+          <div className="personalinfosection-banner-wrapper">
             <AadhaarUploadBanner
               onAutoFill={handleAutoFill}
               onDismiss={() => setAadhaarBannerVisible(false)}
             />
-            <button className="passport-skip-link" onClick={() => setAadhaarBannerVisible(false)}>
+            <button className="personalinfosection-skip-link" onClick={() => setAadhaarBannerVisible(false)}>
               Skip — I'll fill in manually
             </button>
           </div>
@@ -410,13 +358,13 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
 
       </div>
 
-      <div className="form-content">
+      <div className="personalinfosection-form-content">
 
-        {/* ════════ NAME & BIRTH ════════ */}
-        <div className="form-section-heading">Name &amp; Birth</div>
+        {/* Name & Birth */}
+        <div className="personalinfosection-section-heading">Name & Birth</div>
 
-        <div className="form-grid">
-          <div className="form-group">
+        <div className="personalinfosection-form-grid">
+          <div className="personalinfosection-form-group">
             <label className="required">
               Legal First/Given Name
               {autoLabel('firstName', autofillFields.has('firstName') ? 'cv' : 'passport')}
@@ -432,7 +380,7 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
             />
           </div>
 
-          <div className="form-group">
+          <div className="personalinfosection-form-group">
             <label>
               Middle Name
               {autoLabel('middleName', autofillFields.has('middleName') ? 'cv' : 'passport')}
@@ -447,7 +395,7 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
             />
           </div>
 
-          <div className="form-group">
+          <div className="personalinfosection-form-group">
             <label className="required">
               Last/Family Name
               {autoLabel('lastName', autofillFields.has('lastName') ? 'cv' : 'passport')}
@@ -464,7 +412,7 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
           </div>
         </div>
 
-        <div className="form-group">
+        <div className="personalinfosection-form-group">
           <label className="required">
             Date of Birth
             {autoLabel('birthDate', autofillFields.has('birthDate') ? 'cv' : 'passport')}
@@ -479,7 +427,7 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
           />
         </div>
 
-        <div className="form-group">
+        <div className="personalinfosection-form-group">
           <label>
             Gender
             {autoLabel('gender', autofillFields.has('gender') ? 'cv' : 'passport')}
@@ -498,11 +446,11 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
           </select>
         </div>
 
-        {/* ════════ GEOGRAPHY ════════ */}
-        <div className="form-section-heading">Geography &amp; Citizenship</div>
+        {/* Geography & Citizenship */}
+        <div className="personalinfosection-section-heading">Geography & Citizenship</div>
 
-        <div className="form-grid">
-          <div className="form-group">
+        <div className="personalinfosection-form-grid">
+          <div className="personalinfosection-form-group">
             <label>
               Birth Country
               {autoLabel('birthCountry', autofillFields.has('birthCountry') ? 'cv' : 'passport')}
@@ -517,7 +465,7 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
             />
           </div>
 
-          <div className="form-group">
+          <div className="personalinfosection-form-group">
             <label>
               City of Birth
               {autoLabel('cityOfBirth', autofillFields.has('cityOfBirth') ? 'cv' : 'passport')}
@@ -532,7 +480,7 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
             />
           </div>
 
-          <div className="form-group">
+          <div className="personalinfosection-form-group">
             <label>
               Country of Citizenship
               {autoLabel('country', autofillFields.has('country') ? 'cv' : 'passport')}
@@ -547,7 +495,7 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
             />
           </div>
 
-          <div className="form-group">
+          <div className="personalinfosection-form-group">
             <label>
               Citizenship Status
               {autoLabel('citizenshipStatus', autofillFields.has('citizenshipStatus') ? 'cv' : 'passport')}
@@ -568,10 +516,10 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
           </div>
         </div>
 
-        {/* ════════ ADDRESS ════════ */}
-        <div className="form-section-heading">Address</div>
+        {/* Address */}
+        <div className="personalinfosection-section-heading">Address</div>
 
-        <div className="form-group">
+        <div className="personalinfosection-form-group">
           <label>
             Address Line 1
             {autoLabel('addressLine1', autofillFields.has('addressLine1') ? 'cv' : 'aadhaar')}
@@ -586,7 +534,7 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
           />
         </div>
 
-        <div className="form-group">
+        <div className="personalinfosection-form-group">
           <label>
             Address Line 2
             {autoLabel('addressLine2', autofillFields.has('addressLine2') ? 'cv' : 'aadhaar')}
@@ -601,8 +549,8 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
           />
         </div>
 
-        <div className="form-grid">
-          <div className="form-group">
+        <div className="personalinfosection-form-grid">
+          <div className="personalinfosection-form-group">
             <label>
               City
               {autoLabel('city', autofillFields.has('city') ? 'cv' : 'aadhaar')}
@@ -617,7 +565,7 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
             />
           </div>
 
-          <div className="form-group">
+          <div className="personalinfosection-form-group">
             <label>
               State / Province
               {autoLabel('state', autofillFields.has('state') ? 'cv' : 'aadhaar')}
@@ -632,7 +580,7 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
             />
           </div>
 
-          <div className="form-group">
+          <div className="personalinfosection-form-group">
             <label>
               ZIP / Postal Code
               {autoLabel('zipCode', autofillFields.has('zipCode') ? 'cv' : 'aadhaar')}
@@ -648,11 +596,11 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
           </div>
         </div>
 
-        {/* ════════ CONTACT ════════ */}
-        <div className="form-section-heading">Contact Details</div>
+        {/* Contact Details */}
+        <div className="personalinfosection-section-heading">Contact Details</div>
 
-        <div className="form-grid">
-          <div className="form-group">
+        <div className="personalinfosection-form-grid">
+          <div className="personalinfosection-form-group">
             <label>
               Phone Number
               {autoLabel('phone', autofillFields.has('phone') ? 'cv' : 'aadhaar')}
@@ -667,7 +615,7 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
             />
           </div>
 
-          <div className="form-group">
+          <div className="personalinfosection-form-group">
             <label>
               Preferred Phone Type
               {autoLabel('preferredPhoneType', autofillFields.has('preferredPhoneType') ? 'cv' : 'aadhaar')}
@@ -686,10 +634,10 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
           </div>
         </div>
 
-        {/* ════════ LANGUAGE ════════ */}
-        <div className="form-section-heading">Language</div>
+        {/* Language */}
+        <div className="personalinfosection-section-heading">Language</div>
 
-        <div className="form-group">
+        <div className="personalinfosection-form-group">
           <label>
             Primary Language
             {autoLabel('primaryLanguage', autofillFields.has('primaryLanguage') ? 'cv' : 'passport')}
@@ -704,7 +652,7 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
           />
         </div>
 
-      </div>{/* end .form-content */}
+      </div>
     </div>
   );
 };

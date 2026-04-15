@@ -1329,48 +1329,88 @@ export const parseCV = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ success: false, message: "No CV file uploaded." });
 
-    s3Key    = req.file.key;
+    s3Key          = req.file.key;
     const userId   = req.user?.userId;
     const mimeType = req.file.mimetype || "";
 
-    console.log(`📄 CV uploaded for user ${userId}: ${s3Key} (${mimeType})`);
+    console.log("═══════════════════════════════════════");
+    console.log("📄 CV Upload Debug Info:");
+    console.log("  User ID     :", userId);
+    console.log("  S3 Key      :", s3Key);
+    console.log("  MIME Type   :", mimeType);
+    console.log("  File size   :", req.file.size);
+    console.log("  AWS Region  :", process.env.AWS_REGION);
+    console.log("  Bucket Name :", process.env.AWS_BUCKET_NAME);
+    console.log("═══════════════════════════════════════");
 
-    let allLines = [];
-    const isPdf  = mimeType === "application/pdf" || s3Key.toLowerCase().endsWith(".pdf");
+    // ── Step 1: verify file exists in S3 ──
+    try {
+      const s3Check = await s3.send(new GetObjectCommand({ Bucket: BUCKET_NAME, Key: s3Key }));
+      console.log("✅ S3 file verified. ContentType:", s3Check.ContentType);
+    } catch (s3Err) {
+      console.error("❌ S3 file NOT accessible:", s3Err.message);
+      throw new Error(`S3 access failed: ${s3Err.message}`);
+    }
+
+    let allLines   = [];
+    const isPdf    = mimeType === "application/pdf" || s3Key.toLowerCase().endsWith(".pdf");
+    console.log("📋 Is PDF?", isPdf);
 
     if (isPdf) {
-      // Multi-page PDF — async Textract via S3
-      console.log("📑 PDF detected — using async Textract (multi-page safe)");
+      console.log("📑 PDF — trying async Textract first...");
       try {
         allLines = await extractTextWithAsyncTextract(s3Key);
+        console.log("✅ Async Textract succeeded. Lines:", allLines.length);
       } catch (asyncErr) {
-        console.error("❌ Async Textract failed:", asyncErr);
-        throw new Error("Could not read the CV PDF. Please ensure the file is not password-protected and try again.");
+        console.error("❌ Async Textract error name    :", asyncErr.name);
+        console.error("❌ Async Textract error message :", asyncErr.message);
+        console.error("❌ Async Textract HTTP status   :", asyncErr.$metadata?.httpStatusCode);
+
+        // ── Fallback: sync Textract (works for single-page PDFs) ──
+        console.log("⚠️ Falling back to sync Textract...");
+        try {
+          const textractResponse = await textract.send(new DetectDocumentTextCommand({
+            Document: { S3Object: { Bucket: BUCKET_NAME, Name: s3Key } },
+          }));
+          allLines = extractTextLines(textractResponse);
+          console.log("✅ Sync Textract fallback succeeded. Lines:", allLines.length);
+        } catch (syncErr) {
+          console.error("❌ Sync fallback also failed:", syncErr.message);
+          console.error("❌ Sync fallback HTTP status :", syncErr.$metadata?.httpStatusCode);
+          throw new Error(
+            `Could not read the CV PDF. Async error: ${asyncErr.message} | Sync error: ${syncErr.message}`
+          );
+        }
       }
     } else {
-      // Image — sync Textract
-      console.log("🖼️ Image detected — using sync Textract");
+      console.log("🖼️ Image — using sync Textract...");
       try {
         const textractResponse = await textract.send(new DetectDocumentTextCommand({
           Document: { S3Object: { Bucket: BUCKET_NAME, Name: s3Key } },
         }));
         allLines = extractTextLines(textractResponse);
+        console.log("✅ Image Textract succeeded. Lines:", allLines.length);
       } catch (syncErr) {
-        console.error("❌ Sync Textract failed:", syncErr);
+        console.error("❌ Image Textract failed:", syncErr.message);
+        console.error("❌ Image Textract HTTP status:", syncErr.$metadata?.httpStatusCode);
         throw new Error("Could not read the CV image. Please upload a clear JPG or PNG.");
       }
     }
 
-    console.log(`📝 CV extracted ${allLines.length} lines. First 20:`, allLines.slice(0, 20));
+    console.log(`📝 First 20 lines:`, allLines.slice(0, 20));
 
     if (allLines.length === 0) {
       return res.status(422).json({ success: false, message: "No text could be extracted. Please upload a text-based PDF or a clear image." });
     }
 
-    const cvData    = parseCVFromOcrLines(allLines);
+    const cvData     = parseCVFromOcrLines(allLines);
     const formFields = mapCVToAllSections(cvData);
 
-    console.log("✅ CV name extracted:", { firstName: formFields.firstName, middleName: formFields.middleName, lastName: formFields.lastName });
+    console.log("✅ CV name extracted:", {
+      firstName:  formFields.firstName,
+      middleName: formFields.middleName,
+      lastName:   formFields.lastName,
+    });
 
     const filledCount = Object.entries(formFields).filter(([key, val]) => {
       if (key.startsWith('_') || key.startsWith('cv')) return false;
@@ -1379,9 +1419,17 @@ export const parseCV = async (req, res) => {
 
     const totalExtracted =
       filledCount +
-      (formFields.cvEducation?.length  || 0) +
+      (formFields.cvEducation?.length         || 0) +
       Object.keys(formFields.cvTesting || {}).length +
-      (formFields.cvActivities?.length || 0);
+      (formFields.cvActivities?.length        || 0);
+
+    console.log("📊 Extraction summary:", {
+      filledCount,
+      educationEntries:  formFields.cvEducation?.length         || 0,
+      testingEntries:    Object.keys(formFields.cvTesting || {}).length,
+      activitiesEntries: formFields.cvActivities?.length        || 0,
+      totalExtracted,
+    });
 
     if (totalExtracted === 0) {
       return res.status(422).json({ success: false, message: "Could not extract meaningful data. Please upload a clearer file." });
@@ -1389,9 +1437,10 @@ export const parseCV = async (req, res) => {
 
     if (userId) {
       await Account.findByIdAndUpdate(userId, {
-        cvS3Key: s3Key, cvUploadedAt: new Date(),
+        cvS3Key:      s3Key,
+        cvUploadedAt: new Date(),
         cvExtractedMeta: {
-          email:           cvData._cvEmail || "",
+          email:           cvData._cvEmail          || "",
           educationCount:  (cvData.education  || []).length,
           activitiesCount: (cvData.activities || []).length,
           extractedAt:     new Date(),
@@ -1400,20 +1449,23 @@ export const parseCV = async (req, res) => {
     }
 
     res.status(200).json({
-      success: true,
-      message: `CV scanned successfully. ${totalExtracted} fields/entries extracted.`,
+      success:     true,
+      message:     `CV scanned successfully. ${totalExtracted} fields/entries extracted.`,
       filledCount: totalExtracted,
       summary: {
         profileFields:     filledCount,
-        educationEntries:  (formFields.cvEducation  || []).length,
+        educationEntries:  formFields.cvEducation?.length         || 0,
         testingEntries:    Object.keys(formFields.cvTesting || {}).length,
-        activitiesEntries: (formFields.cvActivities || []).length,
+        activitiesEntries: formFields.cvActivities?.length        || 0,
       },
       data: formFields,
     });
+
   } catch (error) {
-    console.error("❌ CV parse error:", error);
-    if (s3Key) { try { await s3.send(new DeleteObjectCommand({ Bucket: BUCKET_NAME, Key: s3Key })); } catch (_) {} }
+    console.error("❌ CV parse error:", error.message);
+    if (s3Key) {
+      try { await s3.send(new DeleteObjectCommand({ Bucket: BUCKET_NAME, Key: s3Key })); } catch (_) {}
+    }
     res.status(500).json({ success: false, message: error.message || "Server error while parsing CV." });
   }
 };
