@@ -1,21 +1,21 @@
-/* ===== Overlay Background - Matching Home Page ===== */
+/* ===== Overlay Background - Plalite Colour Scheme ===== */
 .signin-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(26, 32, 44, 0.9);
+  background: rgba(15, 23, 42, 0.85);
   backdrop-filter: blur(10px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 10000;
   padding: 20px;
-  animation: fadeIn 0.3s ease-out;
+  animation: signin-fadeIn 0.3s ease-out;
 }
 
-@keyframes signinfadeIn {
+@keyframes signin-fadeIn {
   from {
     opacity: 0;
     backdrop-filter: blur(0px);
@@ -28,9 +28,9 @@
 
 /* ===== Modal Box - Glass Morphism Effect ===== */
 .signin-modal {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(20px);
-  border-radius: 20px;
+  border-radius: 24px;
   padding: 50px 45px;
   width: 100%;
   max-width: 450px;
@@ -40,10 +40,10 @@
     0 25px 50px rgba(0, 0, 0, 0.3),
     0 0 0 1px rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: signin-slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-@keyframes slideUp {
+@keyframes signin-slideUp {
   from {
     opacity: 0;
     transform: translateY(30px) scale(0.95);
@@ -54,7 +54,7 @@
   }
 }
 
-/* ===== Header Accent ===== */
+/* ===== Header Accent - Plalite Teal ===== */
 .signin-modal::before {
   content: "";
   position: absolute;
@@ -62,18 +62,18 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #2C5AA0, #1E3D6F);
-  border-radius: 20px 20px 0 0;
+  background: linear-gradient(90deg, #0891b2, #0e7490);
+  border-radius: 24px 24px 0 0;
 }
 
 /* ===== Close Button ===== */
-.close-btn {
+.signin-close-btn {
   position: absolute;
   top: 20px;
   right: 20px;
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid #E2E8F0;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
   width: 36px;
   height: 36px;
   font-size: 18px;
@@ -82,65 +82,68 @@
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
-  color: #4A5568;
+  color: #64748b;
   font-weight: 300;
 }
 
-.close-btn:hover {
-  background: rgba(44, 90, 160, 0.1);
-  color: #2C5AA0;
-  border-color: #2C5AA0;
+.signin-close-btn:hover {
+  background: rgba(8, 145, 178, 0.1);
+  color: #0891b2;
+  border-color: #0891b2;
   transform: rotate(90deg);
 }
 
 /* ===== Sign In Title ===== */
 .signin-title {
   font-size: 2.2rem;
-  font-weight: 700;
-  color: #1a202c;
+  font-weight: 800;
+  color: #0f172a;
   margin-bottom: 30px;
-  background: linear-gradient(135deg, #2D3748, #4A5568);
+  background: linear-gradient(135deg, #0891b2, #0e7490);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
 }
 
 /* ===== Student Section ===== */
-.student-section {
+.signin-student-section {
   margin-bottom: 30px;
   padding: 25px;
-  background: rgba(247, 250, 252, 0.8);
-  border-radius: 15px;
+  background: rgba(248, 250, 252, 0.9);
+  border-radius: 18px;
   border: 1px solid rgba(226, 232, 240, 0.8);
 }
 
-.student-section h3 {
+.signin-student-section h3 {
   font-size: 1.3rem;
-  font-weight: 600;
-  color: #2C5AA0;
+  font-weight: 700;
+  color: #0891b2;
   margin-bottom: 20px;
   text-align: center;
+  font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
 }
 
 /* ===== Buttons ===== */
-.btn-primary {
-  background: linear-gradient(135deg, #2C5AA0 0%, #1E3D6F 100%);
+.signin-btn-primary {
+  background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
   color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: 14px;
   width: 100%;
   padding: 16px 24px;
   margin-top: 12px;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(44, 90, 160, 0.3);
+  box-shadow: 0 4px 15px rgba(8, 145, 178, 0.3);
   position: relative;
   overflow: hidden;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-.btn-primary::before {
+.signin-btn-primary::before {
   content: "";
   position: absolute;
   top: 0;
@@ -151,66 +154,66 @@
   transition: left 0.5s ease;
 }
 
-.btn-primary:hover:not(:disabled) {
+.signin-btn-primary:hover:not(:disabled) {
   transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(44, 90, 160, 0.4);
+  box-shadow: 0 6px 20px rgba(8, 145, 178, 0.4);
 }
 
-.btn-primary:hover:not(:disabled)::before {
+.signin-btn-primary:hover:not(:disabled)::before {
   left: 100%;
 }
 
-.btn-primary:disabled {
-  background: #A0AEC0;
+.signin-btn-primary:disabled {
+  background: #94a3b8;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
 }
 
 /* ===== Create Account Text ===== */
-.create-account-text {
+.signin-create-account-text {
   margin-top: 25px;
   font-size: 0.95rem;
-  color: #718096;
+  color: #64748b;
   line-height: 1.6;
 }
 
-.link {
-  color: #2C5AA0;
+.signin-link {
+  color: #0891b2;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
   text-decoration: none;
   transition: all 0.3s ease;
   padding: 2px 4px;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
-.link:hover {
-  color: #1E3D6F;
-  background: rgba(44, 90, 160, 0.1);
+.signin-link:hover {
+  color: #0e7490;
+  background: rgba(8, 145, 178, 0.1);
   text-decoration: none;
 }
 
 /* ===== Recommender / College Login ===== */
-.extra-login {
+.signin-extra-login {
   margin-top: 30px;
   display: flex;
   flex-direction: column;
   gap: 12px;
   text-align: left;
   padding-top: 25px;
-  border-top: 2px solid #E2E8F0;
+  border-top: 2px solid #e2e8f0;
 }
 
-.extra-login .link {
+.signin-extra-login .signin-link {
   font-size: 0.9rem;
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: 8px;
   transition: all 0.3s ease;
 }
 
-.extra-login .link:hover {
-  background: rgba(44, 90, 160, 0.05);
+.signin-extra-login .signin-link:hover {
+  background: rgba(8, 145, 178, 0.05);
   transform: translateX(5px);
 }
 
@@ -224,10 +227,11 @@
 
 .signin-form-container h2 {
   font-size: 1.6rem;
-  font-weight: 600;
-  color: #2C5AA0;
+  font-weight: 700;
+  color: #0891b2;
   margin-bottom: 25px;
   text-align: center;
+  font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
 }
 
 .signin-form-container form {
@@ -242,31 +246,31 @@
   font-weight: 600;
   margin-top: 15px;
   font-size: 0.95rem;
-  color: #2D3748;
+  color: #334155;
 }
 
-.signin-form-container input:not(.password-input) {
+.signin-form-container input:not(.signin-password-input) {
   margin-top: 8px;
   padding: 14px 16px;
-  border-radius: 10px;
-  border: 2px solid #E2E8F0;
+  border-radius: 12px;
+  border: 2px solid #e2e8f0;
   font-size: 1rem;
-  font-family: "Poppins", sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   transition: all 0.3s ease;
   background: white;
-  color: #2D3748;
+  color: #0f172a;
 }
 
-.signin-form-container input:not(.password-input):focus {
-  border-color: #2C5AA0;
-  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+.signin-form-container input:not(.signin-password-input):focus {
+  border-color: #0891b2;
+  box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
   outline: none;
   transform: translateY(-2px);
 }
 
 .signin-form-container input:disabled {
-  background: #f7fafc;
-  color: #A0AEC0;
+  background: #f8fafc;
+  color: #94a3b8;
   cursor: not-allowed;
 }
 
@@ -275,33 +279,33 @@
 }
 
 /* ===== Password Input Container with Toggle Button ===== */
-.password-input-container {
+.signin-password-input-container {
   position: relative;
   margin-bottom: 0;
 }
 
-.password-input {
+.signin-password-input {
   width: 100%;
   padding: 14px 50px 14px 16px;
-  border: 2px solid #E2E8F0;
-  border-radius: 10px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
   font-size: 1rem;
   transition: all 0.3s ease;
   box-sizing: border-box;
   background: white;
-  font-family: "Poppins", sans-serif;
-  height: 52px; /* Fixed height for consistent centering */
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  height: 52px;
   margin-top: 8px;
 }
 
-.password-input:focus {
-  border-color: #2C5AA0;
-  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+.signin-password-input:focus {
+  border-color: #0891b2;
+  box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
   outline: none;
   transform: translateY(-2px);
 }
 
-.password-toggle-btn {
+.signin-password-toggle-btn {
   position: absolute;
   right: 12px;
   top: 50%;
@@ -310,74 +314,69 @@
   border: none;
   cursor: pointer;
   padding: 6px;
-  border-radius: 6px;
+  border-radius: 8px;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  color: #718096;
+  width: 36px;
+  height: 36px;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 12px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-.password-toggle-btn:hover {
-  background: rgba(44, 90, 160, 0.1);
-  color: #2C5AA0;
+.signin-password-toggle-btn:hover {
+  background: rgba(8, 145, 178, 0.1);
+  color: #0891b2;
 }
 
-.password-toggle-btn:disabled {
+.signin-password-toggle-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.password-toggle-btn:disabled:hover {
+.signin-password-toggle-btn:disabled:hover {
   background: none;
-  color: #718096;
-}
-
-.eye-icon,
-.eye-off-icon {
-  width: 20px;
-  height: 20px;
-  stroke: currentColor;
-  padding-bottom: 15px; /* Added to center the eye icon vertically */
+  color: #64748b;
 }
 
 /* ===== Back Link ===== */
-.back-link {
+.signin-back-link {
   margin-top: 25px;
-  color: #2C5AA0;
+  color: #0891b2;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
   padding: 10px 16px;
-  border-radius: 8px;
+  border-radius: 10px;
   transition: all 0.3s ease;
   display: inline-flex;
   align-items: center;
   gap: 8px;
 }
 
-.back-link:hover {
-  color: #1E3D6F;
-  background: rgba(44, 90, 160, 0.1);
+.signin-back-link:hover {
+  color: #0e7490;
+  background: rgba(8, 145, 178, 0.1);
   transform: translateX(-5px);
 }
 
 /* ===== Error Message ===== */
-.error-message {
-  background: linear-gradient(135deg, rgba(229, 62, 62, 0.1) 0%, rgba(229, 62, 62, 0.05) 100%);
-  color: #742A2A;
+.signin-error-message {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+  color: #991b1b;
   padding: 16px 20px;
-  border-radius: 12px;
+  border-radius: 14px;
   margin-bottom: 25px;
-  border-left: 4px solid #E53E3E;
+  border-left: 4px solid #ef4444;
   font-size: 0.9rem;
   font-weight: 500;
-  animation: slideDown 0.3s ease-in-out;
+  animation: signin-slideDown 0.3s ease-in-out;
   text-align: left;
 }
 
-@keyframes slideDown {
+@keyframes signin-slideDown {
   from {
     opacity: 0;
     transform: translateY(-10px);
@@ -388,12 +387,12 @@
   }
 }
 
-.error-message strong {
-  color: #E53E3E;
+.signin-error-message strong {
+  color: #ef4444;
 }
 
 /* ===== Loading Animation ===== */
-@keyframes pulse {
+@keyframes signin-pulse {
   0% {
     opacity: 1;
   }
@@ -405,8 +404,8 @@
   }
 }
 
-.btn-primary:disabled {
-  animation: pulse 1.5s ease-in-out infinite;
+.signin-btn-primary:disabled {
+  animation: signin-pulse 1.5s ease-in-out infinite;
 }
 
 /* ===== Responsive Design ===== */
@@ -424,7 +423,7 @@
     font-size: 2rem;
   }
   
-  .student-section {
+  .signin-student-section {
     padding: 20px;
   }
 }
@@ -432,7 +431,7 @@
 @media (max-width: 480px) {
   .signin-modal {
     padding: 35px 25px;
-    border-radius: 16px;
+    border-radius: 20px;
   }
   
   .signin-title {
@@ -443,12 +442,12 @@
     font-size: 1.4rem;
   }
   
-  .btn-primary {
+  .signin-btn-primary {
     padding: 14px 20px;
     font-size: 0.95rem;
   }
   
-  .close-btn {
+  .signin-close-btn {
     top: 15px;
     right: 15px;
     width: 32px;
@@ -456,22 +455,17 @@
     font-size: 16px;
   }
   
-  .password-input {
+  .signin-password-input {
     padding: 12px 45px 12px 14px;
     height: 48px;
   }
   
-  .password-toggle-btn {
+  .signin-password-toggle-btn {
     right: 10px;
     padding: 6px;
-    width: 30px;
-    height: 30px;
-  }
-  
-  .eye-icon,
-  .eye-off-icon {
-    width: 18px;
-    height: 18px;
+    width: 32px;
+    height: 32px;
+    font-size: 11px;
   }
 }
 
@@ -485,25 +479,33 @@
     font-size: 1.6rem;
   }
   
-  .signin-form-container input:not(.password-input) {
+  .signin-form-container input:not(.signin-password-input) {
     padding: 12px 14px;
   }
   
-  .password-input {
+  .signin-password-input {
     padding: 10px 40px 10px 12px;
     font-size: 0.9rem;
     height: 44px;
   }
   
-  .password-toggle-btn {
+  .signin-password-toggle-btn {
     right: 8px;
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
+    font-size: 10px;
   }
-  
-  .eye-icon,
-  .eye-off-icon {
-    width: 16px;
-    height: 16px;
+}
+
+/* ============================================================
+   ACCESSIBILITY - REDUCED MOTION
+============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

@@ -11,14 +11,8 @@ const IBSubjectTestsSection = ({ formData, handleInputChange, clearAnswer }) => 
   // Score options for IB Tests (1-7)
   const scoreOptions = [7, 6, 5, 4, 3, 2, 1];
 
-  // Level options
-  const levelOptions = ['Higher level (HL)', 'Standard level (SL)'];
-
-  // Month options for date selection
-  const monthOptions = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
+  // Level options (SL/HL) - matching document
+  const levelOptions = ['SL', 'HL'];
 
   // Year options grid (1998 to current year + 1) in 4-column layout
   const currentYear = new Date().getFullYear();
@@ -41,7 +35,7 @@ const IBSubjectTestsSection = ({ formData, handleInputChange, clearAnswer }) => 
     
     for (let i = 0; i < count; i++) {
       const test = tests[i];
-      if (!test || !test.month || !test.year || !test.subject || !test.level) {
+      if (!test || !test.subject || !test.level || !test.year) {
         return false;
       }
     }
@@ -69,7 +63,7 @@ const IBSubjectTestsSection = ({ formData, handleInputChange, clearAnswer }) => 
     else if (count > tests.length) {
       const newTests = [...tests];
       for (let i = tests.length; i < count; i++) {
-        newTests.push({ month: '', year: '', subject: '', level: '', score: '' });
+        newTests.push({ subject: '', level: '', score: '', year: '' });
       }
       setTests(newTests);
       handleInputChange({ target: { name: 'ibSubjectTests', value: newTests } });
@@ -88,15 +82,6 @@ const IBSubjectTestsSection = ({ formData, handleInputChange, clearAnswer }) => 
   const handleTestChange = (index, field, value) => {
     const updatedTests = tests.map((test, i) => 
       i === index ? { ...test, [field]: value } : test
-    );
-    setTests(updatedTests);
-    handleInputChange({ target: { name: 'ibSubjectTests', value: updatedTests } });
-  };
-
-  // Handle month selection
-  const handleMonthChange = (index, month) => {
-    const updatedTests = tests.map((test, i) => 
-      i === index ? { ...test, month, year: test.year } : test
     );
     setTests(updatedTests);
     handleInputChange({ target: { name: 'ibSubjectTests', value: updatedTests } });
@@ -122,45 +107,35 @@ const IBSubjectTestsSection = ({ formData, handleInputChange, clearAnswer }) => 
     return showErrors && !test[field];
   };
 
-  // Format date for display
-  const formatDate = (test) => {
-    if (test.month && test.year) {
-      return `${test.month} ${test.year}`;
-    }
-    return '';
-  };
-
   // Handle validate and continue
   const handleContinue = () => {
-    if (numberOfTests === '' || (parseInt(numberOfTests) > 0 && tests.some(test => !test.month || !test.year || !test.subject || !test.level))) {
+    if (numberOfTests === '' || (parseInt(numberOfTests) > 0 && tests.some(test => !test.subject || !test.level || !test.year))) {
       setShowErrors(true);
-    } else {
-      // Continue logic would go here
     }
   };
 
   return (
-    <div className="ib-container">
-      <div className="ib-card">
-        <div className="ib-card-header">
-          <h2 className="ib-card-title">IB Subject Tests</h2>
-          <div className="ib-status-badge">
+    <div className="ibsubjecttestssection-container">
+      <div className="ibsubjecttestssection-card">
+        <div className="ibsubjecttestssection-card-header">
+          <h2 className="ibsubjecttestssection-card-title">IB Subject Tests</h2>
+          <div className="ibsubjecttestssection-status-badge">
             {isSectionComplete() ? 'Complete' : 'In Progress'}
           </div>
         </div>
         
-        <div className="ib-form-content">
+        <div className="ibsubjecttestssection-form-content">
           {/* Number of Tests Question */}
-          <div className="ib-form-group">
-            <label className="ib-question-label required">
+          <div className="ibsubjecttestssection-form-group">
+            <label className="ibsubjecttestssection-question-label required">
               Number of IB Tests you wish to report, including tests you expect to take*
             </label>
-            <div className="ib-select-group">
+            <div className="ibsubjecttestssection-select-group">
               <select
                 name="numberOfIBTests"
                 value={numberOfTests}
                 onChange={handleNumberOfTestsChange}
-                className={`ib-select ${showErrors && !numberOfTests ? 'error' : ''}`}
+                className={`ibsubjecttestssection-select ${showErrors && !numberOfTests ? 'error' : ''}`}
               >
                 <option value="">- Choose an option -</option>
                 {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
@@ -169,7 +144,7 @@ const IBSubjectTestsSection = ({ formData, handleInputChange, clearAnswer }) => 
               </select>
             </div>
             {showErrors && !numberOfTests && (
-              <div className="ib-error-message">
+              <div className="ibsubjecttestssection-error-message">
                 Please complete this required question.
               </div>
             )}
@@ -177,82 +152,18 @@ const IBSubjectTestsSection = ({ formData, handleInputChange, clearAnswer }) => 
 
           {/* Dynamic Test Forms based on number selected */}
           {numberOfTests && parseInt(numberOfTests) > 0 && (
-            <div className="ib-tests-container">
+            <div className="ibsubjecttestssection-tests-container">
               {tests.map((test, index) => (
-                <div key={index} className="ib-test-entry">
+                <div key={index} className="ibsubjecttestssection-test-entry">
                   <h3>Test {index + 1}</h3>
                   
-                  {/* Date Field with Month Selection and Year Grid */}
-                  <div className="ib-form-group">
-                    <label className="ib-question-label required">Date taken or planned*</label>
-                    <div className="ib-date-selection">
-                      <div className="ib-month-year-selection">
-                        <div className="ib-month-select-container">
-                          <select
-                            value={test.month || ''}
-                            onChange={(e) => handleMonthChange(index, e.target.value)}
-                            className={`ib-select ${isFieldMissing(test, 'month') ? 'error' : ''}`}
-                          >
-                            <option value="">Month</option>
-                            {monthOptions.map(month => (
-                              <option key={month} value={month}>{month}</option>
-                            ))}
-                          </select>
-                        </div>
-                        
-                        <div className="ib-year-select-container">
-                          <div 
-                            className={`ib-year-display ${isFieldMissing(test, 'year') ? 'error' : ''}`}
-                            onClick={() => toggleYearGrid(index)}
-                          >
-                            {test.year || 'Year'}
-                            <span className="ib-dropdown-arrow">▼</span>
-                          </div>
-                          
-                          {showYearGrid === index && (
-                            <div className="ib-year-grid-container">
-                              <div className="ib-year-grid">
-                                {yearRows.map((row, rowIndex) => (
-                                  <div key={rowIndex} className="ib-year-row">
-                                    {row.map(year => (
-                                      <div
-                                        key={year}
-                                        className={`ib-year-option ${test.year === year.toString() ? 'selected' : ''}`}
-                                        onClick={() => handleYearSelect(index, year)}
-                                      >
-                                        {year}
-                                      </div>
-                                    ))}
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="ib-date-format-hint">
-                        Date uses "month year" format (e.g. August 2002)
-                      </div>
-                    </div>
-                    {(isFieldMissing(test, 'month') || isFieldMissing(test, 'year')) && (
-                      <div className="ib-error-message">
-                        Please complete this required question.
-                      </div>
-                    )}
-                    {formatDate(test) && (
-                      <div className="ib-selected-date">
-                        Selected: {formatDate(test)}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Subject Field */}
-                  <div className="ib-form-group">
-                    <label className="ib-question-label required">Subject*</label>
+                  {/* Subject Field - First as per document order */}
+                  <div className="ibsubjecttestssection-form-group">
+                    <label className="ibsubjecttestssection-question-label required">Subject*</label>
                     <select
                       value={test.subject || ''}
                       onChange={(e) => handleTestChange(index, 'subject', e.target.value)}
-                      className={`ib-select ${isFieldMissing(test, 'subject') ? 'error' : ''}`}
+                      className={`ibsubjecttestssection-select ${isFieldMissing(test, 'subject') ? 'error' : ''}`}
                     >
                       <option value="">- Choose an option -</option>
                       {ibSubjects.map(subject => (
@@ -260,20 +171,20 @@ const IBSubjectTestsSection = ({ formData, handleInputChange, clearAnswer }) => 
                       ))}
                     </select>
                     {isFieldMissing(test, 'subject') && (
-                      <div className="ib-error-message">
+                      <div className="ibsubjecttestssection-error-message">
                         Please complete this required question.
                       </div>
                     )}
                   </div>
 
-                  {/* Level Field */}
-                  <div className="ib-form-group">
-                    <label className="ib-question-label required">Level (select the one that applies)*</label>
-                    <div className="ib-select-with-clear">
+                  {/* Level Field (SL/HL) */}
+                  <div className="ibsubjecttestssection-form-group">
+                    <label className="ibsubjecttestssection-question-label required">Level (SL/HL)*</label>
+                    <div className="ibsubjecttestssection-select-with-clear">
                       <select
                         value={test.level || ''}
                         onChange={(e) => handleTestChange(index, 'level', e.target.value)}
-                        className={`ib-select ${isFieldMissing(test, 'level') ? 'error' : ''}`}
+                        className={`ibsubjecttestssection-select ${isFieldMissing(test, 'level') ? 'error' : ''}`}
                       >
                         <option value="">- Choose an option -</option>
                         {levelOptions.map(level => (
@@ -283,7 +194,7 @@ const IBSubjectTestsSection = ({ formData, handleInputChange, clearAnswer }) => 
                       {test.level && (
                         <button 
                           type="button" 
-                          className="ib-clear-link"
+                          className="ibsubjecttestssection-clear-link"
                           onClick={() => handleTestChange(index, 'level', '')}
                         >
                           Clear answer
@@ -291,18 +202,18 @@ const IBSubjectTestsSection = ({ formData, handleInputChange, clearAnswer }) => 
                       )}
                     </div>
                     {isFieldMissing(test, 'level') && (
-                      <div className="ib-error-message">
+                      <div className="ibsubjecttestssection-error-message">
                         Please complete this required question.
                       </div>
                     )}
                   </div>
 
                   {/* Score Field - Radio buttons for IB scores (1-7) */}
-                  <div className="ib-form-group">
-                    <label className="ib-question-label">Score</label>
-                    <div className="ib-score-radio-group-horizontal">
+                  <div className="ibsubjecttestssection-form-group">
+                    <label className="ibsubjecttestssection-question-label">Score (1-7)</label>
+                    <div className="ibsubjecttestssection-score-radio-group-horizontal">
                       {scoreOptions.map(score => (
-                        <label key={score} className="ib-score-radio-option">
+                        <label key={score} className="ibsubjecttestssection-score-radio-option">
                           <input
                             type="radio"
                             name={`score-${index}`}
@@ -317,11 +228,50 @@ const IBSubjectTestsSection = ({ formData, handleInputChange, clearAnswer }) => 
                     {test.score && (
                       <button 
                         type="button" 
-                        className="ib-clear-link"
+                        className="ibsubjecttestssection-clear-link"
                         onClick={() => handleTestChange(index, 'score', '')}
                       >
                         Clear answer
                       </button>
+                    )}
+                  </div>
+
+                  {/* Year Field */}
+                  <div className="ibsubjecttestssection-form-group">
+                    <label className="ibsubjecttestssection-question-label required">Year*</label>
+                    <div className="ibsubjecttestssection-year-select-container">
+                      <div 
+                        className={`ibsubjecttestssection-year-display ${isFieldMissing(test, 'year') ? 'error' : ''}`}
+                        onClick={() => toggleYearGrid(index)}
+                      >
+                        {test.year || 'Select Year'}
+                        <span className="ibsubjecttestssection-dropdown-arrow">▼</span>
+                      </div>
+                      
+                      {showYearGrid === index && (
+                        <div className="ibsubjecttestssection-year-grid-container">
+                          <div className="ibsubjecttestssection-year-grid">
+                            {yearRows.map((row, rowIndex) => (
+                              <div key={rowIndex} className="ibsubjecttestssection-year-row">
+                                {row.map(year => (
+                                  <div
+                                    key={year}
+                                    className={`ibsubjecttestssection-year-option ${test.year === year.toString() ? 'selected' : ''}`}
+                                    onClick={() => handleYearSelect(index, year)}
+                                  >
+                                    {year}
+                                  </div>
+                                ))}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    {isFieldMissing(test, 'year') && (
+                      <div className="ibsubjecttestssection-error-message">
+                        Please complete this required question.
+                      </div>
                     )}
                   </div>
                 </div>

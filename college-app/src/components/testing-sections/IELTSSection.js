@@ -9,6 +9,10 @@ const IELTSSection = ({
   clearRelatedFields 
 }) => {
   const [showScoreForm, setShowScoreForm] = useState(false);
+  const [selectedYear, setSelectedYear] = useState(null);
+  const [selectedMonth, setSelectedMonth] = useState(null);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [currentDateField, setCurrentDateField] = useState(null);
 
   // Determine if we should show score form based on past tests
   useEffect(() => {
@@ -22,20 +26,34 @@ const IELTSSection = ({
     bandScores.push(i.toFixed(1));
   }
 
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  // Generate years from 1990 to 2026
+  const generateYears = () => {
+    const years = [];
+    for (let year = 1990; year <= 2026; year++) {
+      years.push(year);
+    }
+    return years;
+  };
+
   // Check if section is complete
   const isSectionComplete = () => {
-    // Check if past tests and future sittings are selected
-    if (!formData.ieltsPastTests || !formData.ieltsFutureSittings) return false;
+    if (!formData.ieltsPastTests) return false;
     
     const pastTests = parseInt(formData.ieltsPastTests);
     
-    // If past tests > 0, check score fields
+    // If past tests > 0, check all score fields and test date
     if (pastTests > 0) {
-      if (!formData.ieltsHighestListeningScore || !formData.ieltsListeningScoreDate) return false;
-      if (!formData.ieltsHighestReadingScore || !formData.ieltsReadingScoreDate) return false;
-      if (!formData.ieltsHighestWritingScore || !formData.ieltsWritingScoreDate) return false;
-      if (!formData.ieltsHighestSpeakingScore || !formData.ieltsSpeakingScoreDate) return false;
-      if (!formData.ieltsHighestOverallScore || !formData.ieltsOverallScoreDate) return false;
+      if (!formData.ieltsTestDate) return false;
+      if (!formData.ieltsListeningScore) return false;
+      if (!formData.ieltsReadingScore) return false;
+      if (!formData.ieltsWritingScore) return false;
+      if (!formData.ieltsSpeakingScore) return false;
+      if (!formData.ieltsOverallBandScore) return false;
     }
     
     return true;
@@ -44,52 +62,103 @@ const IELTSSection = ({
   // Handle clearing past IELTS tests and related fields
   const handleClearPastTests = () => {
     clearRelatedFields('ieltsPastTests', [
-      'ieltsHighestListeningScore', 'ieltsListeningScoreDate',
-      'ieltsHighestReadingScore', 'ieltsReadingScoreDate',
-      'ieltsHighestWritingScore', 'ieltsWritingScoreDate',
-      'ieltsHighestSpeakingScore', 'ieltsSpeakingScoreDate',
-      'ieltsHighestOverallScore', 'ieltsOverallScoreDate'
+      'ieltsTestDate',
+      'ieltsListeningScore',
+      'ieltsReadingScore',
+      'ieltsWritingScore',
+      'ieltsSpeakingScore',
+      'ieltsOverallBandScore'
     ]);
   };
 
-  // Handle clearing future IELTS sittings
-  const handleClearFutureSittings = () => {
-    clearAnswer('ieltsFutureSittings');
+  // Handle year selection for date picker
+  const handleYearSelect = (field, year) => {
+    setSelectedYear(year);
+    setCurrentDateField(field);
+    setShowCalendar(true);
   };
 
+  // Handle month selection for date picker
+  const handleMonthSelect = (month) => {
+    setSelectedMonth(month);
+  };
+
+  // Confirm date selection
+  const handleConfirmDate = () => {
+    if (selectedMonth && selectedYear && currentDateField) {
+      const fullDate = `${selectedMonth} ${selectedYear}`;
+      const event = {
+        target: {
+          name: currentDateField,
+          value: fullDate
+        }
+      };
+      handleInputChange(event);
+      setShowCalendar(false);
+      setSelectedYear(null);
+      setSelectedMonth(null);
+      setCurrentDateField(null);
+    }
+  };
+
+  // Close calendar when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showCalendar && !event.target.closest('.ieltssection-calendar-container')) {
+        setShowCalendar(false);
+        setSelectedYear(null);
+        setSelectedMonth(null);
+        setCurrentDateField(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showCalendar]);
+
   return (
-    <div className="ielts-container">
-      <div className="ielts-card">
-        <div className="ielts-card-header">
-          <h2 className="ielts-card-title">IELTS</h2>
-          <div className="ielts-status-badge">
+    <div className="ieltssection-container">
+      <div className="ieltssection-card">
+        <div className="ieltssection-card-header">
+          <h2 className="ieltssection-card-title">IELTS</h2>
+          <div className="ieltssection-status-badge">
             {isSectionComplete() ? 'Complete' : 'In Progress'}
           </div>
         </div>
         
-        <div className="ielts-form-content">
-          {/* Number of Past IELTS Tests */}
-          <div className="ielts-form-group">
-            <label className="ielts-question-label required">
-              Number of times you have already taken the IELTS*
+        <div className="ieltssection-form-content">
+          {/* Have you taken the IELTS? */}
+          <div className="ieltssection-form-group">
+            <label className="ieltssection-question-label required">
+              Have you taken the IELTS?*
             </label>
-            <div className="ielts-radio-group-vertical">
-              {[0, 1, 2, 3, 4, 5].map(num => (
-                <label key={num} className="ielts-radio-option">
-                  <input
-                    type="radio"
-                    name="ieltsPastTests"
-                    value={num.toString()}
-                    checked={formData.ieltsPastTests === num.toString()}
-                    onChange={handleInputChange}
-                  />
-                  <span>{num}</span>
-                </label>
-              ))}
+            <div className="ieltssection-radio-group-vertical">
+              <label className="ieltssection-radio-option">
+                <input
+                  type="radio"
+                  name="ieltsPastTests"
+                  value="1"
+                  checked={formData.ieltsPastTests === '1'}
+                  onChange={handleInputChange}
+                />
+                <span>Yes</span>
+              </label>
+              <label className="ieltssection-radio-option">
+                <input
+                  type="radio"
+                  name="ieltsPastTests"
+                  value="0"
+                  checked={formData.ieltsPastTests === '0'}
+                  onChange={handleInputChange}
+                />
+                <span>No</span>
+              </label>
             </div>
             <button 
               type="button" 
-              className="ielts-clear-link"
+              className="ieltssection-clear-link"
               onClick={handleClearPastTests}
               disabled={!formData.ieltsPastTests}
             >
@@ -97,218 +166,164 @@ const IELTSSection = ({
             </button>
           </div>
 
-          {/* Number of Future IELTS Sittings */}
-          <div className="ielts-form-group">
-            <label className="ielts-question-label required">
-              Number of future IELTS sittings you expect*
-            </label>
-            <div className="ielts-radio-group-vertical">
-              {[0, 1, 2, 3].map(num => (
-                <label key={num} className="ielts-radio-option">
-                  <input
-                    type="radio"
-                    name="ieltsFutureSittings"
-                    value={num.toString()}
-                    checked={formData.ieltsFutureSittings === num.toString()}
-                    onChange={handleInputChange}
-                  />
-                  <span>{num}</span>
-                </label>
-              ))}
-            </div>
-            <button 
-              type="button" 
-              className="ielts-clear-link"
-              onClick={handleClearFutureSittings}
-              disabled={!formData.ieltsFutureSittings}
-            >
-              Clear answer
-            </button>
-          </div>
-
-          {/* Score Form - Only show if past tests > 0 */}
+          {/* Score Form - Only show if past tests = Yes */}
           {showScoreForm && (
-            <div className="ielts-detailed-fields">
-              <h3>IELTS Scores</h3>
-              
-              {/* Listening Score */}
-              <div className="ielts-form-row">
-                <div className="ielts-form-field">
-                  <div className="ielts-form-group">
-                    <label className="ielts-question-label required">Highest listening score*</label>
-                    <select 
-                      name="ieltsHighestListeningScore"
-                      value={formData.ieltsHighestListeningScore || ''}
-                      onChange={handleInputChange}
-                      className="ielts-select"
+            <div className="ieltssection-detailed-fields">
+              {/* Test Date */}
+              <div className="ieltssection-form-group">
+                <label className="ieltssection-question-label required">Test Date*</label>
+                <div className="ieltssection-input-container">
+                  {!formData.ieltsTestDate ? (
+                    <select
+                      value={selectedYear || ''}
+                      onChange={(e) => handleYearSelect('ieltsTestDate', e.target.value)}
+                      className="ieltssection-select"
                     >
-                      <option value="">Choose an option</option>
-                      {bandScores.map(score => (
-                        <option key={score} value={score}>{score}</option>
+                      <option value="">- Select Year -</option>
+                      {generateYears().map(year => (
+                        <option key={year} value={year}>{year}</option>
                       ))}
                     </select>
-                  </div>
+                  ) : (
+                    <div className="ieltssection-selected-date">
+                      {formData.ieltsTestDate}
+                      <button
+                        type="button"
+                        className="ieltssection-change-date"
+                        onClick={() => {
+                          const event = { target: { name: 'ieltsTestDate', value: '' } };
+                          handleInputChange(event);
+                        }}
+                      >
+                        Change
+                      </button>
+                    </div>
+                  )}
+                  <div className="ieltssection-field-note">Date uses "month year" format (e.g., August 2020)</div>
                 </div>
-                <div className="ielts-form-field">
-                  <div className="ielts-form-group">
-                    <label className="ielts-question-label required">Listening score date*</label>
-                    <input
-                      type="text"
-                      name="ieltsListeningScoreDate"
-                      value={formData.ieltsListeningScoreDate || ''}
-                      onChange={handleInputChange}
-                      placeholder="Month day, year"
-                      className="ielts-date-input"
-                    />
-                    <div className="ielts-form-helper">
-                      Date uses "month day, year" format (e.g. August 1, 2002)
+
+                {/* Calendar Popup */}
+                {showCalendar && currentDateField === 'ieltsTestDate' && (
+                  <div className="ieltssection-calendar-container">
+                    <div className="ieltssection-calendar-header">
+                      Select Month for {selectedYear}
+                    </div>
+                    <div className="ieltssection-calendar-grid">
+                      {months.map(month => (
+                        <button
+                          key={month}
+                          type="button"
+                          className={`ieltssection-calendar-month ${selectedMonth === month ? 'selected' : ''}`}
+                          onClick={() => handleMonthSelect(month)}
+                        >
+                          {month}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="ieltssection-calendar-actions">
+                      <button
+                        type="button"
+                        className="ieltssection-calendar-confirm"
+                        onClick={handleConfirmDate}
+                        disabled={!selectedMonth || !selectedYear}
+                      >
+                        Confirm
+                      </button>
+                      <button
+                        type="button"
+                        className="ieltssection-calendar-cancel"
+                        onClick={() => {
+                          setShowCalendar(false);
+                          setSelectedYear(null);
+                          setSelectedMonth(null);
+                          setCurrentDateField(null);
+                        }}
+                      >
+                        Cancel
+                      </button>
                     </div>
                   </div>
-                </div>
+                )}
+              </div>
+
+              {/* Listening Score */}
+              <div className="ieltssection-form-group">
+                <label className="ieltssection-question-label">Listening Score</label>
+                <select 
+                  name="ieltsListeningScore"
+                  value={formData.ieltsListeningScore || ''}
+                  onChange={handleInputChange}
+                  className="ieltssection-select"
+                >
+                  <option value="">Choose an option</option>
+                  {bandScores.map(score => (
+                    <option key={score} value={score}>{score}</option>
+                  ))}
+                </select>
               </div>
 
               {/* Reading Score */}
-              <div className="ielts-form-row">
-                <div className="ielts-form-field">
-                  <div className="ielts-form-group">
-                    <label className="ielts-question-label required">Highest reading score*</label>
-                    <select 
-                      name="ieltsHighestReadingScore"
-                      value={formData.ieltsHighestReadingScore || ''}
-                      onChange={handleInputChange}
-                      className="ielts-select"
-                    >
-                      <option value="">Choose an option</option>
-                      {bandScores.map(score => (
-                        <option key={score} value={score}>{score}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="ielts-form-field">
-                  <div className="ielts-form-group">
-                    <label className="ielts-question-label required">Reading score date*</label>
-                    <input
-                      type="text"
-                      name="ieltsReadingScoreDate"
-                      value={formData.ieltsReadingScoreDate || ''}
-                      onChange={handleInputChange}
-                      placeholder="Month day, year"
-                      className="ielts-date-input"
-                    />
-                    <div className="ielts-form-helper">
-                      Date uses "month day, year" format (e.g. August 1, 2002)
-                    </div>
-                  </div>
-                </div>
+              <div className="ieltssection-form-group">
+                <label className="ieltssection-question-label">Reading Score</label>
+                <select 
+                  name="ieltsReadingScore"
+                  value={formData.ieltsReadingScore || ''}
+                  onChange={handleInputChange}
+                  className="ieltssection-select"
+                >
+                  <option value="">Choose an option</option>
+                  {bandScores.map(score => (
+                    <option key={score} value={score}>{score}</option>
+                  ))}
+                </select>
               </div>
 
               {/* Writing Score */}
-              <div className="ielts-form-row">
-                <div className="ielts-form-field">
-                  <div className="ielts-form-group">
-                    <label className="ielts-question-label required">Highest writing score*</label>
-                    <select 
-                      name="ieltsHighestWritingScore"
-                      value={formData.ieltsHighestWritingScore || ''}
-                      onChange={handleInputChange}
-                      className="ielts-select"
-                    >
-                      <option value="">Choose an option</option>
-                      {bandScores.map(score => (
-                        <option key={score} value={score}>{score}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="ielts-form-field">
-                  <div className="ielts-form-group">
-                    <label className="ielts-question-label required">Writing score date*</label>
-                    <input
-                      type="text"
-                      name="ieltsWritingScoreDate"
-                      value={formData.ieltsWritingScoreDate || ''}
-                      onChange={handleInputChange}
-                      placeholder="Month day, year"
-                      className="ielts-date-input"
-                    />
-                    <div className="ielts-form-helper">
-                      Date uses "month day, year" format (e.g. August 1, 2002)
-                    </div>
-                  </div>
-                </div>
+              <div className="ieltssection-form-group">
+                <label className="ieltssection-question-label">Writing Score</label>
+                <select 
+                  name="ieltsWritingScore"
+                  value={formData.ieltsWritingScore || ''}
+                  onChange={handleInputChange}
+                  className="ieltssection-select"
+                >
+                  <option value="">Choose an option</option>
+                  {bandScores.map(score => (
+                    <option key={score} value={score}>{score}</option>
+                  ))}
+                </select>
               </div>
 
               {/* Speaking Score */}
-              <div className="ielts-form-row">
-                <div className="ielts-form-field">
-                  <div className="ielts-form-group">
-                    <label className="ielts-question-label required">Highest speaking score*</label>
-                    <select 
-                      name="ieltsHighestSpeakingScore"
-                      value={formData.ieltsHighestSpeakingScore || ''}
-                      onChange={handleInputChange}
-                      className="ielts-select"
-                    >
-                      <option value="">Choose an option</option>
-                      {bandScores.map(score => (
-                        <option key={score} value={score}>{score}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="ielts-form-field">
-                  <div className="ielts-form-group">
-                    <label className="ielts-question-label required">Speaking score date*</label>
-                    <input
-                      type="text"
-                      name="ieltsSpeakingScoreDate"
-                      value={formData.ieltsSpeakingScoreDate || ''}
-                      onChange={handleInputChange}
-                      placeholder="Month day, year"
-                      className="ielts-date-input"
-                    />
-                    <div className="ielts-form-helper">
-                      Date uses "month day, year" format (e.g. August 1, 2002)
-                    </div>
-                  </div>
-                </div>
+              <div className="ieltssection-form-group">
+                <label className="ieltssection-question-label">Speaking Score</label>
+                <select 
+                  name="ieltsSpeakingScore"
+                  value={formData.ieltsSpeakingScore || ''}
+                  onChange={handleInputChange}
+                  className="ieltssection-select"
+                >
+                  <option value="">Choose an option</option>
+                  {bandScores.map(score => (
+                    <option key={score} value={score}>{score}</option>
+                  ))}
+                </select>
               </div>
 
               {/* Overall Band Score */}
-              <div className="ielts-form-row">
-                <div className="ielts-form-field">
-                  <div className="ielts-form-group">
-                    <label className="ielts-question-label required">Highest IELTS overall band score*</label>
-                    <select 
-                      name="ieltsHighestOverallScore"
-                      value={formData.ieltsHighestOverallScore || ''}
-                      onChange={handleInputChange}
-                      className="ielts-select"
-                    >
-                      <option value="">Choose an option</option>
-                      {bandScores.map(score => (
-                        <option key={score} value={score}>{score}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="ielts-form-field">
-                  <div className="ielts-form-group">
-                    <label className="ielts-question-label required">IELTS overall band score date*</label>
-                    <input
-                      type="text"
-                      name="ieltsOverallScoreDate"
-                      value={formData.ieltsOverallScoreDate || ''}
-                      onChange={handleInputChange}
-                      placeholder="Month day, year"
-                      className="ielts-date-input"
-                    />
-                    <div className="ielts-form-helper">
-                      Date uses "month day, year" format (e.g. August 1, 2002)
-                    </div>
-                  </div>
-                </div>
+              <div className="ieltssection-form-group">
+                <label className="ieltssection-question-label">Overall Band Score</label>
+                <select 
+                  name="ieltsOverallBandScore"
+                  value={formData.ieltsOverallBandScore || ''}
+                  onChange={handleInputChange}
+                  className="ieltssection-select"
+                >
+                  <option value="">Choose an option</option>
+                  {bandScores.map(score => (
+                    <option key={score} value={score}>{score}</option>
+                  ))}
+                </select>
               </div>
             </div>
           )}

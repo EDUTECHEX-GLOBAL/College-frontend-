@@ -1,16 +1,16 @@
 /* src/components/testing-sections/SATTestsSection.css */
 /* ============================================================
-   SATTestsSection.css — Blue Theme
-   Primary: #3b82f6 | Matches PTE Academic Tests design system
+   SATTestsSection.css — Light Teal Theme
+   Primary: #0ba5a0 | Matches ACTTestsSection design system
    ============================================================ */
 
 :root {
-  --sat-primary:          #3b82f6;
-  --sat-primary-dark:     #2563eb;
-  --sat-primary-light:    #60a5fa;
-  --sat-primary-pale:     #eff6ff;
-  --sat-primary-border:   #bfdbfe;
-  --sat-primary-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  --sat-primary:          #0ba5a0;
+  --sat-primary-dark:     #0a8c88;
+  --sat-primary-light:    #3bc9c4;
+  --sat-primary-pale:     #e6f7f6;
+  --sat-primary-border:   #b2e8e6;
+  --sat-primary-gradient: linear-gradient(135deg, #0ba5a0 0%, #0891b2 100%);
 
   --sat-success:          #10b981;
   --sat-success-bg:       #ecfdf5;
@@ -18,7 +18,7 @@
   --sat-error-bg:         #fef2f2;
 
   --sat-white:            #ffffff;
-  --sat-bg:               #f8fafc;
+  --sat-bg:               #f4fafa;
   --sat-gray-50:          #fafafa;
   --sat-gray-100:         #f5f5f5;
   --sat-gray-200:         #e5e5e5;
@@ -30,7 +30,7 @@
 
   --sat-shadow-sm:        0 1px 3px rgba(0,0,0,0.05);
   --sat-shadow-md:        0 4px 14px rgba(0,0,0,0.07);
-  --sat-shadow-blue:      0 4px 18px rgba(59,130,246,0.18);
+  --sat-shadow-teal:      0 4px 18px rgba(11,165,160,0.18);
 
   --sat-radius-sm:        8px;
   --sat-radius:           12px;
@@ -42,124 +42,321 @@
 }
 
 /* Main Container */
-.sat-tests-section {
+.sat-container {
+  min-height: 100vh;
+  background: var(--sat-bg);
+  font-family: var(--sat-font);
+  padding: 0 0 80px;
+}
+
+/* Main Card */
+.sat-card {
   background: var(--sat-white);
-  margin: 20px 32px;
   border-radius: var(--sat-radius);
   border: 1px solid var(--sat-gray-200);
   box-shadow: var(--sat-shadow-sm);
-  max-width: 100%;
+  margin: 20px 32px;
   overflow: hidden;
-  font-family: var(--sat-font);
 }
 
-/* Section Header */
-.sat-tests-section .section-header {
-  border-bottom: 1px solid var(--sat-gray-200);
+/* Card Header */
+.sat-card-header {
   background: var(--sat-white);
-}
-
-.sat-tests-section h2 {
-  background: var(--sat-white);
-  margin: 0;
   padding: 24px 28px;
+  border-bottom: 1px solid var(--sat-gray-200);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.sat-card-title {
+  font-family: var(--sat-font-display);
   font-size: 22px;
   font-weight: 600;
   color: var(--sat-gray-900);
-  font-family: var(--sat-font-display);
+  margin: 0;
   letter-spacing: -0.3px;
-  border-bottom: 1px solid var(--sat-gray-200);
 }
 
 /* Status Badge */
-.sat-tests-section .section-status {
-  padding: 12px 28px;
-  font-size: 13px;
-  font-weight: 500;
-  display: flex;
+.sat-status-badge {
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-family: var(--sat-font);
-}
-
-.sat-tests-section .section-status.in-progress {
+  gap: 6px;
   background: var(--sat-primary-pale);
   color: var(--sat-primary-dark);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: var(--sat-radius-full);
 }
 
-.sat-tests-section .section-status.complete {
-  background: var(--sat-success-bg);
-  color: var(--sat-success);
-}
-
-.sat-tests-section .status-indicator {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-  flex-shrink: 0;
-}
-
-.sat-tests-section .section-status.in-progress .status-indicator {
-  background: var(--sat-primary);
-}
-
-.sat-tests-section .section-status.complete .status-indicator {
-  background: var(--sat-success);
+.sat-status-badge::before {
+  content: "●";
+  font-size: 10px;
+  color: var(--sat-primary);
 }
 
 /* Form Content */
-.sat-tests-section .form-content {
+.sat-form-content {
   padding: 28px;
-  max-width: 100%;
 }
 
 /* Form Groups */
-.sat-tests-section .form-group {
+.sat-form-group {
   margin-bottom: 28px;
   padding-bottom: 28px;
   border-bottom: 1px solid var(--sat-gray-200);
 }
 
-.sat-tests-section .form-group:last-child {
+.sat-form-group:last-child {
   border-bottom: none;
   margin-bottom: 0;
   padding-bottom: 0;
 }
 
-.sat-tests-section .question-text {
+/* Question Label */
+.sat-question-label {
+  display: block;
   font-size: 14px;
-  color: var(--sat-gray-700);
-  margin: 0 0 12px 0;
-  line-height: 1.5;
   font-weight: 600;
+  color: var(--sat-gray-700);
+  margin-bottom: 8px;
+  line-height: 1.5;
 }
 
-.sat-tests-section .question-text.required::after {
+.sat-question-label.required::after {
   content: "*";
   color: var(--sat-primary);
   margin-left: 4px;
 }
 
-/* Select Group */
-.select-group {
-  margin-bottom: 8px;
-  position: relative;
-  display: inline-block;
-  width: auto;
+/* Radio Groups - Vertical */
+.sat-radio-group-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
+.sat-radio-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border: 1.5px solid var(--sat-gray-200);
+  border-radius: var(--sat-radius-sm);
+  background: var(--sat-white);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--sat-gray-700);
+  transition: all var(--sat-transition);
+}
+
+.sat-radio-option:hover {
+  border-color: var(--sat-primary-light);
+  background: var(--sat-primary-pale);
+  color: var(--sat-primary);
+}
+
+.sat-radio-option input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--sat-primary);
+  cursor: pointer;
+}
+
+.sat-radio-option:has(input:checked) {
+  border-color: var(--sat-primary);
+  background: var(--sat-primary-pale);
+  color: var(--sat-primary);
+  font-weight: 600;
+}
+
+/* Attempt Card */
+.sat-attempt-card {
+  background: var(--sat-gray-50);
+  border: 1px solid var(--sat-gray-200);
+  border-radius: var(--sat-radius);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.sat-attempt-card:last-child {
+  margin-bottom: 0;
+}
+
+.sat-attempt-card h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--sat-gray-900);
+  margin: 0 0 16px 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--sat-gray-200);
+  font-family: var(--sat-font);
+}
+
+/* Input Container for Date Picker */
+.sat-input-container {
+  position: relative;
+}
+
+/* Selected Date Display */
+.sat-selected-date {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--sat-gray-200);
+  border-radius: var(--sat-radius-sm);
+  background: var(--sat-gray-50);
+  font-size: 14px;
+  color: var(--sat-gray-700);
+  max-width: 300px;
+}
+
+.sat-change-date {
+  background: none;
+  border: none;
+  color: var(--sat-primary);
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  margin-left: auto;
+  white-space: nowrap;
+  transition: color var(--sat-transition);
+}
+
+.sat-change-date:hover {
+  color: var(--sat-primary-dark);
+}
+
+/* Field Note / Helper Text */
+.sat-field-note {
+  font-size: 12px;
+  color: var(--sat-gray-400);
+  margin-top: 6px;
+  font-style: italic;
+}
+
+/* Calendar Popup */
+.sat-calendar-container {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 200;
+  background: var(--sat-white);
+  border: 1px solid var(--sat-gray-200);
+  border-radius: var(--sat-radius);
+  padding: 16px;
+  box-shadow: var(--sat-shadow-md);
+  min-width: 280px;
+}
+
+.sat-calendar-header {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sat-gray-900);
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.sat-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.sat-calendar-month {
+  background: var(--sat-gray-100);
+  border: 1px solid var(--sat-gray-200);
+  border-radius: var(--sat-radius-sm);
+  padding: 8px 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--sat-gray-700);
+  cursor: pointer;
+  transition: all var(--sat-transition);
+  text-align: center;
+}
+
+.sat-calendar-month:hover {
+  background: var(--sat-primary);
+  color: white;
+  border-color: var(--sat-primary);
+}
+
+.sat-calendar-month.selected {
+  background: var(--sat-primary);
+  color: white;
+  border-color: var(--sat-primary);
+}
+
+.sat-calendar-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.sat-calendar-confirm {
+  flex: 1;
+  background: var(--sat-primary);
+  border: none;
+  border-radius: var(--sat-radius-sm);
+  padding: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: white;
+  cursor: pointer;
+  transition: all var(--sat-transition);
+}
+
+.sat-calendar-confirm:hover:not(:disabled) {
+  background: var(--sat-primary-dark);
+}
+
+.sat-calendar-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sat-calendar-cancel {
+  flex: 1;
+  background: none;
+  border: 1px solid var(--sat-gray-200);
+  border-radius: var(--sat-radius-sm);
+  padding: 8px;
+  font-size: 13px;
+  color: var(--sat-gray-600);
+  cursor: pointer;
+  transition: all var(--sat-transition);
+}
+
+.sat-calendar-cancel:hover {
+  background: var(--sat-gray-100);
+  color: var(--sat-gray-900);
+}
+
+/* Select Inputs */
 .sat-select {
-  width: 140px;
-  padding: 10px 32px 10px 12px;
+  width: 100%;
+  max-width: 300px;
+  padding: 10px 12px;
   border: 1.5px solid var(--sat-gray-200);
   border-radius: var(--sat-radius-sm);
   font-size: 14px;
+  font-family: var(--sat-font);
   background: var(--sat-white);
   color: var(--sat-gray-900);
   cursor: pointer;
-  font-family: var(--sat-font);
   transition: all var(--sat-transition);
+  outline: none;
   appearance: none;
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
   background-repeat: no-repeat;
@@ -168,303 +365,229 @@
 }
 
 .sat-select:focus {
-  outline: none;
   border-color: var(--sat-primary);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+  box-shadow: 0 0 0 3px rgba(11, 165, 160, 0.12);
 }
 
 .sat-select:hover {
   border-color: var(--sat-gray-400);
 }
 
-/* Clear Field Button */
-.clear-field-btn {
+/* Clear Link */
+.sat-clear-link {
+  display: inline-block;
   background: none;
   border: none;
+  font-size: 12px;
   color: var(--sat-gray-400);
-  font-size: 18px;
+  text-decoration: underline;
   cursor: pointer;
-  padding: 4px 8px;
+  font-family: var(--sat-font);
+  padding: 4px 0;
   transition: color var(--sat-transition);
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 2;
-  border-radius: var(--sat-radius-sm);
-}
-
-.clear-field-btn:hover {
-  color: var(--sat-error);
-}
-
-.clear-field-btn.select-clear {
-  right: 32px;
-}
-
-/* Clear Link */
-.clear-link-container {
   margin-top: 8px;
 }
 
-.clear-link {
-  background: none;
-  border: none;
+.sat-clear-link:hover:not(:disabled) {
   color: var(--sat-primary);
+}
+
+.sat-clear-link:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Form Helper Text */
+.sat-form-helper {
   font-size: 12px;
-  cursor: pointer;
-  padding: 6px 0;
-  text-decoration: underline;
-  transition: color var(--sat-transition);
-  display: inline-block;
+  color: var(--sat-gray-400);
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--sat-gray-200);
+  font-style: italic;
 }
 
-.clear-link:hover {
-  color: var(--sat-primary-dark);
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* Radio Group */
-.radio-group-vertical {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.radio-group-vertical .radio-option {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-  font-size: 14px;
-  color: var(--sat-gray-700);
-  padding: 10px 14px;
-  border-radius: var(--sat-radius-sm);
-  transition: all var(--sat-transition);
-  position: relative;
-  min-height: 44px;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  border: 1.5px solid transparent;
-}
-
-.radio-group-vertical .radio-option:hover {
-  background: var(--sat-gray-50);
-  border-color: var(--sat-gray-200);
-}
-
-.radio-group-vertical .radio-option input[type="radio"] {
-  position: absolute;
-  opacity: 0;
-  cursor: pointer;
-  width: 0;
-  height: 0;
-}
-
-.radio-checkmark {
-  width: 20px;
-  height: 20px;
-  border: 2px solid var(--sat-gray-300);
-  border-radius: 50%;
-  position: relative;
-  transition: all var(--sat-transition);
-  flex-shrink: 0;
-  background: var(--sat-white);
-}
-
-.radio-group-vertical .radio-option input[type="radio"]:checked + .radio-checkmark {
-  border-color: var(--sat-primary);
-  background: var(--sat-primary);
-}
-
-.radio-group-vertical .radio-option input[type="radio"]:checked + .radio-checkmark::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 8px;
-  height: 8px;
-  background: var(--sat-white);
-  border-radius: 50%;
-}
-
-.radio-group-vertical .radio-option input[type="radio"]:checked ~ .radio-label {
-  color: var(--sat-primary);
-  font-weight: 500;
-}
-
-.radio-label {
-  transition: color var(--sat-transition);
-  flex: 1;
-}
-
-/* Focus accessibility */
-.radio-option:focus-within {
-  outline: 2px solid var(--sat-primary);
-  outline-offset: 2px;
-  border-radius: var(--sat-radius-sm);
+.sat-calendar-container {
+  animation: fadeIn 0.2s ease-out;
 }
 
 /* Responsive Design */
 @media (max-width: 1023px) {
-  .sat-tests-section {
+  .sat-card {
     margin: 20px 24px;
   }
-
-  .sat-tests-section .form-content {
+  
+  .sat-card-header {
+    padding: 20px 24px;
+  }
+  
+  .sat-form-content {
     padding: 24px;
   }
-
-  .sat-tests-section h2 {
-    padding: 20px 24px;
-    font-size: 20px;
-  }
-
-  .sat-tests-section .section-status {
-    padding: 10px 24px;
+  
+  .sat-select,
+  .sat-selected-date {
+    max-width: 100%;
   }
 }
 
 @media (max-width: 767px) {
-  .sat-tests-section {
+  .sat-card {
     margin: 16px;
   }
-
-  .sat-tests-section .form-content {
+  
+  .sat-card-header {
+    padding: 16px 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .sat-card-title {
+    font-size: 19px;
+  }
+  
+  .sat-form-content {
     padding: 20px;
   }
-
-  .sat-tests-section h2 {
-    padding: 18px 20px;
-    font-size: 18px;
+  
+  .sat-attempt-card {
+    padding: 16px;
   }
-
-  .sat-tests-section .section-status {
-    padding: 10px 20px;
-    font-size: 12px;
+  
+  .sat-attempt-card h3 {
+    font-size: 15px;
+    margin-bottom: 14px;
   }
-
-  .sat-tests-section .form-group {
-    margin-bottom: 24px;
-    padding-bottom: 24px;
-  }
-
-  .select-group {
-    display: block;
+  
+  .sat-radio-option {
     width: 100%;
   }
-
+  
   .sat-select {
-    width: 100%;
     max-width: 100%;
   }
-
-  .clear-field-btn.select-clear {
-    right: 8px;
+  
+  .sat-selected-date {
+    max-width: 100%;
+    flex-wrap: wrap;
   }
-
-  .radio-group-vertical .radio-option {
-    padding: 8px 12px;
+  
+  .sat-change-date {
+    margin-left: 0;
   }
-
-  .radio-checkmark {
-    width: 18px;
-    height: 18px;
+  
+  .sat-calendar-container {
+    min-width: 0;
+    width: 100%;
+    left: 0;
+    right: 0;
+  }
+  
+  .sat-calendar-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
 @media (max-width: 480px) {
-  .sat-tests-section {
+  .sat-card {
     margin: 12px;
   }
-
-  .sat-tests-section .form-content {
+  
+  .sat-card-header {
+    padding: 14px 16px;
+  }
+  
+  .sat-card-title {
+    font-size: 18px;
+  }
+  
+  .sat-form-content {
     padding: 16px;
   }
-
-  .sat-tests-section h2 {
-    padding: 14px 16px;
-    font-size: 16px;
-  }
-
-  .sat-tests-section .section-status {
-    padding: 8px 16px;
-    font-size: 11px;
-  }
-
-  .sat-tests-section .form-group {
+  
+  .sat-form-group {
     margin-bottom: 20px;
     padding-bottom: 20px;
   }
-
-  .sat-tests-section .question-text {
+  
+  .sat-question-label {
     font-size: 13px;
   }
-
+  
+  .sat-attempt-card {
+    padding: 12px;
+  }
+  
+  .sat-attempt-card h3 {
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+  
   .sat-select {
-    font-size: 13px;
-    padding: 8px 32px 8px 10px;
-  }
-
-  .radio-group-vertical .radio-option {
     padding: 8px 10px;
     font-size: 13px;
   }
-
-  .radio-checkmark {
-    width: 18px;
-    height: 18px;
+  
+  .sat-selected-date {
+    padding: 8px 10px;
+    font-size: 13px;
   }
-
-  .clear-link {
-    font-size: 11px;
+  
+  .sat-radio-option {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  
+  .sat-calendar-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .sat-calendar-month {
+    padding: 6px 4px;
+    font-size: 12px;
   }
 }
 
 @media (max-width: 360px) {
-  .sat-tests-section {
+  .sat-card {
     margin: 8px;
   }
-
-  .sat-tests-section .form-content {
+  
+  .sat-form-content {
     padding: 12px;
   }
-
-  .sat-tests-section h2 {
-    padding: 12px 14px;
-    font-size: 15px;
+  
+  .sat-card-header {
+    padding: 12px;
   }
-
-  .sat-tests-section .section-status {
-    padding: 6px 14px;
-    font-size: 10px;
+  
+  .sat-card-title {
+    font-size: 16px;
   }
-
-  .radio-group-vertical .radio-option {
-    padding: 6px 8px;
-    font-size: 12px;
+  
+  .sat-attempt-card {
+    padding: 10px;
   }
-
-  .radio-checkmark {
-    width: 16px;
-    height: 16px;
+  
+  .sat-calendar-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
-}
-
-/* Animation for radio selection */
-@keyframes radioPulse {
-  0% {
-    transform: scale(1);
+  
+  .sat-calendar-month {
+    font-size: 11px;
+    padding: 6px 2px;
   }
-  50% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.radio-group-vertical .radio-option input[type="radio"]:checked + .radio-checkmark::after {
-  animation: radioPulse 0.2s ease-out;
 }

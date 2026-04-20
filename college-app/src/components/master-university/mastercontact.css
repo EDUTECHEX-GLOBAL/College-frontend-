@@ -1,0 +1,195 @@
+/* mastercontact.css - Contact Details Styles - Plalite Colour Scheme */
+
+.mastercontact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  animation: mastercontact-fadeIn 0.3s ease-in-out;
+}
+
+@keyframes mastercontact-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mastercontact-header {
+  margin-bottom: 8px;
+}
+
+.mastercontact-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8px;
+  font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
+}
+
+.mastercontact-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.mastercontact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.mastercontact-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mastercontact-group-full {
+  grid-column: span 2;
+}
+
+.mastercontact-label {
+  font-weight: 700;
+  font-size: 14px;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mastercontact-required {
+  color: #ef4444;
+  font-size: 14px;
+}
+
+.mastercontact-input,
+.mastercontact-select {
+  padding: 12px 16px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 14px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: all 0.3s ease;
+  background: white;
+  color: #0f172a;
+}
+
+.mastercontact-input:hover,
+.mastercontact-select:hover {
+  border-color: #cbd5e1;
+}
+
+.mastercontact-input:focus,
+.mastercontact-select:focus {
+  outline: none;
+  border-color: #0891b2;
+  box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+}
+
+.mastercontact-input::placeholder {
+  color: #94a3b8;
+}
+
+.mastercontact-error {
+  border-color: #ef4444 !important;
+}
+
+.mastercontact-error-text {
+  color: #ef4444;
+  font-size: 12px;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .mastercontact-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  
+  .mastercontact-group-full {
+    grid-column: span 1;
+  }
+  
+  .mastercontact-title {
+    font-size: 20px;
+  }
+  
+  .mastercontact-subtitle {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mastercontact-title {
+    font-size: 18px;
+  }
+  
+  .mastercontact-subtitle {
+    font-size: 12px;
+  }
+  
+  .mastercontact-input,
+  .mastercontact-select {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+  
+  .mastercontact-label {
+    font-size: 13px;
+  }
+  
+  .mastercontact-form {
+    gap: 20px;
+  }
+  
+  .mastercontact-grid {
+    gap: 14px;
+  }
+}
+
+/* ============================================================
+   ACCESSIBILITY - REDUCED MOTION
+============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  @keyframes mastercontact-fadeIn {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* ============================================================
+   PRINT STYLES
+============================================================ */
+@media print {
+  .mastercontact-form {
+    animation: none;
+  }
+  
+  .mastercontact-input,
+  .mastercontact-select {
+    border: 1px solid #cbd5e1;
+    background: white;
+  }
+}

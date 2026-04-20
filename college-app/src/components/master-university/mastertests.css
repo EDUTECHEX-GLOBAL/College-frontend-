@@ -1,0 +1,526 @@
+/* mastertests.css - Test Scores + Education Styles - Plalite Colour Scheme */
+
+.master-tests-form {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  animation: master-tests-fadeIn 0.3s ease-in-out;
+}
+
+@keyframes master-tests-fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.master-tests-header {
+  margin-bottom: 8px;
+}
+
+.master-tests-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 8px;
+  font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
+}
+
+.master-tests-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+/* Section wrapper */
+.master-tests-section {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.master-tests-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 4px;
+  font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Selector section */
+.master-tests-selector-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.master-tests-selector-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.master-tests-optional {
+  font-weight: 400;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.master-tests-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Chip button */
+.master-tests-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.master-tests-chip:hover {
+  border-color: #0891b2;
+  color: #0891b2;
+  background: #f0f9ff;
+}
+
+.master-tests-chip--selected {
+  border-color: #0891b2;
+  background: #f0f9ff;
+  color: #0891b2;
+  font-weight: 700;
+}
+
+.master-tests-chip-check {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1.5px solid #cbd5e1;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.master-tests-chip-check--on {
+  background: #0891b2;
+  border-color: #0891b2;
+}
+
+.master-tests-chip-check-mark {
+  font-size: 10px;
+  font-weight: bold;
+  color: white;
+}
+
+/* Education mode toggle */
+.master-tests-edu-mode-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.master-tests-edu-mode-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.master-tests-edu-mode-btn:hover {
+  border-color: #0891b2;
+  color: #0891b2;
+  background: #f0f9ff;
+}
+
+.master-tests-edu-mode-btn.active {
+  border-color: #0891b2;
+  background: linear-gradient(135deg, #0891b2, #0e7490);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(8, 145, 178, 0.35);
+}
+
+/* Grade cards */
+.master-tests-grade-card {
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: box-shadow 0.2s ease;
+}
+
+.master-tests-grade-card:hover {
+  box-shadow: 0 4px 16px rgba(8, 145, 178, 0.1);
+  border-color: #bae6fd;
+}
+
+.master-tests-grade-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.master-tests-grade-badge {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0891b2;
+  background: #f0f9ff;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.master-tests-remove-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.master-tests-remove-btn:hover {
+  color: #ef4444;
+  background: #fef2f2;
+}
+
+/* Branch section */
+.master-tests-branch-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.master-tests-branch-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.master-tests-branch-btn {
+  padding: 7px 14px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  line-height: 1.4;
+}
+
+.master-tests-branch-btn:hover {
+  border-color: #0891b2;
+  color: #0891b2;
+  background: #f0f9ff;
+}
+
+.master-tests-branch-btn--selected {
+  border-color: #0891b2;
+  background: linear-gradient(135deg, #0891b2, #0e7490);
+  color: #fff;
+  font-weight: 700;
+}
+
+/* Clear link */
+.master-tests-clear {
+  background: none;
+  border: none;
+  color: #0891b2;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  width: fit-content;
+  font-weight: 600;
+}
+
+.master-tests-clear:hover {
+  color: #0e7490;
+}
+
+/* Score inputs section */
+.master-tests-scores-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 4px;
+}
+
+.master-tests-scores-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.master-tests-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.master-tests-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.master-tests-label {
+  font-weight: 700;
+  font-size: 14px;
+  color: #334155;
+}
+
+.master-tests-required {
+  color: #ef4444;
+  margin-left: 2px;
+}
+
+.master-tests-input {
+  padding: 12px 16px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 14px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: all 0.3s ease;
+  background: #fff;
+  width: 100%;
+  box-sizing: border-box;
+  color: #0f172a;
+}
+
+.master-tests-input:focus {
+  outline: none;
+  border-color: #0891b2;
+  box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+}
+
+.master-tests-input::placeholder {
+  color: #94a3b8;
+}
+
+.master-tests-select {
+  cursor: pointer;
+  appearance: auto;
+}
+
+.master-tests-error {
+  border-color: #ef4444 !important;
+}
+
+.master-tests-error-text {
+  color: #ef4444;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.master-tests-hint {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+/* Info note */
+.master-tests-note {
+  background: #f0f9ff;
+  padding: 14px 18px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: #0e7490;
+  font-weight: 500;
+  border-left: 3px solid #0891b2;
+}
+
+/* Save status indicator */
+.master-tests-save-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.master-tests-save-status.success {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.master-tests-save-status.error {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+/* ============================================================
+   RESPONSIVE DESIGN
+============================================================ */
+
+@media (max-width: 768px) {
+  .master-tests-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .master-tests-title {
+    font-size: 20px;
+  }
+
+  .master-tests-subtitle {
+    font-size: 13px;
+  }
+
+  .master-tests-checkboxes {
+    gap: 8px;
+  }
+
+  .master-tests-chip {
+    font-size: 12px;
+    padding: 7px 12px;
+  }
+
+  .master-tests-edu-mode-btn {
+    font-size: 13px;
+    padding: 10px 16px;
+  }
+
+  .master-tests-section {
+    padding: 18px;
+  }
+  
+  .master-tests-branch-grid {
+    max-height: 200px;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .master-tests-title {
+    font-size: 18px;
+  }
+  
+  .master-tests-subtitle {
+    font-size: 12px;
+  }
+  
+  .master-tests-section-title {
+    font-size: 15px;
+  }
+  
+  .master-tests-section {
+    padding: 14px;
+  }
+  
+  .master-tests-grade-card {
+    padding: 12px;
+  }
+  
+  .master-tests-input {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+  
+  .master-tests-label {
+    font-size: 13px;
+  }
+  
+  .master-tests-edu-mode-row {
+    flex-direction: column;
+  }
+  
+  .master-tests-edu-mode-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ============================================================
+   ACCESSIBILITY - REDUCED MOTION
+============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  @keyframes master-tests-fadeIn {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* ============================================================
+   PRINT STYLES
+============================================================ */
+@media print {
+  .master-tests-form {
+    animation: none;
+  }
+  
+  .master-tests-input,
+  .master-tests-select {
+    border: 1px solid #cbd5e1;
+    background: white;
+  }
+  
+  .master-tests-note {
+    background: none;
+    border: 1px solid #cbd5e1;
+  }
+  
+  .master-tests-chip,
+  .master-tests-edu-mode-btn,
+  .master-tests-clear,
+  .master-tests-remove-btn {
+    display: none;
+  }
+}

@@ -153,7 +153,7 @@ const PersonalEssay = () => {
             <span className="requirement-value">{collegesRequiringEssay.length} college(s) require</span>
           </div>
           <div className="requirement-item">
-            <span className="requirement-label">Courses &amp; Grades:</span>
+            <span className="requirement-label">Courses and Grades:</span>
             <span className="requirement-value">0 college(s) require</span>
           </div>
         </div>
@@ -166,7 +166,7 @@ const PersonalEssay = () => {
                 <ul>
                   {collegesRequiringEssay.length === 0
                     ? <li className="no-colleges">No colleges require the personal essay</li>
-                    : collegesRequiringEssay.map(c => <li key={c.id}>• {c.name}</li>)}
+                    : collegesRequiringEssay.map(c => <li key={c.id}>- {c.name}</li>)}
                 </ul>
               </div>
               <div className="colleges-not-requiring">
@@ -174,7 +174,7 @@ const PersonalEssay = () => {
                 <ul>
                   {collegesNotRequiringEssay.length === 0
                     ? <li className="no-colleges">All colleges require the personal essay</li>
-                    : collegesNotRequiringEssay.map(c => <li key={c.id}>• {c.name}</li>)}
+                    : collegesNotRequiringEssay.map(c => <li key={c.id}>- {c.name}</li>)}
                 </ul>
               </div>
             </div>
@@ -249,7 +249,7 @@ const PersonalEssay = () => {
             />
             <div className="editor-toolbar">
               <div className="toolbar-buttons">
-                {['B', 'I', 'U', '•'].map((btn, i) => (
+                {['B', 'I', 'U', '*'].map((btn, i) => (
                   <button key={i} className="toolbar-btn" disabled={loading}>{btn}</button>
                 ))}
               </div>

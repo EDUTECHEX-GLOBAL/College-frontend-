@@ -2,394 +2,342 @@
 import React, { useState, useEffect } from 'react';
 import './ACTTestsSection.css';
 
-const ACTTestsSection = ({ 
-  formData, 
+const ACTTestsSection = ({
+  formData,
   handleInputChange,
   clearAnswer,
-  clearRelatedFields 
+  clearRelatedFields
 }) => {
-  const [showSimpleForm, setShowSimpleForm] = useState(true);
+  const [showDetailed, setShowDetailed] = useState(false);
+  const [selectedYear, setSelectedYear] = useState(null);
+  const [selectedMonth, setSelectedMonth] = useState(null);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [currentAttemptIndex, setCurrentAttemptIndex] = useState(null);
 
-  // Determine if we should show simple or detailed form
   useEffect(() => {
     const pastScores = parseInt(formData.pastACTScores || '0');
-    setShowSimpleForm(pastScores === 0);
+    setShowDetailed(pastScores > 0);
   }, [formData.pastACTScores]);
 
-  // Score options for dropdowns
-  const compositeScores = Array.from({ length: 37 }, (_, i) => i);
-  const subjectScores = Array.from({ length: 37 }, (_, i) => i);
+  const scores = Array.from({ length: 37 }, (_, i) => i);
+  const writingScores = Array.from({ length: 13 }, (_, i) => i); // 0-12 for writing
+  const percentileOptions = Array.from({ length: 101 }, (_, i) => i);
 
-  // Handle clearing past ACT scores and related fields
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  const generateYears = () => {
+    const years = [];
+    for (let year = 1990; year <= 2026; year++) {
+      years.push(year);
+    }
+    return years;
+  };
+
   const handleClearPastScores = () => {
-    clearRelatedFields('pastACTScores', [
-      'highestCompositeScore', 'highestCompositeDate',
-      'highestMathScore', 'highestMathDate',
-      'highestEnglishScore', 'highestEnglishDate',
-      'highestReadingScore', 'highestReadingDate',
-      'reportScienceScore', 'highestScienceScore', 'highestScienceDate',
-      'reportWritingScore', 'highestWritingScore', 'highestWritingDate'
-    ]);
+    clearRelatedFields('pastACTScores', ['actAttempts']);
   };
 
-  // Handle clearing future ACT sittings and related fields
-  const handleClearFutureSittings = () => {
-    clearRelatedFields('futureACTSittings', [
-      'futureTestDate1', 'futureTestDate2', 'futureTestDate3'
-    ]);
+  // Handle attempt field changes using array structure
+  const handleAttemptChange = (index, field, value) => {
+    const currentAttempts = formData.actAttempts || [];
+    const updatedAttempts = [...currentAttempts];
+    
+    if (!updatedAttempts[index]) {
+      updatedAttempts[index] = {};
+    }
+    
+    updatedAttempts[index][field] = value;
+    
+    handleInputChange({
+      target: {
+        name: 'actAttempts',
+        value: updatedAttempts
+      }
+    });
   };
+
+  // Handle year selection for date picker
+  const handleYearSelect = (index, year) => {
+    setSelectedYear(year);
+    setCurrentAttemptIndex(index);
+    setShowCalendar(true);
+  };
+
+  const handleMonthSelect = (month) => {
+    setSelectedMonth(month);
+  };
+
+  const handleConfirmDate = () => {
+    if (selectedMonth && selectedYear && currentAttemptIndex !== null) {
+      const fullDate = `${selectedMonth} ${selectedYear}`;
+      handleAttemptChange(currentAttemptIndex, 'date', fullDate);
+      setShowCalendar(false);
+      setSelectedYear(null);
+      setSelectedMonth(null);
+      setCurrentAttemptIndex(null);
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showCalendar && !event.target.closest('.acttestssection-calendar-container')) {
+        setShowCalendar(false);
+        setSelectedYear(null);
+        setSelectedMonth(null);
+        setCurrentAttemptIndex(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showCalendar]);
+
+  const actAttempts = formData.actAttempts || [];
+
+  // Debug logging
+  console.log('ACT Section - formData.pastACTScores:', formData.pastACTScores);
+  console.log('ACT Section - actAttempts:', actAttempts);
 
   return (
-    <div className="act-container">
-      <div className="act-card">
-        <div className="act-card-header">
-          <h2 className="act-card-title">ACT Tests</h2>
-          <div className="act-status-badge">
-            {formData.pastACTScores && formData.futureACTSittings ? 'Complete' : 'In Progress'}
+    <div className="acttestssection-container">
+      <div className="acttestssection-card">
+        <div className="acttestssection-card-header">
+          <h2 className="acttestssection-card-title">ACT Tests</h2>
+          <div className="acttestssection-status-badge">
+            {formData.pastACTScores ? 'Complete' : 'In Progress'}
           </div>
         </div>
-        
-        <div className="act-form-content">
-          {/* Number of Past ACT Scores */}
-          <div className="act-form-group">
-            <label className="act-question-label required">
-              Number of past ACT scores you wish to report*
+
+        <div className="acttestssection-form-content">
+          {/* ===== Past Attempts ===== */}
+          <div className="acttestssection-form-group">
+            <label className="acttestssection-question-label required">
+              Number of past ACT attempts*
             </label>
-            <div className="act-radio-group-vertical">
-              {[0, 1, 2, 3, 4, 5].map(num => (
-                <label key={num} className="act-radio-option">
+
+            <div className="acttestssection-radio-group-vertical">
+              {[0, 1, 2, 3].map(num => (
+                <label key={num} className="acttestssection-radio-option">
                   <input
                     type="radio"
                     name="pastACTScores"
-                    value={num.toString()}
-                    checked={formData.pastACTScores === num.toString()}
+                    value={num}
+                    checked={formData.pastACTScores == num}
                     onChange={handleInputChange}
                   />
                   <span>{num}</span>
                 </label>
               ))}
             </div>
-            <button 
-              type="button" 
-              className="act-clear-link"
+
+            <button
+              type="button"
+              className="acttestssection-clear-link"
               onClick={handleClearPastScores}
-              disabled={!formData.pastACTScores}
             >
-              Clear answer
+              Clear
             </button>
           </div>
 
-          {/* Conditional Fields based on past scores selection */}
-          {!showSimpleForm && (
-            <div className="act-detailed-fields">
-              {/* Composite Score and Date */}
-              <div className="act-field-group">
-                <div className="act-form-group">
-                  <label className="act-question-label required">Highest composite score*</label>
-                  <select 
-                    name="highestCompositeScore"
-                    value={formData.highestCompositeScore || ''}
-                    onChange={handleInputChange}
-                    className="act-select"
-                  >
-                    <option value="">Choose an option</option>
-                    {compositeScores.map(score => (
-                      <option key={score} value={score}>{score}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="act-form-group">
-                  <label className="act-question-label required">Highest composite date*</label>
-                  <input
-                    type="text"
-                    name="highestCompositeDate"
-                    value={formData.highestCompositeDate || ''}
-                    onChange={handleInputChange}
-                    placeholder="Month day, year"
-                    className="act-date-input"
-                  />
-                </div>
-              </div>
+          {/* ===== Attempt-wise Data ===== */}
+          {showDetailed &&
+            Array.from(
+              { length: parseInt(formData.pastACTScores || '0') },
+              (_, index) => {
+                const attempt = actAttempts[index] || {};
+                return (
+                  <div key={index} className="acttestssection-attempt-card">
+                    <h3>Attempt {index + 1}</h3>
 
-              {/* Math Score and Date */}
-              <div className="act-field-group">
-                <div className="act-form-group">
-                  <label className="act-question-label required">Highest math score*</label>
-                  <select 
-                    name="highestMathScore"
-                    value={formData.highestMathScore || ''}
-                    onChange={handleInputChange}
-                    className="act-select"
-                  >
-                    <option value="">Choose an option</option>
-                    {subjectScores.map(score => (
-                      <option key={score} value={score}>{score}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="act-form-group">
-                  <label className="act-question-label required">Highest math date*</label>
-                  <input
-                    type="text"
-                    name="highestMathDate"
-                    value={formData.highestMathDate || ''}
-                    onChange={handleInputChange}
-                    placeholder="Month day, year"
-                    className="act-date-input"
-                  />
-                </div>
-              </div>
+                    {/* Test Date */}
+                    <div className="acttestssection-form-group">
+                      <label className="acttestssection-question-label required">Test Date (YYYY-MM)*</label>
+                      <div className="acttestssection-input-container">
+                        {!attempt.date ? (
+                          <select
+                            value={selectedYear || ''}
+                            onChange={(e) => handleYearSelect(index, e.target.value)}
+                            className="acttestssection-select"
+                          >
+                            <option value="">- Select Year -</option>
+                            {generateYears().map(year => (
+                              <option key={year} value={year}>{year}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <div className="acttestssection-selected-date">
+                            {attempt.date}
+                            <button
+                              type="button"
+                              className="acttestssection-change-date"
+                              onClick={() => handleAttemptChange(index, 'date', '')}
+                            >
+                              Change
+                            </button>
+                          </div>
+                        )}
+                        <div className="acttestssection-field-note">Date uses "month year" format (e.g., August 2020)</div>
+                      </div>
 
-              {/* English Score and Date */}
-              <div className="act-field-group">
-                <div className="act-form-group">
-                  <label className="act-question-label required">Highest English score*</label>
-                  <select 
-                    name="highestEnglishScore"
-                    value={formData.highestEnglishScore || ''}
-                    onChange={handleInputChange}
-                    className="act-select"
-                  >
-                    <option value="">Choose an option</option>
-                    {subjectScores.map(score => (
-                      <option key={score} value={score}>{score}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="act-form-group">
-                  <label className="act-question-label required">Highest English date*</label>
-                  <input
-                    type="text"
-                    name="highestEnglishDate"
-                    value={formData.highestEnglishDate || ''}
-                    onChange={handleInputChange}
-                    placeholder="Month day, year"
-                    className="act-date-input"
-                  />
-                </div>
-              </div>
+                      {/* Calendar Popup */}
+                      {showCalendar && currentAttemptIndex === index && (
+                        <div className="acttestssection-calendar-container">
+                          <div className="acttestssection-calendar-header">
+                            Select Month for {selectedYear}
+                          </div>
+                          <div className="acttestssection-calendar-grid">
+                            {months.map(month => (
+                              <button
+                                key={month}
+                                type="button"
+                                className={`acttestssection-calendar-month ${selectedMonth === month ? 'selected' : ''}`}
+                                onClick={() => handleMonthSelect(month)}
+                              >
+                                {month}
+                              </button>
+                            ))}
+                          </div>
+                          <div className="acttestssection-calendar-actions">
+                            <button
+                              type="button"
+                              className="acttestssection-calendar-confirm"
+                              onClick={handleConfirmDate}
+                              disabled={!selectedMonth || !selectedYear}
+                            >
+                              Confirm
+                            </button>
+                            <button
+                              type="button"
+                              className="acttestssection-calendar-cancel"
+                              onClick={() => {
+                                setShowCalendar(false);
+                                setSelectedYear(null);
+                                setSelectedMonth(null);
+                                setCurrentAttemptIndex(null);
+                              }}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
 
-              {/* Reading Score and Date */}
-              <div className="act-field-group">
-                <div className="act-form-group">
-                  <label className="act-question-label required">Highest reading score*</label>
-                  <select 
-                    name="highestReadingScore"
-                    value={formData.highestReadingScore || ''}
-                    onChange={handleInputChange}
-                    className="act-select"
-                  >
-                    <option value="">Choose an option</option>
-                    {subjectScores.map(score => (
-                      <option key={score} value={score}>{score}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="act-form-group">
-                  <label className="act-question-label required">Highest reading date*</label>
-                  <input
-                    type="text"
-                    name="highestReadingDate"
-                    value={formData.highestReadingDate || ''}
-                    onChange={handleInputChange}
-                    placeholder="Month day, year"
-                    className="act-date-input"
-                  />
-                </div>
-              </div>
+                    {/* Composite Score */}
+                    <div className="acttestssection-form-group">
+                      <label className="acttestssection-question-label">Composite Score (0-36)</label>
+                      <select
+                        value={attempt.composite || ''}
+                        onChange={(e) => handleAttemptChange(index, 'composite', e.target.value)}
+                        className="acttestssection-select"
+                      >
+                        <option value="">Select</option>
+                        {scores.map(s => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                    </div>
 
-              {/* Science Score Reporting */}
-              <div className="act-form-group">
-                <label className="act-question-label required">
-                  Would you like to report an ACT science score?*
-                </label>
-                <div className="act-radio-group-horizontal">
-                  <label className="act-radio-option">
-                    <input
-                      type="radio"
-                      name="reportScienceScore"
-                      value="yes"
-                      checked={formData.reportScienceScore === 'yes'}
-                      onChange={handleInputChange}
-                    />
-                    <span>Yes</span>
-                  </label>
-                  <label className="act-radio-option">
-                    <input
-                      type="radio"
-                      name="reportScienceScore"
-                      value="no"
-                      checked={formData.reportScienceScore === 'no'}
-                      onChange={handleInputChange}
-                    />
-                    <span>No</span>
-                  </label>
-                </div>
-                <button 
-                  type="button" 
-                  className="act-clear-link"
-                  onClick={() => clearAnswer('reportScienceScore')}
-                  disabled={!formData.reportScienceScore}
-                >
-                  Clear answer
-                </button>
-              </div>
+                    {/* Section Scores - 4 columns */}
+                    <div className="acttestssection-section-scores">
+                      <div className="acttestssection-form-group">
+                        <label className="acttestssection-question-label">English Score</label>
+                        <select
+                          value={attempt.english || ''}
+                          onChange={(e) => handleAttemptChange(index, 'english', e.target.value)}
+                          className="acttestssection-select"
+                        >
+                          <option value="">--</option>
+                          {scores.map(s => (
+                            <option key={s} value={s}>{s}</option>
+                          ))}
+                        </select>
+                      </div>
 
-              {/* Science Score (conditional) */}
-              {formData.reportScienceScore === 'yes' && (
-                <div className="act-field-group">
-                  <div className="act-form-group">
-                    <label className="act-question-label required">Highest science score*</label>
-                    <select 
-                      name="highestScienceScore"
-                      value={formData.highestScienceScore || ''}
-                      onChange={handleInputChange}
-                      className="act-select"
-                    >
-                      <option value="">Choose an option</option>
-                      {subjectScores.map(score => (
-                        <option key={score} value={score}>{score}</option>
-                      ))}
-                    </select>
+                      <div className="acttestssection-form-group">
+                        <label className="acttestssection-question-label">Math Score</label>
+                        <select
+                          value={attempt.math || ''}
+                          onChange={(e) => handleAttemptChange(index, 'math', e.target.value)}
+                          className="acttestssection-select"
+                        >
+                          <option value="">--</option>
+                          {scores.map(s => (
+                            <option key={s} value={s}>{s}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="acttestssection-form-group">
+                        <label className="acttestssection-question-label">Reading Score</label>
+                        <select
+                          value={attempt.reading || ''}
+                          onChange={(e) => handleAttemptChange(index, 'reading', e.target.value)}
+                          className="acttestssection-select"
+                        >
+                          <option value="">--</option>
+                          {scores.map(s => (
+                            <option key={s} value={s}>{s}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="acttestssection-form-group">
+                        <label className="acttestssection-question-label">Science Score</label>
+                        <select
+                          value={attempt.science || ''}
+                          onChange={(e) => handleAttemptChange(index, 'science', e.target.value)}
+                          className="acttestssection-select"
+                        >
+                          <option value="">--</option>
+                          {scores.map(s => (
+                            <option key={s} value={s}>{s}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Optional: Writing Score */}
+                    <div className="acttestssection-form-group">
+                      <label className="acttestssection-question-label">Optional: Writing Score</label>
+                      <input
+                        type="number"
+                        value={attempt.writing || ''}
+                        onChange={(e) => handleAttemptChange(index, 'writing', e.target.value)}
+                        placeholder="e.g. 8 (0-12 scale)"
+                        className="acttestssection-date-input"
+                        min="0"
+                        max="12"
+                      />
+                    </div>
+
+                    {/* Optional: Percentile */}
+                    <div className="acttestssection-form-group">
+                      <label className="acttestssection-question-label">Optional: Percentile</label>
+                      <select
+                        value={attempt.percentile || ''}
+                        onChange={(e) => handleAttemptChange(index, 'percentile', e.target.value)}
+                        className="acttestssection-select"
+                      >
+                        <option value="">Select</option>
+                        {percentileOptions.map(p => (
+                          <option key={p} value={p}>{p}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
-                  <div className="act-form-group">
-                    <label className="act-question-label required">Highest science date*</label>
-                    <input
-                      type="text"
-                      name="highestScienceDate"
-                      value={formData.highestScienceDate || ''}
-                      onChange={handleInputChange}
-                      placeholder="Month day, year"
-                      className="act-date-input"
-                    />
-                  </div>
-                </div>
-              )}
+                );
+              }
+            )}
 
-              {/* Writing Score Reporting */}
-              <div className="act-form-group">
-                <label className="act-question-label required">
-                  Would you like to report an ACT writing score?*
-                </label>
-                <div className="act-radio-group-horizontal">
-                  <label className="act-radio-option">
-                    <input
-                      type="radio"
-                      name="reportWritingScore"
-                      value="yes"
-                      checked={formData.reportWritingScore === 'yes'}
-                      onChange={handleInputChange}
-                    />
-                    <span>Yes</span>
-                  </label>
-                  <label className="act-radio-option">
-                    <input
-                      type="radio"
-                      name="reportWritingScore"
-                      value="no"
-                      checked={formData.reportWritingScore === 'no'}
-                      onChange={handleInputChange}
-                    />
-                    <span>No</span>
-                  </label>
-                </div>
-                <button 
-                  type="button" 
-                  className="act-clear-link"
-                  onClick={() => clearAnswer('reportWritingScore')}
-                  disabled={!formData.reportWritingScore}
-                >
-                  Clear answer
-                </button>
-              </div>
-
-              {/* Writing Score (conditional) */}
-              {formData.reportWritingScore === 'yes' && (
-                <div className="act-field-group">
-                  <div className="act-form-group">
-                    <label className="act-question-label required">Highest writing score*</label>
-                    <select 
-                      name="highestWritingScore"
-                      value={formData.highestWritingScore || ''}
-                      onChange={handleInputChange}
-                      className="act-select"
-                    >
-                      <option value="">Choose an option</option>
-                      {subjectScores.map(score => (
-                        <option key={score} value={score}>{score}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="act-form-group">
-                    <label className="act-question-label required">Highest writing date*</label>
-                    <input
-                      type="text"
-                      name="highestWritingDate"
-                      value={formData.highestWritingDate || ''}
-                      onChange={handleInputChange}
-                      placeholder="Month day, year"
-                      className="act-date-input"
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Number of Future ACT Sittings */}
-          <div className="act-form-group">
-            <label className="act-question-label required">
-              Number of future ACT sittings you expect*
-            </label>
-            <div className="act-radio-group-vertical">
-              {[0, 1, 2, 3].map(num => (
-                <label key={num} className="act-radio-option">
-                  <input
-                    type="radio"
-                    name="futureACTSittings"
-                    value={num.toString()}
-                    checked={formData.futureACTSittings === num.toString()}
-                    onChange={handleInputChange}
-                  />
-                  <span>{num}</span>
-                </label>
-              ))}
-            </div>
-            <button 
-              type="button" 
-              className="act-clear-link"
-              onClick={handleClearFutureSittings}
-              disabled={!formData.futureACTSittings}
-            >
-              Clear answer
-            </button>
-          </div>
-
-          {/* Future Test Dates - Conditionally show based on number of future sittings */}
-          {parseInt(formData.futureACTSittings || '0') > 0 && (
-            <div className="act-future-dates">
-              <h3>Future Testing Dates</h3>
-              {Array.from({ length: parseInt(formData.futureACTSittings || '0') }, (_, i) => (
-                <div key={i} className="act-form-group">
-                  <label className="act-question-label required">
-                    Future testing date {i + 1}*
-                  </label>
-                  <input
-                    type="text"
-                    name={`futureTestDate${i + 1}`}
-                    value={formData[`futureTestDate${i + 1}`] || ''}
-                    onChange={handleInputChange}
-                    placeholder="Month year"
-                    className="act-date-input"
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Helper text */}
-          <div className="act-form-helper">
-            * Required fields. Remember to send official score reports to colleges that require them.
+          {/* Helper */}
+          <div className="acttestssection-form-helper">
+            * Required fields. Enter accurate ACT scores for better college recommendations.
           </div>
         </div>
       </div>

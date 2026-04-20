@@ -37,7 +37,7 @@ const TestingForm = () => {
     caid: ''
   });
 
-  // Optional: list of sections (for future use)
+  // Sections list
   const sections = [
     'tests-taken',
     'act-tests',
@@ -53,151 +53,78 @@ const TestingForm = () => {
     'senior-secondary-exams',
   ];
 
-  // Main form state
-  // NOTE: Backend (firstTestingController) calculates testingCompletion & testingProgress
+  // UPDATED: Main form state with NEW schema structure
   const [formData, setFormData] = useState({
     // Tests Taken Section
     selfReportScores: '',
     testsToReport: [],
     internationalPromotionExams: '',
 
-    // ACT Tests
+    // ACT Tests - New attempt-based structure
     pastACTScores: '',
-    futureACTSittings: '',
-    highestCompositeScore: '',
-    highestCompositeDate: '',
-    highestMathScore: '',
-    highestMathDate: '',
-    highestEnglishScore: '',
-    highestEnglishDate: '',
-    highestReadingScore: '',
-    highestReadingDate: '',
-    reportScienceScore: '',
-    highestScienceScore: '',
-    highestScienceDate: '',
-    reportWritingScore: '',
-    highestWritingScore: '',
-    highestWritingDate: '',
-    futureTestDate1: '',
-    futureTestDate2: '',
-    futureTestDate3: '',
+    actAttempts: [],  // Array of { date, composite, english, math, reading, science, writing, percentile }
 
-    // SAT Tests
+    // SAT Tests - New attempt-based structure
     pastSATScores: '',
-    futureSATSittings: '',
-    satHighestMathScore: '',
-    satHighestMathDate: '',
-    satHighestReadingScore: '',
-    satHighestReadingDate: '',
-    satHighestWritingScore: '',
-    satHighestWritingDate: '',
-    satHighestTotalScore: '',
-    satHighestTotalDate: '',
-    satFutureTestDate1: '',
-    satFutureTestDate2: '',
-    satFutureTestDate3: '',
+    satAttempts: [],  // Array of { date, total, math, reading, writing, percentile }
 
     // SAT Subject Tests
-    satSubjectTests: [],
+    numberOfSATSubjectTests: '',
+    satSubjectTests: [],  // Array of { subject, score, date }
 
     // AP Subject Tests
-    apSubjectTests: [],
+    numberOfAPTests: '',
+    apSubjectTests: [],  // Array of { subject, score, month, year }
 
     // IB Subject Tests
-    ibSubjectTests: [],
+    numberOfIBTests: '',
+    ibSubjectTests: [],  // Array of { subject, level, score, year }
 
-    // Cambridge
+    // Cambridge Exams
     cambridgeNumberOfTests: '',
-    cambridgeTests: [],
-    cambridgeCertificateReport: '',
-    cambridgeCertificateDetails: {
-      level: '',
-      date: '',
-    },
+    cambridgeTests: [],  // Array of { subject, level, grade, date }
 
-    // TOEFL iBT
+    // TOEFL iBT - Simplified structure
     toeflPastTests: '',
-    toeflFutureSittings: '',
-    toeflHighestReadingScore: '',
-    toeflReadingScoreDate: '',
-    toeflHighestSpeakingScore: '',
-    toeflSpeakingScoreDate: '',
-    toeflHighestListeningScore: '',
-    toeflListeningScoreDate: '',
-    toeflHighestWritingScore: '',
-    toeflWritingScoreDate: '',
-    toeflHighestTotalScore: '',
-    toeflTotalScoreDate: '',
-    toeflFutureTestDate1: '',
-    toeflFutureTestDate2: '',
-    toeflFutureTestDate3: '',
+    toeflTestDate: '',
+    toeflReadingScore: '',
+    toeflListeningScore: '',
+    toeflSpeakingScore: '',
+    toeflWritingScore: '',
+    toeflTotalScore: '',
 
-    // PTE Academic Tests
+    // PTE Academic - Simplified structure
     ptePastTests: '',
-    pteFutureSittings: '',
-    pteHighestListeningScore: '',
-    pteListeningScoreDate: '',
-    pteHighestReadingScore: '',
-    pteReadingScoreDate: '',
-    pteHighestSpeakingScore: '',
-    pteSpeakingScoreDate: '',
-    pteHighestWritingScore: '',
-    pteWritingScoreDate: '',
-    pteHighestGrammarScore: '',
-    pteGrammarScoreDate: '',
-    pteHighestOralFluencyScore: '',
-    pteOralFluencyScoreDate: '',
-    pteHighestPronunciationScore: '',
-    ptePronunciationScoreDate: '',
-    pteHighestSpellingScore: '',
-    pteSpellingScoreDate: '',
-    pteHighestVocabularyScore: '',
-    pteVocabularyScoreDate: '',
-    pteHighestWrittenDiscourseScore: '',
-    pteWrittenDiscourseScoreDate: '',
-    pteFutureTestDate1: '',
-    pteFutureTestDate2: '',
-    pteFutureTestDate3: '',
+    pteTestDate: '',
+    pteListeningScore: '',
+    pteReadingScore: '',
+    pteSpeakingScore: '',
+    pteWritingScore: '',
+    pteGrammarScore: '',
+    pteVocabularyScore: '',
 
-    // IELTS Fields
+    // IELTS - Simplified structure
     ieltsPastTests: '',
-    ieltsFutureSittings: '',
-    ieltsHighestListeningScore: '',
-    ieltsListeningScoreDate: '',
-    ieltsHighestReadingScore: '',
-    ieltsReadingScoreDate: '',
-    ieltsHighestWritingScore: '',
-    ieltsWritingScoreDate: '',
-    ieltsHighestSpeakingScore: '',
-    ieltsSpeakingScoreDate: '',
-    ieltsHighestOverallScore: '',
-    ieltsOverallScoreDate: '',
-    ieltsFutureTestDate1: '',
-    ieltsFutureTestDate2: '',
-    ieltsFutureTestDate3: '',
+    ieltsTestDate: '',
+    ieltsListeningScore: '',
+    ieltsReadingScore: '',
+    ieltsWritingScore: '',
+    ieltsSpeakingScore: '',
+    ieltsOverallBandScore: '',
 
-    // Duolingo English Test Fields
+    // Duolingo - Simplified structure
     duolingoPastTests: '',
-    duolingoFutureSittings: '',
-    duolingoFutureTestDate1: '',
-    duolingoFutureTestDate2: '',
-    duolingoFutureTestDate3: '',
-    duolingoHighestLiteracyScore: '',
-    duolingoLiteracyScoreDate: '',
-    duolingoHighestComprehensionScore: '',
-    duolingoComprehensionScoreDate: '',
-    duolingoHighestConversationScore: '',
-    duolingoConversationScoreDate: '',
-    duolingoHighestProductionScore: '',
-    duolingoProductionScoreDate: '',
-    duolingoHighestTotalScore: '',
-    duolingoTotalScoreDate: '',
+    duolingoTestDate: '',
+    duolingoLiteracyScore: '',
+    duolingoComprehensionScore: '',
+    duolingoConversationScore: '',
+    duolingoProductionScore: '',
+    duolingoTotalScore: '',
 
     // Senior Secondary Leaving Examinations
     seniorSecondaryExams: [],
   });
 
-  
   // Set active section based on URL
   useEffect(() => {
     if (section) {
@@ -234,15 +161,15 @@ const TestingForm = () => {
         const mergedData = {
           ...formData,
           ...testingData,
-          // Ensure nested/array fields are always defined
+          // Ensure array fields are always defined
           testsToReport: testingData.testsToReport || [],
+          actAttempts: testingData.actAttempts || [],
+          satAttempts: testingData.satAttempts || [],
           satSubjectTests: testingData.satSubjectTests || [],
           apSubjectTests: testingData.apSubjectTests || [],
           ibSubjectTests: testingData.ibSubjectTests || [],
           cambridgeTests: testingData.cambridgeTests || [],
           seniorSecondaryExams: testingData.seniorSecondaryExams || [],
-          cambridgeCertificateDetails:
-            testingData.cambridgeCertificateDetails || { level: '', date: '' },
         };
 
         setFormData(mergedData);
@@ -255,7 +182,6 @@ const TestingForm = () => {
       }
     } catch (error) {
       console.error('Error fetching testing data:', error);
-      // For a brand new user you might get 404 - you can ignore that
       if (error.response?.status !== 404) {
         setMessage({
           type: 'error',
@@ -275,9 +201,7 @@ const TestingForm = () => {
       testingProgress: testingProgress,
       testingData: {
         testsToReport: testingData.testsToReport || [],
-        internationalPromotionExams:
-          testingData.internationalPromotionExams || '',
-        // A few useful counts for dashboard display, etc.
+        internationalPromotionExams: testingData.internationalPromotionExams || '',
         actTests: testingData.pastACTScores || '0',
         satTests: testingData.pastSATScores || '0',
         ieltsTests: testingData.ieltsPastTests || '0',
@@ -298,13 +222,12 @@ const TestingForm = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── NEW: CV auto-fill callback ─────────────────────────────────────────────
-  // Called by TestsTakenSection once the backend parses the uploaded CV.
-  // Receives a flat object of formData-compatible field updates and merges
-  // them into the existing formData state without wiping any manual input.
+  // ── CV auto-fill callback ──
   const handleCVDataExtracted = (mappedUpdates) => {
+    console.log('📥 CV Data Extracted:', mappedUpdates);
+    
     setFormData((prev) => {
-      // Merge testsToReport additively so existing manual selections are kept
+      // Merge testsToReport additively
       let mergedTestsToReport = prev.testsToReport;
       if (mappedUpdates.testsToReport && mappedUpdates.testsToReport.length > 0) {
         mergedTestsToReport = Array.from(
@@ -324,7 +247,23 @@ const TestingForm = () => {
     });
   };
 
-  // Handle simple inputs + nested objects like cambridgeCertificateDetails.level
+  // ── Score document auto-fill callback ──
+  const handleScoreDocExtracted = (extractedFields, testType) => {
+    console.log(`📥 Score document extracted for ${testType}:`, extractedFields);
+    
+    setFormData((prev) => {
+      const next = {
+        ...prev,
+        ...extractedFields,
+      };
+      
+      updateLocalStorageWithTestingData(next, progress);
+      setUpdateTrigger((t) => t + 1);
+      return next;
+    });
+  };
+
+  // Handle simple inputs
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
@@ -343,48 +282,16 @@ const TestingForm = () => {
         [name]: value,
       }));
     }
-
-    if (
-      name === 'internationalPromotionExams' ||
-      name === 'testsToReport' ||
-      name.startsWith('cambridge') ||
-      name.startsWith('toefl') ||
-      name.startsWith('pte') ||
-      name.startsWith('ielts') ||
-      name.startsWith('duolingo')
-    ) {
-      updateLocalStorageWithTestingData(
-        { ...formData, [name]: value },
-        progress
-      );
-      setUpdateTrigger((prev) => prev + 1);
-    }
   };
 
-  // For arrays / complex values coming from child components
+  // For arrays / complex values from child components
   const handleComplexChange = (field, value) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
-
-    if (
-      field === 'testsToReport' ||
-      field.startsWith('cambridge') ||
-      field.startsWith('toefl') ||
-      field.startsWith('pte') ||
-      field.startsWith('ielts') ||
-      field.startsWith('duolingo')
-    ) {
-      updateLocalStorageWithTestingData(
-        { ...formData, [field]: value },
-        progress
-      );
-      setUpdateTrigger((prev) => prev + 1);
-    }
   };
 
-  // FIXED: Updated handleArrayChange to use functional update
   const handleArrayChange = (field, value) => {
     setFormData((prevFormData) => {
       const updatedFormData = {
@@ -393,13 +300,6 @@ const TestingForm = () => {
           ? prevFormData[field].filter((item) => item !== value)
           : [...prevFormData[field], value],
       };
-
-      // Update localStorage with the UPDATED form data immediately
-      if (field === 'testsToReport') {
-        updateLocalStorageWithTestingData(updatedFormData, progress);
-        setUpdateTrigger((prev) => prev + 1);
-      }
-
       return updatedFormData;
     });
   };
@@ -412,17 +312,10 @@ const TestingForm = () => {
   };
 
   const clearArrayAnswer = (field) => {
-    const updatedFormData = {
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [field]: [],
-    };
-
-    setFormData(updatedFormData);
-
-    if (field === 'testsToReport') {
-      updateLocalStorageWithTestingData(updatedFormData, progress);
-      setUpdateTrigger((prev) => prev + 1);
-    }
+    }));
   };
 
   const clearRelatedFields = (mainField, relatedFields) => {
@@ -438,8 +331,7 @@ const TestingForm = () => {
     setUpdateTrigger((prev) => prev + 1);
   };
 
-  // 🔑 Main save function – now very simple:
-  // Backend (firstTestingController) does all validation & progress.
+  // Main save function
   const saveTesting = async () => {
     try {
       setSaving(true);
@@ -471,7 +363,6 @@ const TestingForm = () => {
 
         setProgress(newTestingProgress);
 
-        // The backend sends back the updated testing document
         if (response.data.testing) {
           setFormData((prev) => ({
             ...prev,
@@ -514,7 +405,6 @@ const TestingForm = () => {
       const selectedTests = formData.testsToReport || [];
       
       if (activeSection === 'tests-taken') {
-        // From tests-taken, go to first selected test
         if (selectedTests.length > 0) {
           const firstTest = selectedTests[0];
           navigate(`/firstyear/dashboard/testing/${firstTest}`);
@@ -522,15 +412,12 @@ const TestingForm = () => {
           navigate('/firstyear/dashboard');
         }
       } else {
-        // From a test section, find next test in sequence
         const currentIndex = selectedTests.indexOf(activeSection);
         
         if (currentIndex < selectedTests.length - 1) {
-          // Go to next test in sequence
           const nextTest = selectedTests[currentIndex + 1];
           navigate(`/firstyear/dashboard/testing/${nextTest}`);
         } else {
-          // No more tests, go to dashboard
           navigate('/firstyear/dashboard');
         }
       }
@@ -551,8 +438,6 @@ const TestingForm = () => {
   };
 
   const handleFinalSubmit = async () => {
-    // Final submit just calls saveTesting;
-    // backend still validates and sets final progress.
     const success = await saveTesting();
     if (success) {
       setMessage({
@@ -580,10 +465,7 @@ const TestingForm = () => {
 
   return (
     <div className="testing-container">
-      {/* Header with Logo and User Info */}
       <div className="testing-header">
-        
-        
         <div className="header-bottom">
           <button className="back-button" onClick={handleBackToDashboard}>
             ← Back to Dashboard
@@ -614,7 +496,6 @@ const TestingForm = () => {
         </div>
       </div>
 
-      {/* Main Form Content */}
       <div className="testing-content">
         {message.text && (
           <div
@@ -637,7 +518,6 @@ const TestingForm = () => {
           />
         ) : (
           <>
-            {/* Render the active section component */}
             {activeSection === 'tests-taken' && (
               <TestsTakenSection
                 formData={formData}
@@ -646,6 +526,7 @@ const TestingForm = () => {
                 clearAnswer={clearAnswer}
                 clearArrayAnswer={clearArrayAnswer}
                 onCVDataExtracted={handleCVDataExtracted}
+                onScoreDocExtracted={handleScoreDocExtracted}
               />
             )}
 
@@ -663,6 +544,7 @@ const TestingForm = () => {
                 formData={formData}
                 handleInputChange={handleInputChange}
                 clearAnswer={clearAnswer}
+                clearRelatedFields={clearRelatedFields}
               />
             )}
 
@@ -670,6 +552,8 @@ const TestingForm = () => {
               <SATSubjectTestsSection
                 formData={formData}
                 handleInputChange={handleInputChange}
+                clearAnswer={clearAnswer}
+                clearRelatedFields={clearRelatedFields}
               />
             )}
 
@@ -677,6 +561,7 @@ const TestingForm = () => {
               <APSubjectTestsSection
                 formData={formData}
                 handleInputChange={handleInputChange}
+                clearAnswer={clearAnswer}
               />
             )}
 
@@ -733,7 +618,6 @@ const TestingForm = () => {
               />
             )}
 
-            {/* Action Buttons */}
             <div className="form-actions">
               <button
                 type="button"

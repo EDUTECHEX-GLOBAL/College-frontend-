@@ -1,21 +1,21 @@
 /* ============================================================
-   PTEAcademicTestsSection.css — Blue Theme
-   Primary: #3b82f6 | Clean Modern Design
+   PTEAcademicTestsSection.css — Plalite Colour Scheme
+   Primary: #0891b2 | Accent: #f59e0b
    ============================================================ */
 
 :root {
-  --pte-primary:          #3b82f6;
-  --pte-primary-dark:     #2563eb;
-  --pte-primary-light:    #60a5fa;
-  --pte-primary-pale:     #eff6ff;
-  --pte-primary-border:   #bfdbfe;
-  --pte-primary-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  --pte-primary:          #0891b2;
+  --pte-primary-dark:     #0e7490;
+  --pte-primary-light:    #22d3ee;
+  --pte-primary-pale:     #f0f9ff;
+  --pte-primary-border:   #bae6fd;
+  --pte-primary-gradient: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
 
   --pte-success:          #10b981;
   --pte-success-bg:       #ecfdf5;
 
   --pte-white:            #ffffff;
-  --pte-bg:               #f8fafc;
+  --pte-bg:               #f5f7fa;
   --pte-gray-50:          #fafafa;
   --pte-gray-100:         #f5f5f5;
   --pte-gray-200:         #e5e5e5;
@@ -27,21 +27,21 @@
 
   --pte-shadow-sm:        0 1px 3px rgba(0,0,0,0.05);
   --pte-shadow-md:        0 4px 14px rgba(0,0,0,0.07);
-  --pte-shadow-blue:      0 4px 18px rgba(59,130,246,0.18);
+  --pte-shadow-teal:      0 4px 18px rgba(8,145,178,0.18);
 
   --pte-radius-sm:        8px;
   --pte-radius:           12px;
   --pte-radius-full:      9999px;
 
-  --pte-font:             'DM Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --pte-font-display:     'DM Serif Display', Georgia, serif;
+  --pte-font:             'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --pte-font-display:     'Sora', 'Plus Jakarta Sans', Georgia, serif;
   --pte-transition:       150ms ease;
 }
 
 /* ─────────────────────────────────────────
    CONTAINER
 ───────────────────────────────────────── */
-.pte-container {
+.pteacademictestssection-container {
   min-height: 100vh;
   background: var(--pte-bg);
   font-family: var(--pte-font);
@@ -49,7 +49,7 @@
 }
 
 /* ── MAIN CARD ── */
-.pte-card {
+.pteacademictestssection-card {
   background: var(--pte-white);
   border-radius: var(--pte-radius);
   border: 1px solid var(--pte-gray-200);
@@ -59,77 +59,86 @@
 }
 
 /* ── Card Header ── */
-.pte-card-header {
+.pteacademictestssection-card-header {
   background: var(--pte-white);
   padding: 24px 28px;
   border-bottom: 1px solid var(--pte-gray-200);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
-.pte-card-title {
+.pteacademictestssection-card-title {
   font-family: var(--pte-font-display);
   font-size: 22px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--pte-gray-900);
   margin: 0;
   letter-spacing: -0.3px;
 }
 
-.pte-status-badge {
+.pteacademictestssection-status-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   background: var(--pte-primary-pale);
   color: var(--pte-primary-dark);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   padding: 6px 12px;
   border-radius: var(--pte-radius-full);
-  margin-top: 12px;
 }
 
-.pte-status-badge::before {
+.pteacademictestssection-status-badge::before {
   content: "●";
   font-size: 10px;
   color: var(--pte-primary);
 }
 
 /* ── FORM CONTENT ── */
-.pte-form-content {
+.pteacademictestssection-form-content {
   padding: 28px;
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
 }
 
 /* ── Individual Form Group ── */
-.pte-form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.pteacademictestssection-form-group {
+  margin-bottom: 28px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--pte-gray-200);
 }
 
-.pte-question-label {
+.pteacademictestssection-form-group:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.pteacademictestssection-question-label {
+  display: block;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--pte-gray-700);
-  margin: 0;
+  margin-bottom: 8px;
   line-height: 1.5;
 }
 
-.pte-question-label.required::after {
+.pteacademictestssection-question-label.required::after {
   content: "*";
   color: var(--pte-primary);
   margin-left: 4px;
 }
 
 /* ── Radio Group ── */
-.pte-radio-group-vertical {
+.pteacademictestssection-radio-group-vertical {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  margin-bottom: 12px;
 }
 
-.pte-radio-option {
+.pteacademictestssection-radio-option {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -139,18 +148,18 @@
   background: var(--pte-white);
   cursor: pointer;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--pte-gray-700);
   transition: all var(--pte-transition);
 }
 
-.pte-radio-option:hover {
+.pteacademictestssection-radio-option:hover {
   border-color: var(--pte-primary-light);
   background: var(--pte-primary-pale);
   color: var(--pte-primary);
 }
 
-.pte-radio-option input[type="radio"] {
+.pteacademictestssection-radio-option input[type="radio"] {
   width: 16px;
   height: 16px;
   margin: 0;
@@ -158,74 +167,204 @@
   cursor: pointer;
 }
 
-.pte-radio-option:has(input:checked) {
+.pteacademictestssection-radio-option:has(input:checked) {
   border-color: var(--pte-primary);
   background: var(--pte-primary-pale);
   color: var(--pte-primary);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* ── Clear Answer Link ── */
-.pte-clear-link {
+.pteacademictestssection-clear-link {
+  display: inline-block;
   background: none;
   border: none;
-  color: var(--pte-primary);
+  color: var(--pte-gray-400);
   font-size: 12px;
   cursor: pointer;
   padding: 4px 0;
   text-decoration: underline;
-  text-align: left;
   transition: color var(--pte-transition);
-  align-self: flex-start;
+  margin-top: 8px;
 }
 
-.pte-clear-link:hover:not(:disabled) {
-  color: var(--pte-primary-dark);
+.pteacademictestssection-clear-link:hover:not(:disabled) {
+  color: var(--pte-primary);
 }
 
-.pte-clear-link:disabled {
+.pteacademictestssection-clear-link:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
 /* ── Score Details Sub-section ── */
-.pte-detailed-fields {
+.pteacademictestssection-detailed-fields {
   background: var(--pte-gray-50);
   border: 1px solid var(--pte-gray-200);
   border-radius: var(--pte-radius);
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  padding: 20px;
+  margin: 20px 0;
 }
 
-.pte-detailed-fields h3 {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--pte-gray-900);
-  margin: 0 0 4px 0;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--pte-gray-200);
-  font-family: var(--pte-font);
-}
-
-/* ── Score / Date Pair Row ── */
-.pte-field-group {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
+.pteacademictestssection-detailed-fields .pteacademictestssection-form-group {
+  margin-bottom: 20px;
   padding-bottom: 20px;
   border-bottom: 1px solid var(--pte-gray-200);
 }
 
-.pte-field-group:last-child {
-  padding-bottom: 0;
+.pteacademictestssection-detailed-fields .pteacademictestssection-form-group:last-child {
   border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+/* Input Container for Date Picker */
+.pteacademictestssection-input-container {
+  position: relative;
+}
+
+/* Selected Date Display */
+.pteacademictestssection-selected-date {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--pte-gray-200);
+  border-radius: var(--pte-radius-sm);
+  background: var(--pte-gray-50);
+  font-size: 14px;
+  color: var(--pte-gray-700);
+  max-width: 300px;
+}
+
+.pteacademictestssection-change-date {
+  background: none;
+  border: none;
+  color: var(--pte-primary);
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  margin-left: auto;
+  white-space: nowrap;
+  transition: color var(--pte-transition);
+}
+
+.pteacademictestssection-change-date:hover {
+  color: var(--pte-primary-dark);
+}
+
+/* Field Note / Helper Text */
+.pteacademictestssection-field-note {
+  font-size: 12px;
+  color: var(--pte-gray-400);
+  margin-top: 6px;
+  font-style: italic;
+}
+
+/* Calendar Popup */
+.pteacademictestssection-calendar-container {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 200;
+  background: var(--pte-white);
+  border: 1px solid var(--pte-gray-200);
+  border-radius: var(--pte-radius);
+  padding: 16px;
+  box-shadow: var(--pte-shadow-md);
+  min-width: 280px;
+}
+
+.pteacademictestssection-calendar-header {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--pte-gray-900);
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.pteacademictestssection-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.pteacademictestssection-calendar-month {
+  background: var(--pte-gray-100);
+  border: 1px solid var(--pte-gray-200);
+  border-radius: var(--pte-radius-sm);
+  padding: 8px 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pte-gray-700);
+  cursor: pointer;
+  transition: all var(--pte-transition);
+  text-align: center;
+}
+
+.pteacademictestssection-calendar-month:hover {
+  background: var(--pte-primary);
+  color: white;
+  border-color: var(--pte-primary);
+}
+
+.pteacademictestssection-calendar-month.selected {
+  background: var(--pte-primary);
+  color: white;
+  border-color: var(--pte-primary);
+}
+
+.pteacademictestssection-calendar-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.pteacademictestssection-calendar-confirm {
+  flex: 1;
+  background: var(--pte-primary);
+  border: none;
+  border-radius: var(--pte-radius-sm);
+  padding: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+  transition: all var(--pte-transition);
+}
+
+.pteacademictestssection-calendar-confirm:hover:not(:disabled) {
+  background: var(--pte-primary-dark);
+}
+
+.pteacademictestssection-calendar-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pteacademictestssection-calendar-cancel {
+  flex: 1;
+  background: none;
+  border: 1px solid var(--pte-gray-200);
+  border-radius: var(--pte-radius-sm);
+  padding: 8px;
+  font-size: 13px;
+  color: var(--pte-gray-600);
+  cursor: pointer;
+  transition: all var(--pte-transition);
+}
+
+.pteacademictestssection-calendar-cancel:hover {
+  background: var(--pte-gray-100);
+  color: var(--pte-gray-900);
 }
 
 /* ── Score Dropdown ── */
-.pte-select {
+.pteacademictestssection-select {
   width: 100%;
+  max-width: 300px;
   padding: 10px 12px;
   border: 1.5px solid var(--pte-gray-200);
   border-radius: var(--pte-radius-sm);
@@ -237,45 +376,47 @@
   transition: all var(--pte-transition);
   box-sizing: border-box;
   appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230891b2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
   background-repeat: no-repeat;
   background-position: right 12px center;
   background-size: 16px;
 }
 
-.pte-select:focus {
+.pteacademictestssection-select:focus {
   outline: none;
   border-color: var(--pte-primary);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+  box-shadow: 0 0 0 3px rgba(8,145,178,0.12);
 }
 
-/* ── Date Input ── */
-.pte-date-input {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1.5px solid var(--pte-gray-200);
-  border-radius: var(--pte-radius-sm);
-  font-size: 14px;
-  font-family: var(--pte-font);
-  background: var(--pte-white);
+/* Additional Scores Section */
+.pteacademictestssection-additional-scores {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--pte-gray-200);
+}
+
+.pteacademictestssection-additional-title {
+  font-size: 15px;
+  font-weight: 700;
   color: var(--pte-gray-900);
-  transition: all var(--pte-transition);
-  box-sizing: border-box;
+  margin: 0 0 16px 0;
+  font-family: var(--pte-font);
 }
 
-.pte-date-input:focus {
-  outline: none;
-  border-color: var(--pte-primary);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+.pteacademictestssection-additional-scores .pteacademictestssection-form-group {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--pte-gray-200);
 }
 
-.pte-date-input::placeholder {
-  color: var(--pte-gray-400);
-  font-size: 13px;
+.pteacademictestssection-additional-scores .pteacademictestssection-form-group:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
 }
 
 /* ── Helper Text ── */
-.pte-form-helper {
+.pteacademictestssection-form-helper {
   font-size: 12px;
   color: var(--pte-gray-400);
   margin-top: 6px;
@@ -283,24 +424,41 @@
   line-height: 1.4;
 }
 
+/* Animation */
+@keyframes pte-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pteacademictestssection-calendar-container {
+  animation: pte-fadeIn 0.2s ease-out;
+}
+
 /* ════════════════════════════════════════
    RESPONSIVE — Tablet ≤ 1023px
 ════════════════════════════════════════ */
 @media (max-width: 1023px) {
-  .pte-card {
+  .pteacademictestssection-card {
     margin: 20px 24px;
   }
 
-  .pte-card-header {
+  .pteacademictestssection-card-header {
     padding: 20px 24px;
   }
 
-  .pte-form-content {
+  .pteacademictestssection-form-content {
     padding: 24px;
   }
 
-  .pte-detailed-fields {
-    padding: 20px;
+  .pteacademictestssection-select,
+  .pteacademictestssection-selected-date {
+    max-width: 100%;
   }
 }
 
@@ -308,45 +466,56 @@
    RESPONSIVE — Mobile ≤ 767px
 ════════════════════════════════════════ */
 @media (max-width: 767px) {
-  .pte-card {
+  .pteacademictestssection-card {
     margin: 16px;
   }
 
-  .pte-card-header {
-    padding: 20px;
-  }
-
-  .pte-card-title {
-    font-size: 19px;
-  }
-
-  .pte-form-content {
-    padding: 20px;
-    gap: 22px;
-  }
-
-  /* Stack score + date vertically on mobile */
-  .pte-field-group {
-    grid-template-columns: 1fr;
-    gap: 16px;
-    padding-bottom: 16px;
-  }
-
-  .pte-detailed-fields {
-    padding: 16px;
-    gap: 16px;
-  }
-
-  .pte-detailed-fields h3 {
-    font-size: 15px;
-  }
-
-  .pte-radio-group-vertical {
+  .pteacademictestssection-card-header {
+    padding: 16px 20px;
+    flex-direction: column;
+    align-items: flex-start;
     gap: 8px;
   }
 
-  .pte-radio-option {
+  .pteacademictestssection-card-title {
+    font-size: 19px;
+  }
+
+  .pteacademictestssection-form-content {
+    padding: 20px;
+  }
+
+  .pteacademictestssection-radio-option {
     width: 100%;
+  }
+
+  .pteacademictestssection-select {
+    max-width: 100%;
+  }
+
+  .pteacademictestssection-selected-date {
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .pteacademictestssection-change-date {
+    margin-left: 0;
+  }
+
+  .pteacademictestssection-detailed-fields {
+    padding: 16px;
+    margin: 16px 0;
+  }
+
+  .pteacademictestssection-calendar-container {
+    min-width: 0;
+    width: 100%;
+    left: 0;
+    right: 0;
+  }
+
+  .pteacademictestssection-calendar-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
@@ -354,51 +523,67 @@
    RESPONSIVE — Small Mobile ≤ 480px
 ════════════════════════════════════════ */
 @media (max-width: 480px) {
-  .pte-card {
+  .pteacademictestssection-card {
     margin: 12px;
   }
 
-  .pte-card-header {
-    padding: 16px;
+  .pteacademictestssection-card-header {
+    padding: 14px 16px;
   }
 
-  .pte-card-title {
+  .pteacademictestssection-card-title {
     font-size: 18px;
   }
 
-  .pte-form-content {
+  .pteacademictestssection-form-content {
     padding: 16px;
-    gap: 18px;
   }
 
-  .pte-question-label {
+  .pteacademictestssection-form-group {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+  }
+
+  .pteacademictestssection-question-label {
     font-size: 13px;
   }
 
-  .pte-radio-option {
+  .pteacademictestssection-radio-option {
     padding: 8px 12px;
     font-size: 12px;
   }
 
-  .pte-select,
-  .pte-date-input {
-    padding: 9px 10px;
+  .pteacademictestssection-select {
+    padding: 8px 10px;
     font-size: 13px;
   }
 
-  .pte-detailed-fields {
-    padding: 14px;
-    gap: 14px;
-    border-radius: var(--pte-radius-sm);
+  .pteacademictestssection-selected-date {
+    padding: 8px 10px;
+    font-size: 13px;
   }
 
-  .pte-detailed-fields h3 {
+  .pteacademictestssection-detailed-fields {
+    padding: 12px;
+  }
+
+  .pteacademictestssection-additional-scores {
+    margin-top: 16px;
+    padding-top: 16px;
+  }
+
+  .pteacademictestssection-additional-title {
     font-size: 14px;
-    padding-bottom: 10px;
+    margin-bottom: 12px;
   }
 
-  .pte-form-helper {
-    font-size: 11px;
+  .pteacademictestssection-calendar-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .pteacademictestssection-calendar-month {
+    padding: 6px 4px;
+    font-size: 12px;
   }
 }
 
@@ -406,38 +591,59 @@
    RESPONSIVE — Very Small ≤ 360px
 ════════════════════════════════════════ */
 @media (max-width: 360px) {
-  .pte-card {
+  .pteacademictestssection-card {
     margin: 8px;
   }
 
-  .pte-card-header {
+  .pteacademictestssection-form-content {
     padding: 12px;
   }
 
-  .pte-card-title {
+  .pteacademictestssection-card-header {
+    padding: 12px;
+  }
+
+  .pteacademictestssection-card-title {
     font-size: 16px;
   }
 
-  .pte-form-content {
-    padding: 12px;
-  }
-
-  .pte-select,
-  .pte-date-input {
+  .pteacademictestssection-select {
     font-size: 12px;
     padding: 8px 9px;
   }
 
-  .pte-question-label {
+  .pteacademictestssection-question-label {
     font-size: 12px;
   }
 
-  .pte-radio-option {
+  .pteacademictestssection-radio-option {
     font-size: 12px;
     padding: 6px 10px;
   }
 
-  .pte-detailed-fields {
+  .pteacademictestssection-detailed-fields {
     padding: 10px;
+  }
+
+  .pteacademictestssection-calendar-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .pteacademictestssection-calendar-month {
+    font-size: 11px;
+    padding: 6px 2px;
+  }
+}
+
+/* ============================================================
+   ACCESSIBILITY - REDUCED MOTION
+============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

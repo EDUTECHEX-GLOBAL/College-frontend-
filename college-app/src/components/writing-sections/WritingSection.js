@@ -27,7 +27,7 @@ const WritingSection = () => {
               className="back-to-dashboard-content-btn"
               onClick={() => navigate('/firstyear/dashboard')}
             >
-              ← Back to Dashboard
+              Back to Dashboard
             </button>
           </div>
 

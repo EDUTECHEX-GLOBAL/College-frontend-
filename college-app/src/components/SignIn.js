@@ -10,11 +10,11 @@ const SignIn = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // New state for password visibility
+  // State for password visibility
   const [showPassword, setShowPassword] = useState(false);
   const [showTransferPassword, setShowTransferPassword] = useState(false);
 
-  // 🔄 Reset state handler
+  // Reset state handler
   const handleResetState = () => {
     setShowStudentOptions(false);
     setStudentType(null);
@@ -35,39 +35,33 @@ const SignIn = () => {
 
   // Check localStorage on component mount
   useEffect(() => {
-    console.log("🔍 Current localStorage on SignIn page:");
+    console.log("Current localStorage on SignIn page:");
     console.log("profileCompleted:", localStorage.getItem('profileCompleted'));
     console.log("userProfile:", localStorage.getItem('userProfile'));
     console.log("token:", localStorage.getItem('token') ? "Present" : "Missing");
-    
-    // DON'T clear profile data here - let the login flow handle it
   }, []);
 
-  // Check if user has completed profile - FIXED VERSION
+  // Check if user has completed profile
   const hasCompletedProfile = () => {
     const profileCompleted = localStorage.getItem('profileCompleted');
     const userProfile = localStorage.getItem('userProfile');
     const token = localStorage.getItem('token');
     
-    console.log("🔍 hasCompletedProfile check:");
+    console.log("hasCompletedProfile check:");
     console.log("  profileCompleted:", profileCompleted);
     console.log("  userProfile exists:", !!userProfile);
     console.log("  token exists:", !!token);
     
-    // Only return true if ALL conditions are met:
-    // 1. profileCompleted is explicitly 'true'
-    // 2. userProfile exists
-    // 3. token exists (user is logged in)
     if (profileCompleted === 'true' && userProfile && token) {
-      console.log("  ✅ Profile is completed");
+      console.log("  Profile is completed");
       return true;
     }
     
-    console.log("  ❌ Profile not completed");
+    console.log("  Profile not completed");
     return false;
   };
 
-  // Clear all user data on logout (call this from your logout function)
+  // Clear all user data on logout
   const clearUserData = () => {
     localStorage.removeItem('profileCompleted');
     localStorage.removeItem('userProfile');
@@ -77,10 +71,10 @@ const SignIn = () => {
     localStorage.removeItem('userEmail');
     localStorage.removeItem('selectedUniversities');
     localStorage.removeItem('eligibleProgram');
-    console.log("🧹 All user data cleared from localStorage");
+    console.log("All user data cleared from localStorage");
   };
 
-  // 🔐 First-Year Student Sign-In
+  // First-Year Student Sign-In
   const handleFirstYearSignIn = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -89,7 +83,6 @@ const SignIn = () => {
     const email = e.target.email.value.trim();
     const password = e.target.password.value.trim();
 
-    // ✅ Validation
     if (!email || !password) {
       setError("Email and password are required");
       setLoading(false);
@@ -97,40 +90,36 @@ const SignIn = () => {
     }
 
     try {
-      console.log("📤 Signing in (First-Year):", email);
+      console.log("Signing in (First-Year):", email);
 
       const response = await axiosInstance.post("/api/students/login", {
         email,
         password,
       });
 
-      console.log("📩 Response data:", response.data);
+      console.log("Response data:", response.data);
 
       if (response.data.success && response.data.token) {
-        console.log("🔑 Token received");
+        console.log("Token received");
 
-        // ✅ Clear any existing data first (fresh login)
         clearUserData();
 
-        // ✅ Store new token and user data
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("userData", JSON.stringify(response.data.user));
         localStorage.setItem("studentType", "firstyear");
         localStorage.setItem("userEmail", email);
 
-        console.log("✅ New user data stored");
+        console.log("New user data stored");
 
-        // IMPORTANT: For a new user, profileCompleted is NOT set yet
-        // So this will always redirect to /profile for first login
-        console.log("➡️ First login - Redirecting to profile completion");
+        console.log("First login - Redirecting to profile completion");
         navigate("/profile");
         
       } else {
-        console.error("❌ Response missing success or token");
+        console.error("Response missing success or token");
         setError(response.data.message || "Sign in failed. Please try again.");
       }
     } catch (err) {
-      console.error("❌ Sign in error:", err);
+      console.error("Sign in error:", err);
       if (err.response?.status === 401) {
         setError("Invalid email or password. Please try again.");
       } else if (err.response?.status === 400) {
@@ -145,7 +134,7 @@ const SignIn = () => {
     }
   };
 
-  // 🔁 Transfer Student Sign-In
+  // Transfer Student Sign-In
   const handleTransferSignIn = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -161,17 +150,16 @@ const SignIn = () => {
     }
 
     try {
-      console.log("📤 Signing in (Transfer Student):", username);
+      console.log("Signing in (Transfer Student):", username);
 
       const response = await axiosInstance.post("/api/transfer/login", {
         username: username,
         password,
       });
 
-      console.log("📩 Response data:", response.data);
+      console.log("Response data:", response.data);
 
       if (response.data.success && response.data.token) {
-        // ✅ Clear any existing data first (fresh login)
         clearUserData();
 
         localStorage.setItem("token", response.data.token);
@@ -181,16 +169,14 @@ const SignIn = () => {
 
         const hasCompletedExtendedProfile = response.data.user?.hasCompletedExtendedProfile;
 
-        // IMPORTANT: For a new user, profileCompleted is NOT set yet
-        // So this will always redirect to /profile for first login
-        console.log("➡️ First login - Redirecting to profile completion");
+        console.log("First login - Redirecting to profile completion");
         navigate("/profile");
         
       } else {
         setError(response.data.message || "Sign in failed. Please try again.");
       }
     } catch (err) {
-      console.error("❌ Sign in error:", err);
+      console.error("Sign in error:", err);
       if (err.response?.status === 401) {
         setError("Invalid username or password. Please try again.");
       } else if (err.response?.status === 400) {
@@ -207,14 +193,14 @@ const SignIn = () => {
     }
   };
 
-  // ✅ Handle keyboard navigation for back link
+  // Handle keyboard navigation for back link
   const handleBackKeyPress = (e) => {
     if (e.key === "Enter" || e.key === " ") {
       handleResetState();
     }
   };
 
-  // ✅ Handle keyboard navigation for create account link
+  // Handle keyboard navigation for create account link
   const handleCreateAccountKeyPress = (e) => {
     if (e.key === "Enter" || e.key === " ") {
       navigate("/create-account");
@@ -224,9 +210,9 @@ const SignIn = () => {
   return (
     <div className="signin-overlay">
       <div className="signin-modal">
-        {/* ✕ Close button */}
+        {/* Close button */}
         <button
-          className="close-btn"
+          className="signin-close-btn"
           onClick={() => {
             navigate("/");
             handleResetState();
@@ -234,19 +220,19 @@ const SignIn = () => {
           title="Close Sign In Modal"
           aria-label="Close"
         >
-          ✕
+          ×
         </button>
 
-        {/* 🔹 Step 1: Choose student type */}
+        {/* Step 1: Choose student type */}
         {!showStudentOptions ? (
           <>
             <h1 className="signin-title">Sign in</h1>
 
-            <div className="student-section">
+            <div className="signin-student-section">
               <h3>Students</h3>
 
               <button
-                className="btn-primary"
+                className="signin-btn-primary"
                 onClick={() => {
                   setShowStudentOptions(true);
                   setStudentType("first-year");
@@ -258,7 +244,7 @@ const SignIn = () => {
               </button>
 
               <button
-                className="btn-primary"
+                className="signin-btn-primary"
                 onClick={() => {
                   setShowStudentOptions(true);
                   setStudentType("transfer");
@@ -269,12 +255,12 @@ const SignIn = () => {
                 Transfer student
               </button>
 
-              <p className="create-account-text">
+              <p className="signin-create-account-text">
                 Don't have an account yet?{" "}
                 <span
                   onClick={() => navigate("/create-account")}
                   onKeyPress={handleCreateAccountKeyPress}
-                  className="link"
+                  className="signin-link"
                   role="button"
                   tabIndex={0}
                 >
@@ -283,16 +269,16 @@ const SignIn = () => {
               </p>
             </div>
 
-            <div className="extra-login">
+            <div className="signin-extra-login">
               <button
-                className="link"
+                className="signin-link"
                 type="button"
                 onClick={() => navigate("/recommender-login")}
               >
                 Recommender login →
               </button>
               <button
-                className="link"
+                className="signin-link"
                 type="button"
                 onClick={() => navigate("/member-college-login")}
               >
@@ -301,13 +287,13 @@ const SignIn = () => {
             </div>
           </>
         ) : studentType === "first-year" ? (
-          // 🧑‍🎓 First-Year Sign In Form
+          // First-Year Sign In Form
           <div className="signin-form-container">
             <h2>Sign in to your account</h2>
 
             {error && (
-              <div className="error-message" role="alert" aria-live="polite">
-                <strong>⚠️ Error: </strong>
+              <div className="signin-error-message" role="alert" aria-live="polite">
+                <strong>Error: </strong>
                 {error}
               </div>
             )}
@@ -325,7 +311,7 @@ const SignIn = () => {
               />
 
               <label htmlFor="signin-password">Password</label>
-              <div className="password-input-container">
+              <div className="signin-password-input-container">
                 <input
                   id="signin-password"
                   type={showPassword ? "text" : "password"}
@@ -334,22 +320,22 @@ const SignIn = () => {
                   required
                   disabled={loading}
                   autoComplete="current-password"
-                  className="password-input"
+                  className="signin-password-input"
                 />
                 <button
                   type="button"
-                  className="password-toggle-btn"
+                  className="signin-password-toggle-btn"
                   onClick={togglePasswordVisibility}
                   disabled={loading}
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {showPassword ? "👁️" : "👁️‍🗨️"}
+                  {showPassword ? "Hide" : "Show"}
                 </button>
               </div>
 
-              <p className="forgot-password-text">
+              <p className="signin-forgot-password-text">
                 <span
-                  className="link"
+                  className="signin-link"
                   role="button"
                   tabIndex={0}
                   onClick={() => navigate("/firstyear/forgot-password")}
@@ -363,15 +349,15 @@ const SignIn = () => {
                 </span>
               </p>
 
-              <div className="form-actions">
-                <button type="submit" className="btn-primary" disabled={loading}>
+              <div className="signin-form-actions">
+                <button type="submit" className="signin-btn-primary" disabled={loading}>
                   {loading ? "Signing in..." : "Sign in"}
                 </button>
               </div>
             </form>
 
             <p
-              className="back-link"
+              className="signin-back-link"
               onClick={handleResetState}
               onKeyPress={handleBackKeyPress}
               role="button"
@@ -381,13 +367,13 @@ const SignIn = () => {
             </p>
           </div>
         ) : (
-          // 🔁 Transfer Student Sign In Form
+          // Transfer Student Sign In Form
           <div className="signin-form-container">
             <h2>Transfer Student Sign In</h2>
 
             {error && (
-              <div className="error-message" role="alert" aria-live="polite">
-                <strong>⚠️ Error: </strong>
+              <div className="signin-error-message" role="alert" aria-live="polite">
+                <strong>Error: </strong>
                 {error}
               </div>
             )}
@@ -405,7 +391,7 @@ const SignIn = () => {
               />
 
               <label htmlFor="transfer-password">Password</label>
-              <div className="password-input-container">
+              <div className="signin-password-input-container">
                 <input
                   id="transfer-password"
                   type={showTransferPassword ? "text" : "password"}
@@ -414,22 +400,22 @@ const SignIn = () => {
                   required
                   disabled={loading}
                   autoComplete="current-password"
-                  className="password-input"
+                  className="signin-password-input"
                 />
                 <button
                   type="button"
-                  className="password-toggle-btn"
+                  className="signin-password-toggle-btn"
                   onClick={toggleTransferPasswordVisibility}
                   disabled={loading}
                   aria-label={showTransferPassword ? "Hide password" : "Show password"}
                 >
-                  {showTransferPassword ? "👁️" : "👁️‍🗨️"}
+                  {showTransferPassword ? "Hide" : "Show"}
                 </button>
               </div>
 
-              <p className="forgot-password-text">
+              <p className="signin-forgot-password-text">
                 <span
-                  className="link"
+                  className="signin-link"
                   role="button"
                   tabIndex={0}
                   onClick={() => navigate("/transfer/forgot-password")}
@@ -443,15 +429,15 @@ const SignIn = () => {
                 </span>
               </p>
 
-              <div className="form-actions">
-                <button type="submit" className="btn-primary" disabled={loading}>
+              <div className="signin-form-actions">
+                <button type="submit" className="signin-btn-primary" disabled={loading}>
                   {loading ? "Signing in..." : "Sign in"}
                 </button>
               </div>
             </form>
 
             <p
-              className="back-link"
+              className="signin-back-link"
               onClick={handleResetState}
               onKeyPress={handleBackKeyPress}
               role="button"

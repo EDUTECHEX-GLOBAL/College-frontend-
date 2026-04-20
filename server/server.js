@@ -12,14 +12,14 @@ import educationRoutes from "./routes/educationRoutes.js";
 import collegesearchRoutes from "./routes/collegesearchRoutes.js";
 import collegeRoutes from "./routes/collegeRoutes.js";
 import generalRoutes from "./routes/generalRoutes.js";
-import firstAcademicRoutes from './routes/FirstAcademicRoutes.js';
+
 import highSchoolCurriculumRoutes from "./routes/highSchoolCurriculumRoutes.js";
 import firstactivitiesRoutes from "./routes/firstmycollegeactivitiesRoutes.js";
-import firstContactsRoutes from "./routes/firstContactsRoutes.js";
-import firstFamilyRoutes from "./routes/firstFamilyRoutes.js";
-import firstResidencyRoutes from "./routes/FirstResidencyRoutes.js";
+
+
+
 import internationalStudentRoutes from "./routes/InternationalStudentRoutes.js";
-import firstReviewRoutes from "./routes/FirstReviewRoutes.js";
+
 import firstTestingRoutes from "./routes/firstTestingRoutes.js";
 import transferActivitiesRoutes from "./routes/activitiestestRoutes.js";
 import firstYearActivitiesRoutes from "./routes/activitiesRoutes.js";
@@ -36,7 +36,7 @@ import firstfamilydashbRoutes from "./routes/firstfamilydashbRoutes.js";
 import adminUserRoutes from "./routes/adminuserroutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import courseRoutes from "./routes/courseroutes.js";
-import firstApplicationRoutes from "./routes/firstApplicationRoutes.js";
+
 import overviewRoutes from "./routes/overviewRoutes.js";
 import applicationPersonalRoutes from "./routes/applicationPersonalRoutes.js";
 import applicationAddressRoutes from "./routes/applicationAddressRoutes.js";
@@ -56,7 +56,12 @@ import previewRoutes from './routes/applicationPreviewRoutes.js';
 import applicationScoreRoutes from "./routes/applicationscoreroutes.js";
 import gusUniversityRoutes from "./routes/gusuniversityroutes.js";
 import analyticsRoutes from './routes/studentanalyticsroutes.js';
-
+import masterPersonalRoutes from "./routes/masterpersonalroutes.js";
+import masterContactRoutes from "./routes/mastercontactroutes.js";
+import masterAcademicRoutes from "./routes/masteracademicroutes.js";
+import masterCourseRoutes from './routes/mastercourseroutes.js';
+import masterTestRoutes from './routes/mastertestroutes.js';
+import masterDocumentRoutes from "./routes/masterdocumentroutes.js";
 dotenv.config();
 
 // =====================================================
@@ -307,24 +312,28 @@ app.use("/api/application/special-needs", applicationSpecialNeedRoutes);
 app.use("/api/application/resume", resumeRoutes);
 app.use("/api/application/personal", applicationPersonalRoutes);
 app.use("/api/application/address", applicationAddressRoutes);
+app.use("/api/master-personal", masterPersonalRoutes);
 app.use('/api/application/preview', previewRoutes);
 app.use("/api/application/score", applicationScoreRoutes);
 app.use("/api/application/process-admin/gus-university", gusUniversityRoutes);
 app.use("/api/bachelors", bachelorsRoutes);
 app.use('/api/masters/universities', mastersRoutes);
+app.use("/api/master-contact", masterContactRoutes);
+app.use("/api/master-academic", masterAcademicRoutes);
+app.use('/api/master-course', masterCourseRoutes);
+app.use('/api/master-test', masterTestRoutes);
+app.use("/api/master-documents", masterDocumentRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/documents", documentRoutes);
 app.use("/api/colleges", collegeRoutes);
 app.use("/api/general", generalRoutes);
-app.use("/api/academics", firstAcademicRoutes);
+
 app.use("/api/high-school-curriculum", highSchoolCurriculumRoutes);
 app.use("/api/first-activities", firstactivitiesRoutes);
-app.use("/api/contacts", firstContactsRoutes);
-app.use("/api/family", firstFamilyRoutes);
-app.use("/api/residency", firstResidencyRoutes);
-app.use("/api/first-application", firstApplicationRoutes);
+
+
 app.use("/api/international", internationalStudentRoutes);
-app.use("/api/review", firstReviewRoutes);
+
 app.use("/api/students/testing", firstTestingRoutes);
 app.use("/api/students", firstYearActivitiesRoutes);
 app.use("/api/transfer", transferActivitiesRoutes);

@@ -1421,3 +1421,196 @@ body {
     background: var(--bg-secondary);
   }
 }
+
+/* ============================================================
+   MASTER APPLICATION CUSTOM STYLES
+   ============================================================ */
+
+/* Master Application Container */
+.master-app-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* Master Application Progress Bar */
+.master-progress-container {
+  padding: 24px 32px 0 32px;
+  background: white;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.master-progress-steps {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  margin-bottom: 32px;
+}
+
+.master-progress-steps::before {
+  content: '';
+  position: absolute;
+  top: 20px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #e0e7ff;
+  z-index: 1;
+}
+
+.master-step {
+  position: relative;
+  z-index: 2;
+  background: white;
+  text-align: center;
+  flex: 1;
+}
+
+.master-step-circle {
+  width: 40px;
+  height: 40px;
+  background: #e0e7ff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 8px;
+  font-weight: 600;
+  color: #4a5568;
+  transition: all 0.3s;
+}
+
+.master-step.active .master-step-circle {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 4px 12px rgba(8, 145, 178, 0.4);
+}
+
+.master-step.completed .master-step-circle {
+  background: var(--success);
+  color: white;
+}
+
+.master-step-label {
+  font-size: 12px;
+  color: #718096;
+  font-weight: 500;
+}
+
+.master-step.active .master-step-label {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* Master Form Container */
+.master-form-container {
+  padding: 32px;
+}
+
+.master-form-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 8px;
+}
+
+.master-form-subtitle {
+  color: #718096;
+  font-size: 14px;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+/* Master Navigation Buttons */
+.master-nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  padding: 24px 32px 32px;
+  background: white;
+  border-top: 1px solid var(--border-light);
+}
+
+.master-btn {
+  padding: 12px 28px;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: none;
+  font-family: var(--font);
+}
+
+.master-btn-primary {
+  background: var(--primary-gradient);
+  color: white;
+}
+
+.master-btn-primary:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-primary);
+}
+
+.master-btn-secondary {
+  background: #e2e8f0;
+  color: #4a5568;
+}
+
+.master-btn-secondary:hover {
+  background: #cbd5e0;
+}
+
+.master-btn-success {
+  background: var(--success);
+  color: white;
+}
+
+.master-btn-success:hover {
+  background: #16a34a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+/* Responsive adjustments for Master Application */
+@media (max-width: 768px) {
+  .master-progress-container {
+    padding: 16px 20px 0 20px;
+  }
+  
+  .master-form-container {
+    padding: 20px;
+  }
+  
+  .master-nav-buttons {
+    padding: 16px 20px 24px;
+  }
+  
+  .master-step-label {
+    font-size: 10px;
+  }
+  
+  .master-step-circle {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  .master-step-label {
+    display: none;
+  }
+  
+  .master-progress-steps::before {
+    top: 16px;
+  }
+  
+  .master-step-circle {
+    width: 28px;
+    height: 28px;
+    font-size: 11px;
+  }
+}
+/* ── Add this to Dashboard.css inside the pct section ── */
+.pct--warning { background: #fff7ed; color: #f97316; }

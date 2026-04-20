@@ -26,6 +26,24 @@ const Overview = ({ formData, selectedCourseData, onStartApplication, onChangeCo
   const [activeFilter,         setActiveFilter]         = useState('all');
   const [isMobile,             setIsMobile]             = useState(window.innerWidth <= 768);
 
+  const [selectedUniversity, setSelectedUniversity] = useState(null);
+
+useEffect(() => {
+  // 1. Try from navigation state
+  if (location.state?.university) {
+    setSelectedUniversity(location.state.university);
+    localStorage.setItem('currentUniversity', JSON.stringify(location.state.university));
+    return;
+  }
+
+  // 2. Fallback from localStorage
+  const savedUniversity = localStorage.getItem('currentUniversity');
+  if (savedUniversity) {
+    try {
+      setSelectedUniversity(JSON.parse(savedUniversity));
+    } catch {}
+  }
+}, [location.state]);
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -76,39 +94,94 @@ const Overview = ({ formData, selectedCourseData, onStartApplication, onChangeCo
   const getAuthToken = () => localStorage.getItem('token');
 
   const fetchOverviewData = useCallback(async () => {
-    try {
-      setIsLoading(true); setError('');
-      const token = getAuthToken();
-      if (!token) { setIsLoading(false); return; }
+  try {
+    setIsLoading(true);
+    setError('');
 
-      const response = await axios.get(`${API_URL}/api/overview`, {
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      });
+    const token = getAuthToken();
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
 
-      if (response.data.success && response.data.overview) {
-        setOverviewData(response.data.overview);
-        if (response.data.overview.selectedCourse) {
-          setCourseDetails(response.data.overview.selectedCourse);
-        } else if (selectedCourseData) {
-          setCourseDetails(selectedCourseData);
-          await saveCourseToBackend(selectedCourseData, token);
-        } else {
-          const saved = localStorage.getItem('currentSelectedCourse');
-          if (saved) { try { const d = JSON.parse(saved); setCourseDetails(d); await saveCourseToBackend(d, token); } catch {} }
-        }
+    const response = await axios.get(`${API_URL}/api/overview`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (response.data.success && response.data.overview) {
+      setOverviewData(response.data.overview);
+
+      /* ======================================================
+         ✅ PRIORITY FIX (VERY IMPORTANT)
+         ====================================================== */
+
+      // 🥇 1. If university selected (Kansas case) → ALWAYS USE THIS
+      if (selectedUniversity) {
+        setCourseDetails({
+          programName: 'Direct University Application',
+          universityName: selectedUniversity.INSTNM,
+        });
+        return;
       }
-    } catch {
-      setError('Failed to load overview data');
+
+      // 🥈 2. Backend saved course
+      if (response.data.overview.selectedCourse) {
+        setCourseDetails(response.data.overview.selectedCourse);
+        return;
+      }
+
+      // 🥉 3. From selectedCourseData (props)
       if (selectedCourseData) {
         setCourseDetails(selectedCourseData);
-      } else {
-        const saved = localStorage.getItem('currentSelectedCourse');
-        if (saved) { try { setCourseDetails(JSON.parse(saved)); } catch {} }
+        await saveCourseToBackend(selectedCourseData, token);
+        return;
       }
-    } finally {
-      setIsLoading(false);
+
+      // 🏁 4. LocalStorage fallback
+      const saved = localStorage.getItem('currentSelectedCourse');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          setCourseDetails(parsed);
+          await saveCourseToBackend(parsed, token);
+        } catch (err) {
+          console.error('Error parsing saved course:', err);
+        }
+      }
     }
-  }, [selectedCourseData]);
+  } catch (err) {
+    setError('Failed to load overview data');
+
+    /* ======================================================
+       ✅ ERROR FALLBACK (same priority)
+       ====================================================== */
+
+    if (selectedUniversity) {
+      setCourseDetails({
+        programName: 'Direct University Application',
+        universityName: selectedUniversity.INSTNM,
+      });
+      return;
+    }
+
+    if (selectedCourseData) {
+      setCourseDetails(selectedCourseData);
+      return;
+    }
+
+    const saved = localStorage.getItem('currentSelectedCourse');
+    if (saved) {
+      try {
+        setCourseDetails(JSON.parse(saved));
+      } catch {}
+    }
+  } finally {
+    setIsLoading(false);
+  }
+}, [selectedCourseData, selectedUniversity]); // ✅ IMPORTANT
 
   const saveCourseToBackend = async (courseData, token) => {
     try {
@@ -214,7 +287,7 @@ const Overview = ({ formData, selectedCourseData, onStartApplication, onChangeCo
   );
 
   /* ── No course ── */
-  if (!courseDetails) return (
+  if (!courseDetails && !selectedUniversity) return (
     <div className="overview-container">
       <div className="overview-no-course-selected">
         <div className="overview-no-course-icon"></div>
@@ -462,10 +535,13 @@ const Overview = ({ formData, selectedCourseData, onStartApplication, onChangeCo
             </div>
             <div className="overview-course-info">
               <div className="overview-program-header">
-                <h4 className="overview-program-name">{courseDetails.programName}</h4>
-                <div className="overview-university-badge">
-                  {courseDetails.universityName}
-                </div>
+              <h4 className="overview-program-name">
+  {courseDetails?.programName || 'Direct University Application'}
+</h4>
+
+<div className="overview-university-badge">
+  {selectedUniversity?.INSTNM || courseDetails?.universityName || 'Selected University'}
+</div>
               </div>
               <div className="overview-program-details-grid">
                 {[

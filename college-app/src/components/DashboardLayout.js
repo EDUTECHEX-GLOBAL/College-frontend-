@@ -22,9 +22,11 @@ const DashboardLayout = ({
     activities: false,
     courses: false,
     application: false,
+    masterApplication: false,
     expandedColleges: {}
   });
   const [forceUpdate, setForceUpdate] = useState(0);
+  const [masterAppProgress, setMasterAppProgress] = useState(0);
 
   useEffect(() => {
     setSidebarOpen(false);
@@ -43,6 +45,7 @@ const DashboardLayout = ({
     if (!userData) return 0;
     const sections = [
       userData.applicationProgress?.application || 0,
+      userData.applicationProgress?.masterApplication || 0,
       userData.profileProgress || 0,
       userData.applicationProgress?.family || 0,
       userData.applicationProgress?.education || 0,
@@ -53,6 +56,59 @@ const DashboardLayout = ({
     return Math.round(sections.reduce((sum, p) => sum + p, 0) / sections.length);
   };
 
+  const calculateMasterApplicationProgress = () => {
+    const masterAppData = localStorage.getItem('masterApplicationData');
+    if (!masterAppData) return 0;
+    
+    try {
+      const masterData = JSON.parse(masterAppData);
+      let totalSections = 0;
+      let completedSections = 0;
+      
+      const sections = ['personal', 'contact', 'course', 'academic', 'tests', 'documents', 'declaration'];
+      
+      sections.forEach(section => {
+        totalSections++;
+        const sectionData = masterData[section];
+        if (sectionData && sectionData._isValid === true) {
+          completedSections++;
+        } else if (section === 'tests' || section === 'documents') {
+          completedSections++;
+        } else if (sectionData && Object.keys(sectionData).length > 0 && sectionData._isValid !== false) {
+          if (Object.keys(sectionData).some(key => key !== '_isValid' && sectionData[key])) {
+            completedSections += 0.5;
+          }
+        }
+      });
+      
+      return Math.round((completedSections / totalSections) * 100);
+    } catch (e) {
+      return 0;
+    }
+  };
+
+  useEffect(() => {
+    const updateProgress = () => {
+      const progress = calculateMasterApplicationProgress();
+      setMasterAppProgress(progress);
+    };
+    
+    updateProgress();
+    
+    const handleMasterUpdate = () => {
+      updateProgress();
+      setForceUpdate(p => p + 1);
+    };
+    
+    window.addEventListener('masterApplicationUpdated', handleMasterUpdate);
+    window.addEventListener('storage', handleMasterUpdate);
+    
+    return () => {
+      window.removeEventListener('masterApplicationUpdated', handleMasterUpdate);
+      window.removeEventListener('storage', handleMasterUpdate);
+    };
+  }, []);
+
   useEffect(() => {
     const path = location.pathname;
     if (path.includes('/testing')) setExpandedSections(prev => ({ ...prev, testing: true }));
@@ -61,6 +117,7 @@ const DashboardLayout = ({
     if (path.includes('/activities')) setExpandedSections(prev => ({ ...prev, activities: true }));
     if (path.includes('/courses')) setExpandedSections(prev => ({ ...prev, courses: true }));
     if (path.includes('/application')) setExpandedSections(prev => ({ ...prev, application: true }));
+    if (path.includes('/master-application')) setExpandedSections(prev => ({ ...prev, masterApplication: true }));
   }, [location.pathname]);
 
   useEffect(() => {
@@ -85,11 +142,13 @@ const DashboardLayout = ({
     window.addEventListener('testingDataUpdated', h);
     window.addEventListener('collegeFormUpdated', h);
     window.addEventListener('applicationUpdated', h);
+    window.addEventListener('masterApplicationUpdated', h);
     return () => {
       window.removeEventListener('storage', h);
       window.removeEventListener('testingDataUpdated', h);
       window.removeEventListener('collegeFormUpdated', h);
       window.removeEventListener('applicationUpdated', h);
+      window.removeEventListener('masterApplicationUpdated', h);
     };
   }, []);
 
@@ -108,6 +167,7 @@ const DashboardLayout = ({
     localStorage.removeItem('token');
     localStorage.removeItem('userData');
     localStorage.removeItem('gusApplicationData');
+    localStorage.removeItem('masterApplicationData');
     localStorage.removeItem('selectedCourseForApplication');
     localStorage.removeItem('currentSelectedCourse');
     navigate('/');
@@ -144,6 +204,17 @@ const DashboardLayout = ({
       } catch (error) {}
     }
     return userData?.applicationProgress?.application || 0;
+  };
+
+  const getMasterApplicationProgressDisplay = () => {
+    const storedUserData = localStorage.getItem('userData');
+    if (storedUserData) {
+      try {
+        const parsedData = JSON.parse(storedUserData);
+        return parsedData.applicationProgress?.masterApplication || masterAppProgress;
+      } catch (error) {}
+    }
+    return userData?.applicationProgress?.masterApplication || masterAppProgress;
   };
 
   const calculateApplicationStepProgress = (step) => {
@@ -191,6 +262,7 @@ const DashboardLayout = ({
   const selectedTests = getSelectedTests();
   const selectedTestTypes = selectedTests.length > 0 ? testTypes.filter(t => selectedTests.includes(t.id)) : [];
   const applicationProgress = getApplicationProgress();
+  const masterAppProgressDisplay = getMasterApplicationProgressDisplay();
 
   const CollegeSidebarItem = ({ college, isExpanded, onToggle, onNavigate }) => {
     const [showInternational, setShowInternational] = useState(false);
@@ -257,7 +329,7 @@ const DashboardLayout = ({
     navigate(`${basePath}/colleges/${collegeId}/${subsection}`);
   };
 
-  // Reusable NavItem component - No icons, uses CSS dot
+  // Reusable NavItem component
   const NavItem = ({ label, isActive, onClick, badge, hint }) => (
     <li className={`nav-item ${isActive ? 'active' : ''}`} onClick={onClick}>
       <div className="nav-content">
@@ -268,7 +340,7 @@ const DashboardLayout = ({
     </li>
   );
 
-  // Expandable nav section - No icons
+  // Expandable nav section
   const ExpandableNav = ({ label, isExpanded, onToggle, badge, children }) => (
     <li className="nav-section-expandable">
       <div className={`nav-header ${isExpanded ? 'expanded' : ''}`} onClick={onToggle}>
@@ -293,6 +365,16 @@ const DashboardLayout = ({
     </li>
   );
 
+  // Profile sidebar items with progress indicators
+  const profileNavItems = [
+    { key: 'personal', label: 'Personal Information', path: `${basePath}/profile/personal` },
+    { key: 'contact', label: 'Contact Details', path: `${basePath}/profile/contact` },
+    { key: 'address', label: 'Address', path: `${basePath}/profile/address` },
+    { key: 'demographics', label: 'Demographics', path: `${basePath}/profile/demographics` },
+    { key: 'language', label: 'Language', path: `${basePath}/profile/language` },
+    { key: 'geography', label: 'Geography & Nationality', path: `${basePath}/profile/geography` },
+  ];
+
   const getSidebarContent = () => {
     // PROFILE Section
     if (activeMainSection === 'profile') {
@@ -300,36 +382,62 @@ const DashboardLayout = ({
         <div className="nav-section">
           <h4 className="nav-section-title">PROFILE</h4>
           <ul className="nav-menu">
-            <NavItem 
-              label="Personal Information" 
-              isActive={location.pathname.includes('/personal')} 
-              onClick={() => onSectionChange('personal')} 
-            />
-            <NavItem 
-              label="Contact Details" 
-              isActive={location.pathname.includes('/contact')} 
-              onClick={() => onSectionChange('contact')} 
-            />
-            <NavItem 
-              label="Address" 
-              isActive={location.pathname.includes('/address')} 
-              onClick={() => onSectionChange('address')} 
-            />
-            <NavItem 
-              label="Demographics" 
-              isActive={location.pathname.includes('/demographics')} 
-              onClick={() => onSectionChange('demographics')} 
-            />
-            <NavItem 
-              label="Language" 
-              isActive={location.pathname.includes('/language')} 
-              onClick={() => onSectionChange('language')} 
-            />
-            <NavItem 
-              label="Geography & Nationality" 
-              isActive={location.pathname.includes('/geography')} 
-              onClick={() => onSectionChange('geography')} 
-            />
+            {profileNavItems.map(item => (
+              <NavItem
+                key={item.key}
+                label={item.label}
+                isActive={location.pathname.includes(`/${item.key}`)}
+                onClick={() => navigate(item.path)}
+              />
+            ))}
+          </ul>
+        </div>
+      );
+    }
+
+    if (activeMainSection === 'master-application') {
+      const masterSteps = [
+        { id: 'personal',    label: 'Personal Information' },
+        { id: 'contact',     label: 'Contact Details' },
+        { id: 'course',      label: 'Course Selection' },
+        { id: 'academic',    label: 'Academic History' },
+        { id: 'tests',       label: 'Test Scores' },
+        { id: 'documents',   label: 'Documents' },
+        { id: 'declaration', label: 'Declaration' },
+        { id: 'preview',     label: 'Preview & Submit' },
+      ];
+
+      const getMasterStepProgress = (stepId) => {
+        try {
+          const masterData = JSON.parse(localStorage.getItem('masterApplicationData') || '{}');
+          const section = masterData[stepId];
+          if (stepId === 'tests' || stepId === 'documents') return '✓';
+          if (stepId === 'declaration') return masterData.declaration ? '✓' : '';
+          if (stepId === 'preview') return '';
+          if (!section) return '';
+          if (section._isValid === true) return '✓';
+          if (Object.keys(section).some(k => k !== '_isValid' && section[k])) return '…';
+          return '';
+        } catch (e) { return ''; }
+      };
+
+      return (
+        <div className="nav-section">
+          <h4 className="nav-section-title">MASTER APPLICATION</h4>
+          <ul className="nav-menu">
+            {masterSteps.map((step, index) => {
+              const isActive = location.pathname.includes(`/master-application/${step.id}`);
+              const badge = getMasterStepProgress(step.id);
+              return (
+                <NavItem
+                  key={step.id}
+                  label={`${index + 1}. ${step.label}`}
+                  isActive={isActive}
+                  onClick={() => navigate(`${basePath}/master-application/${step.id}`)}
+                  badge={badge}
+                />
+              );
+            })}
           </ul>
         </div>
       );
@@ -516,36 +624,11 @@ const DashboardLayout = ({
         <div className="nav-section">
           <h4 className="nav-section-title">PROFILE</h4>
           <ul className="nav-menu">
-            <NavItem 
-              label="Personal Information" 
-              isActive={activeMainSection === 'profile' && location.pathname.includes('/personal')}
-              onClick={() => navigate(`${basePath}/profile/personal`)} 
-              badge={userData?.profileProgress >= 100 ? '✓' : userData?.profileProgress > 0 ? `${userData.profileProgress}%` : 'Start'} 
-            />
-            <NavItem 
-              label="Contact Details" 
-              isActive={activeMainSection === 'profile' && location.pathname.includes('/contact')}
-              onClick={() => navigate(`${basePath}/profile/contact`)} 
-            />
-            <NavItem 
-              label="Address" 
-              isActive={activeMainSection === 'profile' && location.pathname.includes('/address')}
-              onClick={() => navigate(`${basePath}/profile/address`)} 
-            />
-            <NavItem 
-              label="Demographics" 
-              isActive={activeMainSection === 'profile' && location.pathname.includes('/demographics')}
-              onClick={() => navigate(`${basePath}/profile/demographics`)} 
-            />
-            <NavItem 
-              label="Language" 
-              isActive={activeMainSection === 'profile' && location.pathname.includes('/language')}
-              onClick={() => navigate(`${basePath}/profile/language`)} 
-            />
-            <NavItem 
-              label="Geography & Nationality" 
-              isActive={activeMainSection === 'profile' && location.pathname.includes('/geography')}
-              onClick={() => navigate(`${basePath}/profile/geography`)} 
+            <NavItem
+              label="Profile"
+              isActive={activeMainSection === 'profile'}
+              onClick={() => navigate(`${basePath}/profile/personal`)}
+              badge={userData?.profileProgress >= 100 ? '✓' : userData?.profileProgress > 0 ? `${userData.profileProgress}%` : 'Start'}
             />
           </ul>
         </div>
@@ -553,6 +636,32 @@ const DashboardLayout = ({
         <div className="nav-section">
           <h4 className="nav-section-title">APPLICATION</h4>
           <ul className="nav-menu">
+            {/* Master Application Section */}
+            <ExpandableNav 
+              label="Master Application" 
+              isExpanded={expandedSections.masterApplication}
+              onToggle={() => toggleSection('masterApplication')} 
+              badge={`${masterAppProgressDisplay}%`}
+            >
+              {[
+                { id: 'personal',    label: 'Personal Information' },
+                { id: 'contact',     label: 'Contact Details' },
+                { id: 'course',      label: 'Course Selection' },
+                { id: 'academic',    label: 'Academic History' },
+                { id: 'tests',       label: 'Test Scores' },
+                { id: 'documents',   label: 'Documents' },
+                { id: 'declaration', label: 'Declaration' },
+                { id: 'preview',     label: 'Preview & Submit' },
+              ].map((step, index) => (
+                <SubItem
+                  key={step.id}
+                  label={`${index + 1}. ${step.label}`}
+                  isActive={location.pathname.includes(`/master-application/${step.id}`)}
+                  onClick={() => navigate(`${basePath}/master-application/${step.id}`)}
+                />
+              ))}
+            </ExpandableNav>
+
             <ExpandableNav 
               label="University Application" 
               isExpanded={expandedSections.application}
@@ -668,28 +777,7 @@ const DashboardLayout = ({
               onClick={() => navigate(`${basePath}/college-search`)} 
             />
             
-            <ExpandableNav 
-              label="My Colleges" 
-              isExpanded={expandedSections.colleges} 
-              onToggle={() => toggleSection('colleges')}
-            >
-              <SubItem 
-                label="Overview" 
-                isActive={location.pathname === `${basePath}/colleges`} 
-                onClick={() => onSectionChange('colleges')} 
-              />
-              {userColleges.length > 0 ? userColleges.map(college => (
-                <CollegeSidebarItem 
-                  key={college.collegeId} 
-                  college={college}
-                  isExpanded={expandedSections.expandedColleges[college.collegeId]}
-                  onToggle={() => toggleCollege(college.collegeId)}
-                  onNavigate={handleCollegeSubsectionNavigate} 
-                />
-              )) : (
-                <li className="nav-subitem"><div className="nav-content"><span className="nav-dot"></span><span className="nav-text nav-text--muted">No colleges added</span></div></li>
-              )}
-            </ExpandableNav>
+           
 
             <ExpandableNav 
               label="Courses & Programs" 
@@ -751,7 +839,7 @@ const DashboardLayout = ({
 
   return (
     <div className="dashboard-container">
-      {/* Mobile Top Bar - No SVG icons, using CSS hamburger */}
+      {/* Mobile Top Bar */}
       <div className="mobile-topbar">
         <button className="mobile-menu-btn" onClick={() => setSidebarOpen(true)} aria-label="Open navigation menu">
           <span className="mobile-menu-icon"></span>

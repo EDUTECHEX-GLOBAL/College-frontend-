@@ -9,6 +9,10 @@ const DuolingoEnglishTestSection = ({
   clearRelatedFields 
 }) => {
   const [showScoreForm, setShowScoreForm] = useState(false);
+  const [selectedYear, setSelectedYear] = useState(null);
+  const [selectedMonth, setSelectedMonth] = useState(null);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [currentScoreField, setCurrentScoreField] = useState(null);
 
   // Determine if we should show score form based on past tests
   useEffect(() => {
@@ -22,26 +26,34 @@ const DuolingoEnglishTestSection = ({
     scoreOptions.push(i);
   }
 
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  // Generate years from 2000 to 2026
+  const generateYears = () => {
+    const years = [];
+    for (let year = 2000; year <= 2026; year++) {
+      years.push(year);
+    }
+    return years;
+  };
+
   // Check if section is complete
   const isSectionComplete = () => {
-    // Check if past tests and future sittings are selected
-    if (!formData.duolingoPastTests || !formData.duolingoFutureSittings) return false;
+    if (!formData.duolingoPastTests) return false;
     
     const pastTests = parseInt(formData.duolingoPastTests);
-    const futureSittings = parseInt(formData.duolingoFutureSittings);
     
-    // Check future test dates
-    for (let i = 1; i <= futureSittings; i++) {
-      if (!formData[`duolingoFutureTestDate${i}`]) return false;
-    }
-    
-    // If past tests > 0, check score fields
+    // If past tests > 0, check all score fields and test date
     if (pastTests > 0) {
-      if (!formData.duolingoHighestLiteracyScore || !formData.duolingoLiteracyScoreDate) return false;
-      if (!formData.duolingoHighestComprehensionScore || !formData.duolingoComprehensionScoreDate) return false;
-      if (!formData.duolingoHighestConversationScore || !formData.duolingoConversationScoreDate) return false;
-      if (!formData.duolingoHighestProductionScore || !formData.duolingoProductionScoreDate) return false;
-      if (!formData.duolingoHighestTotalScore || !formData.duolingoTotalScoreDate) return false;
+      if (!formData.duolingoTestDate) return false;
+      if (!formData.duolingoLiteracyScore) return false;
+      if (!formData.duolingoComprehensionScore) return false;
+      if (!formData.duolingoConversationScore) return false;
+      if (!formData.duolingoProductionScore) return false;
+      if (!formData.duolingoTotalScore) return false;
     }
     
     return true;
@@ -50,54 +62,103 @@ const DuolingoEnglishTestSection = ({
   // Handle clearing past Duolingo tests and related fields
   const handleClearPastTests = () => {
     clearRelatedFields('duolingoPastTests', [
-      'duolingoHighestLiteracyScore', 'duolingoLiteracyScoreDate',
-      'duolingoHighestComprehensionScore', 'duolingoComprehensionScoreDate',
-      'duolingoHighestConversationScore', 'duolingoConversationScoreDate',
-      'duolingoHighestProductionScore', 'duolingoProductionScoreDate',
-      'duolingoHighestTotalScore', 'duolingoTotalScoreDate'
+      'duolingoTestDate',
+      'duolingoLiteracyScore',
+      'duolingoComprehensionScore',
+      'duolingoConversationScore',
+      'duolingoProductionScore',
+      'duolingoTotalScore'
     ]);
   };
 
-  // Handle clearing future sittings and related fields
-  const handleClearFutureSittings = () => {
-    clearRelatedFields('duolingoFutureSittings', [
-      'duolingoFutureTestDate1', 'duolingoFutureTestDate2', 'duolingoFutureTestDate3'
-    ]);
+  // Handle year selection for date picker
+  const handleYearSelect = (field, year) => {
+    setSelectedYear(year);
+    setCurrentScoreField(field);
+    setShowCalendar(true);
   };
+
+  // Handle month selection for date picker
+  const handleMonthSelect = (month) => {
+    setSelectedMonth(month);
+  };
+
+  // Confirm date selection
+  const handleConfirmDate = () => {
+    if (selectedMonth && selectedYear && currentScoreField) {
+      const fullDate = `${selectedMonth} ${selectedYear}`;
+      const event = {
+        target: {
+          name: currentScoreField,
+          value: fullDate
+        }
+      };
+      handleInputChange(event);
+      setShowCalendar(false);
+      setSelectedYear(null);
+      setSelectedMonth(null);
+      setCurrentScoreField(null);
+    }
+  };
+
+  // Close calendar when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showCalendar && !event.target.closest('.duolingoenglishtestssection-calendar-container')) {
+        setShowCalendar(false);
+        setSelectedYear(null);
+        setSelectedMonth(null);
+        setCurrentScoreField(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showCalendar]);
 
   return (
-    <div className="duo-container">
-      <div className="duo-card">
-        <div className="duo-card-header">
-          <h2 className="duo-card-title">Duolingo English Test</h2>
-          <div className="duo-status-badge">
+    <div className="duolingoenglishtestssection-container">
+      <div className="duolingoenglishtestssection-card">
+        <div className="duolingoenglishtestssection-card-header">
+          <h2 className="duolingoenglishtestssection-card-title">Duolingo English Test</h2>
+          <div className="duolingoenglishtestssection-status-badge">
             {isSectionComplete() ? 'Complete' : 'In Progress'}
           </div>
         </div>
         
-        <div className="duo-form-content">
-          {/* Number of Past Duolingo English Tests */}
-          <div className="duo-form-group">
-            <label className="duo-question-label required">
-              Number of times you have already taken a Duolingo English Test*
+        <div className="duolingoenglishtestssection-form-content">
+          {/* Have you taken the Duolingo English Test? */}
+          <div className="duolingoenglishtestssection-form-group">
+            <label className="duolingoenglishtestssection-question-label required">
+              Have you taken the Duolingo English Test?*
             </label>
-            <div className="duo-radio-group-vertical">
-              {[0, 1, 2, 3, 4, 5].map(num => (
-                <label key={num} className="duo-radio-option">
-                  <input
-                    type="radio"
-                    name="duolingoPastTests"
-                    value={num.toString()}
-                    checked={formData.duolingoPastTests === num.toString()}
-                    onChange={handleInputChange}
-                  />
-                  <span>{num}</span>
-                </label>
-              ))}
+            <div className="duolingoenglishtestssection-radio-group-vertical">
+              <label className="duolingoenglishtestssection-radio-option">
+                <input
+                  type="radio"
+                  name="duolingoPastTests"
+                  value="1"
+                  checked={formData.duolingoPastTests === '1'}
+                  onChange={handleInputChange}
+                />
+                <span>Yes</span>
+              </label>
+              <label className="duolingoenglishtestssection-radio-option">
+                <input
+                  type="radio"
+                  name="duolingoPastTests"
+                  value="0"
+                  checked={formData.duolingoPastTests === '0'}
+                  onChange={handleInputChange}
+                />
+                <span>No</span>
+              </label>
             </div>
             <button 
               type="button" 
-              className="duo-clear-link"
+              className="duolingoenglishtestssection-clear-link"
               onClick={handleClearPastTests}
               disabled={!formData.duolingoPastTests}
             >
@@ -105,223 +166,164 @@ const DuolingoEnglishTestSection = ({
             </button>
           </div>
 
-          {/* Number of Future Duolingo English Test Sittings */}
-          <div className="duo-form-group">
-            <label className="duo-question-label required">
-              Number of future Duolingo English Test sittings you expect*
-            </label>
-            <div className="duo-radio-group-vertical">
-              {[0, 1, 2, 3].map(num => (
-                <label key={num} className="duo-radio-option">
-                  <input
-                    type="radio"
-                    name="duolingoFutureSittings"
-                    value={num.toString()}
-                    checked={formData.duolingoFutureSittings === num.toString()}
-                    onChange={handleInputChange}
-                  />
-                  <span>{num}</span>
-                </label>
-              ))}
-            </div>
-            <button 
-              type="button" 
-              className="duo-clear-link"
-              onClick={handleClearFutureSittings}
-              disabled={!formData.duolingoFutureSittings}
-            >
-              Clear answer
-            </button>
-          </div>
-
-          {/* Future Test Dates - Conditionally show based on number of future sittings */}
-          {parseInt(formData.duolingoFutureSittings || '0') > 0 && (
-            <div className="duo-future-dates">
-              <h3>Future Testing Dates</h3>
-              {Array.from({ length: parseInt(formData.duolingoFutureSittings || '0') }, (_, i) => (
-                <div key={i} className="duo-form-group">
-                  <label className="duo-question-label required">
-                    Future testing date {i + 1}*
-                  </label>
-                  <input
-                    type="text"
-                    name={`duolingoFutureTestDate${i + 1}`}
-                    value={formData[`duolingoFutureTestDate${i + 1}`] || ''}
-                    onChange={handleInputChange}
-                    placeholder="Month year"
-                    className="duo-date-input"
-                  />
-                  <div className="duo-form-helper">
-                    Date uses "month year" format (e.g. August 2002)
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Score Form - Only show if past tests > 0 */}
+          {/* Score Form - Only show if past tests = Yes */}
           {showScoreForm && (
-            <div className="duo-detailed-fields">
-              <h3>Duolingo English Test Scores</h3>
-              
-              {/* Literacy Score */}
-              <div className="duo-field-group">
-                <div className="duo-form-group">
-                  <label className="duo-question-label required">Highest literacy score*</label>
-                  <select 
-                    name="duolingoHighestLiteracyScore"
-                    value={formData.duolingoHighestLiteracyScore || ''}
-                    onChange={handleInputChange}
-                    className="duo-select"
-                  >
-                    <option value="">Choose an option</option>
-                    {scoreOptions.map(score => (
-                      <option key={score} value={score}>{score}</option>
-                    ))}
-                  </select>
+            <div className="duolingoenglishtestssection-detailed-fields">
+              {/* Test Date */}
+              <div className="duolingoenglishtestssection-form-group">
+                <label className="duolingoenglishtestssection-question-label required">Test Date*</label>
+                <div className="duolingoenglishtestssection-input-container">
+                  {!formData.duolingoTestDate ? (
+                    <select
+                      value={selectedYear || ''}
+                      onChange={(e) => handleYearSelect('duolingoTestDate', e.target.value)}
+                      className="duolingoenglishtestssection-select"
+                    >
+                      <option value="">- Select Year -</option>
+                      {generateYears().map(year => (
+                        <option key={year} value={year}>{year}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="duolingoenglishtestssection-selected-date">
+                      {formData.duolingoTestDate}
+                      <button
+                        type="button"
+                        className="duolingoenglishtestssection-change-date"
+                        onClick={() => {
+                          const event = { target: { name: 'duolingoTestDate', value: '' } };
+                          handleInputChange(event);
+                        }}
+                      >
+                        Change
+                      </button>
+                    </div>
+                  )}
+                  <div className="duolingoenglishtestssection-field-note">Date uses "month year" format (e.g., August 2020)</div>
                 </div>
-                <div className="duo-form-group">
-                  <label className="duo-question-label required">Literacy score date*</label>
-                  <input
-                    type="text"
-                    name="duolingoLiteracyScoreDate"
-                    value={formData.duolingoLiteracyScoreDate || ''}
-                    onChange={handleInputChange}
-                    placeholder="Month day, year"
-                    className="duo-date-input"
-                  />
-                  <div className="duo-form-helper">
-                    Date uses "month day, year" format (e.g. August 1, 2002)
+
+                {/* Calendar Popup */}
+                {showCalendar && currentScoreField === 'duolingoTestDate' && (
+                  <div className="duolingoenglishtestssection-calendar-container">
+                    <div className="duolingoenglishtestssection-calendar-header">
+                      Select Month for {selectedYear}
+                    </div>
+                    <div className="duolingoenglishtestssection-calendar-grid">
+                      {months.map(month => (
+                        <button
+                          key={month}
+                          type="button"
+                          className={`duolingoenglishtestssection-calendar-month ${selectedMonth === month ? 'selected' : ''}`}
+                          onClick={() => handleMonthSelect(month)}
+                        >
+                          {month}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="duolingoenglishtestssection-calendar-actions">
+                      <button
+                        type="button"
+                        className="duolingoenglishtestssection-calendar-confirm"
+                        onClick={handleConfirmDate}
+                        disabled={!selectedMonth || !selectedYear}
+                      >
+                        Confirm
+                      </button>
+                      <button
+                        type="button"
+                        className="duolingoenglishtestssection-calendar-cancel"
+                        onClick={() => {
+                          setShowCalendar(false);
+                          setSelectedYear(null);
+                          setSelectedMonth(null);
+                          setCurrentScoreField(null);
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
+              </div>
+
+              {/* Literacy Score */}
+              <div className="duolingoenglishtestssection-form-group">
+                <label className="duolingoenglishtestssection-question-label">Literacy Score</label>
+                <select 
+                  name="duolingoLiteracyScore"
+                  value={formData.duolingoLiteracyScore || ''}
+                  onChange={handleInputChange}
+                  className="duolingoenglishtestssection-select"
+                >
+                  <option value="">Choose an option</option>
+                  {scoreOptions.map(score => (
+                    <option key={score} value={score}>{score}</option>
+                  ))}
+                </select>
               </div>
 
               {/* Comprehension Score */}
-              <div className="duo-field-group">
-                <div className="duo-form-group">
-                  <label className="duo-question-label required">Highest comprehension score*</label>
-                  <select 
-                    name="duolingoHighestComprehensionScore"
-                    value={formData.duolingoHighestComprehensionScore || ''}
-                    onChange={handleInputChange}
-                    className="duo-select"
-                  >
-                    <option value="">Choose an option</option>
-                    {scoreOptions.map(score => (
-                      <option key={score} value={score}>{score}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="duo-form-group">
-                  <label className="duo-question-label required">Comprehension score date*</label>
-                  <input
-                    type="text"
-                    name="duolingoComprehensionScoreDate"
-                    value={formData.duolingoComprehensionScoreDate || ''}
-                    onChange={handleInputChange}
-                    placeholder="Month day, year"
-                    className="duo-date-input"
-                  />
-                  <div className="duo-form-helper">
-                    Date uses "month day, year" format (e.g. August 1, 2002)
-                  </div>
-                </div>
+              <div className="duolingoenglishtestssection-form-group">
+                <label className="duolingoenglishtestssection-question-label">Comprehension Score</label>
+                <select 
+                  name="duolingoComprehensionScore"
+                  value={formData.duolingoComprehensionScore || ''}
+                  onChange={handleInputChange}
+                  className="duolingoenglishtestssection-select"
+                >
+                  <option value="">Choose an option</option>
+                  {scoreOptions.map(score => (
+                    <option key={score} value={score}>{score}</option>
+                  ))}
+                </select>
               </div>
 
               {/* Conversation Score */}
-              <div className="duo-field-group">
-                <div className="duo-form-group">
-                  <label className="duo-question-label required">Highest conversation score*</label>
-                  <select 
-                    name="duolingoHighestConversationScore"
-                    value={formData.duolingoHighestConversationScore || ''}
-                    onChange={handleInputChange}
-                    className="duo-select"
-                  >
-                    <option value="">Choose an option</option>
-                    {scoreOptions.map(score => (
-                      <option key={score} value={score}>{score}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="duo-form-group">
-                  <label className="duo-question-label required">Conversation score date*</label>
-                  <input
-                    type="text"
-                    name="duolingoConversationScoreDate"
-                    value={formData.duolingoConversationScoreDate || ''}
-                    onChange={handleInputChange}
-                    placeholder="Month day, year"
-                    className="duo-date-input"
-                  />
-                  <div className="duo-form-helper">
-                    Date uses "month day, year" format (e.g. August 1, 2002)
-                  </div>
-                </div>
+              <div className="duolingoenglishtestssection-form-group">
+                <label className="duolingoenglishtestssection-question-label">Conversation Score</label>
+                <select 
+                  name="duolingoConversationScore"
+                  value={formData.duolingoConversationScore || ''}
+                  onChange={handleInputChange}
+                  className="duolingoenglishtestssection-select"
+                >
+                  <option value="">Choose an option</option>
+                  {scoreOptions.map(score => (
+                    <option key={score} value={score}>{score}</option>
+                  ))}
+                </select>
               </div>
 
               {/* Production Score */}
-              <div className="duo-field-group">
-                <div className="duo-form-group">
-                  <label className="duo-question-label required">Highest production score*</label>
-                  <select 
-                    name="duolingoHighestProductionScore"
-                    value={formData.duolingoHighestProductionScore || ''}
-                    onChange={handleInputChange}
-                    className="duo-select"
-                  >
-                    <option value="">Choose an option</option>
-                    {scoreOptions.map(score => (
-                      <option key={score} value={score}>{score}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="duo-form-group">
-                  <label className="duo-question-label required">Production score date*</label>
-                  <input
-                    type="text"
-                    name="duolingoProductionScoreDate"
-                    value={formData.duolingoProductionScoreDate || ''}
-                    onChange={handleInputChange}
-                    placeholder="Month day, year"
-                    className="duo-date-input"
-                  />
-                  <div className="duo-form-helper">
-                    Date uses "month day, year" format (e.g. August 1, 2002)
-                  </div>
-                </div>
+              <div className="duolingoenglishtestssection-form-group">
+                <label className="duolingoenglishtestssection-question-label">Production Score</label>
+                <select 
+                  name="duolingoProductionScore"
+                  value={formData.duolingoProductionScore || ''}
+                  onChange={handleInputChange}
+                  className="duolingoenglishtestssection-select"
+                >
+                  <option value="">Choose an option</option>
+                  {scoreOptions.map(score => (
+                    <option key={score} value={score}>{score}</option>
+                  ))}
+                </select>
               </div>
 
               {/* Total Score */}
-              <div className="duo-field-group">
-                <div className="duo-form-group">
-                  <label className="duo-question-label required">Highest Duolingo total score*</label>
-                  <select 
-                    name="duolingoHighestTotalScore"
-                    value={formData.duolingoHighestTotalScore || ''}
-                    onChange={handleInputChange}
-                    className="duo-select"
-                  >
-                    <option value="">Choose an option</option>
-                    {scoreOptions.map(score => (
-                      <option key={score} value={score}>{score}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="duo-form-group">
-                  <label className="duo-question-label required">Duolingo total score date*</label>
-                  <input
-                    type="text"
-                    name="duolingoTotalScoreDate"
-                    value={formData.duolingoTotalScoreDate || ''}
-                    onChange={handleInputChange}
-                    placeholder="Month day, year"
-                    className="duo-date-input"
-                  />
-                  <div className="duo-form-helper">
-                    Date uses "month day, year" format (e.g. August 1, 2002)
-                  </div>
-                </div>
+              <div className="duolingoenglishtestssection-form-group">
+                <label className="duolingoenglishtestssection-question-label">Total Score</label>
+                <select 
+                  name="duolingoTotalScore"
+                  value={formData.duolingoTotalScore || ''}
+                  onChange={handleInputChange}
+                  className="duolingoenglishtestssection-select"
+                >
+                  <option value="">Choose an option</option>
+                  {scoreOptions.map(score => (
+                    <option key={score} value={score}>{score}</option>
+                  ))}
+                </select>
               </div>
             </div>
           )}

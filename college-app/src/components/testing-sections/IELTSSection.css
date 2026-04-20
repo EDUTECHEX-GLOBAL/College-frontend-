@@ -1,21 +1,21 @@
 /* ============================================================
-   IELTSSection.css — Blue Theme
-   Primary: #3b82f6 | Clean Modern Design
+   IELTSSection.css — Plalite Colour Scheme
+   Primary: #0891b2 | Accent: #f59e0b
    ============================================================ */
 
 :root {
-  --ielts-primary:          #3b82f6;
-  --ielts-primary-dark:     #2563eb;
-  --ielts-primary-light:    #60a5fa;
-  --ielts-primary-pale:     #eff6ff;
-  --ielts-primary-border:   #bfdbfe;
-  --ielts-primary-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  --ielts-primary:          #0891b2;
+  --ielts-primary-dark:     #0e7490;
+  --ielts-primary-light:    #22d3ee;
+  --ielts-primary-pale:     #f0f9ff;
+  --ielts-primary-border:   #bae6fd;
+  --ielts-primary-gradient: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
 
   --ielts-success:          #10b981;
   --ielts-success-bg:       #ecfdf5;
 
   --ielts-white:            #ffffff;
-  --ielts-bg:               #f8fafc;
+  --ielts-bg:               #f5f7fa;
   --ielts-gray-50:          #fafafa;
   --ielts-gray-100:         #f5f5f5;
   --ielts-gray-200:         #e5e5e5;
@@ -27,21 +27,21 @@
 
   --ielts-shadow-sm:        0 1px 3px rgba(0,0,0,0.05);
   --ielts-shadow-md:        0 4px 14px rgba(0,0,0,0.07);
-  --ielts-shadow-blue:      0 4px 18px rgba(59,130,246,0.18);
+  --ielts-shadow-teal:      0 4px 18px rgba(8,145,178,0.18);
 
   --ielts-radius-sm:        8px;
   --ielts-radius:           12px;
   --ielts-radius-full:      9999px;
 
-  --ielts-font:             'DM Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --ielts-font-display:     'DM Serif Display', Georgia, serif;
+  --ielts-font:             'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --ielts-font-display:     'Sora', 'Plus Jakarta Sans', Georgia, serif;
   --ielts-transition:       150ms ease;
 }
 
 /* ─────────────────────────────────────────
    CONTAINER
 ───────────────────────────────────────── */
-.ielts-container {
+.ieltssection-container {
   min-height: 100vh;
   background: var(--ielts-bg);
   font-family: var(--ielts-font);
@@ -49,7 +49,7 @@
 }
 
 /* ── MAIN CARD ── */
-.ielts-card {
+.ieltssection-card {
   background: var(--ielts-white);
   border-radius: var(--ielts-radius);
   border: 1px solid var(--ielts-gray-200);
@@ -59,74 +59,78 @@
 }
 
 /* ── Card Header ── */
-.ielts-card-header {
+.ieltssection-card-header {
   background: var(--ielts-white);
   padding: 24px 28px;
   border-bottom: 1px solid var(--ielts-gray-200);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
-.ielts-card-title {
+.ieltssection-card-title {
   font-family: var(--ielts-font-display);
   font-size: 22px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--ielts-gray-900);
   margin: 0;
   letter-spacing: -0.3px;
 }
 
-.ielts-status-badge {
+.ieltssection-status-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   background: var(--ielts-primary-pale);
   color: var(--ielts-primary-dark);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   padding: 6px 12px;
   border-radius: var(--ielts-radius-full);
-  margin-top: 12px;
 }
 
-.ielts-status-badge::before {
+.ieltssection-status-badge::before {
   content: "●";
   font-size: 10px;
   color: var(--ielts-primary);
 }
 
 /* ── FORM CONTENT ── */
-.ielts-form-content {
+.ieltssection-form-content {
   padding: 28px;
 }
 
-.ielts-form-group {
+.ieltssection-form-group {
   margin-bottom: 28px;
   padding-bottom: 28px;
   border-bottom: 1px solid var(--ielts-gray-200);
 }
 
-.ielts-form-group:last-child {
+.ieltssection-form-group:last-child {
   border-bottom: none;
   margin-bottom: 0;
   padding-bottom: 0;
 }
 
 /* Question Label */
-.ielts-question-label {
+.ieltssection-question-label {
   display: block;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--ielts-gray-700);
   margin-bottom: 8px;
   line-height: 1.4;
 }
 
-.ielts-question-label.required::after {
+.ieltssection-question-label.required::after {
   content: "*";
   color: var(--ielts-primary);
   margin-left: 4px;
 }
 
-.ielts-question-description {
+.ieltssection-question-description {
   font-size: 13px;
   color: var(--ielts-gray-600);
   margin: 0 0 16px 0;
@@ -134,14 +138,14 @@
 }
 
 /* Radio Groups - Vertical */
-.ielts-radio-group-vertical {
+.ieltssection-radio-group-vertical {
   display: flex;
   flex-direction: column;
   gap: 8px;
   margin-bottom: 12px;
 }
 
-.ielts-radio-option {
+.ieltssection-radio-option {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -151,18 +155,18 @@
   background: var(--ielts-white);
   cursor: pointer;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--ielts-gray-700);
   transition: all var(--ielts-transition);
 }
 
-.ielts-radio-option:hover {
+.ieltssection-radio-option:hover {
   border-color: var(--ielts-primary-light);
   background: var(--ielts-primary-pale);
   color: var(--ielts-primary);
 }
 
-.ielts-radio-option input[type="radio"] {
+.ieltssection-radio-option input[type="radio"] {
   width: 16px;
   height: 16px;
   margin: 0;
@@ -170,15 +174,15 @@
   cursor: pointer;
 }
 
-.ielts-radio-option:has(input:checked) {
+.ieltssection-radio-option:has(input:checked) {
   border-color: var(--ielts-primary);
   background: var(--ielts-primary-pale);
   color: var(--ielts-primary);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* Select Inputs */
-.ielts-select {
+.ieltssection-select {
   width: 100%;
   max-width: 300px;
   padding: 10px 12px;
@@ -192,44 +196,162 @@
   outline: none;
   cursor: pointer;
   appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230891b2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
   background-repeat: no-repeat;
   background-position: right 12px center;
   background-size: 16px;
 }
 
-.ielts-select:focus {
+.ieltssection-select:focus {
   border-color: var(--ielts-primary);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+  box-shadow: 0 0 0 3px rgba(8,145,178,0.12);
 }
 
-/* Date Inputs */
-.ielts-date-input {
-  width: 100%;
-  max-width: 280px;
+/* Input Container for Date Picker */
+.ieltssection-input-container {
+  position: relative;
+}
+
+/* Selected Date Display */
+.ieltssection-selected-date {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   padding: 10px 12px;
   border: 1.5px solid var(--ielts-gray-200);
   border-radius: var(--ielts-radius-sm);
-  font-family: var(--ielts-font);
+  background: var(--ielts-gray-50);
   font-size: 14px;
-  color: var(--ielts-gray-900);
-  background: var(--ielts-white);
-  transition: all var(--ielts-transition);
-  outline: none;
+  color: var(--ielts-gray-700);
+  max-width: 300px;
 }
 
-.ielts-date-input:focus {
-  border-color: var(--ielts-primary);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+.ieltssection-change-date {
+  background: none;
+  border: none;
+  color: var(--ielts-primary);
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  margin-left: auto;
+  white-space: nowrap;
+  transition: color var(--ielts-transition);
 }
 
-.ielts-date-input::placeholder {
+.ieltssection-change-date:hover {
+  color: var(--ielts-primary-dark);
+}
+
+/* Field Note / Helper Text */
+.ieltssection-field-note {
+  font-size: 12px;
   color: var(--ielts-gray-400);
+  margin-top: 6px;
+  font-style: italic;
+}
+
+/* Calendar Popup */
+.ieltssection-calendar-container {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 200;
+  background: var(--ielts-white);
+  border: 1px solid var(--ielts-gray-200);
+  border-radius: var(--ielts-radius);
+  padding: 16px;
+  box-shadow: var(--ielts-shadow-md);
+  min-width: 280px;
+}
+
+.ieltssection-calendar-header {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ielts-gray-900);
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.ieltssection-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.ieltssection-calendar-month {
+  background: var(--ielts-gray-100);
+  border: 1px solid var(--ielts-gray-200);
+  border-radius: var(--ielts-radius-sm);
+  padding: 8px 4px;
   font-size: 13px;
+  font-weight: 600;
+  color: var(--ielts-gray-700);
+  cursor: pointer;
+  transition: all var(--ielts-transition);
+  text-align: center;
+}
+
+.ieltssection-calendar-month:hover {
+  background: var(--ielts-primary);
+  color: white;
+  border-color: var(--ielts-primary);
+}
+
+.ieltssection-calendar-month.selected {
+  background: var(--ielts-primary);
+  color: white;
+  border-color: var(--ielts-primary);
+}
+
+.ieltssection-calendar-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.ieltssection-calendar-confirm {
+  flex: 1;
+  background: var(--ielts-primary);
+  border: none;
+  border-radius: var(--ielts-radius-sm);
+  padding: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+  transition: all var(--ielts-transition);
+}
+
+.ieltssection-calendar-confirm:hover:not(:disabled) {
+  background: var(--ielts-primary-dark);
+}
+
+.ieltssection-calendar-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ieltssection-calendar-cancel {
+  flex: 1;
+  background: none;
+  border: 1px solid var(--ielts-gray-200);
+  border-radius: var(--ielts-radius-sm);
+  padding: 8px;
+  font-size: 13px;
+  color: var(--ielts-gray-600);
+  cursor: pointer;
+  transition: all var(--ielts-transition);
+}
+
+.ieltssection-calendar-cancel:hover {
+  background: var(--ielts-gray-100);
+  color: var(--ielts-gray-900);
 }
 
 /* Clear Link */
-.ielts-clear-link {
+.ieltssection-clear-link {
   display: inline-block;
   background: none;
   border: none;
@@ -243,17 +365,17 @@
   margin-top: 8px;
 }
 
-.ielts-clear-link:hover:not(:disabled) {
+.ieltssection-clear-link:hover:not(:disabled) {
   color: var(--ielts-primary);
 }
 
-.ielts-clear-link:disabled {
+.ieltssection-clear-link:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
 /* Detailed Fields Section */
-.ielts-detailed-fields {
+.ieltssection-detailed-fields {
   background: var(--ielts-gray-50);
   border: 1px solid var(--ielts-gray-200);
   border-radius: var(--ielts-radius);
@@ -261,64 +383,60 @@
   margin: 20px 0;
 }
 
-.ielts-detailed-fields h3 {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--ielts-gray-900);
-  margin: 0 0 16px 0;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--ielts-gray-200);
-  font-family: var(--ielts-font);
-}
-
-.ielts-form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
+.ieltssection-detailed-fields .ieltssection-form-group {
   margin-bottom: 20px;
   padding-bottom: 20px;
   border-bottom: 1px solid var(--ielts-gray-200);
 }
 
-.ielts-form-row:last-child {
+.ieltssection-detailed-fields .ieltssection-form-group:last-child {
   border-bottom: none;
   margin-bottom: 0;
   padding-bottom: 0;
-}
-
-.ielts-form-field {
-  display: flex;
-  flex-direction: column;
-}
-
-.ielts-form-field .ielts-form-group {
-  margin-bottom: 0;
-  padding-bottom: 0;
-  border-bottom: none;
 }
 
 /* Form Helper Text */
-.ielts-form-helper {
+.ieltssection-form-helper {
   font-size: 12px;
   color: var(--ielts-gray-400);
   margin-top: 6px;
   font-style: italic;
 }
 
+/* Animation */
+@keyframes ielts-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ieltssection-calendar-container {
+  animation: ielts-fadeIn 0.2s ease-out;
+}
+
 /* ════════════════════════════════════════
    RESPONSIVE — Tablet ≤ 1023px
 ════════════════════════════════════════ */
 @media (max-width: 1023px) {
-  .ielts-card {
+  .ieltssection-card {
     margin: 20px 24px;
   }
   
-  .ielts-form-content {
+  .ieltssection-card-header {
+    padding: 20px 24px;
+  }
+  
+  .ieltssection-form-content {
     padding: 24px;
   }
   
-  .ielts-select,
-  .ielts-date-input {
+  .ieltssection-select,
+  .ieltssection-selected-date {
     max-width: 100%;
   }
 }
@@ -327,42 +445,56 @@
    RESPONSIVE — Mobile ≤ 767px
 ════════════════════════════════════════ */
 @media (max-width: 767px) {
-  .ielts-card {
+  .ieltssection-card {
     margin: 16px;
   }
   
-  .ielts-card-header {
-    padding: 20px;
+  .ieltssection-card-header {
+    padding: 16px 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
   
-  .ielts-card-title {
+  .ieltssection-card-title {
     font-size: 19px;
   }
   
-  .ielts-form-content {
+  .ieltssection-form-content {
     padding: 20px;
   }
   
-  .ielts-radio-option {
+  .ieltssection-radio-option {
     width: 100%;
   }
   
-  .ielts-select {
+  .ieltssection-select {
     max-width: 100%;
   }
   
-  .ielts-date-input {
+  .ieltssection-selected-date {
     max-width: 100%;
+    flex-wrap: wrap;
   }
   
-  .ielts-detailed-fields {
+  .ieltssection-change-date {
+    margin-left: 0;
+  }
+  
+  .ieltssection-detailed-fields {
     padding: 16px;
     margin: 16px 0;
   }
   
-  .ielts-form-row {
-    grid-template-columns: 1fr;
-    gap: 16px;
+  .ieltssection-calendar-container {
+    min-width: 0;
+    width: 100%;
+    left: 0;
+    right: 0;
+  }
+  
+  .ieltssection-calendar-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
@@ -370,47 +502,99 @@
    RESPONSIVE — Small Mobile ≤ 480px
 ════════════════════════════════════════ */
 @media (max-width: 480px) {
-  .ielts-card {
+  .ieltssection-card {
     margin: 12px;
   }
   
-  .ielts-card-header {
-    padding: 16px;
+  .ieltssection-card-header {
+    padding: 14px 16px;
   }
   
-  .ielts-card-title {
+  .ieltssection-card-title {
     font-size: 18px;
   }
   
-  .ielts-form-content {
+  .ieltssection-form-content {
     padding: 16px;
   }
   
-  .ielts-form-group {
+  .ieltssection-form-group {
     margin-bottom: 20px;
     padding-bottom: 20px;
   }
   
-  .ielts-question-label {
+  .ieltssection-question-label {
     font-size: 13px;
   }
   
-  .ielts-select,
-  .ielts-date-input {
+  .ieltssection-select {
     padding: 8px 10px;
     font-size: 13px;
   }
   
-  .ielts-detailed-fields {
+  .ieltssection-selected-date {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  
+  .ieltssection-detailed-fields {
     padding: 12px;
   }
   
-  .ielts-form-row {
-    gap: 12px;
-  }
-  
-  .ielts-radio-option {
+  .ieltssection-radio-option {
     padding: 8px 12px;
     font-size: 12px;
+  }
+  
+  .ieltssection-calendar-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .ieltssection-calendar-month {
+    padding: 6px 4px;
+    font-size: 12px;
+  }
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Very Small ≤ 360px
+════════════════════════════════════════ */
+@media (max-width: 360px) {
+  .ieltssection-card {
+    margin: 8px;
+  }
+  
+  .ieltssection-form-content {
+    padding: 12px;
+  }
+  
+  .ieltssection-card-header {
+    padding: 12px;
+  }
+  
+  .ieltssection-card-title {
+    font-size: 16px;
+  }
+  
+  .ieltssection-calendar-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .ieltssection-calendar-month {
+    font-size: 11px;
+    padding: 6px 2px;
+  }
+}
+
+/* ============================================================
+   ACCESSIBILITY - REDUCED MOTION
+============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

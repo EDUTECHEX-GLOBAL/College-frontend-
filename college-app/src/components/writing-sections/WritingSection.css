@@ -1,7 +1,7 @@
-/* ── Writing Section Styles ──────────────────────────────── */
+/* ── Writing Section Styles ── Plalite Colour Scheme ──────────────────────────────── */
 .writing-section {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  background: linear-gradient(135deg, #f5f7fa 0%, #e2e8f0 100%);
 }
 
 .writing-header {
@@ -25,15 +25,16 @@
 
 .writing-header .welcome-title {
   font-size: 28px;
-  font-weight: 700;
-  color: #1a202c;
+  font-weight: 800;
+  color: #0f172a;
   margin: 0 0 8px 0;
   line-height: 1.2;
+  font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
 }
 
 .writing-header .welcome-subtitle {
   font-size: 16px;
-  color: #718096;
+  color: #64748b;
   margin: 0;
 }
 
@@ -63,8 +64,8 @@
 
 .nav-section-title {
   font-size: 12px;
-  font-weight: 600;
-  color: #718096;
+  font-weight: 700;
+  color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin: 0 0 16px 0;
@@ -87,18 +88,18 @@
 }
 
 .writing-nav-item:hover {
-  background: #f7fafc;
+  background: #f0f9ff;
   border-left-color: #e2e8f0;
 }
 
 .writing-nav-item.active {
-  background: rgba(44, 90, 160, 0.08);
-  border-left-color: #2C5AA0;
+  background: rgba(8, 145, 178, 0.08);
+  border-left-color: #0891b2;
 }
 
 .writing-nav-item.active .writing-nav-text {
-  color: #2C5AA0;
-  font-weight: 600;
+  color: #0891b2;
+  font-weight: 700;
 }
 
 .writing-nav-content {
@@ -106,20 +107,20 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  min-height: 44px; /* touch target */
+  min-height: 44px;
 }
 
 .writing-nav-text {
   font-size: 14px;
   font-weight: 500;
-  color: #4a5568;
+  color: #334155;
   transition: color 0.2s ease;
 }
 
 /* ── Main Content ────────────────────────────────────────── */
 .writing-main-content {
   flex: 1;
-  min-width: 0; /* prevents flex overflow */
+  min-width: 0;
   min-height: 600px;
 }
 
@@ -129,26 +130,29 @@
 }
 
 .back-to-dashboard-content-btn {
-  background: #2C5AA0;
+  background: #0891b2;
   color: white;
-  border: 1px solid #2C5AA0;
+  border: 1px solid #0891b2;
   padding: 10px 20px;
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 44px; /* touch target */
+  min-height: 44px;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 .back-to-dashboard-content-btn:hover {
-  background: #1E3D6F;
-  border-color: #1E3D6F;
+  background: #0e7490;
+  border-color: #0e7490;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(8, 145, 178, 0.2);
 }
 
 .back-to-dashboard-content-btn:active {
@@ -217,4 +221,35 @@
 
   .writing-nav-content { padding: 12px; }
   .writing-nav-text    { font-size: 13px; }
+}
+
+/* ============================================================
+   ACCESSIBILITY - REDUCED MOTION
+============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================
+   PRINT STYLES
+============================================================ */
+@media print {
+  .writing-sidebar,
+  .content-back-button {
+    display: none;
+  }
+  
+  .writing-container {
+    padding: 0;
+  }
+  
+  .writing-main-content {
+    width: 100%;
+  }
 }

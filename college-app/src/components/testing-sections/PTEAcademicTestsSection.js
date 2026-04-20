@@ -9,7 +9,10 @@ const PTEAcademicTestsSection = ({
   clearRelatedFields 
 }) => {
   const [showScoreForm, setShowScoreForm] = useState(false);
-  const [isFormValid, setIsFormValid] = useState(false);
+  const [selectedYear, setSelectedYear] = useState(null);
+  const [selectedMonth, setSelectedMonth] = useState(null);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [currentDateField, setCurrentDateField] = useState(null);
 
   // Determine if we should show score form based on past tests
   useEffect(() => {
@@ -17,197 +20,147 @@ const PTEAcademicTestsSection = ({
     setShowScoreForm(pastTests > 0);
   }, [formData.ptePastTests]);
 
-  // Validate form completion
-  useEffect(() => {
-    const hasPastTests = formData.ptePastTests !== undefined && formData.ptePastTests !== '';
-    const hasFutureSittings = formData.pteFutureSittings !== undefined && formData.pteFutureSittings !== '';
-    
-    let scoresValid = true;
-    
-    if (showScoreForm && parseInt(formData.ptePastTests || '0') > 0) {
-      // Check if all required score fields are filled
-      const requiredFields = [
-        'pteHighestListeningScore', 'pteListeningScoreDate',
-        'pteHighestReadingScore', 'pteReadingScoreDate',
-        'pteHighestSpeakingScore', 'pteSpeakingScoreDate',
-        'pteHighestWritingScore', 'pteWritingScoreDate',
-        'pteHighestGrammarScore', 'pteGrammarScoreDate',
-        'pteHighestOralFluencyScore', 'pteOralFluencyScoreDate',
-        'pteHighestPronunciationScore', 'ptePronunciationScoreDate',
-        'pteHighestSpellingScore', 'pteSpellingScoreDate',
-        'pteHighestVocabularyScore', 'pteVocabularyScoreDate',
-        'pteHighestWrittenDiscourseScore', 'pteWrittenDiscourseScoreDate'
-      ];
-      
-      scoresValid = requiredFields.every(field => 
-        formData[field] && formData[field].toString().trim() !== ''
-      );
-    }
-    
-    setIsFormValid(hasPastTests && hasFutureSittings && (showScoreForm ? scoresValid : true));
-  }, [formData, showScoreForm]);
-
   // Score options for dropdowns (0-90 for PTE)
   const scoreOptions = Array.from({ length: 91 }, (_, i) => i);
 
-  // Handle clearing past tests and related fields
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  // Generate years from 1990 to 2026
+  const generateYears = () => {
+    const years = [];
+    for (let year = 1990; year <= 2026; year++) {
+      years.push(year);
+    }
+    return years;
+  };
+
+  // Check if section is complete
+  const isSectionComplete = () => {
+    if (!formData.ptePastTests) return false;
+    
+    const pastTests = parseInt(formData.ptePastTests);
+    
+    // If past tests > 0, check test date and core scores
+    if (pastTests > 0) {
+      if (!formData.pteTestDate) return false;
+      if (!formData.pteListeningScore) return false;
+      if (!formData.pteReadingScore) return false;
+      if (!formData.pteSpeakingScore) return false;
+      if (!formData.pteWritingScore) return false;
+    }
+    
+    return true;
+  };
+
+  // Handle clearing past PTE tests and related fields
   const handleClearPastTests = () => {
     if (clearRelatedFields) {
       clearRelatedFields('ptePastTests', [
-        'pteHighestListeningScore', 'pteListeningScoreDate',
-        'pteHighestReadingScore', 'pteReadingScoreDate',
-        'pteHighestSpeakingScore', 'pteSpeakingScoreDate',
-        'pteHighestWritingScore', 'pteWritingScoreDate',
-        'pteHighestGrammarScore', 'pteGrammarScoreDate',
-        'pteHighestOralFluencyScore', 'pteOralFluencyScoreDate',
-        'pteHighestPronunciationScore', 'ptePronunciationScoreDate',
-        'pteHighestSpellingScore', 'pteSpellingScoreDate',
-        'pteHighestVocabularyScore', 'pteVocabularyScoreDate',
-        'pteHighestWrittenDiscourseScore', 'pteWrittenDiscourseScoreDate'
+        'pteTestDate',
+        'pteListeningScore',
+        'pteReadingScore',
+        'pteSpeakingScore',
+        'pteWritingScore',
+        'pteGrammarScore',
+        'pteVocabularyScore'
       ]);
     } else if (clearAnswer) {
       clearAnswer('ptePastTests');
     }
   };
 
-  // Handle clearing future sittings
-  const handleClearFutureSittings = () => {
-    if (clearAnswer) {
-      clearAnswer('pteFutureSittings');
+  // Handle year selection for date picker
+  const handleYearSelect = (field, year) => {
+    setSelectedYear(year);
+    setCurrentDateField(field);
+    setShowCalendar(true);
+  };
+
+  // Handle month selection for date picker
+  const handleMonthSelect = (month) => {
+    setSelectedMonth(month);
+  };
+
+  // Confirm date selection
+  const handleConfirmDate = () => {
+    if (selectedMonth && selectedYear && currentDateField) {
+      const fullDate = `${selectedMonth} ${selectedYear}`;
+      const event = {
+        target: {
+          name: currentDateField,
+          value: fullDate
+        }
+      };
+      handleInputChange(event);
+      setShowCalendar(false);
+      setSelectedYear(null);
+      setSelectedMonth(null);
+      setCurrentDateField(null);
     }
   };
 
-  // Handle clearing individual score fields
-  const handleClearScoreField = (fieldName) => {
-    if (clearAnswer) {
-      clearAnswer(fieldName);
-    }
-  };
+  // Close calendar when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showCalendar && !event.target.closest('.pteacademictestssection-calendar-container')) {
+        setShowCalendar(false);
+        setSelectedYear(null);
+        setSelectedMonth(null);
+        setCurrentDateField(null);
+      }
+    };
 
-  // Helper function to render score and date pair
-  const renderScoreDatePair = (scoreField, dateField, title) => {
-    const scoreValue = formData[scoreField] || '';
-    const dateValue = formData[dateField] || '';
-
-    return (
-      <div className="pte-field-group" key={scoreField}>
-        <div className="pte-form-group">
-          <label className="pte-question-label required">
-            Highest {title} score
-          </label>
-          <select 
-            name={scoreField}
-            value={scoreValue}
-            onChange={handleInputChange}
-            className="pte-select"
-          >
-            <option value="">Choose an option</option>
-            {scoreOptions.map(score => (
-              <option key={score} value={score}>{score}</option>
-            ))}
-          </select>
-          {scoreValue && (
-            <button 
-              type="button" 
-              className="pte-clear-link"
-              onClick={() => handleClearScoreField(scoreField)}
-            >
-              Clear score
-            </button>
-          )}
-        </div>
-        
-        <div className="pte-form-group">
-          <label className="pte-question-label required">
-            {title} score date
-          </label>
-          <input
-            type="date"
-            name={dateField}
-            value={dateValue}
-            onChange={handleInputChange}
-            className="pte-date-input"
-          />
-          {dateValue && (
-            <button 
-              type="button" 
-              className="pte-clear-link"
-              onClick={() => handleClearScoreField(dateField)}
-            >
-              Clear date
-            </button>
-          )}
-          <div className="pte-form-helper">
-            Date uses "month day, year" format (e.g. August 1, 2002)
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Check if any past test scores exist
-  const hasAnyScore = () => {
-    const scoreFields = [
-      'pteHighestListeningScore', 'pteHighestReadingScore', 'pteHighestSpeakingScore',
-      'pteHighestWritingScore', 'pteHighestGrammarScore', 'pteHighestOralFluencyScore',
-      'pteHighestPronunciationScore', 'pteHighestSpellingScore', 'pteHighestVocabularyScore',
-      'pteHighestWrittenDiscourseScore'
-    ];
-    return scoreFields.some(field => formData[field] && formData[field].toString().trim() !== '');
-  };
-
-  // Clear all scores
-  const handleClearAllScores = () => {
-    if (clearRelatedFields) {
-      clearRelatedFields('ptePastTests', [
-        'pteHighestListeningScore', 'pteListeningScoreDate',
-        'pteHighestReadingScore', 'pteReadingScoreDate',
-        'pteHighestSpeakingScore', 'pteSpeakingScoreDate',
-        'pteHighestWritingScore', 'pteWritingScoreDate',
-        'pteHighestGrammarScore', 'pteGrammarScoreDate',
-        'pteHighestOralFluencyScore', 'pteOralFluencyScoreDate',
-        'pteHighestPronunciationScore', 'ptePronunciationScoreDate',
-        'pteHighestSpellingScore', 'pteSpellingScoreDate',
-        'pteHighestVocabularyScore', 'pteVocabularyScoreDate',
-        'pteHighestWrittenDiscourseScore', 'pteWrittenDiscourseScoreDate'
-      ]);
-    }
-  };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showCalendar]);
 
   return (
-    <div className="pte-container">
-      <div className="pte-card">
-        <div className="pte-card-header">
-          <h2 className="pte-card-title">PTE Academic Tests</h2>
-          <div className="pte-status-badge">
-            {isFormValid ? 'Complete' : 'In Progress'}
+    <div className="pteacademictestssection-container">
+      <div className="pteacademictestssection-card">
+        <div className="pteacademictestssection-card-header">
+          <h2 className="pteacademictestssection-card-title">PTE Academic</h2>
+          <div className="pteacademictestssection-status-badge">
+            {isSectionComplete() ? 'Complete' : 'In Progress'}
           </div>
         </div>
         
-        <div className="pte-form-content">
-          {/* Number of Past PTE Academic Tests */}
-          <div className="pte-form-group">
-            <label className="pte-question-label required">
-              Number of times you have already taken the PTE Academic Test
+        <div className="pteacademictestssection-form-content">
+          {/* Have you taken the PTE Academic Test? */}
+          <div className="pteacademictestssection-form-group">
+            <label className="pteacademictestssection-question-label required">
+              Have you taken the PTE Academic Test?*
             </label>
-            <div className="pte-radio-group-vertical">
-              {[0, 1, 2, 3, 4, 5].map(num => (
-                <label key={num} className="pte-radio-option">
-                  <input
-                    type="radio"
-                    name="ptePastTests"
-                    value={num.toString()}
-                    checked={formData.ptePastTests === num.toString()}
-                    onChange={handleInputChange}
-                  />
-                  <span className="pte-radio-label">{num}</span>
-                </label>
-              ))}
+            <div className="pteacademictestssection-radio-group-vertical">
+              <label className="pteacademictestssection-radio-option">
+                <input
+                  type="radio"
+                  name="ptePastTests"
+                  value="1"
+                  checked={formData.ptePastTests === '1'}
+                  onChange={handleInputChange}
+                />
+                <span>Yes</span>
+              </label>
+              <label className="pteacademictestssection-radio-option">
+                <input
+                  type="radio"
+                  name="ptePastTests"
+                  value="0"
+                  checked={formData.ptePastTests === '0'}
+                  onChange={handleInputChange}
+                />
+                <span>No</span>
+              </label>
             </div>
             {formData.ptePastTests !== undefined && formData.ptePastTests !== '' && (
               <button 
                 type="button" 
-                className="pte-clear-link"
+                className="pteacademictestssection-clear-link"
                 onClick={handleClearPastTests}
               >
                 Clear answer
@@ -215,122 +168,186 @@ const PTEAcademicTestsSection = ({
             )}
           </div>
 
-          {/* Number of Future PTE Academic Test Sittings */}
-          <div className="pte-form-group">
-            <label className="pte-question-label required">
-              Number of future PTE Academic Test sittings you expect
-            </label>
-            <div className="pte-radio-group-vertical">
-              {[0, 1, 2, 3].map(num => (
-                <label key={num} className="pte-radio-option">
-                  <input
-                    type="radio"
-                    name="pteFutureSittings"
-                    value={num.toString()}
-                    checked={formData.pteFutureSittings === num.toString()}
-                    onChange={handleInputChange}
-                  />
-                  <span className="pte-radio-label">{num}</span>
-                </label>
-              ))}
-            </div>
-            {formData.pteFutureSittings !== undefined && formData.pteFutureSittings !== '' && (
-              <button 
-                type="button" 
-                className="pte-clear-link"
-                onClick={handleClearFutureSittings}
-              >
-                Clear answer
-              </button>
-            )}
-          </div>
-
-          {/* Score Form - Only show if past tests > 0 */}
+          {/* Score Form - Only show if past tests = Yes */}
           {showScoreForm && (
-            <div className="pte-detailed-fields">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                <h3>PTE Academic Test Scores</h3>
-                {hasAnyScore() && (
-                  <button 
-                    type="button" 
-                    className="pte-clear-link"
-                    onClick={handleClearAllScores}
-                    style={{ fontSize: '11px' }}
-                  >
-                    Clear all scores
-                  </button>
+            <div className="pteacademictestssection-detailed-fields">
+              {/* Test Date */}
+              <div className="pteacademictestssection-form-group">
+                <label className="pteacademictestssection-question-label required">Test Date*</label>
+                <div className="pteacademictestssection-input-container">
+                  {!formData.pteTestDate ? (
+                    <select
+                      value={selectedYear || ''}
+                      onChange={(e) => handleYearSelect('pteTestDate', e.target.value)}
+                      className="pteacademictestssection-select"
+                    >
+                      <option value="">- Select Year -</option>
+                      {generateYears().map(year => (
+                        <option key={year} value={year}>{year}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="pteacademictestssection-selected-date">
+                      {formData.pteTestDate}
+                      <button
+                        type="button"
+                        className="pteacademictestssection-change-date"
+                        onClick={() => {
+                          const event = { target: { name: 'pteTestDate', value: '' } };
+                          handleInputChange(event);
+                        }}
+                      >
+                        Change
+                      </button>
+                    </div>
+                  )}
+                  <div className="pteacademictestssection-field-note">Date uses "month year" format (e.g., August 2020)</div>
+                </div>
+
+                {/* Calendar Popup */}
+                {showCalendar && currentDateField === 'pteTestDate' && (
+                  <div className="pteacademictestssection-calendar-container">
+                    <div className="pteacademictestssection-calendar-header">
+                      Select Month for {selectedYear}
+                    </div>
+                    <div className="pteacademictestssection-calendar-grid">
+                      {months.map(month => (
+                        <button
+                          key={month}
+                          type="button"
+                          className={`pteacademictestssection-calendar-month ${selectedMonth === month ? 'selected' : ''}`}
+                          onClick={() => handleMonthSelect(month)}
+                        >
+                          {month}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="pteacademictestssection-calendar-actions">
+                      <button
+                        type="button"
+                        className="pteacademictestssection-calendar-confirm"
+                        onClick={handleConfirmDate}
+                        disabled={!selectedMonth || !selectedYear}
+                      >
+                        Confirm
+                      </button>
+                      <button
+                        type="button"
+                        className="pteacademictestssection-calendar-cancel"
+                        onClick={() => {
+                          setShowCalendar(false);
+                          setSelectedYear(null);
+                          setSelectedMonth(null);
+                          setCurrentDateField(null);
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
-              
+
               {/* Listening Score */}
-              {renderScoreDatePair(
-                'pteHighestListeningScore', 
-                'pteListeningScoreDate', 
-                'listening'
-              )}
+              <div className="pteacademictestssection-form-group">
+                <label className="pteacademictestssection-question-label">Listening Score</label>
+                <select 
+                  name="pteListeningScore"
+                  value={formData.pteListeningScore || ''}
+                  onChange={handleInputChange}
+                  className="pteacademictestssection-select"
+                >
+                  <option value="">Choose an option</option>
+                  {scoreOptions.map(score => (
+                    <option key={score} value={score}>{score}</option>
+                  ))}
+                </select>
+              </div>
 
               {/* Reading Score */}
-              {renderScoreDatePair(
-                'pteHighestReadingScore', 
-                'pteReadingScoreDate', 
-                'reading'
-              )}
+              <div className="pteacademictestssection-form-group">
+                <label className="pteacademictestssection-question-label">Reading Score</label>
+                <select 
+                  name="pteReadingScore"
+                  value={formData.pteReadingScore || ''}
+                  onChange={handleInputChange}
+                  className="pteacademictestssection-select"
+                >
+                  <option value="">Choose an option</option>
+                  {scoreOptions.map(score => (
+                    <option key={score} value={score}>{score}</option>
+                  ))}
+                </select>
+              </div>
 
               {/* Speaking Score */}
-              {renderScoreDatePair(
-                'pteHighestSpeakingScore', 
-                'pteSpeakingScoreDate', 
-                'speaking'
-              )}
+              <div className="pteacademictestssection-form-group">
+                <label className="pteacademictestssection-question-label">Speaking Score</label>
+                <select 
+                  name="pteSpeakingScore"
+                  value={formData.pteSpeakingScore || ''}
+                  onChange={handleInputChange}
+                  className="pteacademictestssection-select"
+                >
+                  <option value="">Choose an option</option>
+                  {scoreOptions.map(score => (
+                    <option key={score} value={score}>{score}</option>
+                  ))}
+                </select>
+              </div>
 
               {/* Writing Score */}
-              {renderScoreDatePair(
-                'pteHighestWritingScore', 
-                'pteWritingScoreDate', 
-                'writing'
-              )}
+              <div className="pteacademictestssection-form-group">
+                <label className="pteacademictestssection-question-label">Writing Score</label>
+                <select 
+                  name="pteWritingScore"
+                  value={formData.pteWritingScore || ''}
+                  onChange={handleInputChange}
+                  className="pteacademictestssection-select"
+                >
+                  <option value="">Choose an option</option>
+                  {scoreOptions.map(score => (
+                    <option key={score} value={score}>{score}</option>
+                  ))}
+                </select>
+              </div>
 
-              {/* Grammar Score */}
-              {renderScoreDatePair(
-                'pteHighestGrammarScore', 
-                'pteGrammarScoreDate', 
-                'grammar'
-              )}
+              {/* Additional Scores Section */}
+              <div className="pteacademictestssection-additional-scores">
+                <h3 className="pteacademictestssection-additional-title">Additional Scores</h3>
+                
+                {/* Grammar Score */}
+                <div className="pteacademictestssection-form-group">
+                  <label className="pteacademictestssection-question-label">Grammar Score</label>
+                  <select 
+                    name="pteGrammarScore"
+                    value={formData.pteGrammarScore || ''}
+                    onChange={handleInputChange}
+                    className="pteacademictestssection-select"
+                  >
+                    <option value="">Choose an option</option>
+                    {scoreOptions.map(score => (
+                      <option key={score} value={score}>{score}</option>
+                    ))}
+                  </select>
+                </div>
 
-              {/* Oral Fluency Score */}
-              {renderScoreDatePair(
-                'pteHighestOralFluencyScore', 
-                'pteOralFluencyScoreDate', 
-                'oral fluency'
-              )}
-
-              {/* Pronunciation Score */}
-              {renderScoreDatePair(
-                'pteHighestPronunciationScore', 
-                'ptePronunciationScoreDate', 
-                'pronunciation'
-              )}
-
-              {/* Spelling Score */}
-              {renderScoreDatePair(
-                'pteHighestSpellingScore', 
-                'pteSpellingScoreDate', 
-                'spelling'
-              )}
-
-              {/* Vocabulary Score */}
-              {renderScoreDatePair(
-                'pteHighestVocabularyScore', 
-                'pteVocabularyScoreDate', 
-                'vocabulary'
-              )}
-
-              {/* Written Discourse Score */}
-              {renderScoreDatePair(
-                'pteHighestWrittenDiscourseScore', 
-                'pteWrittenDiscourseScoreDate', 
-                'written discourse'
-              )}
+                {/* Vocabulary Score */}
+                <div className="pteacademictestssection-form-group">
+                  <label className="pteacademictestssection-question-label">Vocabulary Score</label>
+                  <select 
+                    name="pteVocabularyScore"
+                    value={formData.pteVocabularyScore || ''}
+                    onChange={handleInputChange}
+                    className="pteacademictestssection-select"
+                  >
+                    <option value="">Choose an option</option>
+                    {scoreOptions.map(score => (
+                      <option key={score} value={score}>{score}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </div>
           )}
         </div>

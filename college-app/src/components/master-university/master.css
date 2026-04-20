@@ -1,0 +1,376 @@
+/* master.css - Master University Application Styles */
+
+.master-app-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.master-form-card {
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.master-header {
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 20px 32px;
+}
+
+.master-header-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.master-header-left h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+  font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
+}
+
+.master-header-left p {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+}
+
+.master-dashboard-btn {
+  background: linear-gradient(135deg, #0891b2, #0e7490);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.master-dashboard-btn:hover {
+  background: linear-gradient(135deg, #0e7490, #0891b2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3);
+}
+
+/* ============================================================
+   PROGRESS BAR
+   ============================================================ */
+.master-progress-container {
+  padding: 24px 32px 0 32px;
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.master-progress-steps {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.master-step-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.master-progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  background: white;
+}
+
+.master-step-circle {
+  width: 40px;
+  height: 40px;
+  background: #e2e8f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  color: #64748b;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.master-step-circle.active {
+  background: linear-gradient(135deg, #0891b2, #0e7490);
+  color: white;
+  box-shadow: 0 4px 12px rgba(8, 145, 178, 0.4);
+}
+
+.master-step-circle.completed {
+  background: #10b981;
+  color: white;
+}
+
+.master-step-title {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 8px;
+  font-weight: 500;
+  text-align: center;
+  max-width: 80px;
+}
+
+.master-step-circle.active + .master-step-title {
+  color: #0891b2;
+  font-weight: 600;
+}
+
+.master-step-connector {
+  flex: 1;
+  height: 2px;
+  background: #e2e8f0;
+  margin: 0 8px;
+  position: relative;
+  top: -20px;
+}
+
+/* ============================================================
+   FORM CONTENT
+   ============================================================ */
+.master-form-content {
+  padding: 32px;
+  min-height: 500px;
+}
+
+/* ============================================================
+   NAVIGATION BUTTONS
+   ============================================================ */
+.master-form-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 32px 32px;
+  background: white;
+  border-top: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.master-nav-btn {
+  padding: 12px 28px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.master-prev-btn {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.master-prev-btn:hover {
+  background: #e2e8f0;
+  transform: translateX(-2px);
+}
+
+.master-next-btn {
+  background: linear-gradient(135deg, #0891b2, #0e7490);
+  color: white;
+}
+
+.master-next-btn:hover {
+  background: linear-gradient(135deg, #0e7490, #0891b2);
+  transform: translateX(2px);
+  box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3);
+}
+
+.master-submit-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.master-submit-btn:hover {
+  background: linear-gradient(135deg, #059669, #10b981);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.master-step-indicator {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+  background: #f1f5f9;
+  padding: 8px 16px;
+  border-radius: 20px;
+}
+
+.master-save-indicator {
+  font-size: 12px;
+  color: #10b981;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #ecfdf5;
+  padding: 8px 16px;
+  border-radius: 20px;
+}
+
+.master-save-indicator::before {
+  content: "✓";
+  font-size: 12px;
+}
+
+/* ============================================================
+   RESPONSIVE DESIGN
+   ============================================================ */
+@media (max-width: 768px) {
+  .master-app-container {
+    padding: 12px;
+  }
+  
+  .master-header {
+    padding: 16px 20px;
+  }
+  
+  .master-header-top-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .master-progress-container {
+    padding: 16px 20px 0 20px;
+    overflow-x: auto;
+  }
+  
+  .master-progress-steps {
+    min-width: 600px;
+  }
+  
+  .master-step-title {
+    font-size: 10px;
+    max-width: 60px;
+  }
+  
+  .master-step-circle {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+  
+  .master-form-content {
+    padding: 20px;
+  }
+  
+  .master-form-navigation {
+    padding: 16px 20px 24px;
+    flex-direction: column;
+  }
+  
+  .master-nav-btn {
+    width: 100%;
+    padding: 12px 20px;
+  }
+  
+  .master-step-indicator,
+  .master-save-indicator {
+    order: 3;
+  }
+}
+
+@media (max-width: 480px) {
+  .master-form-content {
+    padding: 16px;
+  }
+  
+  .master-header-left h1 {
+    font-size: 20px;
+  }
+  
+  .master-header-left p {
+    font-size: 12px;
+  }
+  
+  .master-dashboard-btn {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+  
+  .master-nav-btn {
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+  
+  .master-step-indicator,
+  .master-save-indicator {
+    font-size: 11px;
+  }
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes master-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.master-form-content > * {
+  animation: master-fadeIn 0.3s ease-out;
+}
+
+/* ============================================================
+   ACCESSIBILITY - REDUCED MOTION
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================
+   PRINT STYLES
+   ============================================================ */
+@media print {
+  .master-header,
+  .master-progress-container,
+  .master-form-navigation,
+  .master-dashboard-btn {
+    display: none !important;
+  }
+  
+  .master-form-content {
+    padding: 20px;
+  }
+  
+  .master-form-card {
+    box-shadow: none;
+    border: 1px solid #e2e8f0;
+  }
+}

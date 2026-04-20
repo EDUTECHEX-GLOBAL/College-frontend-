@@ -47,7 +47,7 @@ const firstTestingSchema = new mongoose.Schema(
     // =============================
     pastACTScores: {
       type: String,
-      enum: ["0", "1", "2", "3", "4", "5", ""],
+      enum: ["0", "1", "2", "3", ""],
       default: "",
     },
     futureACTSittings: {
@@ -55,31 +55,23 @@ const firstTestingSchema = new mongoose.Schema(
       enum: ["0", "1", "2", "3", ""],
       default: "",
     },
-    highestCompositeScore: { type: String },
-    highestCompositeDate: { type: String },
-    highestMathScore: { type: String },
-    highestMathDate: { type: String },
-    highestEnglishScore: { type: String },
-    highestEnglishDate: { type: String },
-    highestReadingScore: { type: String },
-    highestReadingDate: { type: String },
-    reportScienceScore: {
-      type: String,
-      enum: ["yes", "no", ""],
-      default: "",
-    },
-    highestScienceScore: { type: String },
-    highestScienceDate: { type: String },
-    reportWritingScore: {
-      type: String,
-      enum: ["yes", "no", ""],
-      default: "",
-    },
-    highestWritingScore: { type: String },
-    highestWritingDate: { type: String },
     futureTestDate1: { type: String },
     futureTestDate2: { type: String },
     futureTestDate3: { type: String },
+    // Dynamic attempt-based ACT scores
+    actAttempts: [
+      {
+        date: { type: String },
+        composite: { type: String },
+        english: { type: String },
+        math: { type: String },
+        reading: { type: String },
+        science: { type: String },
+        writing: { type: String },
+        percentile: { type: String },
+        _id: false,
+      },
+    ],
 
     // =============================
     // 📊 SAT TESTS
@@ -89,26 +81,27 @@ const firstTestingSchema = new mongoose.Schema(
       enum: ["0", "1", "2", "3", "4", "5", ""],
       default: "",
     },
-    futureSATSittings: {
-      type: String,
-      enum: ["0", "1", "2", "3", ""],
-      default: "",
-    },
-    satHighestMathScore: { type: String },
-    satHighestMathDate: { type: String },
-    satHighestReadingScore: { type: String },
-    satHighestReadingDate: { type: String },
-    satHighestWritingScore: { type: String },
-    satHighestWritingDate: { type: String },
-    satHighestTotalScore: { type: String },
-    satHighestTotalDate: { type: String },
-    satFutureTestDate1: { type: String },
-    satFutureTestDate2: { type: String },
-    satFutureTestDate3: { type: String },
+    // Dynamic attempt-based SAT scores
+    satAttempts: [
+      {
+        date: { type: String },
+        total: { type: String },
+        math: { type: String },
+        reading: { type: String },
+        writing: { type: String },
+        percentile: { type: String },
+        _id: false,
+      },
+    ],
 
     // =============================
     // 📚 SAT SUBJECT TESTS
     // =============================
+    numberOfSATSubjectTests: {
+      type: String,
+      enum: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", ""],
+      default: "",
+    },
     satSubjectTests: [
       {
         subject: { type: String, trim: true },
@@ -121,10 +114,16 @@ const firstTestingSchema = new mongoose.Schema(
     // =============================
     // 🎯 AP SUBJECT TESTS
     // =============================
+    numberOfAPTests: {
+      type: String,
+      enum: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", ""],
+      default: "",
+    },
     apSubjectTests: [
       {
-        name: { type: String, trim: true },
+        subject: { type: String, trim: true },
         score: { type: String },
+        month: { type: String },
         year: { type: String },
         _id: false,
       },
@@ -133,20 +132,15 @@ const firstTestingSchema = new mongoose.Schema(
     // =============================
     // 🌍 IB SUBJECT TESTS
     // =============================
+    numberOfIBTests: {
+      type: String,
+      enum: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", ""],
+      default: "",
+    },
     ibSubjectTests: [
       {
         subject: { type: String, trim: true },
-        // ✅ ACCEPT BOTH SHORT + LABEL VALUES
-        level: {
-          type: String,
-          enum: [
-            "sl",
-            "hl",
-            "Standard level (SL)",
-            "Higher level (HL)",
-            "",
-          ],
-        },
+        level: { type: String, enum: ["SL", "HL", ""], default: "" },
         score: { type: String },
         year: { type: String },
         _id: false,
@@ -157,146 +151,79 @@ const firstTestingSchema = new mongoose.Schema(
     // 🏛️ CAMBRIDGE EXAMS
     // =============================
     cambridgeNumberOfTests: {
-      type: String,
-      enum: ["0", "1", "2", "3", "4", "5", ""],
-      default: "",
-    },
+  type: Number,
+  default: 0,
+},
     cambridgeTests: [
       {
         subject: { type: String, trim: true },
-        level: { type: String, enum: ["as", "a", "o", ""] },
+        level: { type: String, enum: ["AS", "A", "O", ""], default: "" },
         grade: { type: String },
         date: { type: String },
         _id: false,
       },
     ],
-    cambridgeCertificateReport: {
-      type: String,
-      enum: ["yes", "no", ""],
-      default: "",
-    },
-    cambridgeCertificateDetails: {
-      level: { type: String },
-      date: { type: String },
-    },
 
     // =============================
     // 🌐 TOEFL iBT
     // =============================
     toeflPastTests: {
       type: String,
-      enum: ["0", "1", "2", "3", "4", "5", ""],
+      enum: ["0", "1", ""],
       default: "",
     },
-    toeflFutureSittings: {
-      type: String,
-      enum: ["0", "1", "2", "3", ""],
-      default: "",
-    },
-    toeflHighestReadingScore: { type: String },
-    toeflReadingScoreDate: { type: String },
-    toeflHighestSpeakingScore: { type: String },
-    toeflSpeakingScoreDate: { type: String },
-    toeflHighestListeningScore: { type: String },
-    toeflListeningScoreDate: { type: String },
-    toeflHighestWritingScore: { type: String },
-    toeflWritingScoreDate: { type: String },
-    toeflHighestTotalScore: { type: String },
-    toeflTotalScoreDate: { type: String },
-    toeflFutureTestDate1: { type: String },
-    toeflFutureTestDate2: { type: String },
-    toeflFutureTestDate3: { type: String },
+    toeflTestDate: { type: String },
+    toeflReadingScore: { type: String },
+    toeflListeningScore: { type: String },
+    toeflSpeakingScore: { type: String },
+    toeflWritingScore: { type: String },
+    toeflTotalScore: { type: String },
 
     // =============================
     // 📝 PTE ACADEMIC TESTS
     // =============================
     ptePastTests: {
       type: String,
-      enum: ["0", "1", "2", "3", "4", "5", ""],
+      enum: ["0", "1", ""],
       default: "",
     },
-    pteFutureSittings: {
-      type: String,
-      enum: ["0", "1", "2", "3", ""],
-      default: "",
-    },
-    pteHighestListeningScore: { type: String },
-    pteListeningScoreDate: { type: String },
-    pteHighestReadingScore: { type: String },
-    pteReadingScoreDate: { type: String },
-    pteHighestSpeakingScore: { type: String },
-    pteSpeakingScoreDate: { type: String },
-    pteHighestWritingScore: { type: String },
-    pteWritingScoreDate: { type: String },
-    pteHighestGrammarScore: { type: String },
-    pteGrammarScoreDate: { type: String },
-    pteHighestOralFluencyScore: { type: String },
-    pteOralFluencyScoreDate: { type: String },
-    pteHighestPronunciationScore: { type: String },
-    ptePronunciationScoreDate: { type: String },
-    pteHighestSpellingScore: { type: String },
-    pteSpellingScoreDate: { type: String },
-    pteHighestVocabularyScore: { type: String },
-    pteVocabularyScoreDate: { type: String },
-    pteHighestWrittenDiscourseScore: { type: String },
-    pteWrittenDiscourseScoreDate: { type: String },
-    pteFutureTestDate1: { type: String },
-    pteFutureTestDate2: { type: String },
-    pteFutureTestDate3: { type: String },
+    pteTestDate: { type: String },
+    pteListeningScore: { type: String },
+    pteReadingScore: { type: String },
+    pteSpeakingScore: { type: String },
+    pteWritingScore: { type: String },
+    pteGrammarScore: { type: String },
+    pteVocabularyScore: { type: String },
 
     // =============================
     // 🇬🇧 IELTS
     // =============================
     ieltsPastTests: {
       type: String,
-      enum: ["0", "1", "2", "3", "4", "5", ""],
+      enum: ["0", "1", ""],
       default: "",
     },
-    ieltsFutureSittings: {
-      type: String,
-      enum: ["0", "1", "2", "3", ""],
-      default: "",
-    },
-    ieltsHighestListeningScore: { type: String },
-    ieltsListeningScoreDate: { type: String },
-    ieltsHighestReadingScore: { type: String },
-    ieltsReadingScoreDate: { type: String },
-    ieltsHighestWritingScore: { type: String },
-    ieltsWritingScoreDate: { type: String },
-    ieltsHighestSpeakingScore: { type: String },
-    ieltsSpeakingScoreDate: { type: String },
-    ieltsHighestOverallScore: { type: String },
-    ieltsOverallScoreDate: { type: String },
-    ieltsFutureTestDate1: { type: String },
-    ieltsFutureTestDate2: { type: String },
-    ieltsFutureTestDate3: { type: String },
+    ieltsTestDate: { type: String },
+    ieltsListeningScore: { type: String },
+    ieltsReadingScore: { type: String },
+    ieltsWritingScore: { type: String },
+    ieltsSpeakingScore: { type: String },
+    ieltsOverallBandScore: { type: String },
 
     // =============================
     // 🦉 DUOLINGO ENGLISH TEST
     // =============================
     duolingoPastTests: {
       type: String,
-      enum: ["0", "1", "2", "3", "4", "5", ""],
+      enum: ["0", "1", ""],
       default: "",
     },
-    duolingoFutureSittings: {
-      type: String,
-      enum: ["0", "1", "2", "3", ""],
-      default: "",
-    },
-    duolingoHighestLiteracyScore: { type: String },
-    duolingoLiteracyScoreDate: { type: String },
-    duolingoHighestComprehensionScore: { type: String },
-    duolingoComprehensionScoreDate: { type: String },
-    duolingoHighestConversationScore: { type: String },
-    duolingoConversationScoreDate: { type: String },
-    duolingoHighestProductionScore: { type: String },
-    duolingoProductionScoreDate: { type: String },
-    duolingoHighestTotalScore: { type: String },
-    duolingoTotalScoreDate: { type: String },
-    duolingoFutureTestDate1: { type: String },
-    duolingoFutureTestDate2: { type: String },
-    duolingoFutureTestDate3: { type: String },
+    duolingoTestDate: { type: String },
+    duolingoLiteracyScore: { type: String },
+    duolingoComprehensionScore: { type: String },
+    duolingoConversationScore: { type: String },
+    duolingoProductionScore: { type: String },
+    duolingoTotalScore: { type: String },
 
     // =============================
     // 🎓 SENIOR SECONDARY EXAMS
@@ -315,7 +242,6 @@ const firstTestingSchema = new mongoose.Schema(
     // =============================
     // 📈 TESTING COMPLETION TRACKING
     // =============================
-    // Use Mixed to avoid boolean cast errors from "", etc.
     testingCompletion: {
       testsTaken: { type: mongoose.Schema.Types.Mixed, default: false },
       actTests: { type: mongoose.Schema.Types.Mixed, default: false },
@@ -336,7 +262,7 @@ const firstTestingSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    collection: "firsttestings", // separate collection
+    collection: "firsttestings",
   }
 );
 

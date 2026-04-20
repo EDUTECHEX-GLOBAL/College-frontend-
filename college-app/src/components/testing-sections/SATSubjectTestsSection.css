@@ -1,16 +1,16 @@
 /* src/components/testing-sections/SATSubjectTestsSection.css */
 /* ============================================================
-   SATSubjectTestsSection.css — Blue Theme
-   Primary: #3b82f6 | Matches PTE Academic Tests design system
+   SATSubjectTestsSection.css — Plalite Colour Scheme
+   Primary: #0891b2 | Accent: #f59e0b
    ============================================================ */
 
 :root {
-  --sat-primary:          #3b82f6;
-  --sat-primary-dark:     #2563eb;
-  --sat-primary-light:    #60a5fa;
-  --sat-primary-pale:     #eff6ff;
-  --sat-primary-border:   #bfdbfe;
-  --sat-primary-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  --sat-primary:          #0891b2;
+  --sat-primary-dark:     #0e7490;
+  --sat-primary-light:    #22d3ee;
+  --sat-primary-pale:     #f0f9ff;
+  --sat-primary-border:   #bae6fd;
+  --sat-primary-gradient: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
 
   --sat-success:          #10b981;
   --sat-success-bg:       #ecfdf5;
@@ -19,7 +19,7 @@
   --sat-warning:          #f59e0b;
 
   --sat-white:            #ffffff;
-  --sat-bg:               #f8fafc;
+  --sat-bg:               #f5f7fa;
   --sat-gray-50:          #fafafa;
   --sat-gray-100:         #f5f5f5;
   --sat-gray-200:         #e5e5e5;
@@ -31,432 +31,348 @@
 
   --sat-shadow-sm:        0 1px 3px rgba(0,0,0,0.05);
   --sat-shadow-md:        0 4px 14px rgba(0,0,0,0.07);
-  --sat-shadow-blue:      0 4px 18px rgba(59,130,246,0.18);
+  --sat-shadow-teal:      0 4px 18px rgba(8,145,178,0.18);
 
   --sat-radius-sm:        8px;
   --sat-radius:           12px;
   --sat-radius-full:      9999px;
 
-  --sat-font:             'DM Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --sat-font-display:     'DM Serif Display', Georgia, serif;
+  --sat-font:             'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --sat-font-display:     'Sora', 'Plus Jakarta Sans', Georgia, serif;
   --sat-transition:       150ms ease;
 }
 
 /* Main Container */
-.sat-subject-tests-section {
+.satsubjecttestssection-container {
+  min-height: 100vh;
+  background: var(--sat-bg);
+  font-family: var(--sat-font);
+  padding: 0 0 80px;
+}
+
+/* Main Card */
+.satsubjecttestssection-card {
   background: var(--sat-white);
-  margin: 20px 32px;
   border-radius: var(--sat-radius);
   border: 1px solid var(--sat-gray-200);
   box-shadow: var(--sat-shadow-sm);
-  max-width: 100%;
+  margin: 20px 32px;
   overflow: hidden;
-  font-family: var(--sat-font);
 }
 
-/* Section Header */
-.sat-subject-tests-section .section-header {
-  border-bottom: 1px solid var(--sat-gray-200);
+/* Card Header */
+.satsubjecttestssection-card-header {
   background: var(--sat-white);
-}
-
-.sat-subject-tests-section h2 {
-  background: var(--sat-white);
-  margin: 0;
   padding: 24px 28px;
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--sat-gray-900);
-  font-family: var(--sat-font-display);
-  letter-spacing: -0.3px;
   border-bottom: 1px solid var(--sat-gray-200);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.satsubjecttestssection-card-title {
+  font-family: var(--sat-font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--sat-gray-900);
+  margin: 0;
+  letter-spacing: -0.3px;
 }
 
 /* Status Badge */
-.sat-subject-tests-section .section-status {
-  padding: 12px 28px;
-  font-size: 13px;
-  font-weight: 500;
-  display: flex;
+.satsubjecttestssection-status-badge {
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-family: var(--sat-font);
-}
-
-.sat-subject-tests-section .section-status.in-progress {
+  gap: 6px;
   background: var(--sat-primary-pale);
   color: var(--sat-primary-dark);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: var(--sat-radius-full);
 }
 
-.sat-subject-tests-section .section-status.complete {
-  background: var(--sat-success-bg);
-  color: var(--sat-success);
-}
-
-.sat-subject-tests-section .status-indicator {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-}
-
-.sat-subject-tests-section .section-status.in-progress .status-indicator {
-  background: var(--sat-primary);
-}
-
-.sat-subject-tests-section .section-status.complete .status-indicator {
-  background: var(--sat-success);
+.satsubjecttestssection-status-badge::before {
+  content: "●";
+  font-size: 10px;
+  color: var(--sat-primary);
 }
 
 /* Form Content */
-.sat-subject-tests-section .form-content {
+.satsubjecttestssection-form-content {
   padding: 28px;
-  max-width: 100%;
 }
 
 /* Form Groups */
-.sat-subject-tests-section .form-group {
-  margin-bottom: 24px;
-  position: relative;
+.satsubjecttestssection-form-group {
+  margin-bottom: 28px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--sat-gray-200);
 }
 
-.sat-subject-tests-section .question-text {
+.satsubjecttestssection-form-group:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.satsubjecttestssection-question-label {
+  display: block;
   font-size: 14px;
+  font-weight: 700;
   color: var(--sat-gray-700);
-  margin: 0 0 12px 0;
+  margin-bottom: 8px;
   line-height: 1.5;
-  font-weight: 600;
 }
 
-.sat-subject-tests-section .question-text.required::after {
+.satsubjecttestssection-question-label.required::after {
   content: "*";
   color: var(--sat-primary);
   margin-left: 4px;
 }
 
 /* Select Group */
-.select-group {
+.satsubjecttestssection-select-group {
   margin-bottom: 8px;
-  position: relative;
 }
 
-.number-select {
-  width: 140px;
+.satsubjecttestssection-select {
+  width: 100%;
+  max-width: 300px;
   padding: 10px 12px;
   border: 1.5px solid var(--sat-gray-200);
   border-radius: var(--sat-radius-sm);
   font-size: 14px;
+  font-family: var(--sat-font);
   background: var(--sat-white);
   color: var(--sat-gray-900);
   cursor: pointer;
-  font-family: var(--sat-font);
   transition: all var(--sat-transition);
-}
-
-.number-select:focus {
   outline: none;
-  border-color: var(--sat-primary);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230891b2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
 }
 
-.number-select.error {
+.satsubjecttestssection-select:focus {
+  border-color: var(--sat-primary);
+  box-shadow: 0 0 0 3px rgba(8,145,178,0.12);
+}
+
+.satsubjecttestssection-select.error {
   border-color: var(--sat-error);
 }
 
 /* Clear Links and Buttons */
-.clear-link {
+.satsubjecttestssection-clear-link {
+  display: inline-block;
   background: none;
   border: none;
-  color: var(--sat-primary);
   font-size: 12px;
-  cursor: pointer;
-  padding: 6px 0;
+  color: var(--sat-gray-400);
   text-decoration: underline;
+  cursor: pointer;
+  font-family: var(--sat-font);
+  padding: 4px 0;
   transition: color var(--sat-transition);
   margin-top: 8px;
-  display: inline-block;
 }
 
-.clear-link:hover {
-  color: var(--sat-primary-dark);
+.satsubjecttestssection-clear-link:hover:not(:disabled) {
+  color: var(--sat-primary);
 }
 
-.clear-test-btn {
-  background: none;
-  border: 1.5px solid var(--sat-gray-200);
-  color: var(--sat-gray-600);
-  border-radius: var(--sat-radius-sm);
-  padding: 4px 12px;
-  font-family: var(--sat-font);
-  font-size: 11px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all var(--sat-transition);
-  margin-left: auto;
-}
-
-.clear-test-btn:hover {
-  border-color: var(--sat-error);
-  color: var(--sat-error);
-  background: var(--sat-error-bg);
-}
-
-.clear-field-btn {
-  background: none;
-  border: none;
-  color: var(--sat-gray-400);
-  font-size: 18px;
-  cursor: pointer;
-  padding: 4px 8px;
-  transition: color var(--sat-transition);
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 2;
-}
-
-.clear-field-btn:hover {
-  color: var(--sat-error);
+.satsubjecttestssection-clear-link:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 /* Tests Container */
-.tests-container {
-  margin-top: 28px;
+.satsubjecttestssection-tests-container {
+  margin-top: 24px;
   border-top: 1px solid var(--sat-gray-200);
-  padding-top: 28px;
+  padding-top: 24px;
 }
 
-.test-entry {
+.satsubjecttestssection-test-entry {
   background: var(--sat-gray-50);
   border: 1px solid var(--sat-gray-200);
   border-radius: var(--sat-radius);
   padding: 24px;
   margin-bottom: 24px;
-  position: relative;
-  transition: all var(--sat-transition);
 }
 
-.test-entry:last-child {
+.satsubjecttestssection-test-entry:last-child {
   margin-bottom: 0;
 }
 
-.test-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-}
-
-.test-header h3 {
+.satsubjecttestssection-test-entry h3 {
+  margin: 0 0 20px 0;
   font-size: 16px;
-  font-weight: 600;
   color: var(--sat-gray-900);
-  margin: 0;
+  font-weight: 700;
+  border-bottom: 1px solid var(--sat-gray-200);
+  padding-bottom: 12px;
   font-family: var(--sat-font);
 }
 
-/* Date Selection */
-.date-selection {
-  margin-bottom: 8px;
+/* Input Container for Date Picker */
+.satsubjecttestssection-input-container {
   position: relative;
 }
 
-.month-year-selection {
+/* Selected Date Display */
+.satsubjecttestssection-selected-date {
   display: flex;
-  gap: 12px;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--sat-gray-200);
+  border-radius: var(--sat-radius-sm);
+  background: var(--sat-gray-50);
+  font-size: 14px;
+  color: var(--sat-gray-700);
+  max-width: 300px;
+}
+
+.satsubjecttestssection-change-date {
+  background: none;
+  border: none;
+  color: var(--sat-primary);
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  margin-left: auto;
+  white-space: nowrap;
+  transition: color var(--sat-transition);
+}
+
+.satsubjecttestssection-change-date:hover {
+  color: var(--sat-primary-dark);
+}
+
+/* Field Note / Helper Text */
+.satsubjecttestssection-field-note {
+  font-size: 12px;
+  color: var(--sat-gray-400);
+  margin-top: 6px;
+  font-style: italic;
+}
+
+/* Calendar Popup */
+.satsubjecttestssection-calendar-container {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 200;
+  background: var(--sat-white);
+  border: 1px solid var(--sat-gray-200);
+  border-radius: var(--sat-radius);
+  padding: 16px;
+  box-shadow: var(--sat-shadow-md);
+  min-width: 280px;
+}
+
+.satsubjecttestssection-calendar-header {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--sat-gray-900);
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.satsubjecttestssection-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
   margin-bottom: 12px;
 }
 
-.month-select-container,
-.year-select-container {
-  position: relative;
-  flex: 1;
-}
-
-.month-select {
-  width: 100%;
-  padding: 10px 32px 10px 12px;
-  border: 1.5px solid var(--sat-gray-200);
+.satsubjecttestssection-calendar-month {
+  background: var(--sat-gray-100);
+  border: 1px solid var(--sat-gray-200);
   border-radius: var(--sat-radius-sm);
-  font-size: 14px;
-  background: var(--sat-white);
-  color: var(--sat-gray-900);
-  cursor: pointer;
-  font-family: var(--sat-font);
-  transition: all var(--sat-transition);
-  appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 16px;
-}
-
-.month-select:focus {
-  outline: none;
-  border-color: var(--sat-primary);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
-}
-
-.month-select.error,
-.year-display.error {
-  border-color: var(--sat-error);
-}
-
-.year-display {
-  width: 100%;
-  padding: 10px 32px 10px 12px;
-  border: 1.5px solid var(--sat-gray-200);
-  border-radius: var(--sat-radius-sm);
-  font-size: 14px;
-  background: var(--sat-white);
-  color: var(--sat-gray-900);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  transition: all var(--sat-transition);
-  box-sizing: border-box;
-}
-
-.year-display:hover {
-  border-color: var(--sat-gray-400);
-}
-
-.year-display .dropdown-arrow {
-  font-size: 10px;
-  color: var(--sat-gray-400);
-}
-
-/* Year Grid */
-.year-grid-container {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  z-index: 1000;
-  background: var(--sat-white);
-  border: 1px solid var(--sat-gray-300);
-  border-radius: var(--sat-radius-sm);
-  box-shadow: var(--sat-shadow-md);
-  margin-top: 4px;
-  max-height: 300px;
-  overflow-y: auto;
-  width: 100%;
-  min-width: 200px;
-}
-
-.year-grid-header {
-  padding: 12px 16px;
-  font-size: 14px;
+  padding: 8px 4px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--sat-gray-700);
-  border-bottom: 1px solid var(--sat-gray-200);
-  background: var(--sat-gray-50);
-  position: sticky;
-  top: 0;
-}
-
-.year-grid {
-  padding: 12px;
-}
-
-.year-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 4px;
-  margin-bottom: 4px;
-}
-
-.year-row:last-child {
-  margin-bottom: 0;
-}
-
-.year-option {
-  padding: 8px 4px;
+  cursor: pointer;
+  transition: all var(--sat-transition);
   text-align: center;
-  font-size: 13px;
-  color: var(--sat-gray-700);
-  border-radius: var(--sat-radius-sm);
-  cursor: pointer;
-  transition: all var(--sat-transition);
 }
 
-.year-option:hover {
-  background: var(--sat-gray-100);
-  color: var(--sat-primary);
-}
-
-.year-option.selected {
+.satsubjecttestssection-calendar-month:hover {
   background: var(--sat-primary);
-  color: var(--sat-white);
-}
-
-/* Date Format Hint */
-.date-format-hint {
-  font-size: 12px;
-  color: var(--sat-gray-400);
-  font-style: italic;
-  margin-bottom: 8px;
-}
-
-.selected-date {
-  font-size: 13px;
-  color: var(--sat-success);
-  font-weight: 500;
-  margin-top: 8px;
-  padding: 6px 10px;
-  background: var(--sat-success-bg);
-  border-radius: var(--sat-radius-sm);
-  display: inline-block;
-}
-
-/* Subject and Score Selects */
-.subject-select-container,
-.score-select-container {
-  position: relative;
-}
-
-.subject-select,
-.score-select {
-  width: 100%;
-  max-width: 400px;
-  padding: 10px 32px 10px 12px;
-  border: 1.5px solid var(--sat-gray-200);
-  border-radius: var(--sat-radius-sm);
-  font-size: 14px;
-  background: var(--sat-white);
-  color: var(--sat-gray-900);
-  cursor: pointer;
-  font-family: var(--sat-font);
-  transition: all var(--sat-transition);
-  appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 16px;
-}
-
-.subject-select:focus,
-.score-select:focus {
-  outline: none;
+  color: white;
   border-color: var(--sat-primary);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
 }
 
-.subject-select.error {
-  border-color: var(--sat-error);
+.satsubjecttestssection-calendar-month.selected {
+  background: var(--sat-primary);
+  color: white;
+  border-color: var(--sat-primary);
+}
+
+.satsubjecttestssection-calendar-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.satsubjecttestssection-calendar-confirm {
+  flex: 1;
+  background: var(--sat-primary);
+  border: none;
+  border-radius: var(--sat-radius-sm);
+  padding: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+  transition: all var(--sat-transition);
+}
+
+.satsubjecttestssection-calendar-confirm:hover:not(:disabled) {
+  background: var(--sat-primary-dark);
+}
+
+.satsubjecttestssection-calendar-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.satsubjecttestssection-calendar-cancel {
+  flex: 1;
+  background: none;
+  border: 1px solid var(--sat-gray-200);
+  border-radius: var(--sat-radius-sm);
+  padding: 8px;
+  font-size: 13px;
+  color: var(--sat-gray-600);
+  cursor: pointer;
+  transition: all var(--sat-transition);
+}
+
+.satsubjecttestssection-calendar-cancel:hover {
+  background: var(--sat-gray-100);
+  color: var(--sat-gray-900);
 }
 
 /* Error Messages */
-.error-message {
-  font-size: 12px;
+.satsubjecttestssection-error-message {
   color: var(--sat-error);
+  font-size: 12px;
   margin-top: 6px;
-  font-weight: 500;
+  font-style: italic;
 }
 
 /* Animation */
-@keyframes fadeIn {
+@keyframes sat-fadeIn {
   from {
     opacity: 0;
     transform: translateY(-10px);
@@ -467,152 +383,178 @@
   }
 }
 
-.year-grid-container {
-  animation: fadeIn 0.2s ease-out;
+.satsubjecttestssection-calendar-container {
+  animation: sat-fadeIn 0.2s ease-out;
 }
 
 /* Responsive Design */
 @media (max-width: 1023px) {
-  .sat-subject-tests-section {
+  .satsubjecttestssection-card {
     margin: 20px 24px;
   }
   
-  .sat-subject-tests-section .form-content {
+  .satsubjecttestssection-card-header {
+    padding: 20px 24px;
+  }
+  
+  .satsubjecttestssection-form-content {
     padding: 24px;
   }
   
-  .sat-subject-tests-section h2 {
-    padding: 20px 24px;
-    font-size: 20px;
-  }
-  
-  .sat-subject-tests-section .section-status {
-    padding: 10px 24px;
-  }
-}
-
-@media (max-width: 767px) {
-  .sat-subject-tests-section {
-    margin: 16px;
-  }
-  
-  .sat-subject-tests-section .form-content {
-    padding: 20px;
-  }
-  
-  .sat-subject-tests-section h2 {
-    padding: 18px 20px;
-    font-size: 18px;
-  }
-  
-  .sat-subject-tests-section .section-status {
-    padding: 10px 20px;
-  }
-  
-  .test-entry {
-    padding: 20px;
-  }
-  
-  .month-year-selection {
-    flex-direction: column;
-    gap: 12px;
-  }
-  
-  .month-select-container,
-  .year-select-container {
-    width: 100%;
-  }
-  
-  .year-grid-container {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 90vw;
-    max-width: 320px;
-    max-height: 60vh;
-  }
-  
-  .year-row {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  
-  .subject-select,
-  .score-select {
+  .satsubjecttestssection-select,
+  .satsubjecttestssection-selected-date {
     max-width: 100%;
   }
 }
 
+@media (max-width: 767px) {
+  .satsubjecttestssection-card {
+    margin: 16px;
+  }
+  
+  .satsubjecttestssection-card-header {
+    padding: 16px 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .satsubjecttestssection-card-title {
+    font-size: 19px;
+  }
+  
+  .satsubjecttestssection-form-content {
+    padding: 20px;
+  }
+  
+  .satsubjecttestssection-test-entry {
+    padding: 20px;
+  }
+  
+  .satsubjecttestssection-test-entry h3 {
+    font-size: 15px;
+    margin-bottom: 16px;
+  }
+  
+  .satsubjecttestssection-select {
+    max-width: 100%;
+  }
+  
+  .satsubjecttestssection-selected-date {
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+  
+  .satsubjecttestssection-change-date {
+    margin-left: 0;
+  }
+  
+  .satsubjecttestssection-calendar-container {
+    min-width: 0;
+    width: 100%;
+    left: 0;
+    right: 0;
+  }
+  
+  .satsubjecttestssection-calendar-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 @media (max-width: 480px) {
-  .sat-subject-tests-section {
+  .satsubjecttestssection-card {
     margin: 12px;
   }
   
-  .sat-subject-tests-section .form-content {
-    padding: 16px;
-  }
-  
-  .sat-subject-tests-section h2 {
+  .satsubjecttestssection-card-header {
     padding: 14px 16px;
-    font-size: 16px;
   }
   
-  .sat-subject-tests-section .section-status {
-    padding: 8px 16px;
-    font-size: 12px;
+  .satsubjecttestssection-card-title {
+    font-size: 18px;
   }
   
-  .test-entry {
+  .satsubjecttestssection-form-content {
     padding: 16px;
   }
   
-  .test-header h3 {
-    font-size: 15px;
+  .satsubjecttestssection-form-group {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
   }
   
-  .question-text {
+  .satsubjecttestssection-question-label {
     font-size: 13px;
   }
   
-  .month-select,
-  .year-display,
-  .subject-select,
-  .score-select,
-  .number-select {
-    font-size: 13px;
-    padding: 8px 28px 8px 10px;
+  .satsubjecttestssection-test-entry {
+    padding: 16px;
   }
   
-  .year-row {
+  .satsubjecttestssection-test-entry h3 {
+    font-size: 14px;
+  }
+  
+  .satsubjecttestssection-select {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  
+  .satsubjecttestssection-selected-date {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  
+  .satsubjecttestssection-calendar-grid {
     grid-template-columns: repeat(2, 1fr);
   }
   
-  .clear-test-btn {
-    padding: 3px 10px;
-    font-size: 10px;
+  .satsubjecttestssection-calendar-month {
+    padding: 6px 4px;
+    font-size: 12px;
   }
 }
 
 @media (max-width: 360px) {
-  .sat-subject-tests-section {
+  .satsubjecttestssection-card {
     margin: 8px;
   }
   
-  .sat-subject-tests-section .form-content {
+  .satsubjecttestssection-form-content {
     padding: 12px;
   }
   
-  .test-entry {
+  .satsubjecttestssection-card-header {
     padding: 12px;
   }
   
-  .year-row {
+  .satsubjecttestssection-card-title {
+    font-size: 16px;
+  }
+  
+  .satsubjecttestssection-test-entry {
+    padding: 12px;
+  }
+  
+  .satsubjecttestssection-calendar-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 3px;
   }
   
-  .year-option {
+  .satsubjecttestssection-calendar-month {
+    font-size: 11px;
     padding: 6px 2px;
-    font-size: 12px;
+  }
+}
+
+/* ============================================================
+   ACCESSIBILITY - REDUCED MOTION
+============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

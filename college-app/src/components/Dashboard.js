@@ -1,4 +1,3 @@
-// src/components/Dashboard.js — Redesigned to match reference UI
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Routes, Route, useLocation } from 'react-router-dom';
 import axios from 'axios';
@@ -10,24 +9,18 @@ import TestingForm from './TestingForm';
 import ActivitiesSection from './activities-sections/ActivitiesSection';
 import ResponsibilitiesSection from './activities-sections/ResponsibilitiesSection';
 import CollegeSearch from "./CollegeSearch";
-import CollegeDetails from "./CollegeDetails";
+
 import CollegeSubsection from "./CollegeSubsection";
-import Documents from './mycollege-sections/Documents';
-import General from './mycollege-sections/General';
-import Academics from './mycollege-sections/Academics';
-import HighSchoolCurriculum from './mycollege-sections/HighSchoolCurriculum';
-import Activities from './mycollege-sections/Activities';
-import FirstContacts from './mycollege-sections/FirstContacts';
-import FirstFamily from './mycollege-sections/FirstFamily';
-import FirstResidency from './mycollege-sections/FirstResidency';
-import InternationalStudent from './mycollege-sections/InternationalStudent';
-import Review from './mycollege-sections/FirstReview';
+
 import WritingSection from './writing-sections/WritingSection';
 import FamilySection from './family-sections/FamilySection';
 import ChatWidget from './Chatbot/ChatWidget';
 import Courses from './Courses';
+
 import Application from './Application/Application';
 import Overview from './Application/Overview';
+
+import Master from './master-university/master';
 
 const API_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -63,35 +56,11 @@ const ProgressRing = ({ percent = 0 }) => {
   );
 };
 
-/* ── Section icon renderer - removed icons ── */
-const SectionIcon = ({ type }) => {
-  const colorMap = {
-    university: 'section-icon--university',
-    profile:    'section-icon--profile',
-    family:     'section-icon--family',
-    education:  'section-icon--education',
-    testing:    'section-icon--testing',
-    activities: 'section-icon--activities',
-    writing:    'section-icon--writing',
-  };
-  return (
-    <div className={`dashboard-section-card__icon ${colorMap[type] || ''}`}>
-    </div>
-  );
-};
-
-/* ── Get bar color class based on progress ── */
-const getBarColor = (progress) => {
-  if (progress >= 100) return 'bar--success';
-  if (progress >= 50)  return 'bar--blue';
-  if (progress > 0)    return 'bar--orange';
-  return 'bar--gray';
-};
-
 /* ── Get percent badge class ── */
 const getPctClass = (progress) => {
   if (progress >= 100) return 'pct--success';
-  if (progress > 0)    return 'pct--progress';
+  if (progress >= 50)  return 'pct--progress';
+  if (progress > 0)    return 'pct--warning';
   return 'pct--zero';
 };
 
@@ -107,49 +76,10 @@ const Dashboard = () => {
   const [applicationProgress, setApplicationProgress] = useState(0);
   const [selectedCourseData, setSelectedCourseData] = useState(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [masterAppProgress, setMasterAppProgress] = useState(0);
 
   const isFirstYear = location.pathname.includes('/firstyear/');
   const basePath = isFirstYear ? '/firstyear/dashboard' : '/transfer/dashboard';
-
-  const refreshUserData = useCallback(async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-      const response = await axios.get(`${API_URL}/api/students/profile/detailed`, {
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
-      });
-      if (response.data.success && response.data.account) {
-        const user = response.data.account;
-        const gusApplicationData = localStorage.getItem('gusApplicationData');
-        let appProgress = 0;
-        if (gusApplicationData) {
-          try { const appData = JSON.parse(gusApplicationData); appProgress = calculateLocalApplicationProgress(appData); } catch (e) {}
-        }
-        const selectedCourse = localStorage.getItem('selectedCourseForApplication');
-        if (selectedCourse) {
-          try { setSelectedCourseData(JSON.parse(selectedCourse)); } catch (e) {}
-        }
-        const formattedUserData = {
-          name: `${user.firstName} ${user.lastName}`,
-          email: user.email,
-          studentId: user._id ? `CAID ${user._id.toString().slice(-8).toUpperCase()}` : 'CAID 48555228',
-          firstName: user.firstName,
-          lastName: user.lastName,
-          profileProgress: response.data.profileProgress || 0,
-          educationProgress: user.applicationProgress?.education || 0,
-          testingProgress: user.applicationProgress?.testing || 0,
-          writingProgress: user.applicationProgress?.writing || 0,
-          activitiesProgress: user.applicationProgress?.activities || 0,
-          testingData: user.testingData || { testsToReport: [] },
-          applicationProgress: { ...user.applicationProgress, application: appProgress },
-          ...user
-        };
-        setUserData(formattedUserData);
-        setApplicationProgress(appProgress);
-        localStorage.setItem('userData', JSON.stringify(formattedUserData));
-      }
-    } catch (error) { console.error('Error refreshing user data:', error); }
-  }, []);
 
   const calculateLocalApplicationProgress = (appData) => {
     if (!appData) return 0;
@@ -176,6 +106,86 @@ const Dashboard = () => {
     countFields(['sopFileName','lor1FileName','lor2FileName','portfolioFileName','researchProposalFileName']);
     return Math.round((completedFields / totalFields) * 100);
   };
+
+  const calculateMasterApplicationProgress = (masterData) => {
+    if (!masterData) return 0;
+    let totalSections = 0;
+    let completedSections = 0;
+    const sections = ['personal', 'contact', 'course', 'academic', 'tests', 'documents', 'declaration'];
+    sections.forEach(section => {
+      totalSections++;
+      const sectionData = masterData[section];
+      if (sectionData && sectionData._isValid === true) {
+        completedSections++;
+      } else if (section === 'tests') {
+        completedSections++;
+      } else if (section === 'documents') {
+        completedSections++;
+      } else if (sectionData && Object.keys(sectionData).length > 0 && sectionData._isValid !== false) {
+        if (Object.keys(sectionData).some(key => key !== '_isValid' && sectionData[key])) {
+          completedSections += 0.5;
+        }
+      }
+    });
+    return Math.round((completedSections / totalSections) * 100);
+  };
+
+  const refreshUserData = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      const response = await axios.get(`${API_URL}/api/students/profile/detailed`, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+      });
+      if (response.data.success && response.data.account) {
+        const user = response.data.account;
+
+        const gusApplicationData = localStorage.getItem('gusApplicationData');
+        let appProgress = 0;
+        if (gusApplicationData) {
+          try { const appData = JSON.parse(gusApplicationData); appProgress = calculateLocalApplicationProgress(appData); } catch (e) {}
+        }
+
+        let masterProgress = 0;
+        const masterAppData = localStorage.getItem('masterApplicationData');
+        if (masterAppData) {
+          try {
+            const masterData = JSON.parse(masterAppData);
+            masterProgress = calculateMasterApplicationProgress(masterData);
+            setMasterAppProgress(masterProgress);
+          } catch (e) {}
+        }
+
+        const selectedCourse = localStorage.getItem('selectedCourseForApplication');
+        if (selectedCourse) {
+          try { setSelectedCourseData(JSON.parse(selectedCourse)); } catch (e) {}
+        }
+
+        const formattedUserData = {
+          name: `${user.firstName} ${user.lastName}`,
+          email: user.email,
+          studentId: user._id ? `CAID ${user._id.toString().slice(-8).toUpperCase()}` : 'CAID 48555228',
+          firstName: user.firstName,
+          lastName: user.lastName,
+          profileProgress: response.data.profileProgress || 0,
+          educationProgress: user.applicationProgress?.education || 0,
+          testingProgress: user.applicationProgress?.testing || 0,
+          writingProgress: user.applicationProgress?.writing || 0,
+          activitiesProgress: user.applicationProgress?.activities || 0,
+          testingData: user.testingData || { testsToReport: [] },
+          applicationProgress: {
+            ...user.applicationProgress,
+            application: appProgress,
+            masterApplication: masterProgress
+          },
+          ...user
+        };
+        setUserData(formattedUserData);
+        setApplicationProgress(appProgress);
+        localStorage.setItem('userData', JSON.stringify(formattedUserData));
+      }
+    } catch (error) { console.error('Error refreshing user data:', error); }
+  }, []);
 
   const fetchUserColleges = useCallback(async () => {
     try {
@@ -205,6 +215,26 @@ const Dashboard = () => {
     navigate(`${basePath}/application/overview`, { state: { fromCoursesPage: true, courseData } });
   };
 
+  const handleMasterApplicationUpdate = useCallback(() => {
+    const masterAppData = localStorage.getItem('masterApplicationData');
+    if (masterAppData) {
+      try {
+        const masterData = JSON.parse(masterAppData);
+        const progress = calculateMasterApplicationProgress(masterData);
+        setMasterAppProgress(progress);
+        if (userData) {
+          setUserData(prev => ({
+            ...prev,
+            applicationProgress: {
+              ...prev.applicationProgress,
+              masterApplication: progress
+            }
+          }));
+        }
+      } catch (e) {}
+    }
+  }, [userData]);
+
   useEffect(() => {
     const handleApplicationUpdate = () => {
       const gusApplicationData = localStorage.getItem('gusApplicationData');
@@ -217,12 +247,17 @@ const Dashboard = () => {
             setUserData(prev => ({ ...prev, applicationProgress: { ...prev.applicationProgress, application: progress } }));
             localStorage.setItem('userData', JSON.stringify({ ...userData, applicationProgress: { ...userData.applicationProgress, application: progress } }));
           }
-        } catch (error) {}
+        } catch (e) {}
       }
     };
+    const handleMasterUpdate = () => { handleMasterApplicationUpdate(); };
     window.addEventListener('applicationUpdated', handleApplicationUpdate);
-    return () => window.removeEventListener('applicationUpdated', handleApplicationUpdate);
-  }, [userData]);
+    window.addEventListener('masterApplicationUpdated', handleMasterUpdate);
+    return () => {
+      window.removeEventListener('applicationUpdated', handleApplicationUpdate);
+      window.removeEventListener('masterApplicationUpdated', handleMasterUpdate);
+    };
+  }, [userData, handleMasterApplicationUpdate]);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -242,6 +277,15 @@ const Dashboard = () => {
           if (gusApplicationData) {
             try { const appData = JSON.parse(gusApplicationData); appProgress = calculateLocalApplicationProgress(appData); setApplicationProgress(appProgress); } catch (e) {}
           }
+          const masterAppData = localStorage.getItem('masterApplicationData');
+          let masterProgress = 0;
+          if (masterAppData) {
+            try {
+              const masterData = JSON.parse(masterAppData);
+              masterProgress = calculateMasterApplicationProgress(masterData);
+              setMasterAppProgress(masterProgress);
+            } catch (e) {}
+          }
           const selectedCourse = localStorage.getItem('selectedCourseForApplication');
           if (selectedCourse) { try { setSelectedCourseData(JSON.parse(selectedCourse)); } catch (e) {} }
           const formattedUserData = {
@@ -254,7 +298,12 @@ const Dashboard = () => {
             testingProgress: user.applicationProgress?.testing || 0,
             writingProgress: user.applicationProgress?.writing || 0,
             activitiesProgress: user.applicationProgress?.activities || 0,
-            applicationProgress: { ...user.applicationProgress, application: appProgress, family: storedFamilyComplete ? 100 : (user.applicationProgress?.family || 0) },
+            applicationProgress: {
+              ...user.applicationProgress,
+              application: appProgress,
+              family: storedFamilyComplete ? 100 : (user.applicationProgress?.family || 0),
+              masterApplication: masterProgress
+            },
             testingData: user.testingData || { testsToReport: [] },
             ...user
           };
@@ -271,6 +320,13 @@ const Dashboard = () => {
             const gusApplicationData = localStorage.getItem('gusApplicationData');
             if (gusApplicationData) {
               try { const appData = JSON.parse(gusApplicationData); setApplicationProgress(calculateLocalApplicationProgress(appData)); } catch (e) {}
+            }
+            const masterAppData = localStorage.getItem('masterApplicationData');
+            if (masterAppData) {
+              try {
+                const masterData = JSON.parse(masterAppData);
+                setMasterAppProgress(calculateMasterApplicationProgress(masterData));
+              } catch (e) {}
             }
             const selectedCourse = localStorage.getItem('selectedCourseForApplication');
             if (selectedCourse) { try { setSelectedCourseData(JSON.parse(selectedCourse)); } catch (e) {} }
@@ -301,28 +357,36 @@ const Dashboard = () => {
 
   useEffect(() => {
     const path = location.pathname;
-    if (path.includes('/profile'))                                        setActiveMainSection('profile');
+    if (path.includes('/profile')) setActiveMainSection('profile');
     else if (path.includes('/colleges') && !path.includes('/education/colleges')) setActiveMainSection('colleges');
-    else if (path.includes('/education'))   setActiveMainSection('education');
-    else if (path.includes('/testing'))     setActiveMainSection('testing');
-    else if (path.includes('/writing'))     setActiveMainSection('writing');
-    else if (path.includes('/activities'))  setActiveMainSection('activities');
+    else if (path.includes('/education')) setActiveMainSection('education');
+    else if (path.includes('/testing')) setActiveMainSection('testing');
+    else if (path.includes('/writing')) setActiveMainSection('writing');
+    else if (path.includes('/activities')) setActiveMainSection('activities');
     else if (path.includes('/college-search')) setActiveMainSection('college-search');
-    else if (path.includes('/family'))      setActiveMainSection('family');
-    else if (path.includes('/courses'))     setActiveMainSection('courses');
-    else if (path.includes('/application')) setActiveMainSection('application');
-    else                                    setActiveMainSection('dashboard');
+    else if (path.includes('/family')) setActiveMainSection('family');
+    else if (path.includes('/courses')) setActiveMainSection('courses');
+    else if (path.includes('/master-application')) setActiveMainSection('master-application');
+    else setActiveMainSection('dashboard');
   }, [location.pathname]);
 
   const handleSectionChange = (section) => {
     const routes = {
-      dashboard: `${basePath}`, application: `${basePath}/application`,
-      colleges: `${basePath}/colleges`, education: `${basePath}/education/current-school`,
-      testing: `${basePath}/testing/tests-taken`, writing: `${basePath}/writing/personal-essay`,
-      activities: `${basePath}/activities`, personal: `${basePath}/profile/personal`,
-      contact: `${basePath}/profile/contact`, address: `${basePath}/profile/address`,
-      demographics: `${basePath}/profile/demographics`, language: `${basePath}/profile/language`,
-      geography: `${basePath}/profile/geography`, family: `${basePath}/family`,
+      dashboard: `${basePath}`,
+      application: `${basePath}/application`,
+      'master-application': `${basePath}/master-application`,
+      colleges: `${basePath}/colleges`,
+      education: `${basePath}/education/current-school`,
+      testing: `${basePath}/testing/tests-taken`,
+      writing: `${basePath}/writing/personal-essay`,
+      activities: `${basePath}/activities`,
+      personal: `${basePath}/profile/personal`,
+      contact: `${basePath}/profile/contact`,
+      address: `${basePath}/profile/address`,
+      demographics: `${basePath}/profile/demographics`,
+      language: `${basePath}/profile/language`,
+      geography: `${basePath}/profile/geography`,
+      family: `${basePath}/family`,
       courses: `${basePath}/college-search`,
     };
     if (routes[section]) { navigate(routes[section]); return; }
@@ -346,6 +410,10 @@ const Dashboard = () => {
     {
       type: 'university', name: 'University Application', desc: 'Select your program and institutions',
       progress: applicationProgress || 0, path: `${basePath}/application/overview`,
+    },
+    {
+      type: 'university', name: 'Master Application', desc: 'Complete your university registration form',
+      progress: masterAppProgress || 0, path: `${basePath}/master-application`,
     },
     {
       type: 'profile', name: 'Profile', desc: 'Personal information and background',
@@ -382,6 +450,7 @@ const Dashboard = () => {
     { question: "How can I add a college to My colleges?", answer: "To add a college to your account: Select College search from the navigation menu, browse colleges, and click 'Add to My Colleges'.", shortAnswer: "Select College search from the navigation menu..." },
     { question: "I already submitted, can I change some of my answers?", answer: "You can return at any time and change your answer to most questions before submission. After submission, contact colleges directly for changes.", shortAnswer: "You can return at any time and change your answer to most questions..." },
     { question: "How many colleges can I add to My colleges list?", answer: "You can add up to 20 colleges to your My Colleges list.", shortAnswer: "You can add up to 20 colleges to your My Colleges list..." },
+    { question: "What is the Master Application?", answer: "The Master Application is a comprehensive registration form that collects all necessary information for university admission including personal details, contact information, course selection, academic history, test scores, and document uploads.", shortAnswer: "A comprehensive registration form for university admission..." },
   ];
 
   const handleSectionClick = (section) => {
@@ -397,6 +466,12 @@ const Dashboard = () => {
     if (progress >= 100) return 'Review & Edit';
     if (progress > 0)    return 'Continue';
     return 'Get Started';
+  };
+
+  const getActionColor = (progress) => {
+    if (progress >= 100) return '#10b981';
+    if (progress > 0)    return '#0891b2';
+    return '#9ca3af';
   };
 
   /* ─── Colleges Page ─── */
@@ -467,6 +542,15 @@ const Dashboard = () => {
     </>
   );
 
+  /* ─── Master Application Wrapper ─── */
+  const MasterApplicationWrapper = () => {
+    const handleMasterUpdate = () => {
+      handleMasterApplicationUpdate();
+      refreshUserData();
+    };
+    return <Master onUpdate={handleMasterUpdate} />;
+  };
+
   /* ─── Dashboard Home ─── */
   const DashboardHome = () => {
     const nextSection = getNextIncomplete();
@@ -474,7 +558,6 @@ const Dashboard = () => {
 
     return (
       <>
-        {/* Top nav bar */}
         <div className="dashboard-header">
           <div className="dashboard-header__inner">
             <div className="dashboard-header__title-group">
@@ -511,8 +594,8 @@ const Dashboard = () => {
                 {overallProgress >= 100
                   ? 'Application Complete! Ready to Submit.'
                   : overallProgress >= 50
-                    ? 'Keep Going! You\'re Making Great Progress.'
-                    : 'Let\'s Get Started on Your Application!'}
+                    ? "Keep Going! You're Making Great Progress."
+                    : "Let's Get Started on Your Application!"}
               </h2>
               <p className="dashboard-banner__desc">
                 {overallProgress >= 100
@@ -551,8 +634,14 @@ const Dashboard = () => {
             </button>
           </div>
 
-          {/* ── My Common Application sections grid ── */}
-          <div className="dashboard-card">
+          {/* ── My Common Application ── */}
+          <div
+            className="dashboard-card"
+            style={{
+              background: 'linear-gradient(135deg, #f0f9ff 0%, #e8f4fd 100%)',
+              borderColor: 'rgba(8, 145, 178, 0.12)'
+            }}
+          >
             <div className="dashboard-card__header">
               <div className="dashboard-card__title-row">
                 <h2 className="dashboard-card__title">My Common Application</h2>
@@ -565,35 +654,27 @@ const Dashboard = () => {
                 <div
                   key={i}
                   className="dashboard-section-card"
-                  style={{ animationDelay: `${i * 0.06}s` }}
+                  style={{
+                    animationDelay: `${i * 0.06}s`,
+                    background: '#ffffff',
+                    borderColor: '#e2ecf5'
+                  }}
                   onClick={() => handleSectionClick(section)}
                 >
-                  <SectionIcon type={section.type} />
-
+                  {/* No icon circle, no progress bar */}
                   <div className="dashboard-section-card__header">
                     <div>
                       <h4 className="dashboard-section-card__name">{section.name}</h4>
                       <p className="dashboard-section-card__desc">{section.desc}</p>
                     </div>
-                    {section.progress > 0 && (
-                      <span className={`dashboard-section-card__pct ${getPctClass(section.progress)}`}>
-                        {section.progress}%
-                      </span>
-                    )}
-                    {section.progress === 0 && (
-                      <span className={`dashboard-section-card__pct pct--zero`}>0%</span>
-                    )}
-                  </div>
-
-                  <div className="dashboard-progress-bar">
-                    <div
-                      className={`dashboard-progress-bar__fill ${getBarColor(section.progress)}`}
-                      style={{ width: `${section.progress}%` }}
-                    />
+                    <span className={`dashboard-section-card__pct ${getPctClass(section.progress)}`}>
+                      {section.progress}%
+                    </span>
                   </div>
 
                   <button
-                    className={`dashboard-section-card__action ${section.progress >= 100 ? 'dashboard-section-card__action--done' : ''}`}
+                    className="dashboard-section-card__action"
+                    style={{ color: getActionColor(section.progress) }}
                     onClick={e => { e.stopPropagation(); handleSectionClick(section); }}
                   >
                     {getActionLabel(section.progress)} →
@@ -649,6 +730,13 @@ const Dashboard = () => {
                 </div>
                 <div className="dashboard-quick-card__arrow">→</div>
               </div>
+              <div className="dashboard-quick-card" onClick={() => navigate(`${basePath}/master-application`)}>
+                <div className="dashboard-quick-card__content">
+                  <h4 className="dashboard-quick-card__title">Master Application</h4>
+                  <p className="dashboard-quick-card__desc">Complete your registration form for university admission</p>
+                </div>
+                <div className="dashboard-quick-card__arrow">→</div>
+              </div>
               <div className="dashboard-quick-card" onClick={() => navigate(`${basePath}/college-search`)}>
                 <div className="dashboard-quick-card__content">
                   <h4 className="dashboard-quick-card__title">Explore Programs</h4>
@@ -666,7 +754,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* ── Help & FAQ ── */}
+          {/* ── Help & Support ── */}
           <div className="dashboard-card">
             <div className="dashboard-card__header">
               <h2 className="dashboard-card__title">Help & Support</h2>
@@ -737,9 +825,10 @@ const Dashboard = () => {
           <Route path="/" element={<DashboardHome />} />
           <Route path="/application/*" element={<ApplicationWrapper />} />
           <Route path="/application/overview" element={<OverviewWrapper />} />
+          <Route path="/master-application/*" element={<MasterApplicationWrapper />} />
           <Route path="/colleges" element={<CollegesSection />} />
-          <Route path="/colleges/:collegeId" element={<CollegeDetails />} />
-          <Route path="/colleges/:collegeId/:subsection" element={<CollegeSubsection />} />
+          
+          
           <Route path="/profile/*" element={<ProfileForm />} />
           <Route path="/family/*" element={<FamilySection onComplete={handleFamilyComplete} />} />
           <Route path="/education/*" element={<EducationForm />} />
@@ -749,16 +838,7 @@ const Dashboard = () => {
           <Route path="/writing/*" element={<WritingSection />} />
           <Route path="/college-search" element={<CollegeSearch onCollegeUpdate={fetchUserColleges} />} />
           <Route path="/courses/:universityId" element={<Courses onCourseSelect={handleCourseSelection} />} />
-          <Route path="/colleges/:collegeId/general" element={<General />} />
-          <Route path="/colleges/:collegeId/documents" element={<Documents />} />
-          <Route path="/colleges/:collegeId/academics" element={<Academics />} />
-          <Route path="/colleges/:collegeId/high-school" element={<HighSchoolCurriculum />} />
-          <Route path="/colleges/:collegeId/activities" element={<Activities />} />
-          <Route path="/colleges/:collegeId/contacts" element={<FirstContacts />} />
-          <Route path="/colleges/:collegeId/family" element={<FirstFamily />} />
-          <Route path="/colleges/:collegeId/residency" element={<FirstResidency />} />
-          <Route path="/colleges/:collegeId/international" element={<InternationalStudent />} />
-          <Route path="/colleges/:collegeId/review" element={<Review />} />
+          
         </Routes>
       </DashboardLayout>
       <ChatWidget />

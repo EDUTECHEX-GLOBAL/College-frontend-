@@ -7,18 +7,20 @@ import {
   getFirstTesting,
   getDetailedFirstTesting,
   deleteFirstTesting,
-  parseCV, // Add this import
+  parseCV,
+  parseScoreDocument,
 } from "../controllers/firstTestingController.js";
 
 const router = express.Router();
 
 // Protected routes
-router.get("/", authMiddleware, getFirstTesting);
-router.get("/detailed", authMiddleware, getDetailedFirstTesting);
-router.put("/", authMiddleware, createOrUpdateFirstTesting);
-router.delete("/", authMiddleware, deleteFirstTesting);
+router.get("/",          authMiddleware, getFirstTesting);
+router.get("/detailed",  authMiddleware, getDetailedFirstTesting);
+router.put("/",          authMiddleware, createOrUpdateFirstTesting);
+router.delete("/",       authMiddleware, deleteFirstTesting);
 
-// CV Parser Route
-router.post("/parse-cv", authMiddleware, parseCV); // Add this route
+// Document parsing routes
+router.post("/parse-cv",           authMiddleware, parseCV);           // Full CV → all sections
+router.post("/parse-score-doc",    authMiddleware, parseScoreDocument); // Single score doc → one section
 
 export default router;

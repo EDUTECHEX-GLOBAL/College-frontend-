@@ -1,0 +1,762 @@
+/* masterdocuments.css - Documents Upload Styles - Plalite Colour Scheme */
+
+/* ============================================================
+   BASE FORM
+============================================================ */
+.masterdocs-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  animation: masterdocs-fadeIn 0.3s ease-in-out;
+}
+
+@keyframes masterdocs-fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   HEADER
+============================================================ */
+.masterdocs-header {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 4px;
+}
+
+.masterdocs-header-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.masterdocs-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 6px;
+  font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
+}
+
+.masterdocs-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.masterdocs-required-star {
+  color: #e11d48;
+  font-weight: 700;
+}
+
+/* Progress Ring */
+.masterdocs-progress-ring-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.masterdocs-ring-svg {
+  width: 64px;
+  height: 64px;
+}
+
+.masterdocs-ring-bg {
+  fill: none;
+  stroke: #e2e8f0;
+  stroke-width: 3.5;
+}
+
+.masterdocs-ring-fill {
+  fill: none;
+  stroke: #0891b2;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  animation: masterdocs-fadeIn 0.5s ease;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+
+.masterdocs-ring-text {
+  fill: #0f172a;
+  font-size: 8px;
+  font-weight: 700;
+  text-anchor: middle;
+  font-family: 'Sora', sans-serif;
+}
+
+.masterdocs-ring-label {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+/* Search */
+.masterdocs-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 8px 14px;
+  transition: border-color 0.2s;
+}
+
+.masterdocs-search-wrap:focus-within {
+  border-color: #0891b2;
+  background: #fff;
+}
+
+.masterdocs-search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  color: #0f172a;
+  outline: none;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.masterdocs-search-clear {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 18px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+}
+
+.masterdocs-search-clear:hover { color: #0f172a; }
+
+/* ============================================================
+   ERROR BANNER
+============================================================ */
+.masterdocs-error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  border-left: 4px solid #e11d48;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #9f1239;
+  font-weight: 500;
+}
+
+.masterdocs-error-close {
+  background: none;
+  border: none;
+  color: #9f1239;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+/* ============================================================
+   CATEGORY ACCORDION
+============================================================ */
+.masterdocs-category {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.masterdocs-category:hover {
+  box-shadow: 0 4px 16px rgba(8, 145, 178, 0.08);
+}
+
+.masterdocs-category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: #f8fafc;
+  cursor: pointer;
+  border-left: 4px solid #0891b2;
+  user-select: none;
+  transition: background 0.2s;
+}
+
+.masterdocs-category-header:hover { background: #f0f9ff; }
+
+.masterdocs-category-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.masterdocs-category-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  font-family: 'Sora', sans-serif;
+}
+
+.masterdocs-category-count {
+  background: #e0f2fe;
+  color: #0e7490;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 20px;
+}
+
+.masterdocs-category-chevron {
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* Documents grid */
+.masterdocs-docs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  padding: 16px;
+  background: #fff;
+}
+
+/* ============================================================
+   DOCUMENT CARD
+============================================================ */
+.masterdocs-doc-card {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.masterdocs-doc-card:hover {
+  border-color: #bae6fd;
+  box-shadow: 0 2px 12px rgba(8, 145, 178, 0.08);
+}
+
+.masterdocs-doc-card--uploaded {
+  border-color: #a7f3d0;
+  background: #f0fdf9;
+}
+
+.masterdocs-doc-card--pending {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.masterdocs-doc-card--drag {
+  border-color: #0891b2;
+  border-style: dashed;
+  background: #f0f9ff;
+}
+
+/* Card header */
+.masterdocs-doc-card-header { display: flex; flex-direction: column; gap: 4px; }
+.masterdocs-doc-title-row   { display: flex; flex-direction: column; gap: 4px; }
+
+.masterdocs-doc-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-family: 'Sora', sans-serif;
+}
+
+.masterdocs-doc-description {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.masterdocs-doc-upload-area { flex: 1; }
+
+/* Badges */
+.masterdocs-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.masterdocs-badge--required { background: #fee2e2; color: #b91c1c; }
+.masterdocs-badge--optional { background: #f1f5f9; color: #475569; }
+.masterdocs-badge--done     { background: #d1fae5; color: #065f46; }
+.masterdocs-badge--pending  { background: #fef3c7; color: #92400e; }
+
+/* ============================================================
+   UPLOAD AREA
+============================================================ */
+.masterdocs-upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.masterdocs-drop-zone {
+  border: 2px dashed #cbd5e1;
+  border-radius: 10px;
+  padding: 20px 12px;
+  text-align: center;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.masterdocs-drop-zone:hover,
+.masterdocs-drop-zone--active {
+  border-color: #0891b2;
+  background: #f0f9ff;
+}
+
+.masterdocs-drop-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  margin: 0 0 4px;
+}
+
+.masterdocs-drop-hint {
+  font-size: 11px;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.masterdocs-file-input-hidden { display: none !important; }
+
+.masterdocs-browse-btn {
+  width: 100%;
+  padding: 10px 16px;
+  background: #0891b2;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: background 0.2s;
+}
+
+.masterdocs-browse-btn:hover:not(:disabled) { background: #0e7490; }
+.masterdocs-browse-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ============================================================
+   FILE PREVIEW (uploaded state)
+============================================================ */
+.masterdocs-file-preview { display: flex; flex-direction: column; gap: 8px; }
+
+.masterdocs-image-preview-wrap {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  height: 100px;
+}
+
+.masterdocs-image-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.masterdocs-image-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.masterdocs-image-preview-wrap:hover .masterdocs-image-overlay { opacity: 1; }
+
+.masterdocs-overlay-btn {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #fff;
+  color: #0f172a;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: background 0.2s;
+}
+
+.masterdocs-overlay-btn:hover { background: #f1f5f9; }
+
+.masterdocs-overlay-remove {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.masterdocs-overlay-remove:hover { background: #fecaca; }
+
+/* File info row */
+.masterdocs-file-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  gap: 8px;
+}
+
+.masterdocs-file-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.masterdocs-file-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #10b981;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+}
+
+.masterdocs-file-size { font-size: 11px; color: #94a3b8; }
+
+.masterdocs-file-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.masterdocs-action-link {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0891b2;
+  text-decoration: none;
+}
+
+.masterdocs-action-link:hover { text-decoration: underline; }
+
+.masterdocs-action-remove {
+  font-size: 12px;
+  font-weight: 600;
+  color: #e11d48;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.masterdocs-action-remove:hover { text-decoration: underline; }
+
+/* ============================================================
+   CERT AVAILABILITY (Yes / No flow)
+============================================================ */
+.masterdocs-cert-question {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.masterdocs-cert-question-text {
+  font-size: 13px;
+  color: #334155;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.masterdocs-cert-yn-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.masterdocs-cert-yn-btn {
+  flex: 1;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1.5px solid #e2e8f0;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: all 0.2s;
+  background: #fff;
+  color: #334155;
+}
+
+.masterdocs-cert-yn-yes:hover {
+  border-color: #10b981;
+  background: #f0fdf4;
+  color: #065f46;
+}
+
+.masterdocs-cert-yn-no:hover {
+  border-color: #f59e0b;
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.masterdocs-cert-change {
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: #0891b2;
+  cursor: pointer;
+  padding: 0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+}
+
+.masterdocs-cert-change:hover { text-decoration: underline; }
+
+/* Pending date selection */
+.masterdocs-cert-pending-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.masterdocs-cert-pending-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.masterdocs-cert-pending-sub {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.masterdocs-cert-monthyear-row {
+  display: flex;
+  gap: 10px;
+}
+
+.masterdocs-cert-select-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.masterdocs-cert-select-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.masterdocs-cert-select {
+  font-size: 13px !important;
+  padding: 8px 10px !important;
+  border-radius: 8px !important;
+}
+
+.masterdocs-cert-date-confirmed {
+  font-size: 13px;
+  color: #065f46;
+  background: #d1fae5;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-weight: 600;
+}
+
+.masterdocs-cert-date-hint {
+  font-size: 12px;
+  color: #92400e;
+  margin: 0;
+}
+
+/* ============================================================
+   ORIGINAL INPUT (kept for backwards compat)
+============================================================ */
+.masterdocs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.masterdocs-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.masterdocs-label {
+  font-weight: 700;
+  font-size: 14px;
+  color: #334155;
+}
+
+.masterdocs-input {
+  padding: 12px;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 12px;
+  background: #f8fafc;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: all 0.3s ease;
+  color: #0f172a;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.masterdocs-input:hover,
+.masterdocs-input:focus {
+  border-color: #0891b2;
+  background: #f0f9ff;
+  outline: none;
+}
+
+/* ============================================================
+   SUMMARY
+============================================================ */
+.masterdocs-summary {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.masterdocs-summary-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  font-family: 'Sora', sans-serif;
+}
+
+.masterdocs-summary-stats {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.masterdocs-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.masterdocs-stat-label { font-size: 12px; color: #64748b; font-weight: 500; }
+.masterdocs-stat-value { font-size: 22px; font-weight: 700; color: #0f172a; font-family: 'Sora', sans-serif; }
+.masterdocs-stat-value--done { color: #10b981; }
+.masterdocs-stat-value--warn { color: #f59e0b; }
+
+.masterdocs-summary-bar-wrap {
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.masterdocs-summary-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #0891b2, #10b981);
+  border-radius: 99px;
+  transition: width 0.5s ease;
+}
+
+.masterdocs-summary-pct { font-size: 12px; color: #64748b; font-weight: 600; margin: 0; }
+
+/* ============================================================
+   INFO NOTE
+============================================================ */
+.masterdocs-note {
+  background: #f0f9ff;
+  padding: 14px 18px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: #0e7490;
+  font-weight: 500;
+  border-left: 3px solid #0891b2;
+}
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+@media (max-width: 768px) {
+  .masterdocs-grid,
+  .masterdocs-docs-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .masterdocs-title { font-size: 20px; }
+  .masterdocs-subtitle { font-size: 13px; }
+
+  .masterdocs-header-top { flex-wrap: wrap; }
+
+  .masterdocs-summary-stats { gap: 16px; }
+}
+
+@media (max-width: 480px) {
+  .masterdocs-title    { font-size: 18px; }
+  .masterdocs-subtitle { font-size: 12px; }
+
+  .masterdocs-input {
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  .masterdocs-label  { font-size: 13px; }
+  .masterdocs-form   { gap: 16px; }
+  .masterdocs-note   { font-size: 11px; padding: 12px 14px; }
+
+  .masterdocs-cert-yn-row { flex-direction: column; }
+  .masterdocs-cert-monthyear-row { flex-direction: column; }
+}
+
+/* ============================================================
+   ACCESSIBILITY – REDUCED MOTION
+============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================
+   PRINT
+============================================================ */
+@media print {
+  .masterdocs-form   { animation: none; }
+  .masterdocs-input  { border: 1px solid #cbd5e1; background: white; }
+  .masterdocs-note   { background: none; border: 1px solid #cbd5e1; }
+}

@@ -93,7 +93,7 @@ const APSubjectTestsSection = ({ formData, handleInputChange }) => {
     else if (count > tests.length) {
       const newTests = [...tests];
       for (let i = tests.length; i < count; i++) {
-        newTests.push({ month: '', year: '', subject: '', score: '' });
+        newTests.push({ subject: '', score: '', month: '', year: '' });
       }
       setTests(newTests);
       handleInputChange({ target: { name: 'apSubjectTests', value: newTests } });
@@ -143,7 +143,7 @@ const APSubjectTestsSection = ({ formData, handleInputChange }) => {
 
   // Check if all required fields for a test are filled
   const isTestComplete = (test) => {
-    return test.month && test.year && test.subject;
+    return test.subject && test.month && test.year;
   };
 
   // Check if a specific test field is missing
@@ -205,71 +205,7 @@ const APSubjectTestsSection = ({ formData, handleInputChange }) => {
                 <div key={index} className="ap-test-entry">
                   <h3>Test {index + 1}</h3>
                   
-                  {/* Date Field with Month Selection and Year Grid */}
-                  <div className="ap-form-group">
-                    <label className="ap-question-label required">Date taken or planned*</label>
-                    <div className="ap-date-selection">
-                      <div className="ap-month-year-selection">
-                        <div className="ap-month-select-container">
-                          <select
-                            value={test.month || ''}
-                            onChange={(e) => handleMonthChange(index, e.target.value)}
-                            className={`ap-select ${isFieldMissing(test, 'month') ? 'error' : ''}`}
-                          >
-                            <option value="">Month</option>
-                            {monthOptions.map(month => (
-                              <option key={month} value={month}>{month}</option>
-                            ))}
-                          </select>
-                        </div>
-                        
-                        <div className="ap-year-select-container">
-                          <div 
-                            className={`ap-year-display ${isFieldMissing(test, 'year') ? 'error' : ''}`}
-                            onClick={() => toggleYearGrid(index)}
-                          >
-                            {test.year || 'Year'}
-                            <span className="ap-dropdown-arrow">▼</span>
-                          </div>
-                          
-                          {showYearGrid === index && (
-                            <div className="ap-year-grid-container">
-                              <div className="ap-year-grid">
-                                {yearRows.map((row, rowIndex) => (
-                                  <div key={rowIndex} className="ap-year-row">
-                                    {row.map(year => (
-                                      <div
-                                        key={year}
-                                        className={`ap-year-option ${test.year === year.toString() ? 'selected' : ''}`}
-                                        onClick={() => handleYearSelect(index, year)}
-                                      >
-                                        {year}
-                                      </div>
-                                    ))}
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="ap-date-format-hint">
-                        Date uses "month year" format (e.g. August 2002)
-                      </div>
-                    </div>
-                    {(isFieldMissing(test, 'month') || isFieldMissing(test, 'year')) && (
-                      <div className="ap-error-message">
-                        Please complete this required question.
-                      </div>
-                    )}
-                    {formatDate(test) && (
-                      <div className="ap-selected-date">
-                        Selected: {formatDate(test)}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Subject Field */}
+                  {/* Subject Field - First as per document order */}
                   <div className="ap-form-group">
                     <label className="ap-question-label required">Subject*</label>
                     <select
@@ -291,7 +227,7 @@ const APSubjectTestsSection = ({ formData, handleInputChange }) => {
 
                   {/* Score Field - Radio buttons for AP scores (1-5) */}
                   <div className="ap-form-group">
-                    <label className="ap-question-label">Score</label>
+                    <label className="ap-question-label">Score (1-5)</label>
                     <div className="ap-score-radio-group-horizontal">
                       {scoreOptions.map(score => (
                         <label key={score} className="ap-score-radio-option">
@@ -317,13 +253,81 @@ const APSubjectTestsSection = ({ formData, handleInputChange }) => {
                       </button>
                     )}
                   </div>
+
+                  {/* Month Field */}
+                  <div className="ap-form-group">
+                    <label className="ap-question-label required">Month*</label>
+                    <div className="ap-month-select-container">
+                      <select
+                        value={test.month || ''}
+                        onChange={(e) => handleMonthChange(index, e.target.value)}
+                        className={`ap-select ${isFieldMissing(test, 'month') ? 'error' : ''}`}
+                      >
+                        <option value="">Select Month</option>
+                        {monthOptions.map(month => (
+                          <option key={month} value={month}>{month}</option>
+                        ))}
+                      </select>
+                    </div>
+                    {isFieldMissing(test, 'month') && (
+                      <div className="ap-error-message">
+                        Please complete this required question.
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Year Field */}
+                  <div className="ap-form-group">
+                    <label className="ap-question-label required">Year*</label>
+                    <div className="ap-year-select-container">
+                      <div 
+                        className={`ap-year-display ${isFieldMissing(test, 'year') ? 'error' : ''}`}
+                        onClick={() => toggleYearGrid(index)}
+                      >
+                        {test.year || 'Select Year'}
+                        <span className="ap-dropdown-arrow">▼</span>
+                      </div>
+                      
+                      {showYearGrid === index && (
+                        <div className="ap-year-grid-container">
+                          <div className="ap-year-grid">
+                            {yearRows.map((row, rowIndex) => (
+                              <div key={rowIndex} className="ap-year-row">
+                                {row.map(year => (
+                                  <div
+                                    key={year}
+                                    className={`ap-year-option ${test.year === year.toString() ? 'selected' : ''}`}
+                                    onClick={() => handleYearSelect(index, year)}
+                                  >
+                                    {year}
+                                  </div>
+                                ))}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    {isFieldMissing(test, 'year') && (
+                      <div className="ap-error-message">
+                        Please complete this required question.
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Display formatted date */}
+                  {formatDate(test) && (
+                    <div className="ap-selected-date">
+                      Test Date: {formatDate(test)}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
           )}
         </div>
       </div>
-    </div>
+    </div>  
   );
 };
 

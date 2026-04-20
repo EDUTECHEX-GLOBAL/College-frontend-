@@ -1,915 +1,536 @@
-/* ============================================================
-   PersonalInfoSection.css — EDUTECH-X Plalite Colour Scheme
-   Primary Teal: #0891b2 | Clean White | Minimalist Design
-   ============================================================ */
+/* PersonalInfoSection.css - Plalite Colour Scheme */
 
-/* ─────────────────────────────────────────
-   CSS VARIABLES
-───────────────────────────────────────── */
-:root {
-  /* Primary Colors - Plalite Teal */
-  --primary: #0891b2;
-  --primary-dark: #0e7490;
-  --primary-light: #22d3ee;
-  --primary-pale: #f0f9ff;
-  --primary-gradient: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
-  
-  /* Secondary Colors */
-  --navy: #0f172a;
-  --navy-light: #1e293b;
-  --navy-pale: #f8fafc;
-  
-  /* Status Colors */
-  --success: #10b981;
-  --success-pale: #ecfdf5;
-  --warning: #f59e0b;
-  --warning-pale: #fffbeb;
-  --error: #ef4444;
-  --error-pale: #fef2f2;
-  --info: #0891b2;
-  --info-pale: #f0f9ff;
-  
-  /* Neutral Colors */
-  --gray-50: #fafafa;
-  --gray-100: #f5f5f5;
-  --gray-200: #e5e5e5;
-  --gray-300: #d4d4d4;
-  --gray-400: #a3a3a3;
-  --gray-500: #737373;
-  --gray-600: #525252;
-  --gray-700: #404040;
-  --gray-800: #262626;
-  --gray-900: #171717;
-  
-  /* Backgrounds */
-  --bg-primary: #f5f7fa;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #f8fafc;
-  
-  /* Text */
-  --text-primary: #0f172a;
-  --text-secondary: #334155;
-  --text-tertiary: #64748b;
-  --text-muted: #94a3b8;
-  
-  /* Borders */
-  --border-light: #e2e8f0;
-  --border-medium: #cbd5e1;
-  --border-primary: rgba(8, 145, 178, 0.2);
-  
-  /* Shadows */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.03);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
-  --shadow-primary: 0 4px 12px rgba(8, 145, 178, 0.12);
-  --shadow-teal: 0 4px 18px rgba(8, 145, 178, 0.18);
-  
-  /* Border Radius */
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-full: 9999px;
-  
-  /* Transitions */
-  --transition-fast: 150ms ease;
-  --transition-base: 250ms ease;
-  
-  /* Font */
-  --font: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
-  --font-display: 'Sora', 'Plus Jakarta Sans', Georgia, serif;
-}
-
-/* ─────────────────────────────────────────
-   MAIN CONTAINER
-───────────────────────────────────────── */
-.personalinfosection {
-  background: var(--bg-secondary);
+.personal-info-section {
+  background: white;
+  margin: 20px 40px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   max-width: 100%;
-  font-family: var(--font);
 }
 
-/* Header Section */
-.personalinfosection h2 {
-  font-size: 22px;
+.personal-info-section h2 {
+  background: #f8fafc;
+  margin: 0;
+  padding: 20px 24px;
+  font-size: 20px;
   font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 20px 0;
-  padding: 0;
-  letter-spacing: -0.3px;
-  font-family: var(--font-display);
+  color: #0f172a;
+  border-bottom: 1px solid #e2e8f0;
+  border-radius: 8px 8px 0 0;
+  font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
 }
 
-/* Section Status Badge */
-.personalinfosection-status {
-  background: var(--primary-pale);
-  padding: 6px 14px;
-  border-radius: var(--radius-full);
-  font-size: 12px;
+.personal-info-section .section-status {
+  background: #f0f9ff;
+  padding: 12px 24px;
+  font-size: 14px;
+  color: #0891b2;
   font-weight: 600;
-  color: var(--primary);
-  display: inline-flex;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 28px;
 }
 
-.personalinfosection-status::before {
-  content: "";
-  width: 6px;
-  height: 6px;
-  background: var(--primary);
-  border-radius: 50%;
-  display: inline-block;
-  animation: personalinfosection-pulse 1.5s infinite;
+.personal-info-section .section-status::before {
+  content: "●";
+  color: #0891b2;
+  font-size: 16px;
 }
 
-@keyframes personalinfosection-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.2); }
-}
-
-/* ============================================================
-   DOCUMENT UPLOAD BANNERS
-============================================================ */
-.personalinfosection-document-banners {
+/* ══════════════════════════════════════════
+   DOCUMENT UPLOAD BANNERS WRAPPER
+══════════════════════════════════════════ */
+.document-banners-wrapper {
+  padding: 16px 24px 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-bottom: 32px;
+  gap: 10px;
 }
 
-.personalinfosection-banner-wrapper {
+.passport-banner-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
-.personalinfosection-skip-link {
+.passport-skip-link {
   background: none;
   border: none;
+  padding: 0;
   font-size: 12px;
-  color: var(--text-muted);
+  color: #64748b;
   cursor: pointer;
-  text-decoration: none;
-  align-self: flex-start;
-  padding: 4px 8px;
-  transition: color var(--transition-fast);
-  font-family: var(--font);
-}
-
-.personalinfosection-skip-link:hover {
-  color: var(--primary);
   text-decoration: underline;
+  text-underline-offset: 2px;
+  align-self: flex-start;
+  line-height: 1;
 }
 
-/* Base Banner */
-.personalinfosection-banner {
-  border-radius: var(--radius-lg);
-  padding: 20px 24px;
+.passport-skip-link:hover {
+  color: #334155;
+}
+
+/* ── Base banner ── */
+.passport-banner {
+  border-radius: 8px;
+  padding: 14px 16px;
   display: flex;
   align-items: center;
-  gap: 20px;
-  transition: all var(--transition-base);
-  font-family: var(--font);
+  gap: 14px;
+  border: 1px solid transparent;
+  transition: background 0.2s, border-color 0.2s;
 }
 
-/* Upload / Idle State */
-.personalinfosection-banner--upload {
-  background: var(--gray-50);
-  border: 1px solid var(--border-light);
+/* ── Upload / idle ── */
+.passport-banner--upload {
+  background: #f0f9ff;
+  border-color: #bae6fd;
   cursor: pointer;
+  user-select: none;
 }
 
-.personalinfosection-banner--upload:hover {
-  background: var(--primary-pale);
-  border-color: var(--primary);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
+.passport-banner--upload:hover {
+  background: #e0f2fe;
+  border-color: #0891b2;
 }
 
-.personalinfosection-banner__text {
+.passport-banner--upload:focus-visible {
+  outline: 2px solid #0891b2;
+  outline-offset: 2px;
+}
+
+.passport-banner__upload-icon {
+  width: 40px;
+  height: 40px;
+  background: #fff;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.passport-banner__text {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
-.personalinfosection-banner__title {
+.passport-banner__title {
   font-size: 14px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #0f172a;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
-  font-family: var(--font);
 }
 
-.personalinfosection-banner__badge {
+.passport-banner__badge {
   display: inline-block;
-  background: var(--primary-gradient);
-  color: white;
+  background: #0891b2;
+  color: #fff;
   font-size: 10px;
-  font-weight: 600;
-  padding: 2px 10px;
-  border-radius: var(--radius-full);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  border-radius: 99px;
+  vertical-align: middle;
 }
 
-.personalinfosection-banner__sub {
+.passport-banner__sub {
   font-size: 12px;
-  color: var(--text-tertiary);
+  color: #64748b;
   line-height: 1.4;
 }
 
-.personalinfosection-banner__cta {
-  background: var(--primary-gradient);
-  color: white;
+.passport-banner__cta {
+  background: #0891b2;
+  color: #fff;
   font-size: 13px;
-  font-weight: 600;
-  padding: 8px 20px;
-  border-radius: var(--radius-full);
+  font-weight: 700;
+  padding: 8px 18px;
+  border-radius: 6px;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: all var(--transition-fast);
-  font-family: var(--font);
 }
 
-.personalinfosection-banner--upload:hover .personalinfosection-banner__cta {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-primary);
+.passport-banner--upload:hover .passport-banner__cta {
+  background: #0e7490;
 }
 
-/* Scanning State */
-.personalinfosection-banner--scanning {
-  background: var(--primary-pale);
-  border: 1px solid var(--border-primary);
+/* ── Scanning ── */
+.passport-banner--scanning {
+  background: #f0f9ff;
+  border-color: #bae6fd;
 }
 
-.personalinfosection-banner__spinner {
-  width: 24px;
-  height: 24px;
-  border: 2px solid var(--border-primary);
-  border-top-color: var(--primary);
+.passport-banner__spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #bae6fd;
+  border-top-color: #0891b2;
   border-radius: 50%;
-  animation: personalinfosection-spin 0.8s linear infinite;
+  animation: spin 0.8s linear infinite;
   flex-shrink: 0;
 }
 
-@keyframes personalinfosection-spin {
+@keyframes spin {
   to { transform: rotate(360deg); }
 }
 
-/* Success State */
-.personalinfosection-banner--success {
-  background: var(--success-pale);
-  border: 1px solid #bbf7d0;
+/* ── Success ── */
+.passport-banner--success {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
 }
 
-.personalinfosection-banner--success .personalinfosection-banner__title {
-  color: var(--success);
+.passport-banner--success .passport-banner__title {
+  color: #065f46;
 }
 
-.personalinfosection-banner__dismiss {
+.passport-banner--success .passport-banner__sub {
+  color: #059669;
+  font-size: 12px;
+}
+
+.passport-banner__icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.passport-banner__dismiss {
   background: none;
   border: none;
-  padding: 6px;
+  padding: 4px;
   cursor: pointer;
-  color: var(--text-muted);
-  border-radius: var(--radius-full);
+  color: #64748b;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: all var(--transition-fast);
 }
 
-.personalinfosection-banner__dismiss:hover {
-  background: var(--success-pale);
-  color: var(--text-primary);
+.passport-banner__dismiss:hover {
+  background: #dcfce7;
+  color: #334155;
 }
 
-.personalinfosection-banner__dismiss-icon {
-  font-size: 16px;
-  font-weight: 600;
+/* ── Error ── */
+.passport-banner--error {
+  background: #fef2f2;
+  border-color: #fecaca;
 }
 
-/* Error State */
-.personalinfosection-banner--error {
-  background: var(--error-pale);
-  border: 1px solid #fecaca;
+.passport-banner--error .passport-banner__title {
+  color: #7f1d1d;
 }
 
-.personalinfosection-banner--error .personalinfosection-banner__title {
-  color: var(--error);
+.passport-banner--error .passport-banner__sub {
+  color: #991b1b;
+  font-size: 12px;
 }
 
-.personalinfosection-banner__retry {
+.passport-banner__retry {
   background: none;
   border: 1px solid #fca5a5;
-  color: var(--error);
+  color: #dc2626;
   font-size: 12px;
   font-weight: 600;
-  padding: 6px 14px;
-  border-radius: var(--radius-full);
+  padding: 5px 12px;
+  border-radius: 5px;
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: all var(--transition-fast);
-  font-family: var(--font);
 }
 
-.personalinfosection-banner__retry:hover {
-  background: var(--error-pale);
-  border-color: var(--error);
+.passport-banner__retry:hover {
+  background: #fee2e2;
 }
 
-/* ============================================================
+/* ══════════════════════════════════════════
    SAVE STATUS INDICATOR
-============================================================ */
-.personalinfosection-save-status {
-  margin-bottom: 24px;
-  padding: 10px 16px;
-  border-radius: var(--radius-md);
+══════════════════════════════════════════ */
+.autofill-save-status {
+  margin: 8px 24px 0;
+  padding: 8px 14px;
+  border-radius: 6px;
   font-size: 13px;
   font-weight: 500;
-  animation: personalinfosection-fadeSlide 0.3s ease;
-  display: flex;
-  align-items: center;
-  font-family: var(--font);
 }
 
-@keyframes personalinfosection-fadeSlide {
-  from {
-    opacity: 0;
-    transform: translateY(-5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.autofill-save-status--saving {
+  background: #f0f9ff;
+  color: #0891b2;
+  border: 1px solid #bae6fd;
 }
 
-.personalinfosection-save-status--saving {
-  background: var(--primary-pale);
-  color: var(--primary);
-  border: 1px solid var(--border-primary);
+.autofill-save-status--saved {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
 }
 
-.personalinfosection-save-status--saving .personalinfosection-spinner {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  border: 2px solid var(--border-primary);
-  border-top-color: var(--primary);
-  border-radius: 50%;
-  animation: personalinfosection-spin 0.8s linear infinite;
-  margin-right: 8px;
-}
-
-.personalinfosection-save-status--saved {
-  background: var(--success-pale);
-  color: var(--success);
-  border: 1px solid #bbf7d0;
-}
-
-.personalinfosection-check-icon {
-  font-size: 14px;
-  font-weight: 700;
-  margin-right: 8px;
-}
-
-.personalinfosection-save-status--error {
-  background: var(--error-pale);
-  color: var(--error);
+.autofill-save-status--error {
+  background: #fef2f2;
+  color: #991b1b;
   border: 1px solid #fecaca;
 }
 
-.personalinfosection-error-icon {
-  font-size: 14px;
-  font-weight: 700;
-  margin-right: 8px;
+/* ══════════════════════════════════════════
+   AUTO-FILL FIELD STYLES
+══════════════════════════════════════════ */
+.personal-info-section .form-group input.input--autofilled,
+.personal-info-section .form-group select.input--autofilled {
+  background: #f0f9ff;
+  border-color: #0891b2;
+  color: #0f172a;
+}
+
+/* "passport" / "aadhaar" tag next to label */
+.autofill-tag {
   display: inline-block;
-  width: 16px;
-  height: 16px;
-  background: var(--error);
-  color: white;
-  border-radius: 50%;
-  text-align: center;
-  line-height: 16px;
-}
-
-/* ============================================================
-   FORM CONTENT
-============================================================ */
-.personalinfosection-form-content {
-  max-width: 100%;
-}
-
-/* Form Section Headings */
-.personalinfosection-section-heading {
-  font-size: 15px;
+  font-size: 10px;
   font-weight: 700;
-  color: var(--text-primary);
-  margin: 28px 0 16px 0;
-  padding-bottom: 8px;
-  border-bottom: 2px solid var(--border-light);
-  letter-spacing: -0.2px;
-  font-family: var(--font-display);
+  color: #0891b2;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  padding: 1px 6px;
+  border-radius: 99px;
+  margin-left: 6px;
+  vertical-align: middle;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
-.personalinfosection-section-heading:first-child {
+/* ══════════════════════════════════════════
+   FORM SECTION HEADINGS (sub-sections inside form)
+══════════════════════════════════════════ */
+.form-section-heading {
+  font-size: 13px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin: 28px 0 16px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.form-section-heading:first-child {
   margin-top: 0;
 }
 
-/* Form Grid - Two Column Layout */
-.personalinfosection-form-grid {
+/* ══════════════════════════════════════════
+   EXISTING FORM STYLES (unchanged layout)
+══════════════════════════════════════════ */
+.personal-info-section .form-content {
+  padding: 24px;
+  max-width: 100%;
+}
+
+.personal-info-section .form-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
   margin-bottom: 20px;
 }
 
-/* Form Group */
-.personalinfosection-form-group {
+.personal-info-section .form-group {
   margin-bottom: 20px;
 }
 
-.personalinfosection-form-group.full-width {
-  grid-column: span 2;
-}
-
-.personalinfosection-form-group label {
+.personal-info-section .form-group label {
   display: block;
   margin-bottom: 6px;
   font-weight: 600;
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-family: var(--font);
+  color: #334155;
+  font-size: 14px;
 }
 
-.personalinfosection-form-group label.required::after {
+.personal-info-section .form-group label.required::after {
   content: " *";
-  color: var(--error);
+  color: #ef4444;
 }
 
-/* Input Fields */
-.personalinfosection-form-group input,
-.personalinfosection-form-group select,
-.personalinfosection-form-group textarea {
+.personal-info-section .form-group input,
+.personal-info-section .form-group select {
   width: 100%;
-  padding: 10px 14px;
-  border: 1.5px solid var(--border-light);
-  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
   font-size: 14px;
-  transition: all var(--transition-fast);
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  font-family: var(--font);
+  transition: all 0.2s ease;
+  background: white;
   box-sizing: border-box;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-.personalinfosection-form-group input:focus,
-.personalinfosection-form-group select:focus,
-.personalinfosection-form-group textarea:focus {
+.personal-info-section .form-group input:focus,
+.personal-info-section .form-group select:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.12);
+  border-color: #0891b2;
+  box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
 }
 
-.personalinfosection-form-group input::placeholder,
-.personalinfosection-form-group select::placeholder {
-  color: var(--text-muted);
-  font-size: 13px;
+.personal-info-section .form-group input[type="date"] {
+  padding: 9px 12px;
 }
 
-.personalinfosection-form-group input[type="date"] {
-  padding: 9px 14px;
-}
-
-/* Disabled Input */
-.personalinfosection-form-group input:disabled,
-.personalinfosection-form-group select:disabled {
-  background: var(--gray-50);
-  cursor: not-allowed;
-  color: var(--text-tertiary);
-  opacity: 0.6;
-}
-
-/* Auto-filled Field Styles */
-.personalinfosection-form-group input.input--autofilled,
-.personalinfosection-form-group select.input--autofilled {
-  background: var(--primary-pale);
-  border-color: var(--primary);
-}
-
-/* Auto-fill Tag */
-.personalinfosection-autofill-tag {
-  display: inline-block;
-  font-size: 9px;
-  font-weight: 600;
-  color: var(--primary);
-  background: var(--primary-pale);
-  border: 1px solid var(--border-primary);
-  padding: 1px 6px;
-  border-radius: var(--radius-full);
-  margin-left: 6px;
-  vertical-align: middle;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-/* Radio & Checkbox Groups */
-.radio-group,
-.checkbox-group {
+.personal-info-section .radio-group {
   display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
+  flex-direction: column;
+  gap: 12px;
   margin-top: 8px;
 }
 
-.radio-group label,
-.checkbox-group label {
+.personal-info-section .radio-group label {
   display: flex;
   align-items: center;
   gap: 8px;
   font-weight: normal;
   cursor: pointer;
   margin-bottom: 0;
-  font-size: 13px;
 }
 
-.radio-group input[type="radio"],
-.checkbox-group input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
+.personal-info-section .radio-group input[type="radio"] {
+  width: auto;
   margin: 0;
-  cursor: pointer;
-  accent-color: var(--primary);
+  accent-color: #0891b2;
 }
 
-/* Help Text */
-.help-text {
-  font-size: 11px;
-  color: var(--text-muted);
-  margin-top: 5px;
-}
-
-/* Error Message */
-.field-error {
-  color: var(--error);
-  font-size: 11px;
-  margin-top: 5px;
-}
-
-/* ============================================================
-   BIRTH INFORMATION SECTION
-============================================================ */
-.birth-info-section {
-  margin-top: 8px;
-}
-
-/* ============================================================
-   ADDRESS SECTION
-============================================================ */
-.address-section {
-  margin-top: 8px;
-}
-
-/* ============================================================
-   CONTACT DETAILS SECTION
-============================================================ */
-.contact-details-section {
-  margin-top: 8px;
-}
-
-/* ============================================================
-   LANGUAGE SECTION
-============================================================ */
-.language-section {
-  margin-top: 8px;
-}
-
-/* Language Item */
-.language-item {
-  background: var(--gray-50);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg);
-  padding: 20px;
-  margin-bottom: 16px;
-  transition: all var(--transition-fast);
-}
-
-.language-item:last-child {
-  margin-bottom: 0;
-}
-
-.language-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.language-header h4 {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-  font-family: var(--font);
-}
-
-.remove-language-btn {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 4px;
-  border-radius: var(--radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-}
-
-.remove-language-btn:hover {
-  color: var(--error);
-  background: var(--error-pale);
-}
-
-.add-language-btn {
-  background: none;
-  border: 1px dashed var(--border-medium);
-  color: var(--primary);
-  padding: 10px;
-  border-radius: var(--radius-md);
-  width: 100%;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  margin-top: 16px;
-  font-family: var(--font);
-}
-
-.add-language-btn:hover {
-  background: var(--primary-pale);
-  border-color: var(--primary);
-  transform: translateY(-1px);
-}
-
-/* Proficiency Group */
-.proficiency-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border-light);
-}
-
-.proficiency-group label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: normal;
-  font-size: 12px;
-  margin-bottom: 0;
-  cursor: pointer;
-}
-
-.proficiency-group input[type="checkbox"] {
-  width: 14px;
-  height: 14px;
-  margin: 0;
-  cursor: pointer;
-  accent-color: var(--primary);
-}
-
-/* ============================================================
-   RESPONSIVE DESIGN
-============================================================ */
-
-/* Tablet (≤ 1023px) */
+/* ── Tablet (≤ 1023px) ── */
 @media (max-width: 1023px) {
-  .personalinfosection-form-grid {
-    gap: 20px;
+  .personal-info-section {
+    margin: 20px 30px;
   }
-  
-  .personalinfosection-banner {
-    padding: 18px 20px;
+  .personal-info-section .form-content {
+    padding: 20px;
   }
 }
 
-/* Mobile (≤ 767px) */
+/* ── Mobile (≤ 767px) ── */
 @media (max-width: 767px) {
-  .personalinfosection h2 {
-    font-size: 20px;
+  .personal-info-section {
+    margin: 15px 16px;
+    border-radius: 6px;
   }
-  
-  .personalinfosection-form-grid {
+  .personal-info-section h2 {
+    padding: 16px 18px;
+    font-size: 18px;
+  }
+  .personal-info-section .section-status {
+    padding: 10px 18px;
+    font-size: 13px;
+  }
+  .personal-info-section .form-content {
+    padding: 18px;
+  }
+  .personal-info-section .form-grid {
     grid-template-columns: 1fr;
     gap: 0;
+    margin-bottom: 0;
   }
-  
-  .personalinfosection-form-group.full-width {
-    grid-column: span 1;
+  .personal-info-section .form-group {
+    margin-bottom: 16px;
   }
-  
-  .personalinfosection-form-group {
-    margin-bottom: 18px;
+  .document-banners-wrapper {
+    padding: 14px 18px 0;
   }
-  
-  .personalinfosection-banner {
-    flex-direction: column;
-    text-align: center;
-    padding: 20px;
-    gap: 14px;
+  .passport-banner {
+    flex-wrap: wrap;
+    gap: 10px;
   }
-  
-  .personalinfosection-banner__text {
-    text-align: center;
-  }
-  
-  .personalinfosection-banner__title {
-    justify-content: center;
-  }
-  
-  .personalinfosection-banner__cta {
+  .passport-banner__cta {
     width: 100%;
     text-align: center;
   }
-  
-  .personalinfosection-section-heading {
-    font-size: 14px;
-    margin: 24px 0 14px;
+  .autofill-save-status {
+    margin: 8px 18px 0;
   }
-  
-  .radio-group,
-  .checkbox-group {
-    flex-direction: column;
-    gap: 12px;
+}
+
+/* ── Small mobile (≤ 480px) ── */
+@media (max-width: 480px) {
+  .personal-info-section {
+    margin: 10px 12px;
   }
-  
-  .proficiency-group {
-    flex-direction: column;
+  .personal-info-section h2 {
+    padding: 14px 16px;
+    font-size: 17px;
+  }
+  .personal-info-section .section-status {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+  .personal-info-section .form-content {
+    padding: 14px;
+  }
+  .personal-info-section .form-group input,
+  .personal-info-section .form-group select {
+    padding: 9px 10px;
+    font-size: 13px;
+  }
+  .personal-info-section .form-group label {
+    font-size: 13px;
+  }
+  .personal-info-section .radio-group {
     gap: 10px;
   }
-}
-
-/* Small Mobile (≤ 480px) */
-@media (max-width: 480px) {
-  .personalinfosection h2 {
-    font-size: 18px;
-  }
-  
-  .personalinfosection-status {
-    font-size: 11px;
-    padding: 4px 12px;
-  }
-  
-  .personalinfosection-banner {
-    padding: 16px;
-  }
-  
-  .personalinfosection-banner__title {
+  .personal-info-section .radio-group label {
     font-size: 13px;
   }
-  
-  .personalinfosection-banner__sub {
-    font-size: 11px;
+  .document-banners-wrapper {
+    padding: 12px 14px 0;
   }
-  
-  .personalinfosection-banner__cta {
-    padding: 6px 16px;
+  .passport-banner__upload-icon {
+    display: none;
+  }
+  .autofill-save-status {
+    margin: 8px 14px 0;
     font-size: 12px;
-  }
-  
-  .personalinfosection-section-heading {
-    font-size: 13px;
-    margin: 20px 0 12px;
-  }
-  
-  .personalinfosection-form-group label {
-    font-size: 12px;
-  }
-  
-  .personalinfosection-form-group input,
-  .personalinfosection-form-group select {
-    padding: 9px 12px;
-    font-size: 13px;
-  }
-  
-  .language-item {
-    padding: 16px;
   }
 }
 
-/* Very Small (≤ 320px) */
+/* ── Very small (≤ 320px) ── */
 @media (max-width: 320px) {
-  .personalinfosection h2 {
-    font-size: 16px;
+  .personal-info-section {
+    margin: 8px 8px;
   }
-  
-  .personalinfosection-form-group input,
-  .personalinfosection-form-group select {
+  .personal-info-section h2 {
+    font-size: 15px;
+    padding: 12px 12px;
+  }
+  .personal-info-section .section-status {
+    padding: 7px 12px;
+    font-size: 11px;
+  }
+  .personal-info-section .form-content {
+    padding: 12px;
+  }
+  .personal-info-section .form-group {
+    margin-bottom: 12px;
+  }
+  .personal-info-section .form-group input,
+  .personal-info-section .form-group select {
     font-size: 12px;
     padding: 8px 10px;
   }
-}
-
-/* ============================================================
-   ANIMATIONS
-============================================================ */
-@keyframes personalinfosection-fadeIn {
-  from {
-    opacity: 0;
+  .personal-info-section .form-group label {
+    font-size: 12px;
   }
-  to {
-    opacity: 1;
+  .personal-info-section .radio-group label {
+    font-size: 12px;
   }
-}
-
-@keyframes personalinfosection-slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.language-item {
-  animation: personalinfosection-slideUp 0.3s ease;
-}
-
-.personalinfosection-banner {
-  animation: personalinfosection-fadeIn 0.3s ease;
-}
-
-/* ============================================================
-   PRINT STYLES
-============================================================ */
-@media print {
-  .personalinfosection {
-    background: white;
-  }
-  
-  .personalinfosection-document-banners,
-  .personalinfosection-skip-link,
-  .personalinfosection-save-status,
-  .personalinfosection-banner__cta,
-  .personalinfosection-banner__dismiss,
-  .personalinfosection-banner__retry,
-  .add-language-btn,
-  .remove-language-btn {
-    display: none;
-  }
-  
-  .personalinfosection-banner {
-    display: none;
-  }
-  
-  .personalinfosection-form-group input,
-  .personalinfosection-form-group select {
-    border: 1px solid var(--border-light);
-    background: white;
-  }
-  
-  .language-item {
-    break-inside: avoid;
-  }
-}
-
-/* ============================================================
-   UTILITY CLASSES
-============================================================ */
-.text-center {
-  text-align: center;
-}
-
-.mt-2 {
-  margin-top: 8px;
-}
-
-.mb-2 {
-  margin-bottom: 8px;
-}
-
-.p-relative {
-  position: relative;
-}
-
-/* Focus Visible for Accessibility */
-.personalinfosection-form-group input:focus-visible,
-.personalinfosection-form-group select:focus-visible,
-.personalinfosection-banner:focus-visible,
-.add-language-btn:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
 }
 
 /* ============================================================

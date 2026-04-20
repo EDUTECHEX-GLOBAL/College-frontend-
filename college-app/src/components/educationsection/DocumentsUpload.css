@@ -320,7 +320,7 @@
   100% { transform: rotate(360deg); }
 }
 
-.progress-bar {
+.document-progress-bar {
   width: 100%;
   max-width: 200px;
   height: 8px;

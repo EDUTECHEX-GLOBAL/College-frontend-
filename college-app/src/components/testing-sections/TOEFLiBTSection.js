@@ -9,7 +9,10 @@ const TOEFLiBTSection = ({
   clearRelatedFields
 }) => {
   const [showScoreForm, setShowScoreForm] = useState(false);
-  const [isFormValid, setIsFormValid] = useState(false);
+  const [selectedYear, setSelectedYear] = useState(null);
+  const [selectedMonth, setSelectedMonth] = useState(null);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [currentDateField, setCurrentDateField] = useState(null);
 
   // Determine if we should show score form based on past tests
   useEffect(() => {
@@ -17,328 +20,304 @@ const TOEFLiBTSection = ({
     setShowScoreForm(pastTests > 0);
   }, [formData.toeflPastTests]);
 
-  // Validate form completion
-  useEffect(() => {
-    const hasPastTests = formData.toeflPastTests !== undefined && 
-                         formData.toeflPastTests !== '' && 
-                         formData.toeflPastTests !== null;
-    const hasFutureSittings = formData.toeflFutureSittings !== undefined && 
-                              formData.toeflFutureSittings !== '' && 
-                              formData.toeflFutureSittings !== null;
-    
-    let scoresValid = true;
-    
-    if (showScoreForm && parseInt(formData.toeflPastTests || '0') > 0) {
-      // Check if all required score fields are filled
-      const requiredFields = [
-        'toeflHighestReadingScore', 'toeflReadingScoreDate',
-        'toeflHighestSpeakingScore', 'toeflSpeakingScoreDate',
-        'toeflHighestListeningScore', 'toeflListeningScoreDate',
-        'toeflHighestWritingScore', 'toeflWritingScoreDate',
-        'toeflHighestTotalScore', 'toeflTotalScoreDate'
-      ];
-      
-      scoresValid = requiredFields.every(field => 
-        formData[field] && formData[field].toString().trim() !== ''
-      );
+  // Score options 0-30 for individual sections
+  const sectionScoreOptions = Array.from({ length: 31 }, (_, i) => i);
+  
+  // Total score options 0-120
+  const totalScoreOptions = Array.from({ length: 121 }, (_, i) => i);
+
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  // Generate years from 1990 to 2026
+  const generateYears = () => {
+    const years = [];
+    for (let year = 1990; year <= 2026; year++) {
+      years.push(year);
     }
-    
-    setIsFormValid(hasPastTests && hasFutureSittings && (showScoreForm ? scoresValid : true));
-  }, [formData, showScoreForm]);
+    return years;
+  };
 
-  // Score options 0-30
-  const scoreOptions = Array.from({ length: 31 }, (_, i) => i);
-
+  // Handle clearing past TOEFL tests and related fields
   const handleClearPastTests = () => {
     if (clearRelatedFields) {
       clearRelatedFields('toeflPastTests', [
-        'toeflHighestReadingScore', 'toeflReadingScoreDate',
-        'toeflHighestSpeakingScore', 'toeflSpeakingScoreDate',
-        'toeflHighestListeningScore', 'toeflListeningScoreDate',
-        'toeflHighestWritingScore', 'toeflWritingScoreDate',
-        'toeflHighestTotalScore', 'toeflTotalScoreDate'
+        'toeflTestDate',
+        'toeflReadingScore',
+        'toeflListeningScore',
+        'toeflSpeakingScore',
+        'toeflWritingScore',
+        'toeflTotalScore'
       ]);
     } else if (clearAnswer) {
       clearAnswer('toeflPastTests');
     }
   };
 
-  const handleClearFutureSittings = () => {
-    if (clearAnswer) {
-      clearAnswer('toeflFutureSittings');
+  // Handle year selection for date picker
+  const handleYearSelect = (field, year) => {
+    setSelectedYear(year);
+    setCurrentDateField(field);
+    setShowCalendar(true);
+  };
+
+  // Handle month selection for date picker
+  const handleMonthSelect = (month) => {
+    setSelectedMonth(month);
+  };
+
+  // Confirm date selection
+  const handleConfirmDate = () => {
+    if (selectedMonth && selectedYear && currentDateField) {
+      const fullDate = `${selectedMonth} ${selectedYear}`;
+      const event = {
+        target: {
+          name: currentDateField,
+          value: fullDate
+        }
+      };
+      handleInputChange(event);
+      setShowCalendar(false);
+      setSelectedYear(null);
+      setSelectedMonth(null);
+      setCurrentDateField(null);
     }
   };
 
-  const handleClearScoreField = (fieldName) => {
-    if (clearAnswer) {
-      clearAnswer(fieldName);
-    }
-  };
+  // Close calendar when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showCalendar && !event.target.closest('.toefl-calendar-container')) {
+        setShowCalendar(false);
+        setSelectedYear(null);
+        setSelectedMonth(null);
+        setCurrentDateField(null);
+      }
+    };
 
-  const handleClearAllScores = () => {
-    if (clearRelatedFields) {
-      clearRelatedFields('toeflPastTests', [
-        'toeflHighestReadingScore', 'toeflReadingScoreDate',
-        'toeflHighestSpeakingScore', 'toeflSpeakingScoreDate',
-        'toeflHighestListeningScore', 'toeflListeningScoreDate',
-        'toeflHighestWritingScore', 'toeflWritingScoreDate',
-        'toeflHighestTotalScore', 'toeflTotalScoreDate'
-      ]);
-    }
-  };
-
-  // Check if any score exists
-  const hasAnyScore = () => {
-    const scoreFields = [
-      'toeflHighestReadingScore', 'toeflHighestSpeakingScore',
-      'toeflHighestListeningScore', 'toeflHighestWritingScore',
-      'toeflHighestTotalScore'
-    ];
-    return scoreFields.some(field => formData[field] && formData[field].toString().trim() !== '');
-  };
-
-  // Reusable score row component
-  const ScoreRow = ({ scoreLabel, scoreName, dateName }) => {
-    const scoreValue = formData[scoreName] || '';
-    const dateValue = formData[dateName] || '';
-
-    return (
-      <div className="form-row">
-        <div className="form-field">
-          <p className="question-text required">{scoreLabel}</p>
-          <div className="select-container">
-            <select
-              name={scoreName}
-              value={scoreValue}
-              onChange={handleInputChange}
-              className="score-dropdown"
-            >
-              <option value="">Choose an option</option>
-              {scoreOptions.map(score => (
-                <option key={score} value={score}>{score}</option>
-              ))}
-            </select>
-            {scoreValue && (
-              <button 
-                type="button" 
-                className="clear-field-btn"
-                onClick={() => handleClearScoreField(scoreName)}
-                aria-label="Clear score"
-              >
-                ×
-              </button>
-            )}
-          </div>
-        </div>
-        <div className="form-field">
-          <p className="question-text required">
-            {scoreLabel.replace('Highest ', '').replace(' score', '')} score date
-          </p>
-          <div className="date-input-container">
-            <input
-              type="date"
-              name={dateName}
-              value={dateValue}
-              onChange={handleInputChange}
-              className="date-input"
-            />
-            {dateValue && (
-              <button 
-                type="button" 
-                className="clear-field-btn"
-                onClick={() => handleClearScoreField(dateName)}
-                aria-label="Clear date"
-              >
-                ×
-              </button>
-            )}
-          </div>
-          <div className="form-helper">
-            Format: month day, year (e.g. August 1, 2002)
-          </div>
-        </div>
-      </div>
-    );
-  };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showCalendar]);
 
   const hasPastTestsValue = formData.toeflPastTests !== undefined && 
                             formData.toeflPastTests !== '' && 
                             formData.toeflPastTests !== null;
-  
-  const hasFutureSittingsValue = formData.toeflFutureSittings !== undefined && 
-                                 formData.toeflFutureSittings !== '' && 
-                                 formData.toeflFutureSittings !== null;
 
   return (
-    <div className="toefl-section">
-      <div className="section-header">
-        <h2>TOEFL iBT</h2>
-        <div className={`section-status ${isFormValid ? 'complete' : 'in-progress'}`}>
-          <span className="status-indicator"></span>
-          {isFormValid ? 'Complete' : 'In Progress'}
+    <div className="toefl-container">
+      <div className="toefl-card">
+        <div className="toefl-card-header">
+          <h2 className="toefl-card-title">TOEFL iBT</h2>
+          <div className="toefl-status-badge">
+            {hasPastTestsValue ? 'Complete' : 'In Progress'}
+          </div>
         </div>
-      </div>
 
-      <div className="form-content">
-        {/* Number of Past TOEFL iBT Tests */}
-        <div className="form-group">
-          <p className="question-text required">
-            Number of times you have already taken the TOEFL iBT
-          </p>
-          <div className="radio-group-vertical">
-            {[0, 1, 2, 3, 4, 5].map(num => (
-              <label key={num} className="radio-option">
+        <div className="toefl-form-content">
+          {/* Have you taken the TOEFL iBT? */}
+          <div className="toefl-form-group">
+            <label className="toefl-question-label required">
+              Have you taken the TOEFL iBT?*
+            </label>
+            <div className="toefl-radio-group-vertical">
+              <label className="toefl-radio-option">
                 <input
                   type="radio"
                   name="toeflPastTests"
-                  value={num.toString()}
-                  checked={formData.toeflPastTests === num.toString()}
+                  value="1"
+                  checked={formData.toeflPastTests === '1'}
                   onChange={handleInputChange}
                 />
-                <span className="radio-checkmark"></span>
-                <span className="radio-label">{num}</span>
+                <span>Yes</span>
               </label>
-            ))}
-          </div>
-          {hasPastTestsValue && (
-            <div className="clear-link-container">
-              <button
-                type="button"
-                className="clear-link"
+              <label className="toefl-radio-option">
+                <input
+                  type="radio"
+                  name="toeflPastTests"
+                  value="0"
+                  checked={formData.toeflPastTests === '0'}
+                  onChange={handleInputChange}
+                />
+                <span>No</span>
+              </label>
+            </div>
+            {hasPastTestsValue && (
+              <button 
+                type="button" 
+                className="toefl-clear-link"
                 onClick={handleClearPastTests}
               >
                 Clear answer
               </button>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
 
-        {/* Number of Future TOEFL iBT Sittings */}
-        <div className="form-group">
-          <p className="question-text required">
-            Number of future TOEFL iBT sittings you expect
-          </p>
-          <div className="radio-group-vertical">
-            {[0, 1, 2, 3].map(num => (
-              <label key={num} className="radio-option">
-                <input
-                  type="radio"
-                  name="toeflFutureSittings"
-                  value={num.toString()}
-                  checked={formData.toeflFutureSittings === num.toString()}
+          {/* Score Form - Only show if past tests = Yes */}
+          {showScoreForm && (
+            <div className="toefl-detailed-fields">
+              {/* Test Date */}
+              <div className="toefl-form-group">
+                <label className="toefl-question-label required">Test Date*</label>
+                <div className="toefl-input-container">
+                  {!formData.toeflTestDate ? (
+                    <select
+                      value={selectedYear || ''}
+                      onChange={(e) => handleYearSelect('toeflTestDate', e.target.value)}
+                      className="toefl-select"
+                    >
+                      <option value="">- Select Year -</option>
+                      {generateYears().map(year => (
+                        <option key={year} value={year}>{year}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="toefl-selected-date">
+                      {formData.toeflTestDate}
+                      <button
+                        type="button"
+                        className="toefl-change-date"
+                        onClick={() => {
+                          const event = { target: { name: 'toeflTestDate', value: '' } };
+                          handleInputChange(event);
+                        }}
+                      >
+                        Change
+                      </button>
+                    </div>
+                  )}
+                  <div className="toefl-field-note">Date uses "month year" format (e.g., August 2020)</div>
+                </div>
+
+                {/* Calendar Popup */}
+                {showCalendar && currentDateField === 'toeflTestDate' && (
+                  <div className="toefl-calendar-container">
+                    <div className="toefl-calendar-header">
+                      Select Month for {selectedYear}
+                    </div>
+                    <div className="toefl-calendar-grid">
+                      {months.map(month => (
+                        <button
+                          key={month}
+                          type="button"
+                          className={`toefl-calendar-month ${selectedMonth === month ? 'selected' : ''}`}
+                          onClick={() => handleMonthSelect(month)}
+                        >
+                          {month}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="toefl-calendar-actions">
+                      <button
+                        type="button"
+                        className="toefl-calendar-confirm"
+                        onClick={handleConfirmDate}
+                        disabled={!selectedMonth || !selectedYear}
+                      >
+                        Confirm
+                      </button>
+                      <button
+                        type="button"
+                        className="toefl-calendar-cancel"
+                        onClick={() => {
+                          setShowCalendar(false);
+                          setSelectedYear(null);
+                          setSelectedMonth(null);
+                          setCurrentDateField(null);
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Reading Score */}
+              <div className="toefl-form-group">
+                <label className="toefl-question-label">Reading Score (0-30)</label>
+                <select 
+                  name="toeflReadingScore"
+                  value={formData.toeflReadingScore || ''}
                   onChange={handleInputChange}
-                />
-                <span className="radio-checkmark"></span>
-                <span className="radio-label">{num}</span>
-              </label>
-            ))}
-          </div>
-          {hasFutureSittingsValue && (
-            <div className="clear-link-container">
-              <button
-                type="button"
-                className="clear-link"
-                onClick={handleClearFutureSittings}
-              >
-                Clear answer
-              </button>
+                  className="toefl-select"
+                >
+                  <option value="">Choose an option</option>
+                  {sectionScoreOptions.map(score => (
+                    <option key={score} value={score}>{score}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Listening Score */}
+              <div className="toefl-form-group">
+                <label className="toefl-question-label">Listening Score (0-30)</label>
+                <select 
+                  name="toeflListeningScore"
+                  value={formData.toeflListeningScore || ''}
+                  onChange={handleInputChange}
+                  className="toefl-select"
+                >
+                  <option value="">Choose an option</option>
+                  {sectionScoreOptions.map(score => (
+                    <option key={score} value={score}>{score}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Speaking Score */}
+              <div className="toefl-form-group">
+                <label className="toefl-question-label">Speaking Score (0-30)</label>
+                <select 
+                  name="toeflSpeakingScore"
+                  value={formData.toeflSpeakingScore || ''}
+                  onChange={handleInputChange}
+                  className="toefl-select"
+                >
+                  <option value="">Choose an option</option>
+                  {sectionScoreOptions.map(score => (
+                    <option key={score} value={score}>{score}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Writing Score */}
+              <div className="toefl-form-group">
+                <label className="toefl-question-label">Writing Score (0-30)</label>
+                <select 
+                  name="toeflWritingScore"
+                  value={formData.toeflWritingScore || ''}
+                  onChange={handleInputChange}
+                  className="toefl-select"
+                >
+                  <option value="">Choose an option</option>
+                  {sectionScoreOptions.map(score => (
+                    <option key={score} value={score}>{score}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Total Score */}
+              <div className="toefl-form-group">
+                <label className="toefl-question-label">Total Score (0-120)</label>
+                <select 
+                  name="toeflTotalScore"
+                  value={formData.toeflTotalScore || ''}
+                  onChange={handleInputChange}
+                  className="toefl-select"
+                >
+                  <option value="">Choose an option</option>
+                  {totalScoreOptions.map(score => (
+                    <option key={score} value={score}>{score}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           )}
         </div>
-
-        {/* Score Form - only if past tests > 0 */}
-        {showScoreForm && (
-          <div className="detailed-fields">
-            <div className="detailed-header">
-              <h3>TOEFL iBT Scores</h3>
-              {hasAnyScore() && (
-                <button 
-                  type="button" 
-                  className="clear-all-link"
-                  onClick={handleClearAllScores}
-                >
-                  Clear all scores
-                </button>
-              )}
-            </div>
-
-            <ScoreRow
-              scoreLabel="Highest reading score"
-              scoreName="toeflHighestReadingScore"
-              dateName="toeflReadingScoreDate"
-            />
-            <ScoreRow
-              scoreLabel="Highest speaking score"
-              scoreName="toeflHighestSpeakingScore"
-              dateName="toeflSpeakingScoreDate"
-            />
-            <ScoreRow
-              scoreLabel="Highest listening score"
-              scoreName="toeflHighestListeningScore"
-              dateName="toeflListeningScoreDate"
-            />
-            <ScoreRow
-              scoreLabel="Highest writing score"
-              scoreName="toeflHighestWritingScore"
-              dateName="toeflWritingScoreDate"
-            />
-
-            {/* Total Score */}
-            <div className="form-row total-score-row">
-              <div className="form-field">
-                <p className="question-text required">Highest TOEFL iBT total score</p>
-                <div className="total-score-container">
-                  <input
-                    type="number"
-                    name="toeflHighestTotalScore"
-                    value={formData.toeflHighestTotalScore || ''}
-                    onChange={handleInputChange}
-                    className="total-score-input"
-                    min="0"
-                    max="120"
-                    placeholder="0–120"
-                    inputMode="numeric"
-                  />
-                  {formData.toeflHighestTotalScore && (
-                    <button 
-                      type="button" 
-                      className="clear-field-btn"
-                      onClick={() => handleClearScoreField('toeflHighestTotalScore')}
-                      aria-label="Clear total score"
-                    >
-                      ×
-                    </button>
-                  )}
-                </div>
-              </div>
-              <div className="form-field">
-                <p className="question-text required">TOEFL iBT total score date</p>
-                <div className="date-input-container">
-                  <input
-                    type="date"
-                    name="toeflTotalScoreDate"
-                    value={formData.toeflTotalScoreDate || ''}
-                    onChange={handleInputChange}
-                    className="date-input"
-                  />
-                  {formData.toeflTotalScoreDate && (
-                    <button 
-                      type="button" 
-                      className="clear-field-btn"
-                      onClick={() => handleClearScoreField('toeflTotalScoreDate')}
-                      aria-label="Clear date"
-                    >
-                      ×
-                    </button>
-                  )}
-                </div>
-                <div className="form-helper">
-                  Format: month day, year (e.g. August 1, 2002)
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

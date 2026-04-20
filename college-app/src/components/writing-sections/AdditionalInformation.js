@@ -138,7 +138,7 @@ const AdditionalInformation = () => {
     }
   };
 
-  /* ── reusable text editor block ──────────────────────────── */
+  /* text editor block */
   const TextEditor = ({ value, onChange, placeholder, rows, wordCount, maxWords, label }) => (
     <div className="editor-container">
       <div className="editor-header">
@@ -163,7 +163,7 @@ const AdditionalInformation = () => {
           <button className="toolbar-btn" title="Bold"        disabled={loading}>B</button>
           <button className="toolbar-btn" title="Italic"      disabled={loading}>I</button>
           <button className="toolbar-btn" title="Underline"   disabled={loading}>U</button>
-          <button className="toolbar-btn" title="Bullet List" disabled={loading}>•</button>
+          <button className="toolbar-btn" title="Bullet List" disabled={loading}>*</button>
         </div>
         <div className="toolbar-hint">
           Press Alt/Opt+F10 to navigate to the toolbar, or Alt/Opt+O for a list of keyboard shortcuts.
@@ -172,7 +172,7 @@ const AdditionalInformation = () => {
     </div>
   );
 
-  /* ── reusable Yes/No radio group ─────────────────────────── */
+  /* Yes/No radio group */
   const YesNoGroup = ({ name, value, onChange, onClear }) => (
     <>
       <div className="radio-group">
@@ -220,7 +220,7 @@ const AdditionalInformation = () => {
         <div className="college-requirements">
           <div className="requirements-summary">
             <div className="requirement-item">
-              <span className="requirement-label">Courses &amp; Grades:</span>
+              <span className="requirement-label">Courses and Grades:</span>
               <span className="requirement-value">0 college(s) require</span>
             </div>
           </div>
@@ -228,7 +228,7 @@ const AdditionalInformation = () => {
 
         {/* Circumstances Section */}
         <div className="circumstances-section">
-          <h3>Circumstances you've experienced</h3>
+          <h3>Circumstances you have experienced</h3>
 
           <div className="circumstances-list">
             <p>Sometimes a student's application and achievements may be impacted by challenges or other
@@ -237,14 +237,14 @@ const AdditionalInformation = () => {
               {circumstancesList.map((item, i) => <li key={i}>{item}</li>)}
             </ul>
             <p>
-              If you're comfortable sharing, this information can help colleges better understand the context
+              If you are comfortable sharing, this information can help colleges better understand the context
               of your application. Colleges may use this information to provide you and your fellow students
               with support and resources.
             </p>
           </div>
 
           <div className="question-section">
-            <p><strong>Would you like to share any details about challenges or other circumstances you've experienced?*</strong></p>
+            <p><strong>Would you like to share any details about challenges or other circumstances you have experienced?*</strong></p>
             <YesNoGroup
               name="circumstances"
               value={shareCircumstances}
