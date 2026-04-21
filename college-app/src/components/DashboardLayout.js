@@ -65,7 +65,7 @@ const DashboardLayout = ({
       let totalSections = 0;
       let completedSections = 0;
       
-      const sections = ['personal', 'contact', 'course', 'academic', 'tests', 'documents', 'declaration'];
+      const sections = ['personal', 'contact', 'course', 'academic', 'tests', 'documents', ];
       
       sections.forEach(section => {
         totalSections++;
@@ -163,14 +163,18 @@ const DashboardLayout = ({
     return 'CAID Loading...';
   };
 
-  const handleSignOut = () => {
+const handleSignOut = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('userData');
     localStorage.removeItem('gusApplicationData');
     localStorage.removeItem('masterApplicationData');
     localStorage.removeItem('selectedCourseForApplication');
     localStorage.removeItem('currentSelectedCourse');
-    navigate('/');
+    localStorage.removeItem('profileCompleted');   // ← also clear this
+    localStorage.removeItem('userProfile');        // ← and this
+    localStorage.removeItem('studentType');        // ← and this
+    localStorage.removeItem('userEmail');          // ← and this
+    navigate('/sign-in');  // ← change to your signin route
   };
 
   const toggleSection = (section) => {
@@ -403,7 +407,7 @@ const DashboardLayout = ({
         { id: 'academic',    label: 'Academic History' },
         { id: 'tests',       label: 'Test Scores' },
         { id: 'documents',   label: 'Documents' },
-        { id: 'declaration', label: 'Declaration' },
+       
         { id: 'preview',     label: 'Preview & Submit' },
       ];
 
@@ -412,7 +416,7 @@ const DashboardLayout = ({
           const masterData = JSON.parse(localStorage.getItem('masterApplicationData') || '{}');
           const section = masterData[stepId];
           if (stepId === 'tests' || stepId === 'documents') return '✓';
-          if (stepId === 'declaration') return masterData.declaration ? '✓' : '';
+          
           if (stepId === 'preview') return '';
           if (!section) return '';
           if (section._isValid === true) return '✓';
@@ -650,7 +654,7 @@ const DashboardLayout = ({
                 { id: 'academic',    label: 'Academic History' },
                 { id: 'tests',       label: 'Test Scores' },
                 { id: 'documents',   label: 'Documents' },
-                { id: 'declaration', label: 'Declaration' },
+                
                 { id: 'preview',     label: 'Preview & Submit' },
               ].map((step, index) => (
                 <SubItem

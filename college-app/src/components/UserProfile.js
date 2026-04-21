@@ -748,30 +748,37 @@ const UserProfile = () => {
     setTimeout(() => setToast({ show:false,message:'',type:'success' }), 4000);
   }, []);
 
-  useEffect(() => {
-    const load = async () => {
-      if (!token) { setFetchingProfile(false); return; }
-      try {
-        const res = await axios.get(`${API_URL}/api/user/profile`, { headers:{ Authorization:`Bearer ${token}` } });
-        if (res.data.success && res.data.data) {
-          const p = res.data.data;
-          setBasicInfo(p.basicInfo||{fullName:"",email:userEmail,mobile:"",dob:"",gender:"",nationality:"",residence:""});
-          setEducation(p.education||{qualification:"",institution:"",field:"",year:"",cgpa:""});
-          setEligibleProgram(p.eligibleProgram||"");
-          setSelectedUniversities(p.selectedUniversities?.length>0?p.selectedUniversities:[]);
-          if (p.profileImage) setImagePreview(p.profileImage);
-        }
-      } catch (e) {
-        if (e.response?.status !== 404) setError(`Server error: ${e.response?.status}`);
-      } finally { setFetchingProfile(false); }
-    };
-    load();
-  }, [token, userEmail]);
+ useEffect(() => {
+  const load = async () => {
+    if (!token) { setFetchingProfile(false); return; }
+    try {
+      const res = await axios.get(`${API_URL}/api/user/profile`, { headers:{ Authorization:`Bearer ${token}` } });
+      if (res.data.success && res.data.data) {
+        const p = res.data.data;
 
-  useEffect(() => {
-    if (localStorage.getItem('profileCompleted')==='true' && !fetchingProfile && selectedUniversities.length>0)
-      navigateToDashboard();
-  }, [fetchingProfile, selectedUniversities]);
+        setBasicInfo(p.basicInfo||{fullName:"",email:userEmail,mobile:"",dob:"",gender:"",nationality:"",residence:""});
+        setEducation(p.education||{qualification:"",institution:"",field:"",year:"",cgpa:""});
+        setEligibleProgram(p.eligibleProgram||"");
+        setSelectedUniversities(p.selectedUniversities?.length>0?p.selectedUniversities:[]);
+        if (p.profileImage) setImagePreview(p.profileImage);
+
+       if (p.profileCompleted === true && p.selectedUniversities?.length > 0) {
+  console.log("Server says profile completed - going to dashboard");
+  localStorage.setItem('profileCompleted', 'true');
+  localStorage.setItem('userProfile', JSON.stringify(p));
+  const type = localStorage.getItem('studentType') || 'firstyear';
+  navigate(type === 'transfer' ? '/transfer/dashboard' : '/firstyear/dashboard');
+  return;
+}
+      }
+    } catch (e) {
+      if (e.response?.status !== 404) setError(`Server error: ${e.response?.status}`);
+    } finally { setFetchingProfile(false); }
+  };
+  load();
+},  [token, userEmail, navigate]);
+
+ 
 
   useEffect(() => { fetchUniversities(); }, []);
 

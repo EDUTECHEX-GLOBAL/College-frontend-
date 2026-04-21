@@ -10,11 +10,9 @@ const SignIn = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // State for password visibility
   const [showPassword, setShowPassword] = useState(false);
   const [showTransferPassword, setShowTransferPassword] = useState(false);
 
-  // Reset state handler
   const handleResetState = () => {
     setShowStudentOptions(false);
     setStudentType(null);
@@ -23,17 +21,14 @@ const SignIn = () => {
     setShowTransferPassword(false);
   };
 
-  // Toggle password visibility for first-year students
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
-  // Toggle password visibility for transfer students
   const toggleTransferPasswordVisibility = () => {
     setShowTransferPassword(!showTransferPassword);
   };
 
-  // Check localStorage on component mount
   useEffect(() => {
     console.log("Current localStorage on SignIn page:");
     console.log("profileCompleted:", localStorage.getItem('profileCompleted'));
@@ -41,27 +36,23 @@ const SignIn = () => {
     console.log("token:", localStorage.getItem('token') ? "Present" : "Missing");
   }, []);
 
-  // Check if user has completed profile
   const hasCompletedProfile = () => {
     const profileCompleted = localStorage.getItem('profileCompleted');
     const userProfile = localStorage.getItem('userProfile');
-    const token = localStorage.getItem('token');
-    
+
     console.log("hasCompletedProfile check:");
     console.log("  profileCompleted:", profileCompleted);
     console.log("  userProfile exists:", !!userProfile);
-    console.log("  token exists:", !!token);
-    
-    if (profileCompleted === 'true' && userProfile && token) {
+
+    if (profileCompleted === 'true' && userProfile) {
       console.log("  Profile is completed");
       return true;
     }
-    
+
     console.log("  Profile not completed");
     return false;
   };
 
-  // Clear all user data on logout
   const clearUserData = () => {
     localStorage.removeItem('profileCompleted');
     localStorage.removeItem('userProfile');
@@ -102,18 +93,28 @@ const SignIn = () => {
       if (response.data.success && response.data.token) {
         console.log("Token received");
 
-        clearUserData();
-
+        // Step 1: Set new token and user data FIRST
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("userData", JSON.stringify(response.data.user));
         localStorage.setItem("studentType", "firstyear");
         localStorage.setItem("userEmail", email);
 
-        console.log("New user data stored");
+        // Step 2: NOW check if profile is completed (profileCompleted still exists)
+        if (hasCompletedProfile()) {
+          console.log("Profile already completed - Redirecting to dashboard");
+          navigate("/firstyear/dashboard");
+        } else {
+          // Step 3: Only clear if going to profile (new/incomplete student)
+          console.log("Profile not completed - Redirecting to profile");
+          clearUserData();
+          // Re-set essentials after clearing
+          localStorage.setItem("token", response.data.token);
+          localStorage.setItem("userData", JSON.stringify(response.data.user));
+          localStorage.setItem("studentType", "firstyear");
+          localStorage.setItem("userEmail", email);
+          navigate("/profile");
+        }
 
-        console.log("First login - Redirecting to profile completion");
-        navigate("/profile");
-        
       } else {
         console.error("Response missing success or token");
         setError(response.data.message || "Sign in failed. Please try again.");
@@ -160,18 +161,29 @@ const SignIn = () => {
       console.log("Response data:", response.data);
 
       if (response.data.success && response.data.token) {
-        clearUserData();
 
+        // Step 1: Set new token and user data FIRST
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("userData", JSON.stringify(response.data.user));
         localStorage.setItem("studentType", "transfer");
         localStorage.setItem("userEmail", username);
 
-        const hasCompletedExtendedProfile = response.data.user?.hasCompletedExtendedProfile;
+        // Step 2: NOW check if profile is completed (profileCompleted still exists)
+        if (hasCompletedProfile()) {
+          console.log("Profile already completed - Redirecting to dashboard");
+          navigate("/transfer/dashboard");
+        } else {
+          // Step 3: Only clear if going to profile (new/incomplete student)
+          console.log("Profile not completed - Redirecting to profile");
+          clearUserData();
+          // Re-set essentials after clearing
+          localStorage.setItem("token", response.data.token);
+          localStorage.setItem("userData", JSON.stringify(response.data.user));
+          localStorage.setItem("studentType", "transfer");
+          localStorage.setItem("userEmail", username);
+          navigate("/profile");
+        }
 
-        console.log("First login - Redirecting to profile completion");
-        navigate("/profile");
-        
       } else {
         setError(response.data.message || "Sign in failed. Please try again.");
       }
@@ -193,14 +205,12 @@ const SignIn = () => {
     }
   };
 
-  // Handle keyboard navigation for back link
   const handleBackKeyPress = (e) => {
     if (e.key === "Enter" || e.key === " ") {
       handleResetState();
     }
   };
 
-  // Handle keyboard navigation for create account link
   const handleCreateAccountKeyPress = (e) => {
     if (e.key === "Enter" || e.key === " ") {
       navigate("/create-account");

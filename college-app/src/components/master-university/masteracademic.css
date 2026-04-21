@@ -1,7 +1,8 @@
-/* masteracademic.css - Academic Section Styles - Plalite Colour Scheme */
+/* masteracademic.css - Academic Section Styles - Palite Colour Scheme */
 
 .masteracademic-form {
   width: 100%;
+  box-sizing: border-box;
 }
 
 .masteracademic-header {
@@ -22,7 +23,7 @@
   margin: 0;
 }
 
-/* Academic Entry Card */
+/* ── Academic Entry Card ─────────────────────────────────── */
 .masteracademic-entry {
   background: #ffffff;
   border: 1px solid #e2e8f0;
@@ -30,6 +31,9 @@
   padding: 24px;
   margin-bottom: 24px;
   transition: all 0.3s ease;
+  box-sizing: border-box;
+  width: 100%;
+  overflow: hidden;
 }
 
 .masteracademic-entry:hover {
@@ -64,6 +68,8 @@
   border-radius: 8px;
   transition: all 0.2s ease;
   font-family: 'Plus Jakarta Sans', sans-serif;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .masteracademic-remove-btn:hover {
@@ -71,17 +77,22 @@
   color: #dc2626;
 }
 
-/* Form Grid Layout */
+/* ── Form Grid Layout ────────────────────────────────────── */
 .masteracademic-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .masteracademic-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0; /* prevents grid blowout */
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .masteracademic-label {
@@ -94,8 +105,11 @@
   color: #ef4444;
 }
 
+/* ── Inputs & Selects ────────────────────────────────────── */
 .masteracademic-input,
 .masteracademic-select {
+  width: 100%;
+  box-sizing: border-box;
   padding: 10px 14px;
   border: 1.5px solid #e2e8f0;
   border-radius: 10px;
@@ -104,6 +118,20 @@
   background: white;
   color: #0f172a;
   font-family: 'Plus Jakarta Sans', sans-serif;
+
+  /* Mobile: prevent zoom on focus (iOS) */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Custom dropdown arrow for select */
+.masteracademic-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+  cursor: pointer;
 }
 
 .masteracademic-input:focus,
@@ -116,20 +144,21 @@
 .masteracademic-input.error,
 .masteracademic-select.error {
   border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08);
 }
 
 .masteracademic-input::placeholder {
   color: #94a3b8;
 }
 
-/* Error Text */
+/* ── Error Text ──────────────────────────────────────────── */
 .masteracademic-error-text {
   font-size: 11px;
   color: #ef4444;
   margin-top: 2px;
 }
 
-/* Add Button */
+/* ── Add Button ──────────────────────────────────────────── */
 .masteracademic-add-btn {
   width: 100%;
   background: linear-gradient(135deg, #0891b2, #0e7490);
@@ -143,6 +172,7 @@
   transition: all 0.3s ease;
   margin-top: 8px;
   font-family: 'Plus Jakarta Sans', sans-serif;
+  box-sizing: border-box;
 }
 
 .masteracademic-add-btn:hover {
@@ -151,71 +181,7 @@
   box-shadow: 0 6px 16px rgba(8, 145, 178, 0.35);
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .masteracademic-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-  
-  .masteracademic-entry {
-    padding: 18px;
-  }
-  
-  .masteracademic-entry-header {
-    flex-direction: column;
-    gap: 12px;
-    align-items: flex-start;
-  }
-  
-  .masteracademic-title {
-    font-size: 20px;
-  }
-}
-
-@media (max-width: 480px) {
-  .masteracademic-entry {
-    padding: 14px;
-  }
-  
-  .masteracademic-input,
-  .masteracademic-select {
-    padding: 8px 12px;
-    font-size: 13px;
-  }
-  
-  .masteracademic-label {
-    font-size: 12px;
-  }
-  
-  .masteracademic-add-btn {
-    padding: 12px 16px;
-    font-size: 13px;
-  }
-  
-  .masteracademic-title {
-    font-size: 18px;
-  }
-  
-  .masteracademic-subtitle {
-    font-size: 12px;
-  }
-}
-
-/* ============================================================
-   ACCESSIBILITY - REDUCED MOTION
-============================================================ */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-/* ── Save status indicator — append these to your existing masteracademic.css ── */
-
+/* ── Save Status ─────────────────────────────────────────── */
 .masteracademic-save-status {
   display: inline-flex;
   align-items: center;
@@ -238,4 +204,110 @@
   background: #fef2f2;
   color: #dc2626;
   border: 1px solid #fecaca;
+}
+
+/* ── Tablet (max 768px) ──────────────────────────────────── */
+@media (max-width: 768px) {
+  .masteracademic-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .masteracademic-entry {
+    padding: 18px;
+  }
+
+  .masteracademic-entry-header {
+    flex-direction: row;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .masteracademic-title {
+    font-size: 20px;
+  }
+
+  .masteracademic-input,
+  .masteracademic-select {
+    font-size: 16px; /* prevents iOS zoom on focus */
+    padding: 12px 14px;
+  }
+
+  .masteracademic-select {
+    padding-right: 38px;
+  }
+}
+
+/* ── Mobile (max 480px) ──────────────────────────────────── */
+@media (max-width: 480px) {
+  .masteracademic-form {
+    padding: 0;
+  }
+
+  .masteracademic-entry {
+    padding: 14px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+  }
+
+  .masteracademic-entry-header {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 10px;
+    margin-bottom: 16px;
+  }
+
+  .masteracademic-entry-title {
+    font-size: 14px;
+  }
+
+  .masteracademic-remove-btn {
+    font-size: 12px;
+    padding: 4px 10px;
+  }
+
+  .masteracademic-label {
+    font-size: 12px;
+  }
+
+  .masteracademic-input,
+  .masteracademic-select {
+    font-size: 16px; /* critical — prevents iOS zoom */
+    padding: 11px 12px;
+    border-radius: 8px;
+  }
+
+  .masteracademic-select {
+    padding-right: 36px;
+  }
+
+  .masteracademic-add-btn {
+    padding: 12px 16px;
+    font-size: 13px;
+    border-radius: 10px;
+  }
+
+  .masteracademic-title {
+    font-size: 18px;
+  }
+
+  .masteracademic-subtitle {
+    font-size: 12px;
+  }
+
+  .masteracademic-error-text {
+    font-size: 11px;
+  }
+}
+
+/* ── Accessibility — Reduced Motion ──────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

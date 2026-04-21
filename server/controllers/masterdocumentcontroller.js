@@ -1,20 +1,30 @@
-// server/controllers/masterdocumentcontroller.js
 import MasterDocument from "../models/masterdocumentmodel.js";
 import { getDynamicFileUrl, deleteFile } from "../middleware/uploadMiddleware.js";
 
 // 🔹 Get documents
 export const getDocuments = async (req, res) => {
   try {
-    let doc = await MasterDocument.findOne({ userId: req.user.id });
+    const userId = req.userId;
 
-    if (!doc) {
-      doc = await MasterDocument.create({ userId: req.user.id });
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized: userId missing",
+      });
     }
 
-    res.json({ success: true, documents: doc });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: "Server error" });
+    const documents = await MasterDocument.findOne({ userId });
+
+    res.json({
+      success: true,
+      data: documents || {},
+    });
+  } catch (error) {
+    console.error("❌ Error in getDocuments:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
   }
 };
 
@@ -22,15 +32,28 @@ export const getDocuments = async (req, res) => {
 export const uploadDocument = async (req, res) => {
   try {
     const { field } = req.params;
+    const userId = req.userId;
 
-    if (!req.file) {
-      return res.status(400).json({ success: false, message: "No file uploaded" });
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized: userId missing",
+      });
     }
 
-    let doc = await MasterDocument.findOne({ userId: req.user.id });
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "No file uploaded",
+      });
+    }
 
+    // Find existing document
+    let doc = await MasterDocument.findOne({ userId });
+
+    // Create new if not exists
     if (!doc) {
-      doc = new MasterDocument({ userId: req.user.id });
+      doc = new MasterDocument({ userId });
     }
 
     const fileData = {
@@ -40,17 +63,22 @@ export const uploadDocument = async (req, res) => {
       originalName: req.file.originalname,
     };
 
+    // Assign dynamically (passport, resume, etc.)
     doc[field] = fileData;
 
     await doc.save();
 
     res.json({
       success: true,
+      message: "File uploaded successfully",
       fileData,
     });
   } catch (err) {
-    console.error("Upload error:", err);
-    res.status(500).json({ success: false, message: "Upload failed" });
+    console.error("❌ Upload error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Upload failed",
+    });
   }
 };
 
@@ -58,25 +86,45 @@ export const uploadDocument = async (req, res) => {
 export const deleteDocument = async (req, res) => {
   try {
     const { field } = req.params;
+    const userId = req.userId;
 
-    const doc = await MasterDocument.findOne({ userId: req.user.id });
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized: userId missing",
+      });
+    }
+
+    const doc = await MasterDocument.findOne({ userId });
 
     if (!doc || !doc[field]) {
-      return res.status(404).json({ success: false, message: "File not found" });
+      return res.status(404).json({
+        success: false,
+        message: "File not found",
+      });
     }
 
     const fileKey = doc[field]?.fileKey;
 
+    // Delete file from storage (S3/local/etc.)
     if (fileKey) {
       await deleteFile(fileKey);
     }
 
+    // Remove from DB
     doc[field] = null;
+
     await doc.save();
 
-    res.json({ success: true });
+    res.json({
+      success: true,
+      message: "File deleted successfully",
+    });
   } catch (err) {
-    console.error("Delete error:", err);
-    res.status(500).json({ success: false });
+    console.error("❌ Delete error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Delete failed",
+    });
   }
 };

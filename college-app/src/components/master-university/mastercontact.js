@@ -16,129 +16,121 @@ const MasterContact = ({ data, updateData }) => {
   });
 
   const [errors, setErrors] = useState({});
+  const [countryOpen, setCountryOpen] = useState(false);
+  const countryRef = useRef(null);
+
   const isInitialMount = useRef(true);
   const debounceRef = useRef(null);
   const isSavingRef = useRef(false);
   const lastSavedRef = useRef(null);
-
-  // 🔒 Track last value sent to parent to avoid re-triggering parent re-renders
   const lastUpdatedRef = useRef(null);
 
-  // ✅ Load data from parent ONLY once (or when data._id changes — e.g. fresh load)
+  const countries = [
+    'United States', 'United Kingdom', 'Canada',
+    'Australia', 'India', 'Germany', 'France', 'Other'
+  ];
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (countryRef.current && !countryRef.current.contains(e.target)) {
+        setCountryOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Load data from parent ONLY once (or when data._id changes)
   useEffect(() => {
     if (data && Object.keys(data).length > 0) {
       const { _isValid, ...rest } = data;
       setFormData(prev => {
-        // Only update if something meaningful actually changed
         const isSame = Object.keys(rest).every(k => prev[k] === rest[k]);
         if (isSame) return prev;
         return { ...prev, ...rest };
       });
     }
-  }, [data?._id]); // ✅ Only re-run when _id changes, NOT on every parent render
+  }, [data?._id]);
 
-  // ✅ Validation
   const validateField = useCallback((name, value) => {
     let error = '';
-
     switch (name) {
       case 'emailAddress':
         if (!value.trim()) error = 'Email address is required';
         else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
           error = 'Enter a valid email address';
         break;
-
       case 'mobileNumber':
         if (!value.trim()) error = 'Mobile number is required';
         else if (!/^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/.test(value))
           error = 'Enter a valid mobile number';
         break;
-
       case 'addressLine1':
         if (!value.trim()) error = 'Address is required';
         break;
-
       case 'city':
         if (!value.trim()) error = 'City is required';
         break;
-
       case 'state':
         if (!value.trim()) error = 'State is required';
         break;
-
       case 'country':
         if (!value.trim()) error = 'Country is required';
         break;
-
       case 'postalCode':
         if (!value.trim()) error = 'Postal code is required';
         break;
-
       default:
         break;
     }
-
     return error;
   }, []);
 
-  // ✅ Handle Change
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-
+    setFormData(prev => ({ ...prev, [name]: value }));
     const error = validateField(name, value);
     setErrors(prev => ({ ...prev, [name]: error }));
   };
 
-  // ✅ Handle Blur
   const handleBlur = (e) => {
     const { name, value } = e.target;
     const error = validateField(name, value);
     setErrors(prev => ({ ...prev, [name]: error }));
   };
 
-  // ✅ API CALL (Create / Update) — stable reference via useCallback
+  // Custom country select handler
+  const handleCountrySelect = (country) => {
+    setFormData(prev => ({ ...prev, country }));
+    const error = validateField('country', country);
+    setErrors(prev => ({ ...prev, country: error }));
+    setCountryOpen(false);
+  };
+
   const saveDataToBackend = useCallback(async (currentFormData) => {
     try {
       if (isSavingRef.current) return;
-
-      if (JSON.stringify(lastSavedRef.current) === JSON.stringify(currentFormData)) {
-        return;
-      }
-
+      if (JSON.stringify(lastSavedRef.current) === JSON.stringify(currentFormData)) return;
       isSavingRef.current = true;
 
       const url = currentFormData._id
         ? `http://localhost:5000/api/master-contact/${currentFormData._id}`
         : `http://localhost:5000/api/master-contact`;
-
       const method = currentFormData._id ? 'PUT' : 'POST';
-
-      console.log(`🚀 ${method} CONTACT API`, currentFormData);
 
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(currentFormData)
       });
-
       const result = await res.json();
 
       if (result.success) {
-        console.log('✅ Contact Saved:', result.data);
         lastSavedRef.current = result.data;
-
-        // ✅ Update _id after first POST — won't re-trigger the parent sync useEffect
-        // because we're only watching data?._id above, and this sets internal state only
         if (!currentFormData._id && result.data._id) {
           setFormData(prev => ({ ...prev, _id: result.data._id }));
         }
-      } else {
-        console.error('❌ Save failed:', result.message);
       }
     } catch (error) {
       console.error('❌ API Error:', error);
@@ -147,7 +139,6 @@ const MasterContact = ({ data, updateData }) => {
     }
   }, []);
 
-  // ✅ Auto-save + notify parent — guarded to prevent infinite loop
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
@@ -158,45 +149,27 @@ const MasterContact = ({ data, updateData }) => {
       'emailAddress', 'mobileNumber', 'addressLine1',
       'city', 'state', 'country', 'postalCode'
     ];
+    const isValid = requiredFields.every(key => !validateField(key, formData[key] || ''));
 
-    const isValid = requiredFields.every(key =>
-      !validateField(key, formData[key] || '')
-    );
-
-    // ✅ KEY FIX: Only call updateData if the value actually changed
-    // This stops the parent from re-rendering and pushing data back down
     const nextUpdate = JSON.stringify({ ...formData, _isValid: isValid });
     if (lastUpdatedRef.current !== nextUpdate) {
       lastUpdatedRef.current = nextUpdate;
       updateData({ ...formData, _isValid: isValid });
     }
 
-    // Debounced API save
     if (debounceRef.current) clearTimeout(debounceRef.current);
-
     debounceRef.current = setTimeout(() => {
-      if (isValid) {
-        saveDataToBackend(formData);
-      }
+      if (isValid) saveDataToBackend(formData);
     }, 800);
 
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [formData, validateField, saveDataToBackend, updateData]);
-
-  const countries = [
-    'United States', 'United Kingdom', 'Canada',
-    'Australia', 'India', 'Germany', 'France', 'Other'
-  ];
 
   return (
     <div className="mastercontact-form">
       <div className="mastercontact-header">
         <h2 className="mastercontact-title">Contact Details</h2>
-        <p className="mastercontact-subtitle">
-          Please provide your current contact information
-        </p>
+        <p className="mastercontact-subtitle">Please provide your current contact information</p>
       </div>
 
       <div className="mastercontact-grid">
@@ -257,6 +230,7 @@ const MasterContact = ({ data, updateData }) => {
             onBlur={handleBlur}
             className={`mastercontact-input ${errors.addressLine1 ? 'mastercontact-error' : ''}`}
           />
+          {errors.addressLine1 && <span className="mastercontact-error-text">{errors.addressLine1}</span>}
         </div>
 
         <div className="mastercontact-group mastercontact-group-full">
@@ -282,6 +256,7 @@ const MasterContact = ({ data, updateData }) => {
             onBlur={handleBlur}
             className={`mastercontact-input ${errors.city ? 'mastercontact-error' : ''}`}
           />
+          {errors.city && <span className="mastercontact-error-text">{errors.city}</span>}
         </div>
 
         <div className="mastercontact-group">
@@ -296,24 +271,50 @@ const MasterContact = ({ data, updateData }) => {
             onBlur={handleBlur}
             className={`mastercontact-input ${errors.state ? 'mastercontact-error' : ''}`}
           />
+          {errors.state && <span className="mastercontact-error-text">{errors.state}</span>}
         </div>
 
-        <div className="mastercontact-group">
+        {/* ── Custom Country Dropdown ── */}
+        <div className="mastercontact-group" ref={countryRef}>
           <label className="mastercontact-label">
             Country <span className="mastercontact-required">*</span>
           </label>
-          <select
-            name="country"
-            value={formData.country}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            className={`mastercontact-select ${errors.country ? 'mastercontact-error' : ''}`}
-          >
-            <option value="">Select Country</option>
-            {countries.map(c => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
+          <div className="mastercontact-custom-select-wrapper">
+            <button
+              type="button"
+              className={`mastercontact-custom-select-trigger ${errors.country ? 'mastercontact-error' : ''} ${formData.country ? '' : 'mastercontact-placeholder'}`}
+              onClick={() => setCountryOpen(prev => !prev)}
+              aria-haspopup="listbox"
+              aria-expanded={countryOpen}
+            >
+              <span>{formData.country || 'Select Country'}</span>
+              <svg
+                className={`mastercontact-chevron ${countryOpen ? 'mastercontact-chevron-open' : ''}`}
+                width="16" height="16" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" strokeWidth="2"
+                strokeLinecap="round" strokeLinejoin="round"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+
+            {countryOpen && (
+              <ul className="mastercontact-dropdown" role="listbox">
+                {countries.map(c => (
+                  <li
+                    key={c}
+                    role="option"
+                    aria-selected={formData.country === c}
+                    className={`mastercontact-dropdown-item ${formData.country === c ? 'mastercontact-dropdown-item-active' : ''}`}
+                    onClick={() => handleCountrySelect(c)}
+                  >
+                    {c}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          {errors.country && <span className="mastercontact-error-text">{errors.country}</span>}
         </div>
 
         <div className="mastercontact-group">
@@ -328,6 +329,7 @@ const MasterContact = ({ data, updateData }) => {
             onBlur={handleBlur}
             className={`mastercontact-input ${errors.postalCode ? 'mastercontact-error' : ''}`}
           />
+          {errors.postalCode && <span className="mastercontact-error-text">{errors.postalCode}</span>}
         </div>
 
       </div>

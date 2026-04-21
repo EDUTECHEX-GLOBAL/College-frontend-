@@ -8,7 +8,6 @@ import MasterCourse      from './mastercourse';
 import MasterAcademic    from './masteracademic';
 import MasterTests       from './mastertests';
 import MasterDocuments   from './masterdocuments';
-import MasterDeclaration from './masterdecl';
 import MasterPreview     from './masterpreview';
 
 // ✅ Moved outside component — stable constant, never recreates
@@ -19,8 +18,7 @@ const STEPS = [
     { id: 3, title: 'Academic History',     path: 'academic' },
     { id: 4, title: 'Test Scores',          path: 'tests' },
     { id: 5, title: 'Documents',            path: 'documents' },
-    { id: 6, title: 'Declaration',          path: 'declaration' },
-    { id: 7, title: 'Preview & Submit',     path: 'preview' }
+    { id: 6, title: 'Preview & Submit',     path: 'preview' }
 ];
 
 // ✅ Helper — derives step index from pathname
@@ -31,9 +29,8 @@ const stepFromPath = (pathname) => {
     if (pathname.includes('/academic'))    return 3;
     if (pathname.includes('/tests'))       return 4;
     if (pathname.includes('/documents'))   return 5;
-    if (pathname.includes('/declaration')) return 6;
-    if (pathname.includes('/preview'))     return 7;
-    return -1; // -1 means we're at the base /master-application route with no step
+    if (pathname.includes('/preview'))     return 6;
+    return -1;
 };
 
 const Master = ({ onUpdate }) => {
@@ -67,7 +64,6 @@ const Master = ({ onUpdate }) => {
     useEffect(() => {
         const step = stepFromPath(location.pathname);
         if (step === -1) {
-            // No sub-path — redirect to first step
             navigate(`${BASE_PATH}/personal`, { replace: true });
         }
     }, [location.pathname, BASE_PATH, navigate]);
@@ -86,7 +82,7 @@ const Master = ({ onUpdate }) => {
         academic:    [],
         tests:       {},
         documents:   {},
-        declaration: false
+        declaration: false,
     });
 
     // ─── Load saved data on mount ─────────────────────────────────
@@ -208,7 +204,11 @@ const Master = ({ onUpdate }) => {
     const updateAcademic    = useCallback((data) => setFormData(prev => ({ ...prev, academic:    data })), []);
     const updateTests       = useCallback((data) => setFormData(prev => ({ ...prev, tests:       data })), []);
     const updateDocuments   = useCallback((data) => setFormData(prev => ({ ...prev, documents:   data })), []);
-    const updateDeclaration = useCallback((data) => setFormData(prev => ({ ...prev, declaration: data })), []);
+
+    // ✅ updateDeclaration — updates only the declaration field
+    const updateDeclaration = useCallback((updatedData) => {
+        setFormData(prev => ({ ...prev, declaration: updatedData.declaration }));
+    }, []);
 
     // ─── Submission ───────────────────────────────────────────────
     const handleSubmit = useCallback(() => {
@@ -241,15 +241,24 @@ const Master = ({ onUpdate }) => {
     // ─── Renders the correct step component ──────────────────────
     const renderCurrentStep = () => {
         switch (currentStep) {
-            case 0: return <MasterPersonal    data={formData.personal}     updateData={updatePersonal} />;
-            case 1: return <MasterContact     data={formData.contact}      updateData={updateContact} />;
-            case 2: return <MasterCourse      data={formData.course}       updateData={updateCourse} />;
-            case 3: return <MasterAcademic    data={formData.academic}     updateData={updateAcademic} />;
-            case 4: return <MasterTests       data={formData.tests}        updateData={updateTests} />;
-            case 5: return <MasterDocuments   data={formData.documents}    updateData={updateDocuments} />;
-            case 6: return <MasterDeclaration data={formData.declaration}  updateData={updateDeclaration} />;
-            case 7: return <MasterPreview     data={formData} />;
-            default: return <MasterPersonal   data={formData.personal}     updateData={updatePersonal} />;
+            case 0: return <MasterPersonal  data={formData.personal}   updateData={updatePersonal} />;
+            case 1: return <MasterContact   data={formData.contact}    updateData={updateContact} />;
+            case 2: return <MasterCourse    data={formData.course}     updateData={updateCourse} />;
+            case 3: return <MasterAcademic  data={formData.academic}   updateData={updateAcademic} />;
+            case 4: return <MasterTests     data={formData.tests}      updateData={updateTests} />;
+            case 5: return <MasterDocuments data={formData.documents}  updateData={updateDocuments} />;
+
+            // ✅ onEdit={navigateToStep} — Edit buttons in preview now navigate correctly
+            // ✅ updateData={updateDeclaration} — declaration checkbox syncs to formData
+            case 6: return (
+                <MasterPreview
+                    data={formData}
+                    updateData={updateDeclaration}
+                    onEdit={navigateToStep}
+                />
+            );
+
+            default: return <MasterPersonal data={formData.personal}  updateData={updatePersonal} />;
         }
     };
 

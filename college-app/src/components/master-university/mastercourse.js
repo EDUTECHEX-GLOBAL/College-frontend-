@@ -3,6 +3,89 @@ import './mastercourse.css';
 
 const API_URL = process.env.REACT_APP_API_BASE_URL;
 
+// ─── Reusable Custom Dropdown ─────────────────────────────────────────────────
+const CustomDropdown = ({
+  name,
+  value,
+  onChange,
+  onBlur,
+  options,
+  placeholder = 'Select',
+  disabled = false,
+  hasError = false
+}) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handleOutside = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, []);
+
+  const handleSelect = (optVal) => {
+    onChange({ target: { name, value: optVal } });
+    setOpen(false);
+    if (onBlur) onBlur({ target: { name, value: optVal } });
+  };
+
+  const selectedLabel = options.find(o =>
+    (typeof o === 'string' ? o : o.value) === value
+  );
+  const displayLabel = selectedLabel
+    ? (typeof selectedLabel === 'string' ? selectedLabel : selectedLabel.label)
+    : null;
+
+  return (
+    <div
+      className={`mastercourse-custom-wrapper${disabled ? ' mastercourse-custom-disabled' : ''}`}
+      ref={ref}
+    >
+      <button
+        type="button"
+        disabled={disabled}
+        className={`mastercourse-custom-trigger${hasError ? ' mastercourse-error' : ''}${!displayLabel ? ' mastercourse-placeholder' : ''}`}
+        onClick={() => !disabled && setOpen(prev => !prev)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+      >
+        <span>{displayLabel || placeholder}</span>
+        <svg
+          className={`mastercourse-chevron${open ? ' mastercourse-chevron-open' : ''}`}
+          width="16" height="16" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" strokeWidth="2"
+          strokeLinecap="round" strokeLinejoin="round"
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      {open && !disabled && (
+        <ul className="mastercourse-dropdown" role="listbox">
+          {options.map(o => {
+            const optVal   = typeof o === 'string' ? o : o.value;
+            const optLabel = typeof o === 'string' ? o : o.label;
+            return (
+              <li
+                key={optVal}
+                role="option"
+                aria-selected={value === optVal}
+                className={`mastercourse-dropdown-item${value === optVal ? ' mastercourse-dropdown-item-active' : ''}`}
+                onClick={() => handleSelect(optVal)}
+              >
+                {optLabel}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+};
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 const MasterCourse = ({ data, updateData }) => {
   const [formData, setFormData] = useState({
     preferredCourse: '',
@@ -12,13 +95,12 @@ const MasterCourse = ({ data, updateData }) => {
   });
 
   const [errors, setErrors] = useState({});
-  const debounceRef = useRef(null);
-  const isSavingRef = useRef(false);
-  const lastSavedRef = useRef(null);
+  const debounceRef    = useRef(null);
+  const isSavingRef    = useRef(false);
+  const lastSavedRef   = useRef(null);
   const lastUpdatedRef = useRef(null);
-  const hasFetched = useRef(false);
+  const hasFetched     = useRef(false);
 
-  // ─── Get token ────────────────────────────────────────────────
   const getToken = () => localStorage.getItem('token');
 
   // ─── Validation ───────────────────────────────────────────────
@@ -31,7 +113,7 @@ const MasterCourse = ({ data, updateData }) => {
     }
   }, []);
 
-  // ─── Fetch saved course data on mount ────────────────────────
+  // ─── Fetch on mount ───────────────────────────────────────────
   useEffect(() => {
     if (hasFetched.current) return;
     hasFetched.current = true;
@@ -43,8 +125,6 @@ const MasterCourse = ({ data, updateData }) => {
       if (!token) return;
 
       try {
-        console.log('Fetching course data...');
-
         const res = await fetch(`${API_URL}/api/master-course`, {
           method: 'GET',
           headers: {
@@ -54,19 +134,13 @@ const MasterCourse = ({ data, updateData }) => {
           signal: controller.signal
         });
 
-        if (res.status === 404) {
-          console.log('No course data found (first time user)');
-          return;
-        }
-
+        if (res.status === 404) return;
         if (!res.ok) throw new Error(`Server error: ${res.status}`);
 
         const result = await res.json();
-        console.log('Course data fetched:', result);
 
         if (result?.success && result?.data) {
           const { preferredCourse, specialization, intake, modeOfStudy } = result.data;
-
           const loaded = {
             preferredCourse: preferredCourse || '',
             specialization:  specialization  || '',
@@ -75,15 +149,14 @@ const MasterCourse = ({ data, updateData }) => {
           };
 
           const requiredFields = ['preferredCourse', 'intake', 'modeOfStudy'];
-          const isValid = requiredFields.every(k => !validateField(k, loaded[k]));
-          const payload = { ...loaded, _isValid: isValid };
+          const isValid  = requiredFields.every(k => !validateField(k, loaded[k]));
+          const payload  = { ...loaded, _isValid: isValid };
 
-          // Pre-seed ref so the notify-parent useEffect skips this as already-sent
           lastUpdatedRef.current = JSON.stringify(payload);
-          lastSavedRef.current = loaded;
+          lastSavedRef.current   = loaded;
 
           setFormData(loaded);
-          updateData(payload); // notify parent directly
+          updateData(payload);
         }
       } catch (err) {
         if (err.name === 'AbortError') return;
@@ -95,19 +168,25 @@ const MasterCourse = ({ data, updateData }) => {
 
     return () => {
       controller.abort();
-      hasFetched.current = false; // reset so navigating back re-fetches
+      hasFetched.current = false;
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ─── Handle Change ────────────────────────────────────────────
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+
+    setFormData(prev => {
+      const next = { ...prev, [name]: value };
+      // Reset specialization when course changes
+      if (name === 'preferredCourse') next.specialization = '';
+      return next;
+    });
+
     const error = validateField(name, value);
     setErrors(prev => ({ ...prev, [name]: error }));
   };
 
-  // ─── Handle Blur ─────────────────────────────────────────────
   const handleBlur = (e) => {
     const { name, value } = e.target;
     setErrors(prev => ({ ...prev, [name]: validateField(name, value) }));
@@ -137,9 +216,7 @@ const MasterCourse = ({ data, updateData }) => {
       });
 
       const result = await res.json();
-
       if (result.success) {
-        console.log('Course Saved:', result.data);
         lastSavedRef.current = currentFormData;
       } else {
         console.error('Save failed:', result.message);
@@ -151,15 +228,14 @@ const MasterCourse = ({ data, updateData }) => {
     }
   }, []);
 
-  // ─── Notify parent + debounced save on user edits ─────────────
+  // ─── Notify parent + debounced save ───────────────────────────
   useEffect(() => {
     const requiredFields = ['preferredCourse', 'intake', 'modeOfStudy'];
-    const isValid = requiredFields.every(k => !validateField(k, formData[k] || ''));
+    const isValid    = requiredFields.every(k => !validateField(k, formData[k] || ''));
     const nextUpdate = JSON.stringify({ ...formData, _isValid: isValid });
 
-    if (lastUpdatedRef.current === nextUpdate) return; // no change — skip
+    if (lastUpdatedRef.current === nextUpdate) return;
     lastUpdatedRef.current = nextUpdate;
-
     updateData({ ...formData, _isValid: isValid });
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -167,9 +243,7 @@ const MasterCourse = ({ data, updateData }) => {
       if (isValid) saveDataToBackend(formData);
     }, 800);
 
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [formData, validateField, saveDataToBackend, updateData]);
 
   // ─── Static data ──────────────────────────────────────────────
@@ -183,13 +257,13 @@ const MasterCourse = ({ data, updateData }) => {
     'Master of Finance'
   ];
 
-  const specializations = {
-    'Master of Business Administration (MBA)':    ['Finance', 'Marketing', 'Human Resources', 'Operations', 'International Business'],
-    'Master of Science in Computer Science':       ['Software Engineering', 'Cybersecurity', 'Cloud Computing', 'Machine Learning'],
-    'Master of Engineering':                       ['Civil Engineering', 'Mechanical Engineering', 'Electrical Engineering'],
-    'Master of Data Science':                      ['Big Data Analytics', 'Business Intelligence', 'Data Engineering'],
-    'Master of Artificial Intelligence':           ['Computer Vision', 'NLP', 'Robotics'],
-    'default':                                     ['General']
+  const specializationsMap = {
+    'Master of Business Administration (MBA)':   ['Finance', 'Marketing', 'Human Resources', 'Operations', 'International Business'],
+    'Master of Science in Computer Science':      ['Software Engineering', 'Cybersecurity', 'Cloud Computing', 'Machine Learning'],
+    'Master of Engineering':                      ['Civil Engineering', 'Mechanical Engineering', 'Electrical Engineering'],
+    'Master of Data Science':                     ['Big Data Analytics', 'Business Intelligence', 'Data Engineering'],
+    'Master of Artificial Intelligence':          ['Computer Vision', 'NLP', 'Robotics'],
+    default:                                      ['General']
   };
 
   const intakes = [
@@ -201,7 +275,7 @@ const MasterCourse = ({ data, updateData }) => {
   const modesOfStudy = ['Full-time', 'Part-time', 'Online', 'Hybrid'];
 
   const getSpecializations = () =>
-    specializations[formData.preferredCourse] || specializations['default'];
+    specializationsMap[formData.preferredCourse] || specializationsMap.default;
 
   // ─── Render ───────────────────────────────────────────────────
   return (
@@ -213,80 +287,71 @@ const MasterCourse = ({ data, updateData }) => {
 
       <div className="mastercourse-grid">
 
+        {/* Preferred Course */}
         <div className="mastercourse-group mastercourse-group-full">
           <label className="mastercourse-label">
             Preferred Course <span className="mastercourse-required">*</span>
           </label>
-          <select
+          <CustomDropdown
             name="preferredCourse"
             value={formData.preferredCourse}
             onChange={handleChange}
             onBlur={handleBlur}
-            className={`mastercourse-select ${errors.preferredCourse ? 'mastercourse-error' : ''}`}
-          >
-            <option value="">Select a course</option>
-            {courses.map(course => (
-              <option key={course} value={course}>{course}</option>
-            ))}
-          </select>
+            options={courses}
+            placeholder="Select a course"
+            hasError={!!errors.preferredCourse}
+          />
           {errors.preferredCourse && (
             <span className="mastercourse-error-text">{errors.preferredCourse}</span>
           )}
         </div>
 
+        {/* Specialization */}
         <div className="mastercourse-group mastercourse-group-full">
           <label className="mastercourse-label">Specialization (Optional)</label>
-          <select
+          <CustomDropdown
             name="specialization"
             value={formData.specialization}
             onChange={handleChange}
-            className="mastercourse-select"
+            options={getSpecializations()}
+            placeholder="Select specialization (if applicable)"
             disabled={!formData.preferredCourse}
-          >
-            <option value="">Select specialization (if applicable)</option>
-            {getSpecializations().map(spec => (
-              <option key={spec} value={spec}>{spec}</option>
-            ))}
-          </select>
+          />
         </div>
 
+        {/* Intake */}
         <div className="mastercourse-group">
           <label className="mastercourse-label">
             Intake <span className="mastercourse-required">*</span>
           </label>
-          <select
+          <CustomDropdown
             name="intake"
             value={formData.intake}
             onChange={handleChange}
             onBlur={handleBlur}
-            className={`mastercourse-select ${errors.intake ? 'mastercourse-error' : ''}`}
-          >
-            <option value="">Select intake period</option>
-            {intakes.map(intake => (
-              <option key={intake.value} value={intake.value}>{intake.label}</option>
-            ))}
-          </select>
+            options={intakes}
+            placeholder="Select intake period"
+            hasError={!!errors.intake}
+          />
           {errors.intake && (
             <span className="mastercourse-error-text">{errors.intake}</span>
           )}
         </div>
 
+        {/* Mode of Study */}
         <div className="mastercourse-group">
           <label className="mastercourse-label">
             Mode of Study <span className="mastercourse-required">*</span>
           </label>
-          <select
+          <CustomDropdown
             name="modeOfStudy"
             value={formData.modeOfStudy}
             onChange={handleChange}
             onBlur={handleBlur}
-            className={`mastercourse-select ${errors.modeOfStudy ? 'mastercourse-error' : ''}`}
-          >
-            <option value="">Select mode of study</option>
-            {modesOfStudy.map(mode => (
-              <option key={mode} value={mode}>{mode}</option>
-            ))}
-          </select>
+            options={modesOfStudy}
+            placeholder="Select mode of study"
+            hasError={!!errors.modeOfStudy}
+          />
           {errors.modeOfStudy && (
             <span className="mastercourse-error-text">{errors.modeOfStudy}</span>
           )}

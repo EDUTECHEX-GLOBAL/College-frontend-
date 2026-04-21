@@ -8,19 +8,37 @@ const MasterAcademic = ({ data, updateData }) => {
     { degree: '', university: '', country: '', fieldOfStudy: '', startDate: '', endDate: '', gpa: '', id: Date.now() }
   ]);
 
-  const [errors, setErrors] = useState({});
-  const [isSaving, setIsSaving] = useState(false);
+  const [errors, setErrors]       = useState({});
+  const [isSaving, setIsSaving]   = useState(false);
   const [saveStatus, setSaveStatus] = useState('');
 
-  const touchedRef = useRef({});
-  const lastUpdatedRef = useRef(null);
+  // Track which select dropdowns are open
+  const [openDropdown, setOpenDropdown] = useState(null); // 'degree-{id}' | 'country-{id}' | null
 
-  // ✅ FIX 1: useRef-based fetch guard (not module-level)
-  // Resets on real unmount via cleanup, so navigating away + back re-fetches.
-  // StrictMode's fake unmount is handled by AbortController below.
-  const hasFetched = useRef(false);
+  const touchedRef      = useRef({});
+  const lastUpdatedRef  = useRef(null);
+  const hasFetched      = useRef(false);
+  const dropdownRef     = useRef(null);
 
-  // ─── Get userId ───────────────────────────────────────────────
+  const degrees   = ["Bachelor's Degree", "Master's Degree", 'PhD/Doctorate', 'Diploma', 'Associate Degree', 'High School'];
+  const countries = ['United States', 'United Kingdom', 'Canada', 'Australia', 'India', 'Germany', 'France', 'Other'];
+
+  // ─── Close dropdown on outside click ─────────────────────
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setOpenDropdown(null);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    document.addEventListener('touchstart', handleOutsideClick);
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('touchstart', handleOutsideClick);
+    };
+  }, []);
+
+  // ─── Get userId ───────────────────────────────────────────
   const getUserId = () => {
     try {
       const userDataStr = localStorage.getItem('userData');
@@ -33,10 +51,10 @@ const MasterAcademic = ({ data, updateData }) => {
     }
   };
 
-  // ─── Validate (errors only show on touched fields) ────────────
+  // ─── Validate ────────────────────────────────────────────
   const validateEntry = useCallback((entry, entryId, showAll = false) => {
-    const touched = touchedRef.current[entryId] || {};
-    const newErrors = {};
+    const touched    = touchedRef.current[entryId] || {};
+    const newErrors  = {};
 
     const check = (field, condition, message) => {
       if (showAll || touched[field]) {
@@ -44,16 +62,18 @@ const MasterAcademic = ({ data, updateData }) => {
       }
     };
 
-    check('degree', !entry.degree?.trim(), 'Degree is required');
-    check('university', !entry.university?.trim(), 'University name is required');
-    check('country', !entry.country?.trim(), 'Country is required');
-    check('fieldOfStudy', !entry.fieldOfStudy?.trim(), 'Field of study is required');
-    check('startDate', !entry.startDate, 'Start date is required');
-    check('endDate', !entry.endDate, 'End date is required');
+    check('degree',      !entry.degree?.trim(),      'Degree is required');
+    check('university',  !entry.university?.trim(),  'University name is required');
+    check('country',     !entry.country?.trim(),     'Country is required');
+    check('fieldOfStudy',!entry.fieldOfStudy?.trim(),'Field of study is required');
+    check('startDate',   !entry.startDate,           'Start date is required');
+    check('endDate',     !entry.endDate,             'End date is required');
 
-    if ((showAll || (touched.startDate && touched.endDate)) &&
+    if (
+      (showAll || (touched.startDate && touched.endDate)) &&
       entry.startDate && entry.endDate &&
-      new Date(entry.startDate) > new Date(entry.endDate)) {
+      new Date(entry.startDate) > new Date(entry.endDate)
+    ) {
       newErrors.endDate = 'End date must be after start date';
     }
 
@@ -68,7 +88,7 @@ const MasterAcademic = ({ data, updateData }) => {
     return Object.keys(newErrors).length === 0;
   }, []);
 
-  // ─── Silent validity check (no state mutation) ────────────────
+  // ─── Silent validity check ────────────────────────────────
   const checkIsValid = useCallback((entries) => {
     return entries.every(e =>
       e.degree?.trim() &&
@@ -81,13 +101,11 @@ const MasterAcademic = ({ data, updateData }) => {
     );
   }, []);
 
-  // ─── Fetch on mount ───────────────────────────────────────────
+  // ─── Fetch on mount ───────────────────────────────────────
   useEffect(() => {
     if (hasFetched.current) return;
     hasFetched.current = true;
 
-    // AbortController lets StrictMode's fake-unmount cancel the in-flight
-    // request cleanly without triggering the error handler
     const controller = new AbortController();
 
     const fetchAcademicData = async () => {
@@ -96,26 +114,16 @@ const MasterAcademic = ({ data, updateData }) => {
 
       try {
         const token = localStorage.getItem('token');
-        console.log('Fetching academic data for userId:', userId);
-
         const response = await fetch(`${API_URL}/api/master-academic/${userId}`, {
           method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
           signal: controller.signal
         });
 
-        if (response.status === 404) {
-          console.log('No academic data found (first time user)');
-          return;
-        }
-
+        if (response.status === 404) return;
         if (!response.ok) throw new Error(`Server error: ${response.status}`);
 
         const result = await response.json();
-        console.log('Academic data fetched:', result);
 
         if (
           result?.success &&
@@ -123,17 +131,16 @@ const MasterAcademic = ({ data, updateData }) => {
           result.data.academics.length > 0
         ) {
           const entriesWithIds = result.data.academics.map((entry, index) => ({
-            degree: entry.degree || '',
-            university: entry.university || '',
-            country: entry.country || '',
-            fieldOfStudy: entry.fieldOfStudy || '',
-            startDate: entry.startDate || '',
-            endDate: entry.endDate || '',
-            gpa: entry.gpa || '',
+            degree:      entry.degree      || '',
+            university:  entry.university  || '',
+            country:     entry.country     || '',
+            fieldOfStudy:entry.fieldOfStudy|| '',
+            startDate:   entry.startDate   || '',
+            endDate:     entry.endDate     || '',
+            gpa:         entry.gpa         || '',
             id: Date.now() + index
           }));
 
-          // Mark all fields touched so re-editing shows validation correctly
           const touched = {};
           entriesWithIds.forEach(e => {
             touched[e.id] = {
@@ -143,23 +150,16 @@ const MasterAcademic = ({ data, updateData }) => {
           });
           touchedRef.current = touched;
 
-          const isValid = checkIsValid(entriesWithIds);
-          const entriesToParent = entriesWithIds.map(({ id, ...rest }) => rest);
-          const payload = [...entriesToParent, { _isValid: isValid }];
+          const isValid        = checkIsValid(entriesWithIds);
+          const entriesToParent= entriesWithIds.map(({ id, ...rest }) => rest);
+          const payload        = [...entriesToParent, { _isValid: isValid }];
 
-          // ✅ FIX 2: Pre-seed lastUpdatedRef so the notify-parent useEffect
-          // below recognises this as already-sent and skips it — preventing
-          // an immediate re-save loop right after load
           lastUpdatedRef.current = JSON.stringify(payload);
-
           setAcademicEntries(entriesWithIds);
-
-          // Call updateData directly here — don't rely on the useEffect below
-          // because isInitialMount logic would have blocked it previously
           updateData(payload);
         }
       } catch (error) {
-        if (error.name === 'AbortError') return; // StrictMode cleanup — safe
+        if (error.name === 'AbortError') return;
         console.error('Error fetching academic data:', error);
       }
     };
@@ -167,31 +167,26 @@ const MasterAcademic = ({ data, updateData }) => {
     fetchAcademicData();
 
     return () => {
-      // Cancel any in-flight request on unmount
       controller.abort();
-      // ✅ Reset so navigating away + back triggers a fresh fetch
       hasFetched.current = false;
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ─── Field change ─────────────────────────────────────────────
+  // ─── Field change ─────────────────────────────────────────
   const handleEntryChange = useCallback((id, field, value) => {
     touchedRef.current = {
       ...touchedRef.current,
       [id]: { ...(touchedRef.current[id] || {}), [field]: true }
     };
-
     setAcademicEntries(prev => {
-      const updated = prev.map(entry =>
-        entry.id === id ? { ...entry, [field]: value } : entry
-      );
-      const entry = updated.find(e => e.id === id);
+      const updated = prev.map(entry => entry.id === id ? { ...entry, [field]: value } : entry);
+      const entry   = updated.find(e => e.id === id);
       if (entry) validateEntry(entry, id);
       return updated;
     });
   }, [validateEntry]);
 
-  // ─── Blur ─────────────────────────────────────────────────────
+  // ─── Blur ─────────────────────────────────────────────────
   const handleEntryBlur = useCallback((id, field) => {
     touchedRef.current = {
       ...touchedRef.current,
@@ -204,7 +199,7 @@ const MasterAcademic = ({ data, updateData }) => {
     });
   }, [validateEntry]);
 
-  // ─── Add entry ────────────────────────────────────────────────
+  // ─── Add entry ────────────────────────────────────────────
   const addNewEntry = useCallback(() => {
     setAcademicEntries(prev => [...prev, {
       degree: '', university: '', country: '', fieldOfStudy: '',
@@ -212,13 +207,10 @@ const MasterAcademic = ({ data, updateData }) => {
     }]);
   }, []);
 
-  // ─── Remove entry ─────────────────────────────────────────────
+  // ─── Remove entry ─────────────────────────────────────────
   const removeEntry = useCallback((id) => {
     setAcademicEntries(prev => {
-      if (prev.length === 1) {
-        alert('At least one academic entry is required');
-        return prev;
-      }
+      if (prev.length === 1) { alert('At least one academic entry is required'); return prev; }
       const updated = prev.filter(entry => entry.id !== id);
       setErrors(e => { const copy = { ...e }; delete copy[id]; return copy; });
       const touched = { ...touchedRef.current };
@@ -228,7 +220,7 @@ const MasterAcademic = ({ data, updateData }) => {
     });
   }, []);
 
-  // ─── Save to backend ──────────────────────────────────────────
+  // ─── Save to backend ──────────────────────────────────────
   const saveToBackend = useCallback(async (entries) => {
     const userId = getUserId();
     if (!userId) return;
@@ -237,15 +229,12 @@ const MasterAcademic = ({ data, updateData }) => {
     setSaveStatus('');
 
     try {
-      const token = localStorage.getItem('token');
+      const token        = localStorage.getItem('token');
       const cleanEntries = entries.map(({ id, ...rest }) => rest);
 
       const response = await fetch(`${API_URL}/api/master-academic`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, academics: cleanEntries })
       });
 
@@ -266,35 +255,139 @@ const MasterAcademic = ({ data, updateData }) => {
     }
   }, []);
 
-  // ─── Notify parent + auto-save on user edits ─────────────────
-  // Skips silently if the value matches lastUpdatedRef (set after fetch load)
+  // ─── Notify parent + auto-save ────────────────────────────
   useEffect(() => {
-    const isValid = checkIsValid(academicEntries);
+    const isValid       = checkIsValid(academicEntries);
     const entriesToSave = academicEntries.map(({ id, ...rest }) => rest);
-    const nextUpdate = JSON.stringify([...entriesToSave, { _isValid: isValid }]);
+    const nextUpdate    = JSON.stringify([...entriesToSave, { _isValid: isValid }]);
 
-    if (lastUpdatedRef.current === nextUpdate) return; // no change
+    if (lastUpdatedRef.current === nextUpdate) return;
     lastUpdatedRef.current = nextUpdate;
 
     updateData([...entriesToSave, { _isValid: isValid }]);
-
     if (isValid) saveToBackend(academicEntries);
   }, [academicEntries, checkIsValid, updateData, saveToBackend]);
 
-  const degrees = ["Bachelor's Degree", "Master's Degree", 'PhD/Doctorate', 'Diploma', 'Associate Degree', 'High School'];
-  const countries = ['United States', 'United Kingdom', 'Canada', 'Australia', 'India', 'Germany', 'France', 'Other'];
+  // ─── Custom dropdown component ────────────────────────────
+  // Replaces native <select> — fully mobile-friendly, no overflow issues
+  const CustomSelect = ({ entryId, field, value, options, placeholder, hasError }) => {
+    const dropdownKey = `${field}-${entryId}`;
+    const isOpen      = openDropdown === dropdownKey;
 
+    const handleToggle = (e) => {
+      e.stopPropagation();
+      setOpenDropdown(isOpen ? null : dropdownKey);
+    };
+
+    const handleSelect = (optionValue) => {
+      handleEntryChange(entryId, field, optionValue);
+      touchedRef.current = {
+        ...touchedRef.current,
+        [entryId]: { ...(touchedRef.current[entryId] || {}), [field]: true }
+      };
+      setOpenDropdown(null);
+    };
+
+    return (
+      <div
+        style={{ position: 'relative', width: '100%', boxSizing: 'border-box' }}
+        ref={isOpen ? dropdownRef : null}
+      >
+        {/* Trigger button */}
+        <button
+          type="button"
+          onClick={handleToggle}
+          className={`masteracademic-input ${hasError ? 'error' : ''}`}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            cursor: 'pointer',
+            textAlign: 'left',
+            background: 'white',
+            color: value ? '#0f172a' : '#94a3b8',
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+          }}
+        >
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {value || placeholder}
+          </span>
+          <svg
+            width="12" height="8" viewBox="0 0 12 8" fill="none"
+            style={{
+              flexShrink: 0,
+              marginLeft: '8px',
+              transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s ease'
+            }}
+          >
+            <path d="M1 1l5 5 5-5" stroke="#64748b" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+        </button>
+
+        {/* Dropdown list */}
+        {isOpen && (
+          <div
+            style={{
+              position: 'absolute',
+              top: 'calc(100% + 6px)',
+              left: 0,
+              right: 0,
+              background: '#ffffff',
+              border: '1.5px solid #0891b2',
+              borderRadius: '12px',
+              boxShadow: '0 8px 24px rgba(8, 145, 178, 0.15)',
+              zIndex: 9999,
+              overflow: 'hidden',
+              maxHeight: '240px',
+              overflowY: 'auto',
+            }}
+          >
+            {options.map((option) => (
+              <div
+                key={option}
+                onMouseDown={(e) => { e.preventDefault(); handleSelect(option); }}
+                onTouchEnd={(e)  => { e.preventDefault(); handleSelect(option); }}
+                style={{
+                  padding: '12px 16px',
+                  fontSize: '14px',
+                  color: value === option ? '#0891b2' : '#0f172a',
+                  fontWeight: value === option ? '600' : '400',
+                  background: value === option ? '#f0f9ff' : 'transparent',
+                  cursor: 'pointer',
+                  borderBottom: '1px solid #f1f5f9',
+                  transition: 'background 0.15s ease',
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  userSelect: 'none',
+                  WebkitUserSelect: 'none',
+                }}
+                onMouseEnter={e => { if (value !== option) e.currentTarget.style.background = '#f8fafc'; }}
+                onMouseLeave={e => { if (value !== option) e.currentTarget.style.background = 'transparent'; }}
+              >
+                {option}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // ─── Render ───────────────────────────────────────────────
   return (
     <div className="masteracademic-form">
       <div className="masteracademic-header">
         <h2 className="masteracademic-title">Academic History</h2>
-        <p className="masteracademic-subtitle">Add all your academic qualifications starting from the most recent</p>
+        <p className="masteracademic-subtitle">
+          Add all your academic qualifications starting from the most recent
+        </p>
 
         {(isSaving || saveStatus) && (
           <div className={`masteracademic-save-status ${saveStatus === 'error' ? 'error' : 'success'}`}>
             {isSaving && 'Saving…'}
-            {!isSaving && saveStatus === 'saved' && '✓ Saved successfully'}
-            {!isSaving && saveStatus === 'error' && '✕ Save failed — please try again'}
+            {!isSaving && saveStatus === 'saved'  && '✓ Saved successfully'}
+            {!isSaving && saveStatus === 'error'  && '✕ Save failed — please try again'}
           </div>
         )}
       </div>
@@ -304,7 +397,11 @@ const MasterAcademic = ({ data, updateData }) => {
           <div className="masteracademic-entry-header">
             <h3 className="masteracademic-entry-title">Education #{index + 1}</h3>
             {academicEntries.length > 1 && (
-              <button type="button" className="masteracademic-remove-btn" onClick={() => removeEntry(entry.id)}>
+              <button
+                type="button"
+                className="masteracademic-remove-btn"
+                onClick={() => removeEntry(entry.id)}
+              >
                 Remove
               </button>
             )}
@@ -312,22 +409,29 @@ const MasterAcademic = ({ data, updateData }) => {
 
           <div className="masteracademic-grid">
 
+            {/* Degree — custom dropdown */}
             <div className="masteracademic-group">
-              <label className="masteracademic-label">Degree <span className="masteracademic-required">*</span></label>
-              <select
-                value={entry.degree || ''}
-                onChange={(e) => handleEntryChange(entry.id, 'degree', e.target.value)}
-                onBlur={() => handleEntryBlur(entry.id, 'degree')}
-                className={`masteracademic-select ${errors[entry.id]?.degree ? 'error' : ''}`}
-              >
-                <option value="">Select Degree</option>
-                {degrees.map(degree => <option key={degree} value={degree}>{degree}</option>)}
-              </select>
-              {errors[entry.id]?.degree && <span className="masteracademic-error-text">{errors[entry.id].degree}</span>}
+              <label className="masteracademic-label">
+                Degree <span className="masteracademic-required">*</span>
+              </label>
+              <CustomSelect
+                entryId={entry.id}
+                field="degree"
+                value={entry.degree}
+                options={degrees}
+                placeholder="Select Degree"
+                hasError={!!errors[entry.id]?.degree}
+              />
+              {errors[entry.id]?.degree && (
+                <span className="masteracademic-error-text">{errors[entry.id].degree}</span>
+              )}
             </div>
 
+            {/* University */}
             <div className="masteracademic-group">
-              <label className="masteracademic-label">University/College Name <span className="masteracademic-required">*</span></label>
+              <label className="masteracademic-label">
+                University/College Name <span className="masteracademic-required">*</span>
+              </label>
               <input
                 type="text"
                 value={entry.university || ''}
@@ -336,25 +440,34 @@ const MasterAcademic = ({ data, updateData }) => {
                 placeholder="University name"
                 className={`masteracademic-input ${errors[entry.id]?.university ? 'error' : ''}`}
               />
-              {errors[entry.id]?.university && <span className="masteracademic-error-text">{errors[entry.id].university}</span>}
+              {errors[entry.id]?.university && (
+                <span className="masteracademic-error-text">{errors[entry.id].university}</span>
+              )}
             </div>
 
+            {/* Country — custom dropdown */}
             <div className="masteracademic-group">
-              <label className="masteracademic-label">Country <span className="masteracademic-required">*</span></label>
-              <select
-                value={entry.country || ''}
-                onChange={(e) => handleEntryChange(entry.id, 'country', e.target.value)}
-                onBlur={() => handleEntryBlur(entry.id, 'country')}
-                className={`masteracademic-select ${errors[entry.id]?.country ? 'error' : ''}`}
-              >
-                <option value="">Select Country</option>
-                {countries.map(country => <option key={country} value={country}>{country}</option>)}
-              </select>
-              {errors[entry.id]?.country && <span className="masteracademic-error-text">{errors[entry.id].country}</span>}
+              <label className="masteracademic-label">
+                Country <span className="masteracademic-required">*</span>
+              </label>
+              <CustomSelect
+                entryId={entry.id}
+                field="country"
+                value={entry.country}
+                options={countries}
+                placeholder="Select Country"
+                hasError={!!errors[entry.id]?.country}
+              />
+              {errors[entry.id]?.country && (
+                <span className="masteracademic-error-text">{errors[entry.id].country}</span>
+              )}
             </div>
 
+            {/* Field of Study */}
             <div className="masteracademic-group">
-              <label className="masteracademic-label">Field of Study <span className="masteracademic-required">*</span></label>
+              <label className="masteracademic-label">
+                Field of Study <span className="masteracademic-required">*</span>
+              </label>
               <input
                 type="text"
                 value={entry.fieldOfStudy || ''}
@@ -363,11 +476,16 @@ const MasterAcademic = ({ data, updateData }) => {
                 placeholder="e.g., Computer Science, Business Administration"
                 className={`masteracademic-input ${errors[entry.id]?.fieldOfStudy ? 'error' : ''}`}
               />
-              {errors[entry.id]?.fieldOfStudy && <span className="masteracademic-error-text">{errors[entry.id].fieldOfStudy}</span>}
+              {errors[entry.id]?.fieldOfStudy && (
+                <span className="masteracademic-error-text">{errors[entry.id].fieldOfStudy}</span>
+              )}
             </div>
 
+            {/* Start Date */}
             <div className="masteracademic-group">
-              <label className="masteracademic-label">Start Date <span className="masteracademic-required">*</span></label>
+              <label className="masteracademic-label">
+                Start Date <span className="masteracademic-required">*</span>
+              </label>
               <input
                 type="month"
                 value={entry.startDate || ''}
@@ -375,11 +493,16 @@ const MasterAcademic = ({ data, updateData }) => {
                 onBlur={() => handleEntryBlur(entry.id, 'startDate')}
                 className={`masteracademic-input ${errors[entry.id]?.startDate ? 'error' : ''}`}
               />
-              {errors[entry.id]?.startDate && <span className="masteracademic-error-text">{errors[entry.id].startDate}</span>}
+              {errors[entry.id]?.startDate && (
+                <span className="masteracademic-error-text">{errors[entry.id].startDate}</span>
+              )}
             </div>
 
+            {/* End Date */}
             <div className="masteracademic-group">
-              <label className="masteracademic-label">End Date <span className="masteracademic-required">*</span></label>
+              <label className="masteracademic-label">
+                End Date <span className="masteracademic-required">*</span>
+              </label>
               <input
                 type="month"
                 value={entry.endDate || ''}
@@ -387,9 +510,12 @@ const MasterAcademic = ({ data, updateData }) => {
                 onBlur={() => handleEntryBlur(entry.id, 'endDate')}
                 className={`masteracademic-input ${errors[entry.id]?.endDate ? 'error' : ''}`}
               />
-              {errors[entry.id]?.endDate && <span className="masteracademic-error-text">{errors[entry.id].endDate}</span>}
+              {errors[entry.id]?.endDate && (
+                <span className="masteracademic-error-text">{errors[entry.id].endDate}</span>
+              )}
             </div>
 
+            {/* GPA */}
             <div className="masteracademic-group">
               <label className="masteracademic-label">GPA / Percentage (Optional)</label>
               <input
@@ -400,7 +526,9 @@ const MasterAcademic = ({ data, updateData }) => {
                 placeholder="e.g., 3.5/4.0 or 85%"
                 className={`masteracademic-input ${errors[entry.id]?.gpa ? 'error' : ''}`}
               />
-              {errors[entry.id]?.gpa && <span className="masteracademic-error-text">{errors[entry.id].gpa}</span>}
+              {errors[entry.id]?.gpa && (
+                <span className="masteracademic-error-text">{errors[entry.id].gpa}</span>
+              )}
             </div>
 
           </div>
