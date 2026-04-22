@@ -31,15 +31,46 @@ const MasterContact = ({ data, updateData }) => {
   ];
 
   // Close dropdown on outside click
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (countryRef.current && !countryRef.current.contains(e.target)) {
-        setCountryOpen(false);
+// ── FETCH FROM BACKEND ON MOUNT ──
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const res = await fetch("http://localhost:5000/api/master-contact", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const result = await res.json();
+
+      if (result.success && result.data && result.data.length > 0) {
+        const latest = result.data[0];
+        console.log("✅ Contact Loaded from DB:", latest);
+
+        setFormData({
+          _id:            latest._id            || null,
+          emailAddress:   latest.emailAddress   || '',
+          mobileNumber:   latest.mobileNumber   || '',
+          alternatePhone: latest.alternatePhone  || '',
+          addressLine1:   latest.addressLine1   || '',
+          addressLine2:   latest.addressLine2   || '',
+          city:           latest.city           || '',
+          state:          latest.state          || '',
+          country:        latest.country        || '',
+          postalCode:     latest.postalCode     || '',
+        });
+
+        lastSavedRef.current = latest;
       }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    } catch (error) {
+      console.error("❌ Fetch Error:", error);
+    }
+  };
+
+  fetchData();
+}, []); // runs once on mount
 
   // Load data from parent ONLY once (or when data._id changes)
   useEffect(() => {
@@ -109,35 +140,40 @@ const MasterContact = ({ data, updateData }) => {
   };
 
   const saveDataToBackend = useCallback(async (currentFormData) => {
-    try {
-      if (isSavingRef.current) return;
-      if (JSON.stringify(lastSavedRef.current) === JSON.stringify(currentFormData)) return;
-      isSavingRef.current = true;
+  try {
+    if (isSavingRef.current) return;
+    if (JSON.stringify(lastSavedRef.current) === JSON.stringify(currentFormData)) return;
+    isSavingRef.current = true;
 
-      const url = currentFormData._id
-        ? `http://localhost:5000/api/master-contact/${currentFormData._id}`
-        : `http://localhost:5000/api/master-contact`;
-      const method = currentFormData._id ? 'PUT' : 'POST';
+    const token = localStorage.getItem('token'); // ← add this
 
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(currentFormData)
-      });
-      const result = await res.json();
+    const url = currentFormData._id
+      ? `http://localhost:5000/api/master-contact/${currentFormData._id}`
+      : `http://localhost:5000/api/master-contact`;
+    const method = currentFormData._id ? 'PUT' : 'POST';
 
-      if (result.success) {
-        lastSavedRef.current = result.data;
-        if (!currentFormData._id && result.data._id) {
-          setFormData(prev => ({ ...prev, _id: result.data._id }));
-        }
+    const res = await fetch(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}` // ← add this
+      },
+      body: JSON.stringify(currentFormData)
+    });
+    const result = await res.json();
+
+    if (result.success) {
+      lastSavedRef.current = result.data;
+      if (!currentFormData._id && result.data._id) {
+        setFormData(prev => ({ ...prev, _id: result.data._id }));
       }
-    } catch (error) {
-      console.error('❌ API Error:', error);
-    } finally {
-      isSavingRef.current = false;
     }
-  }, []);
+  } catch (error) {
+    console.error('❌ API Error:', error);
+  } finally {
+    isSavingRef.current = false;
+  }
+}, []);
 
   useEffect(() => {
     if (isInitialMount.current) {

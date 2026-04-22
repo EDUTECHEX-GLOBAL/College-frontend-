@@ -62,6 +62,8 @@ import masterAcademicRoutes from "./routes/masteracademicroutes.js";
 import masterCourseRoutes from './routes/mastercourseroutes.js';
 import masterTestRoutes from './routes/mastertestroutes.js';
 import masterDocumentRoutes from "./routes/masterdocumentroutes.js";
+import masterPreviewRoutes from "./routes/masterpreviewroutes.js";
+import masterOverviewRoutes from "./routes/masteroverviewroutes.js"; 
 dotenv.config();
 
 // =====================================================
@@ -318,11 +320,13 @@ app.use("/api/application/score", applicationScoreRoutes);
 app.use("/api/application/process-admin/gus-university", gusUniversityRoutes);
 app.use("/api/bachelors", bachelorsRoutes);
 app.use('/api/masters/universities', mastersRoutes);
+app.use("/api/master-overview", masterOverviewRoutes);
 app.use("/api/master-contact", masterContactRoutes);
 app.use("/api/master-academic", masterAcademicRoutes);
 app.use('/api/master-course', masterCourseRoutes);
 app.use('/api/master-test', masterTestRoutes);
 app.use("/api/master-documents", masterDocumentRoutes);
+app.use("/api/master-preview", masterPreviewRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/documents", documentRoutes);
 app.use("/api/colleges", collegeRoutes);

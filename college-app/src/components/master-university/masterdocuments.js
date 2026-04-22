@@ -24,7 +24,6 @@ const formatFileSize = (bytes) => {
 
 // ─── Document definitions ──────────────────────────────────────────────────────
 const DOCUMENT_TYPES = [
-  // Personal
   {
     id: 'passport', field: 'passport', label: 'Passport / ID Proof',
     description: 'Upload your valid passport or government-issued photo ID.',
@@ -35,7 +34,6 @@ const DOCUMENT_TYPES = [
     description: 'Recent passport-size photograph with white background.',
     required: true, accept: '.jpg,.jpeg,.png', maxSize: 5, category: 'personal',
   },
-  // School Certificates
   {
     id: 'cert10th', field: 'cert10th', label: '10th Grade Certificate',
     description: 'Official marksheet / certificate from your 10th grade (Secondary School).',
@@ -46,7 +44,6 @@ const DOCUMENT_TYPES = [
     description: 'Official marksheet / certificate from your 12th grade (A-Level / Higher Secondary).',
     required: true, accept: '.pdf,.jpg,.jpeg,.png', maxSize: 5, category: 'school',
   },
-  // Bachelor / Degree Documents
   {
     id: 'bachelorTranscript', field: 'bachelorTranscript', label: "Bachelor's Degree Transcript",
     description: "Official semester-wise transcript from your bachelor's program.",
@@ -67,7 +64,6 @@ const DOCUMENT_TYPES = [
     description: 'Consolidated / cumulative marksheet covering all semesters of your degree.',
     required: true, accept: '.pdf,.jpg,.jpeg,.png', maxSize: 10, category: 'bachelor',
   },
-  // Professional Documents
   {
     id: 'resumeCv', field: 'resumeCv', label: 'Resume / CV',
     description: 'Updated CV covering your academic history, projects, and professional experience.',
@@ -83,7 +79,6 @@ const DOCUMENT_TYPES = [
     description: 'Upload one or more recommendation letters from professors or employers (2-3 required).',
     required: true, accept: '.pdf,.jpg,.jpeg,.png,.doc,.docx', maxSize: 10, category: 'professional',
   },
-  // Test Scores
   {
     id: 'englishCertificate', field: 'englishCertificate', label: 'English Language Proficiency',
     description: 'Upload TOEFL, IELTS, PTE, or Duolingo score report.',
@@ -102,26 +97,17 @@ const DOCUMENT_TYPES = [
 ];
 
 const DOCUMENT_CATEGORIES = {
-  personal: {
-    title: 'Personal Documents', color: '#0891b2',
-    docs: DOCUMENT_TYPES.filter(d => d.category === 'personal'),
-  },
-  school: {
-    title: 'School / Academic Documents', color: '#f59e0b',
-    docs: DOCUMENT_TYPES.filter(d => d.category === 'school'),
-  },
-  bachelor: {
-    title: "Bachelor's / Degree Documents", color: '#10b981',
-    docs: DOCUMENT_TYPES.filter(d => d.category === 'bachelor'),
-  },
-  professional: {
-    title: 'Professional Documents', color: '#6366f1',
-    docs: DOCUMENT_TYPES.filter(d => d.category === 'professional'),
-  },
-  optional: {
-    title: 'Optional Documents', color: '#8b5cf6',
-    docs: DOCUMENT_TYPES.filter(d => d.category === 'optional'),
-  },
+  personal:     { title: 'Personal Documents',            color: '#0891b2', docs: DOCUMENT_TYPES.filter(d => d.category === 'personal')     },
+  school:       { title: 'School / Academic Documents',   color: '#f59e0b', docs: DOCUMENT_TYPES.filter(d => d.category === 'school')       },
+  bachelor:     { title: "Bachelor's / Degree Documents", color: '#10b981', docs: DOCUMENT_TYPES.filter(d => d.category === 'bachelor')     },
+  professional: { title: 'Professional Documents',        color: '#6366f1', docs: DOCUMENT_TYPES.filter(d => d.category === 'professional') },
+  optional:     { title: 'Optional Documents',            color: '#8b5cf6', docs: DOCUMENT_TYPES.filter(d => d.category === 'optional')     },
+};
+
+// ─── Helper: compute _isValid from required fields ────────────────────────────
+const computeIsValid = (docs) => {
+  const requiredFields = DOCUMENT_TYPES.filter(d => d.required).map(d => d.field);
+  return requiredFields.every(f => docs[f]?.fileName);
 };
 
 // ─── Component ─────────────────────────────────────────────────────────────────
@@ -130,6 +116,7 @@ const MasterDocuments = ({ data, updateData }) => {
 
   const [localDocs, setLocalDocs]         = useState({});
   const [uploading, setUploading]         = useState({});
+  const [fetching, setFetching]           = useState(true);
   const [dragActive, setDragActive]       = useState(null);
   const [error, setError]                 = useState('');
   const [searchTerm, setSearchTerm]       = useState('');
@@ -139,22 +126,25 @@ const MasterDocuments = ({ data, updateData }) => {
   });
 
   const isInitialMount = useRef(true);
-  const hasFetched     = useRef(false);
 
-  // ─── Fetch on mount ────────────────────────────────────────────────
+  // ─── Fetch on every mount ──────────────────────────────────────────
   useEffect(() => {
-    if (hasFetched.current || !token) return;
-    hasFetched.current = true;
+    if (!token) { setFetching(false); return; }
+
+    const controller = new AbortController();
 
     const fetchDocs = async () => {
+      setFetching(true);
       try {
         const res = await fetch(API_URL, {
           headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
         });
         if (!res.ok) return;
+
         const result = await res.json();
-        // Controller returns: { success: true, documents: <MasterDocument mongoose doc> }
-        // Each field is a FileSchema: { fileName, fileUrl, fileKey, originalName, uploadedAt }
+
+        // Controller returns: { success: true, documents: <MasterDocument> }
         if (result?.success && result?.documents) {
           const doc = result.documents;
           const mapped = {};
@@ -171,25 +161,35 @@ const MasterDocuments = ({ data, updateData }) => {
             }
           });
           setLocalDocs(mapped);
+          // ✅ FIX: compute real validity instead of always true
+          const isValid = computeIsValid(mapped);
+          updateData({ ...mapped, _isValid: isValid });
         }
       } catch (err) {
+        if (err.name === 'AbortError') return;
         console.error('MasterDocuments fetch error:', err);
+      } finally {
+        setFetching(false);
       }
     };
 
     fetchDocs();
-  }, [token]);
 
-  // ─── Sync to parent ────────────────────────────────────────────────
+    return () => controller.abort();
+  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ─── Sync to parent on localDocs change (after initial fetch) ─────
   useEffect(() => {
     if (isInitialMount.current) { isInitialMount.current = false; return; }
-    updateData({ ...localDocs, _isValid: true });
+    // ✅ FIX: compute real validity instead of always true
+    const isValid = computeIsValid(localDocs);
+    updateData({ ...localDocs, _isValid: isValid });
   }, [localDocs, updateData]);
 
   // ─── Completion ────────────────────────────────────────────────────
   const calcCompletion = useCallback(() => {
     const required = DOCUMENT_TYPES.filter(d => d.required);
-    const done = required.filter(d => localDocs[d.field]?.fileName).length;
+    const done     = required.filter(d => localDocs[d.field]?.fileName).length;
     return Math.round((done / required.length) * 100);
   }, [localDocs]);
 
@@ -241,7 +241,6 @@ const MasterDocuments = ({ data, updateData }) => {
       const form = new FormData();
       form.append('file', file);
 
-      // Route: POST /api/master-documents/upload/:field
       const res = await fetch(`${API_URL}/upload/${field}`, {
         method:  'POST',
         headers: { Authorization: `Bearer ${token}` },
@@ -249,7 +248,6 @@ const MasterDocuments = ({ data, updateData }) => {
       });
       const result = await res.json();
 
-      // Controller returns: { success: true, fileData: { fileName, fileKey, fileUrl, originalName } }
       if (result.success && result.fileData) {
         const uploaded = {
           fileName:     result.fileData.fileName,
@@ -268,7 +266,6 @@ const MasterDocuments = ({ data, updateData }) => {
       }
     } catch (err) {
       console.error('Upload error:', err);
-      // Fallback: store file info locally so UI reflects the attempt
       setLocalDocs(prev => ({
         ...prev,
         [field]: {
@@ -277,7 +274,7 @@ const MasterDocuments = ({ data, updateData }) => {
           originalName: file.name, uploadedAt: new Date().toISOString(),
         },
       }));
-      setError('Server unavailable. File stored locally for now.');
+      setError('Upload failed. Please try again.');
       setTimeout(() => setError(''), 4000);
     } finally {
       setUploading(prev => ({ ...prev, [field]: false }));
@@ -294,11 +291,9 @@ const MasterDocuments = ({ data, updateData }) => {
   const handleRemoveFile = async (field) => {
     if (!window.confirm('Remove this file?')) return;
     try {
-      // Route: DELETE /api/master-documents/files/:field
-      // Controller: deletes from S3 via fileKey, sets doc[field] = null, saves
       if (localDocs[field]?.fileName) {
         await fetch(`${API_URL}/files/${field}`, {
-          method: 'DELETE',
+          method:  'DELETE',
           headers: { Authorization: `Bearer ${token}` },
         });
       }
@@ -346,8 +341,14 @@ const MasterDocuments = ({ data, updateData }) => {
                 {fileData.size > 0 && <span className="masterdocs-file-size">{formatFileSize(fileData.size)}</span>}
               </div>
               <div className="masterdocs-file-actions">
-                {viewUrl && <a href={viewUrl} target="_blank" rel="noopener noreferrer" className="masterdocs-action-link">View</a>}
-                <button type="button" onClick={() => handleRemoveFile(field)} className="masterdocs-action-remove">Remove</button>
+                {viewUrl && (
+                  <a href={viewUrl} target="_blank" rel="noopener noreferrer" className="masterdocs-action-link">
+                    View
+                  </a>
+                )}
+                <button type="button" onClick={() => handleRemoveFile(field)} className="masterdocs-action-remove">
+                  Remove
+                </button>
               </div>
             </div>
           )}
@@ -391,6 +392,18 @@ const MasterDocuments = ({ data, updateData }) => {
   const requiredDocs   = DOCUMENT_TYPES.filter(d => d.required);
   const uploadedCount  = DOCUMENT_TYPES.filter(d => localDocs[d.field]?.fileName).length;
   const remainingCount = requiredDocs.filter(d => !localDocs[d.field]?.fileName).length;
+
+  // ─── Missing required docs list ────────────────────────────────────
+  const missingRequired = DOCUMENT_TYPES.filter(d => d.required && !localDocs[d.field]?.fileName);
+
+  // ─── Loading state ─────────────────────────────────────────────────
+  if (fetching) {
+    return (
+      <div className="masterdocs-form" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '200px' }}>
+        <p style={{ color: '#718096', fontSize: '15px' }}>Loading your documents…</p>
+      </div>
+    );
+  }
 
   // ─── Render ────────────────────────────────────────────────────────
   return (
@@ -496,6 +509,23 @@ const MasterDocuments = ({ data, updateData }) => {
         );
       })}
 
+      {/* ✅ Missing Required Documents Warning */}
+      {missingRequired.length > 0 && (
+        <div className="masterdocs-missing-warning">
+          <span className="masterdocs-missing-warning-icon">⚠️</span>
+          <div>
+            <p className="masterdocs-missing-warning-title">
+              {missingRequired.length} Required Document{missingRequired.length > 1 ? 's' : ''} Missing
+            </p>
+            <ul className="masterdocs-missing-warning-list">
+              {missingRequired.map(d => (
+                <li key={d.field}>{d.label}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+
       {/* Summary */}
       <div className="masterdocs-summary">
         <h3 className="masterdocs-summary-title">Upload Summary</h3>
@@ -523,6 +553,7 @@ const MasterDocuments = ({ data, updateData }) => {
       <div className="masterdocs-note">
         <span>All uploaded documents are encrypted and securely stored. Maximum file size: 10MB per document.</span>
       </div>
+
     </div>
   );
 };

@@ -1457,3 +1457,20 @@
     transition-duration: 0.01ms !important;
   }
 }
+/* ── Add these lines to your existing Courses.css ── */
+
+/* Master university badge in the header actions row */
+.course-master-badge {
+  background: #6c3fc5;
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+/* Master badge on the university logo card */
+.course-master-university-badge {
+  background: #6c3fc5 !important;
+}

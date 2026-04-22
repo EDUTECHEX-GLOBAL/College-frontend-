@@ -8,17 +8,16 @@ const MasterAcademic = ({ data, updateData }) => {
     { degree: '', university: '', country: '', fieldOfStudy: '', startDate: '', endDate: '', gpa: '', id: Date.now() }
   ]);
 
-  const [errors, setErrors]       = useState({});
-  const [isSaving, setIsSaving]   = useState(false);
+  const [errors, setErrors]         = useState({});
+  const [isSaving, setIsSaving]     = useState(false);
   const [saveStatus, setSaveStatus] = useState('');
 
-  // Track which select dropdowns are open
-  const [openDropdown, setOpenDropdown] = useState(null); // 'degree-{id}' | 'country-{id}' | null
+  const [openDropdown, setOpenDropdown] = useState(null);
 
-  const touchedRef      = useRef({});
-  const lastUpdatedRef  = useRef(null);
-  const hasFetched      = useRef(false);
-  const dropdownRef     = useRef(null);
+  const touchedRef     = useRef({});
+  const lastUpdatedRef = useRef(null);
+  const hasFetched     = useRef(false);
+  const dropdownRef    = useRef(null);
 
   const degrees   = ["Bachelor's Degree", "Master's Degree", 'PhD/Doctorate', 'Diploma', 'Associate Degree', 'High School'];
   const countries = ['United States', 'United Kingdom', 'Canada', 'Australia', 'India', 'Germany', 'France', 'Other'];
@@ -51,10 +50,10 @@ const MasterAcademic = ({ data, updateData }) => {
     }
   };
 
-  // ─── Validate ────────────────────────────────────────────
+  // ─── Validate single entry ────────────────────────────────
   const validateEntry = useCallback((entry, entryId, showAll = false) => {
-    const touched    = touchedRef.current[entryId] || {};
-    const newErrors  = {};
+    const touched   = touchedRef.current[entryId] || {};
+    const newErrors = {};
 
     const check = (field, condition, message) => {
       if (showAll || touched[field]) {
@@ -62,12 +61,12 @@ const MasterAcademic = ({ data, updateData }) => {
       }
     };
 
-    check('degree',      !entry.degree?.trim(),      'Degree is required');
-    check('university',  !entry.university?.trim(),  'University name is required');
-    check('country',     !entry.country?.trim(),     'Country is required');
-    check('fieldOfStudy',!entry.fieldOfStudy?.trim(),'Field of study is required');
-    check('startDate',   !entry.startDate,           'Start date is required');
-    check('endDate',     !entry.endDate,             'End date is required');
+    check('degree',       !entry.degree?.trim(),       'Degree is required');
+    check('university',   !entry.university?.trim(),   'University name is required');
+    check('country',      !entry.country?.trim(),      'Country is required');
+    check('fieldOfStudy', !entry.fieldOfStudy?.trim(), 'Field of study is required');
+    check('startDate',    !entry.startDate,            'Start date is required');
+    check('endDate',      !entry.endDate,              'End date is required');
 
     if (
       (showAll || (touched.startDate && touched.endDate)) &&
@@ -77,10 +76,12 @@ const MasterAcademic = ({ data, updateData }) => {
       newErrors.endDate = 'End date must be after start date';
     }
 
+    // ✅ FIX: Accept both GPA (0–4.0) and percentage (0–100), and formats like "3.5/4.0" or "85%"
     if ((showAll || touched.gpa) && entry.gpa?.trim()) {
-      const gpaNum = parseFloat(entry.gpa);
-      if (isNaN(gpaNum) || gpaNum < 0 || gpaNum > 4.0) {
-        newErrors.gpa = 'GPA must be between 0 and 4.0';
+      const raw    = entry.gpa.trim().replace('%', '').split('/')[0];
+      const gpaNum = parseFloat(raw);
+      if (isNaN(gpaNum) || gpaNum < 0 || gpaNum > 100) {
+        newErrors.gpa = 'Enter a valid GPA (e.g. 3.5 or 3.5/4.0) or percentage (e.g. 85%)';
       }
     }
 
@@ -88,9 +89,9 @@ const MasterAcademic = ({ data, updateData }) => {
     return Object.keys(newErrors).length === 0;
   }, []);
 
-  // ─── Silent validity check ────────────────────────────────
+  // ─── Check overall validity ───────────────────────────────
   const checkIsValid = useCallback((entries) => {
-    return entries.every(e =>
+    const allFieldsFilled = entries.every(e =>
       e.degree?.trim() &&
       e.university?.trim() &&
       e.country?.trim() &&
@@ -99,6 +100,11 @@ const MasterAcademic = ({ data, updateData }) => {
       e.endDate &&
       new Date(e.startDate) <= new Date(e.endDate)
     );
+
+    // At least one Bachelor's Degree required
+    const hasBachelor = entries.some(e => e.degree === "Bachelor's Degree");
+
+    return allFieldsFilled && hasBachelor;
   }, []);
 
   // ─── Fetch on mount ───────────────────────────────────────
@@ -113,11 +119,11 @@ const MasterAcademic = ({ data, updateData }) => {
       if (!userId) return;
 
       try {
-        const token = localStorage.getItem('token');
+        const token    = localStorage.getItem('token');
         const response = await fetch(`${API_URL}/api/master-academic/${userId}`, {
-          method: 'GET',
+          method:  'GET',
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          signal: controller.signal
+          signal:  controller.signal
         });
 
         if (response.status === 404) return;
@@ -131,16 +137,17 @@ const MasterAcademic = ({ data, updateData }) => {
           result.data.academics.length > 0
         ) {
           const entriesWithIds = result.data.academics.map((entry, index) => ({
-            degree:      entry.degree      || '',
-            university:  entry.university  || '',
-            country:     entry.country     || '',
-            fieldOfStudy:entry.fieldOfStudy|| '',
-            startDate:   entry.startDate   || '',
-            endDate:     entry.endDate     || '',
-            gpa:         entry.gpa         || '',
+            degree:       entry.degree       || '',
+            university:   entry.university   || '',
+            country:      entry.country      || '',
+            fieldOfStudy: entry.fieldOfStudy || '',
+            startDate:    entry.startDate    || '',
+            endDate:      entry.endDate      || '',
+            gpa:          entry.gpa          || '',
             id: Date.now() + index
           }));
 
+          // Mark all fields as touched so validation shows on load
           const touched = {};
           entriesWithIds.forEach(e => {
             touched[e.id] = {
@@ -151,10 +158,12 @@ const MasterAcademic = ({ data, updateData }) => {
           touchedRef.current = touched;
 
           const isValid        = checkIsValid(entriesWithIds);
-          const entriesToParent= entriesWithIds.map(({ id, ...rest }) => rest);
-          const payload        = [...entriesToParent, { _isValid: isValid }];
+          const entriesToParent = entriesWithIds.map(({ id, ...rest }) => rest);
 
+          // ✅ FIX: always send object shape { academics, _isValid }
+          const payload = { academics: entriesToParent, _isValid: isValid };
           lastUpdatedRef.current = JSON.stringify(payload);
+
           setAcademicEntries(entriesWithIds);
           updateData(payload);
         }
@@ -233,9 +242,9 @@ const MasterAcademic = ({ data, updateData }) => {
       const cleanEntries = entries.map(({ id, ...rest }) => rest);
 
       const response = await fetch(`${API_URL}/api/master-academic`, {
-        method: 'POST',
+        method:  'POST',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, academics: cleanEntries })
+        body:    JSON.stringify({ userId, academics: cleanEntries })
       });
 
       const result = await response.json();
@@ -259,17 +268,19 @@ const MasterAcademic = ({ data, updateData }) => {
   useEffect(() => {
     const isValid       = checkIsValid(academicEntries);
     const entriesToSave = academicEntries.map(({ id, ...rest }) => rest);
-    const nextUpdate    = JSON.stringify([...entriesToSave, { _isValid: isValid }]);
+
+    // ✅ FIX: use object shape consistently — matches what fetch useEffect sends
+    const payload    = { academics: entriesToSave, _isValid: isValid };
+    const nextUpdate = JSON.stringify(payload);
 
     if (lastUpdatedRef.current === nextUpdate) return;
     lastUpdatedRef.current = nextUpdate;
 
-    updateData([...entriesToSave, { _isValid: isValid }]);
+    updateData(payload);
     if (isValid) saveToBackend(academicEntries);
   }, [academicEntries, checkIsValid, updateData, saveToBackend]);
 
   // ─── Custom dropdown component ────────────────────────────
-  // Replaces native <select> — fully mobile-friendly, no overflow issues
   const CustomSelect = ({ entryId, field, value, options, placeholder, hasError }) => {
     const dropdownKey = `${field}-${entryId}`;
     const isOpen      = openDropdown === dropdownKey;
@@ -293,7 +304,6 @@ const MasterAcademic = ({ data, updateData }) => {
         style={{ position: 'relative', width: '100%', boxSizing: 'border-box' }}
         ref={isOpen ? dropdownRef : null}
       >
-        {/* Trigger button */}
         <button
           type="button"
           onClick={handleToggle}
@@ -326,7 +336,6 @@ const MasterAcademic = ({ data, updateData }) => {
           </svg>
         </button>
 
-        {/* Dropdown list */}
         {isOpen && (
           <div
             style={{
@@ -386,8 +395,8 @@ const MasterAcademic = ({ data, updateData }) => {
         {(isSaving || saveStatus) && (
           <div className={`masteracademic-save-status ${saveStatus === 'error' ? 'error' : 'success'}`}>
             {isSaving && 'Saving…'}
-            {!isSaving && saveStatus === 'saved'  && '✓ Saved successfully'}
-            {!isSaving && saveStatus === 'error'  && '✕ Save failed — please try again'}
+            {!isSaving && saveStatus === 'saved' && '✓ Saved successfully'}
+            {!isSaving && saveStatus === 'error' && '✕ Save failed — please try again'}
           </div>
         )}
       </div>
@@ -409,7 +418,7 @@ const MasterAcademic = ({ data, updateData }) => {
 
           <div className="masteracademic-grid">
 
-            {/* Degree — custom dropdown */}
+            {/* Degree */}
             <div className="masteracademic-group">
               <label className="masteracademic-label">
                 Degree <span className="masteracademic-required">*</span>
@@ -445,7 +454,7 @@ const MasterAcademic = ({ data, updateData }) => {
               )}
             </div>
 
-            {/* Country — custom dropdown */}
+            {/* Country */}
             <div className="masteracademic-group">
               <label className="masteracademic-label">
                 Country <span className="masteracademic-required">*</span>
@@ -538,6 +547,21 @@ const MasterAcademic = ({ data, updateData }) => {
       <button type="button" className="masteracademic-add-btn" onClick={addNewEntry}>
         + Add Another Qualification
       </button>
+
+      {/* Bachelor's Degree warning */}
+      {!academicEntries.some(e => e.degree === "Bachelor's Degree") && (
+        <div className="masteracademic-bachelor-warning">
+          <div>
+            <p className="masteracademic-bachelor-warning-title">
+              Bachelor's Degree Required
+            </p>
+            <p className="masteracademic-bachelor-warning-text">
+              You must add at least one Bachelor's Degree to be eligible for a master's program application.
+            </p>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

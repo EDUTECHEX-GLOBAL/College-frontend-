@@ -55,38 +55,62 @@ const DashboardLayout = ({
     ];
     return Math.round(sections.reduce((sum, p) => sum + p, 0) / sections.length);
   };
+const calculateMasterApplicationProgress = () => {
+  const masterAppData = localStorage.getItem('masterApplicationData');
+  if (!masterAppData) return 0;
 
-  const calculateMasterApplicationProgress = () => {
-    const masterAppData = localStorage.getItem('masterApplicationData');
-    if (!masterAppData) return 0;
-    
-    try {
-      const masterData = JSON.parse(masterAppData);
-      let totalSections = 0;
-      let completedSections = 0;
-      
-      const sections = ['personal', 'contact', 'course', 'academic', 'tests', 'documents', ];
-      
-      sections.forEach(section => {
-        totalSections++;
-        const sectionData = masterData[section];
-        if (sectionData && sectionData._isValid === true) {
-          completedSections++;
-        } else if (section === 'tests' || section === 'documents') {
-          completedSections++;
-        } else if (sectionData && Object.keys(sectionData).length > 0 && sectionData._isValid !== false) {
-          if (Object.keys(sectionData).some(key => key !== '_isValid' && sectionData[key])) {
-            completedSections += 0.5;
-          }
-        }
-      });
-      
-      return Math.round((completedSections / totalSections) * 100);
-    } catch (e) {
-      return 0;
-    }
-  };
+  try {
+    const masterData = JSON.parse(masterAppData);
 
+    const isFilled = (obj) => {
+      if (!obj || typeof obj !== 'object') return false;
+      return Object.keys(obj).some(key => key !== '_isValid' && obj[key]);
+    };
+
+    let totalSections = 0;
+    let completedSections = 0;
+
+    const sections = ['overview', 'personal', 'contact', 'course', 'academic', 'tests', 'documents'];
+
+    sections.forEach(section => {
+      totalSections++;
+
+      // ✅ OVERVIEW
+      if (section === 'overview') {
+        const hasAnyData = ['personal', 'contact', 'course', 'academic']
+          .some(sec => isFilled(masterData[sec]));
+
+        if (hasAnyData) completedSections++;
+        return;
+      }
+
+      // ✅ OPTIONAL
+      if (section === 'tests' || section === 'documents') {
+        completedSections++;
+        return;
+      }
+
+      const sectionData = masterData[section];
+
+      if (!sectionData) return;
+
+      // ✅ FULL COMPLETE
+      if (sectionData._isValid === true) {
+        completedSections++;
+        return;
+      }
+
+      // ✅ PARTIAL
+      if (isFilled(sectionData)) {
+        completedSections += 0.5;
+      }
+    });
+
+    return Math.round((completedSections / totalSections) * 100);
+  } catch (e) {
+    return 0;
+  }
+};
   useEffect(() => {
     const updateProgress = () => {
       const progress = calculateMasterApplicationProgress();
@@ -401,30 +425,54 @@ const handleSignOut = () => {
 
     if (activeMainSection === 'master-application') {
       const masterSteps = [
-        { id: 'personal',    label: 'Personal Information' },
-        { id: 'contact',     label: 'Contact Details' },
-        { id: 'course',      label: 'Course Selection' },
-        { id: 'academic',    label: 'Academic History' },
-        { id: 'tests',       label: 'Test Scores' },
-        { id: 'documents',   label: 'Documents' },
-       
-        { id: 'preview',     label: 'Preview & Submit' },
-      ];
+  { id: 'overview',    label: 'Overview' },   // ✅ ADD THIS
+  { id: 'personal',    label: 'Personal Information' },
+  { id: 'contact',     label: 'Contact Details' },
+  { id: 'course',      label: 'Course Selection' },
+  { id: 'academic',    label: 'Academic History' },
+  { id: 'tests',       label: 'Test Scores' },
+  { id: 'documents',   label: 'Documents' },
+  { id: 'preview',     label: 'Preview & Submit' },
+];
+const getMasterStepProgress = (stepId) => {
+  try {
+    const masterData = JSON.parse(localStorage.getItem('masterApplicationData') || '{}');
 
-      const getMasterStepProgress = (stepId) => {
-        try {
-          const masterData = JSON.parse(localStorage.getItem('masterApplicationData') || '{}');
-          const section = masterData[stepId];
-          if (stepId === 'tests' || stepId === 'documents') return '✓';
-          
-          if (stepId === 'preview') return '';
-          if (!section) return '';
-          if (section._isValid === true) return '✓';
-          if (Object.keys(section).some(k => k !== '_isValid' && section[k])) return '…';
-          return '';
-        } catch (e) { return ''; }
-      };
+    const isFilled = (obj) => {
+      if (!obj || typeof obj !== 'object') return false;
+      return Object.keys(obj).some(key => key !== '_isValid' && obj[key]);
+    };
 
+    // ✅ OVERVIEW
+    if (stepId === 'overview') {
+      const sections = ['personal', 'contact', 'course', 'academic'];
+      const hasAnyData = sections.some(sec => isFilled(masterData[sec]));
+      return hasAnyData ? '✓' : '';
+    }
+
+    // ✅ OPTIONAL SECTIONS
+    if (stepId === 'tests' || stepId === 'documents') {
+      return '✓'; // keep if business rule
+    }
+
+    // ✅ PREVIEW
+    if (stepId === 'preview') return '';
+
+    const section = masterData[stepId];
+
+    if (!section) return '';
+
+    // ✅ FULLY COMPLETE
+    if (section._isValid === true) return '✓';
+
+    // ✅ PARTIAL
+    if (isFilled(section)) return '…';
+
+    return '';
+  } catch (e) {
+    return '';
+  }
+};
       return (
         <div className="nav-section">
           <h4 className="nav-section-title">MASTER APPLICATION</h4>
@@ -641,22 +689,22 @@ const handleSignOut = () => {
           <h4 className="nav-section-title">APPLICATION</h4>
           <ul className="nav-menu">
             {/* Master Application Section */}
-            <ExpandableNav 
-              label="Master Application" 
-              isExpanded={expandedSections.masterApplication}
-              onToggle={() => toggleSection('masterApplication')} 
-              badge={`${masterAppProgressDisplay}%`}
-            >
-              {[
-                { id: 'personal',    label: 'Personal Information' },
-                { id: 'contact',     label: 'Contact Details' },
-                { id: 'course',      label: 'Course Selection' },
-                { id: 'academic',    label: 'Academic History' },
-                { id: 'tests',       label: 'Test Scores' },
-                { id: 'documents',   label: 'Documents' },
-                
-                { id: 'preview',     label: 'Preview & Submit' },
-              ].map((step, index) => (
+           <ExpandableNav 
+  label="Master Application" 
+  isExpanded={expandedSections.masterApplication}
+  onToggle={() => toggleSection('masterApplication')} 
+  badge={`${masterAppProgressDisplay}%`}
+>
+  {[
+    { id: 'overview',    label: 'Overview' },
+    { id: 'personal',    label: 'Personal Information' },
+    { id: 'contact',     label: 'Contact Details' },
+    { id: 'course',      label: 'Course Selection' },
+    { id: 'academic',    label: 'Academic History' },
+    { id: 'tests',       label: 'Test Scores' },
+    { id: 'documents',   label: 'Documents' },
+    { id: 'preview',     label: 'Preview & Submit' },
+  ].map((step, index) => (
                 <SubItem
                   key={step.id}
                   label={`${index + 1}. ${step.label}`}

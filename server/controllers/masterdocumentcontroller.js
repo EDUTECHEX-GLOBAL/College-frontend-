@@ -15,9 +15,26 @@ export const getDocuments = async (req, res) => {
 
     const documents = await MasterDocument.findOne({ userId });
 
+    // ✅ FIX: Generate fresh presigned URLs for all uploaded fields before sending
+    if (documents) {
+      const DOCUMENT_FIELDS = [
+        "passport", "photo", "cert10th", "cert12th",
+        "bachelorTranscript", "bachelorDegree", "provisionalCertificate",
+        "consolidatedMarksheet", "resumeCv", "statementOfPurpose",
+        "lettersOfRecommendation", "englishCertificate", "testScores", "workExperience",
+      ];
+
+      for (const field of DOCUMENT_FIELDS) {
+        if (documents[field]?.fileKey) {
+          documents[field].fileUrl = await getDynamicFileUrl(documents[field].fileKey);
+        }
+      }
+    }
+
+    // ✅ FIX: key must be `documents`, not `data` — frontend checks result.documents
     res.json({
       success: true,
-      data: documents || {},
+      documents: documents || {},  // was: data
     });
   } catch (error) {
     console.error("❌ Error in getDocuments:", error);
@@ -48,10 +65,8 @@ export const uploadDocument = async (req, res) => {
       });
     }
 
-    // Find existing document
     let doc = await MasterDocument.findOne({ userId });
 
-    // Create new if not exists
     if (!doc) {
       doc = new MasterDocument({ userId });
     }
@@ -59,13 +74,11 @@ export const uploadDocument = async (req, res) => {
     const fileData = {
       fileName: req.file.key,
       fileKey: req.file.key,
-      fileUrl: getDynamicFileUrl(req.file.key),
+      fileUrl: await getDynamicFileUrl(req.file.key),
       originalName: req.file.originalname,
     };
 
-    // Assign dynamically (passport, resume, etc.)
     doc[field] = fileData;
-
     await doc.save();
 
     res.json({
@@ -106,14 +119,11 @@ export const deleteDocument = async (req, res) => {
 
     const fileKey = doc[field]?.fileKey;
 
-    // Delete file from storage (S3/local/etc.)
     if (fileKey) {
       await deleteFile(fileKey);
     }
 
-    // Remove from DB
     doc[field] = null;
-
     await doc.save();
 
     res.json({

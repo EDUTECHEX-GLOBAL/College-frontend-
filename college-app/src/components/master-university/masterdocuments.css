@@ -162,6 +162,45 @@
 }
 
 /* ============================================================
+   MISSING REQUIRED DOCUMENTS WARNING
+============================================================ */
+.masterdocs-missing-warning {
+  background: #fef3c7;
+  border: 1.5px solid #f59e0b;
+  border-radius: 10px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.masterdocs-missing-warning-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.masterdocs-missing-warning-title {
+  margin: 0 0 6px;
+  font-weight: 700;
+  color: #92400e;
+  font-size: 14px;
+  font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
+}
+
+.masterdocs-missing-warning-list {
+  margin: 0;
+  padding-left: 18px;
+  color: #b45309;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.masterdocs-missing-warning-list li {
+  list-style-type: disc;
+}
+
+/* ============================================================
    CATEGORY ACCORDION
 ============================================================ */
 .masterdocs-category {
@@ -722,6 +761,8 @@
   .masterdocs-header-top { flex-wrap: wrap; }
 
   .masterdocs-summary-stats { gap: 16px; }
+
+  .masterdocs-missing-warning { flex-direction: column; gap: 8px; }
 }
 
 @media (max-width: 480px) {
@@ -739,6 +780,9 @@
 
   .masterdocs-cert-yn-row { flex-direction: column; }
   .masterdocs-cert-monthyear-row { flex-direction: column; }
+
+  .masterdocs-missing-warning-title { font-size: 13px; }
+  .masterdocs-missing-warning-list  { font-size: 12px; }
 }
 
 /* ============================================================
@@ -759,4 +803,5 @@
   .masterdocs-form   { animation: none; }
   .masterdocs-input  { border: 1px solid #cbd5e1; background: white; }
   .masterdocs-note   { background: none; border: 1px solid #cbd5e1; }
+  .masterdocs-missing-warning { background: none; border: 1px solid #f59e0b; }
 }

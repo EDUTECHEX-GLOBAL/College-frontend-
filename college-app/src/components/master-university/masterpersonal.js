@@ -15,8 +15,46 @@ const MasterPersonal = ({ data, updateData }) => {
   const [errors, setErrors] = useState({});
   const isInitialMount = useRef(true);
   const debounceRef = useRef(null);
+  const isSavingRef = useRef(false);
+  const lastSavedRef = useRef(null);
 
-  // Load data from parent (edit mode)
+  // ── FETCH FROM BACKEND ON MOUNT ──
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const res = await fetch("http://localhost:5000/api/master-personal", {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        const result = await res.json();
+
+        if (result.success && result.data && result.data.length > 0) {
+          const latest = result.data[0];
+          console.log("✅ Loaded from DB:", latest);
+
+          const formatted = {
+            ...latest,
+            dateOfBirth: latest.dateOfBirth
+              ? new Date(latest.dateOfBirth).toISOString().split('T')[0]
+              : ''
+          };
+
+          setFormData(formatted);
+          lastSavedRef.current = formatted;
+        }
+      } catch (error) {
+        console.error("❌ Fetch Error:", error);
+      }
+    };
+
+    fetchData();
+  }, []); // runs once on mount
+
+  // ── LOAD DATA FROM PARENT (edit mode) ──
   useEffect(() => {
     if (data && Object.keys(data).length > 0) {
       const { _isValid, ...rest } = data;
@@ -27,7 +65,7 @@ const MasterPersonal = ({ data, updateData }) => {
     }
   }, [data]);
 
-  // Validation
+  // ── VALIDATION ──
   const validateField = (name, value) => {
     let error = '';
 
@@ -70,81 +108,72 @@ const MasterPersonal = ({ data, updateData }) => {
     return error;
   };
 
-  // Handle Change
+  // ── HANDLE CHANGE ──
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     setFormData(prev => ({ ...prev, [name]: value }));
-
     const error = validateField(name, value);
     setErrors(prev => ({ ...prev, [name]: error }));
   };
 
-  // Handle Blur
+  // ── HANDLE BLUR ──
   const handleBlur = (e) => {
     const { name, value } = e.target;
     const error = validateField(name, value);
     setErrors(prev => ({ ...prev, [name]: error }));
   };
 
-// 🔒 Prevent multiple simultaneous saves
-const isSavingRef = useRef(false);
+  // ── SAVE TO BACKEND ──
+  const saveDataToBackend = async () => {
+    try {
+      if (isSavingRef.current) return;
 
-// 🧠 Track last saved data (avoid unnecessary API calls)
-const lastSavedRef = useRef(null);
+      const cleanData = { ...formData };
+      delete cleanData._id;
 
-// API CALL (Create / Update)
-const saveDataToBackend = async () => {
-  try {
-    if (isSavingRef.current) return;
-
-    // ❌ Remove _id before sending
-    const cleanData = { ...formData };
-    delete cleanData._id;
-
-    if (JSON.stringify(lastSavedRef.current) === JSON.stringify(cleanData)) {
-      return;
-    }
-
-    isSavingRef.current = true;
-
-    console.log("🚀 POST API Call", cleanData);
-
-    const res = await fetch("http://localhost:5000/api/master-personal", {
-      method: "POST", // ✅ ALWAYS POST
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(cleanData),
-    });
-
-    const result = await res.json();
-
-    if (result.success) {
-      console.log("✅ Saved:", result.data);
-
-      lastSavedRef.current = cleanData;
-
-      // ✅ Store _id once
-      if (!formData._id && result.data._id) {
-        setFormData(prev => ({
-          ...prev,
-          _id: result.data._id
-        }));
+      if (JSON.stringify(lastSavedRef.current) === JSON.stringify(cleanData)) {
+        return;
       }
 
-    } else {
-      console.error("❌ Save failed:", result.message);
+      isSavingRef.current = true;
+
+      const token = localStorage.getItem('token');
+
+      console.log("🚀 POST API Call", cleanData);
+
+      const res = await fetch("http://localhost:5000/api/master-personal", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(cleanData),
+      });
+
+      const result = await res.json();
+
+      if (result.success) {
+        console.log("✅ Saved:", result.data);
+        lastSavedRef.current = cleanData;
+
+        if (!formData._id && result.data._id) {
+          setFormData(prev => ({
+            ...prev,
+            _id: result.data._id
+          }));
+        }
+      } else {
+        console.error("❌ Save failed:", result.message);
+      }
+
+    } catch (error) {
+      console.error("❌ API Error:", error);
+    } finally {
+      isSavingRef.current = false;
     }
+  };
 
-  } catch (error) {
-    console.error("❌ API Error:", error);
-  } finally {
-    isSavingRef.current = false;
-  }
-};
-
-  // Auto-save with debounce
+  // ── AUTO-SAVE WITH DEBOUNCE ──
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;

@@ -1,42 +1,46 @@
-/* masterpreview.css - Preview Styles */
+/* masterpreview.css - Preview Styles - Plalite Colour Scheme */
 
+/* ============================================================
+   CONTAINER
+============================================================ */
 .master-preview-container {
   display: flex;
   flex-direction: column;
   gap: 28px;
-  animation: fadeIn 0.3s ease-in-out;
+  animation: masterpreview-fadeIn 0.3s ease-in-out;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes masterpreview-fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ============================================================
+   HEADER
+============================================================ */
 .master-preview-header {
   margin-bottom: 8px;
 }
 
 .master-preview-title {
   font-size: 24px;
-  font-weight: 700;
-  color: #1a202c;
+  font-weight: 800;
+  color: #0f172a;
   margin-bottom: 8px;
+  font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
 }
 
 .master-preview-subtitle {
   font-size: 14px;
-  color: #718096;
+  color: #64748b;
   line-height: 1.5;
 }
 
+/* ============================================================
+   SECTION
+============================================================ */
 .master-preview-section {
-  background: #f7fafc;
+  background: #ffffff;
   border-radius: 16px;
   padding: 24px;
   border: 1px solid #e2e8f0;
@@ -44,30 +48,51 @@
 }
 
 .master-preview-section:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(8, 145, 178, 0.08);
 }
 
 .master-preview-section-title {
   font-size: 18px;
   font-weight: 700;
-  color: #2d3748;
-  margin-bottom: 18px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #e2e8f0;
+  color: #0f172a;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e0f2fe;
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
 }
 
-.master-preview-section-title i {
-  color: #667eea;
-  font-size: 18px;
+/* Edit Button */
+.master-preview-edit-btn {
+  background: white;
+  color: #0891b2;
+  border: 1.5px solid #0891b2;
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
+.master-preview-edit-btn:hover {
+  background: #0891b2;
+  color: white;
+  transform: translateY(-1px);
+}
+
+/* ============================================================
+   GRID (for personal / contact / course sections)
+============================================================ */
 .master-preview-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
+  gap: 16px;
 }
 
 .master-preview-item {
@@ -82,19 +107,107 @@
 
 .master-preview-label {
   font-weight: 600;
-  color: #4a5568;
+  color: #334155;
   min-width: 130px;
 }
 
 .master-preview-value {
-  color: #2d3748;
+  color: #0f172a;
   word-break: break-word;
 }
 
-.master-preview-doc {
-  color: #48bb78;
+/* ============================================================
+   DOCUMENTS LIST
+============================================================ */
+.master-preview-docs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
+.master-preview-doc-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid #f1f5f9;
+  flex-wrap: wrap;
+}
+
+.master-preview-doc-row:last-child {
+  border-bottom: none;
+}
+
+/* Left side: label + badge */
+.master-preview-doc-label-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.master-preview-doc-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  white-space: nowrap;
+}
+
+/* Required / Optional badge */
+.master-preview-doc-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.master-preview-doc-badge--required {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.master-preview-doc-badge--optional {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+/* Right side: status value */
+.master-preview-doc-status {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 260px;
+  flex-shrink: 0;
+}
+
+/* ✓ Uploaded — green */
+.master-preview-doc-status--uploaded {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+/* ✗ Required but missing — red */
+.master-preview-doc-status--missing {
+  color: #dc2626;
+  font-style: italic;
+}
+
+/* — Optional and not uploaded — grey */
+.master-preview-doc-status--optional {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+/* ============================================================
+   ACADEMIC ENTRY
+============================================================ */
 .master-preview-academic-entry {
   margin-bottom: 16px;
   padding-bottom: 12px;
@@ -109,67 +222,409 @@
 
 .master-preview-academic-title {
   font-weight: 700;
-  color: #2d3748;
+  color: #0f172a;
   margin-bottom: 6px;
 }
 
 .master-preview-academic-details {
   font-size: 13px;
-  color: #718096;
+  color: #64748b;
   line-height: 1.5;
 }
 
+/* ============================================================
+   EMPTY STATE
+============================================================ */
 .master-preview-empty {
-  color: #a0aec0;
+  color: #94a3b8;
   font-style: italic;
   padding: 12px 0;
   text-align: center;
 }
 
-.master-preview-declaration {
-  background: #f0fff4;
-  border-color: #c6f6d5;
+/* ============================================================
+   TEST SCORES SECTION
+============================================================ */
+.master-preview-test-scores {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
+.master-preview-test-category-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  margin-bottom: 10px;
+}
+
+.master-preview-test-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.master-preview-test-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.master-preview-test-header {
+  font-weight: 700;
+  font-size: 14px;
+  color: #334155;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.master-preview-test-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #0891b2;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.master-preview-test-name {
+  color: #0f172a;
+}
+
+.master-preview-test-attempt-badge {
+  font-size: 11px;
+  background: #f0f9ff;
+  color: #0e7490;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.master-preview-test-attempt {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.master-preview-test-attempt:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.master-preview-test-attempt-label {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.master-preview-test-score-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 8px;
+}
+
+.master-preview-test-score-box {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.master-preview-test-score-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+}
+
+.master-preview-test-score-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.master-preview-test-future-dates {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #e2e8f0;
+  font-size: 12px;
+}
+
+.master-preview-test-future-label {
+  color: #64748b;
+  font-weight: 600;
+}
+
+.master-preview-test-future-value {
+  color: #334155;
+}
+
+/* ============================================================
+   DECLARATION SECTION
+============================================================ */
+.master-preview-declaration {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.master-preview-declaration-statements {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.master-preview-declaration-statement {
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.master-preview-declaration-statement:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.master-preview-declaration-statement-title {
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.master-preview-declaration-statement-desc {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.master-preview-declaration-divider {
+  border-top: 2px solid #bae6fd;
+  margin-bottom: 16px;
+}
+
+/* Checkbox Label */
+.master-preview-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  cursor: pointer;
+  padding: 16px;
+  border-radius: 12px;
+  border: 2px solid #e2e8f0;
+  background: white;
+  margin-bottom: 14px;
+  transition: all 0.3s ease;
+}
+
+.master-preview-checkbox-label.checked {
+  border-color: #0891b2;
+  background: #f0f9ff;
+}
+
+.master-preview-checkbox-label.warning {
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+
+/* Hide default checkbox */
+.master-preview-checkbox-label input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Custom Checkbox */
+.master-preview-custom-checkbox {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  border: 2px solid #cbd5e1;
+  border-radius: 6px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  margin-top: 2px;
+}
+
+.master-preview-checkbox-label.checked .master-preview-custom-checkbox {
+  background: #0891b2;
+  border-color: #0891b2;
+}
+
+.master-preview-checkmark {
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Checkbox Text */
+.master-preview-checkbox-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #334155;
+  font-weight: 600;
+  flex: 1;
+}
+
+.master-preview-checkbox-label.checked .master-preview-checkbox-text {
+  color: #0e7490;
+}
+
+/* Declaration Status */
 .master-preview-declaration-status {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 12px 16px;
   border-radius: 12px;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 14px;
+  margin-bottom: 12px;
 }
 
-.master-preview-approved {
-  background: #48bb78;
-  color: white;
+.master-preview-declaration-status.approved {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
 }
 
-.master-preview-pending {
-  background: #fef5e7;
-  color: #d69e2e;
+.master-preview-declaration-status.pending {
+  background: #fffbeb;
+  color: #92400e;
+  border: 1px solid #fde68a;
 }
 
+/* Legal Notice */
+.master-preview-legal-notice {
+  margin-top: 14px;
+  padding: 12px 16px;
+  background: #f0f9ff;
+  border-radius: 12px;
+  border: 1px solid #bae6fd;
+  font-size: 13px;
+  color: #0e7490;
+  line-height: 1.6;
+}
+
+.master-preview-legal-notice strong {
+  font-weight: 700;
+  color: #0891b2;
+}
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
 @media (max-width: 768px) {
   .master-preview-grid {
     grid-template-columns: 1fr;
     gap: 12px;
   }
-  
+
   .master-preview-item-full {
     grid-column: span 1;
   }
-  
-  .master-preview-title {
-    font-size: 20px;
+
+  .master-preview-title   { font-size: 20px; }
+  .master-preview-section { padding: 18px; }
+
+  .master-preview-label { min-width: 100px; }
+
+  .master-preview-test-score-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   }
-  
+
+  .master-preview-doc-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .master-preview-doc-status {
+    max-width: 100%;
+    white-space: normal;
+  }
+}
+
+@media (max-width: 480px) {
+  .master-preview-title    { font-size: 18px; }
+  .master-preview-subtitle { font-size: 12px; }
+  .master-preview-section  { padding: 14px; }
+
+  .master-preview-section-title {
+    font-size: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .master-preview-edit-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .master-preview-item {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .master-preview-label { min-width: auto; }
+
+  .master-preview-test-score-grid { grid-template-columns: 1fr; }
+
+  .master-preview-checkbox-label { padding: 12px; }
+  .master-preview-checkbox-text  { font-size: 13px; }
+
+  .master-preview-doc-label  { font-size: 12px; }
+  .master-preview-doc-status { font-size: 12px; }
+}
+
+/* ============================================================
+   ACCESSIBILITY - REDUCED MOTION
+============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  @keyframes masterpreview-fadeIn {
+    from { opacity: 1; transform: translateY(0); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+}
+
+/* ============================================================
+   PRINT STYLES
+============================================================ */
+@media print {
+  .master-preview-container { animation: none; }
+  .master-preview-edit-btn  { display: none; }
+
   .master-preview-section {
-    padding: 18px;
+    break-inside: avoid;
+    border: 1px solid #e2e8f0;
+    background: white;
   }
-  
-  .master-preview-label {
-    min-width: 100px;
+
+  .master-preview-checkbox-label {
+    border: 1px solid #cbd5e1;
+    background: white;
   }
+
+  .master-preview-doc-status--uploaded { color: #16a34a; }
+  .master-preview-doc-status--missing  { color: #dc2626; }
+  .master-preview-doc-status--optional { color: #94a3b8; }
 }

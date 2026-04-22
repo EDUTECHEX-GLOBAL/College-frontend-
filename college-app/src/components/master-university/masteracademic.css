@@ -311,3 +311,31 @@
     transition-duration: 0.01ms !important;
   }
 }
+.masteracademic-bachelor-warning {
+  background: #fef3c7;
+  border: 1.5px solid #f59e0b;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-top: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.masteracademic-bachelor-warning-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.masteracademic-bachelor-warning-title {
+  margin: 0;
+  font-weight: 600;
+  color: #92400e;
+  font-size: 14px;
+}
+
+.masteracademic-bachelor-warning-text {
+  margin: 4px 0 0;
+  color: #b45309;
+  font-size: 13px;
+}

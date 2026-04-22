@@ -1,7 +1,12 @@
 // server/middleware/uploadMiddleware.js
 import multer from "multer";
 import multerS3 from "multer-s3";
-import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  DeleteObjectCommand,
+  GetObjectCommand,
+} from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -40,7 +45,9 @@ const fileFilter = (req, file, cb) => {
   ];
 
   if (!allowedMimeTypes.includes(file.mimetype)) {
-    const error = new Error("Invalid file type. Allowed: PDF, JPG, PNG, DOC, DOCX");
+    const error = new Error(
+      "Invalid file type. Allowed: PDF, JPG, PNG, DOC, DOCX"
+    );
     req.fileValidationError = error.message;
     console.log("❌ File rejected:", error.message);
     return cb(error, false);
@@ -106,17 +113,51 @@ export const nationalIdUpload = createUploader("nationalId", 10);
 export const upload = createUploader;
 
 // =====================================================
-// FILE URL HELPER
+// GENERATE PRESIGNED URL (replaces getDynamicFileUrl)
+// Use this anywhere you need to serve a file to the client.
+// The URL expires after `expiresInSeconds` (default: 1 hour).
 // =====================================================
-export const getFileUrl = (filename) => {
-  return `https://${BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/education/${filename}`;
+export const getPresignedUrl = async (s3Key, expiresInSeconds = 3600) => {
+  if (!s3Key) {
+    console.warn("⚠️ getPresignedUrl called with empty s3Key");
+    return null;
+  }
+
+  try {
+    const command = new GetObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: s3Key,
+    });
+
+    const signedUrl = await getSignedUrl(s3, command, {
+      expiresIn: expiresInSeconds,
+    });
+
+    console.log(`🔗 Presigned URL generated for key: ${s3Key}`);
+    return signedUrl;
+  } catch (err) {
+    console.error("❌ Failed to generate presigned URL:", err);
+    throw err;
+  }
+};
+
+// =====================================================
+// FILE URL HELPER
+// NOTE: Returns a presigned URL — must be awaited.
+// Kept for backward compatibility with existing controllers.
+// =====================================================
+export const getFileUrl = async (filename, expiresInSeconds = 3600) => {
+  const s3Key = `education/${filename}`;
+  return await getPresignedUrl(s3Key, expiresInSeconds);
 };
 
 // =====================================================
 // DYNAMIC FILE URL HELPER
+// NOTE: Now returns a presigned URL — must be awaited.
+// Replace getDynamicFileUrl(key) → await getDynamicFileUrl(key)
 // =====================================================
-export const getDynamicFileUrl = (s3Key) => {
-  return `https://${BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
+export const getDynamicFileUrl = async (s3Key, expiresInSeconds = 3600) => {
+  return await getPresignedUrl(s3Key, expiresInSeconds);
 };
 
 // =====================================================
@@ -184,33 +225,35 @@ export const UPLOAD_DIR = `s3://${BUCKET_NAME}/education`;
 
 // =====================================================
 // BACKWARD COMPATIBILITY STUBS
-// (These functions handled local folders — not needed for S3
-//  but kept so existing controllers don't break)
 // =====================================================
 
-// ensureDirectoryExists → No-op for S3 (folders are virtual in S3)
 export const ensureDirectoryExists = (folderName) => {
-  console.log(`ℹ️ ensureDirectoryExists called for "${folderName}" — skipped (using S3)`);
+  console.log(
+    `ℹ️ ensureDirectoryExists called for "${folderName}" — skipped (using S3)`
+  );
   return `s3://${BUCKET_NAME}/${folderName}`;
 };
 
-// quickValidateFile → Basic validation stub for S3 keys
 export const quickValidateFile = async (filePathOrKey, fileType) => {
   if (!filePathOrKey) {
     return { valid: false, message: "No file path or S3 key provided" };
   }
-  console.log(`ℹ️ quickValidateFile called for type "${fileType}" — basic check only (S3 mode)`);
+  console.log(
+    `ℹ️ quickValidateFile called for type "${fileType}" — basic check only (S3 mode)`
+  );
   return { valid: true, message: "File reference exists (S3 mode)" };
 };
 
-// checkUploadPermissions → No-op for S3
 export const checkUploadPermissions = () => {
-  console.log("ℹ️ checkUploadPermissions called — skipped (using S3, no local dirs needed)");
+  console.log(
+    "ℹ️ checkUploadPermissions called — skipped (using S3, no local dirs needed)"
+  );
 };
 
-// validateUploadedDocument → Stub for S3
 export const validateUploadedDocument = async (filePath, expectedType) => {
-  console.log(`ℹ️ validateUploadedDocument called for type "${expectedType}" — basic check (S3 mode)`);
+  console.log(
+    `ℹ️ validateUploadedDocument called for type "${expectedType}" — basic check (S3 mode)`
+  );
   return {
     valid: true,
     confidence: 1,
@@ -219,9 +262,14 @@ export const validateUploadedDocument = async (filePath, expectedType) => {
   };
 };
 
-// validateUploadedDocumentInFolder → Stub for S3
-export const validateUploadedDocumentInFolder = async (filePath, expectedType, folder = "education") => {
-  console.log(`ℹ️ validateUploadedDocumentInFolder called for "${folder}/${expectedType}" — basic check (S3 mode)`);
+export const validateUploadedDocumentInFolder = async (
+  filePath,
+  expectedType,
+  folder = "education"
+) => {
+  console.log(
+    `ℹ️ validateUploadedDocumentInFolder called for "${folder}/${expectedType}" — basic check (S3 mode)`
+  );
   return {
     valid: true,
     confidence: 1,
@@ -241,6 +289,7 @@ export default {
   nationalIdUpload,
   getFileUrl,
   getDynamicFileUrl,
+  getPresignedUrl,
   deleteFile,
   deleteFileFromFolder,
   validateFileUpload,

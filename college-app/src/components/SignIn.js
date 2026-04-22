@@ -89,36 +89,43 @@ const SignIn = () => {
       });
 
       console.log("Response data:", response.data);
+if (response.data.success && response.data.token) {
+  console.log("Token received");
 
-      if (response.data.success && response.data.token) {
-        console.log("Token received");
+  // ✅ Step 1: Always store auth data first
+  localStorage.setItem("token", response.data.token);
+  localStorage.setItem("userData", JSON.stringify(response.data.user));
+  localStorage.setItem("studentType", "firstyear");
+  localStorage.setItem("userEmail", email);
 
-        // Step 1: Set new token and user data FIRST
-        localStorage.setItem("token", response.data.token);
-        localStorage.setItem("userData", JSON.stringify(response.data.user));
-        localStorage.setItem("studentType", "firstyear");
-        localStorage.setItem("userEmail", email);
+  // ✅ Step 2: Check profile completion (Backend FIRST, fallback to localStorage)
+  const isProfileCompleted =
+    response.data.user?.profileCompleted === true ||
+    localStorage.getItem("profileCompleted") === "true";
 
-        // Step 2: NOW check if profile is completed (profileCompleted still exists)
-        if (hasCompletedProfile()) {
-          console.log("Profile already completed - Redirecting to dashboard");
-          navigate("/firstyear/dashboard");
-        } else {
-          // Step 3: Only clear if going to profile (new/incomplete student)
-          console.log("Profile not completed - Redirecting to profile");
-          clearUserData();
-          // Re-set essentials after clearing
-          localStorage.setItem("token", response.data.token);
-          localStorage.setItem("userData", JSON.stringify(response.data.user));
-          localStorage.setItem("studentType", "firstyear");
-          localStorage.setItem("userEmail", email);
-          navigate("/profile");
-        }
+  if (isProfileCompleted) {
+    console.log("Profile already completed - Redirecting to dashboard");
 
-      } else {
-        console.error("Response missing success or token");
-        setError(response.data.message || "Sign in failed. Please try again.");
-      }
+    // ✅ Keep profile flags consistent (important for future reloads)
+    localStorage.setItem("profileCompleted", "true");
+    localStorage.setItem("userProfile", JSON.stringify(response.data.user));
+
+    navigate("/firstyear/dashboard");
+
+  } else {
+    console.log("Profile not completed - Redirecting to profile");
+
+    // ⚠️ Clear only unnecessary data (avoid breaking auth flow)
+    localStorage.removeItem('profileCompleted');
+    localStorage.removeItem('userProfile');
+
+    navigate("/profile");
+  }
+
+} else {
+  console.error("Response missing success or token");
+  setError(response.data.message || "Sign in failed. Please try again.");
+}
     } catch (err) {
       console.error("Sign in error:", err);
       if (err.response?.status === 401) {
