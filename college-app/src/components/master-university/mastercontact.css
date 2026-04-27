@@ -248,3 +248,109 @@
 
   .mastercontact-dropdown { display: none; }
 }
+/* ─── ADD THESE to your existing mastercontact.css ─────────────────────────── */
+
+/* Dropdown container — wraps search + list */
+.mastercontact-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+/* Search input wrapper */
+.mastercontact-dropdown-search-wrap {
+  padding: 8px 8px 4px;
+  border-bottom: 1px solid #f1f5f9;
+  background: #f8fafc;
+}
+
+/* Search input */
+.mastercontact-dropdown-search {
+  width: 100%;
+  padding: 7px 10px;
+  font-size: 13px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  outline: none;
+  background: #fff;
+  color: #111827;
+  transition: border-color 0.15s;
+}
+
+.mastercontact-dropdown-search:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+}
+
+/* Scrollable list */
+.mastercontact-dropdown-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  max-height: 220px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.mastercontact-dropdown-list::-webkit-scrollbar {
+  width: 5px;
+}
+.mastercontact-dropdown-list::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+.mastercontact-dropdown-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+/* Each item */
+.mastercontact-dropdown-item {
+  padding: 8px 14px 8px 32px;
+  font-size: 13px;
+  color: #374151;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.1s;
+}
+
+.mastercontact-dropdown-item:hover {
+  background: #eff6ff;
+  color: #1e40af;
+}
+
+/* Active/selected item */
+.mastercontact-dropdown-item-active {
+  background: #eff6ff;
+  color: #1e40af;
+  font-weight: 600;
+}
+
+/* Checkmark for selected */
+.mastercontact-dropdown-check {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* No results */
+.mastercontact-dropdown-no-results {
+  color: #9ca3af;
+  font-style: italic;
+  cursor: default;
+  padding-left: 14px;
+}
+.mastercontact-dropdown-no-results:hover {
+  background: transparent;
+  color: #9ca3af;
+}

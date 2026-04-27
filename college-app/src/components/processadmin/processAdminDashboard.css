@@ -114,16 +114,12 @@ body {
   display: flex; align-items: center;
   min-width: 0; flex: 1; overflow: hidden;
 }
-
 .pad-logo-svg {
-  /* Show full logo at sidebar open width */
   width: 148px;
   height: auto;
   display: block;
   flex-shrink: 0;
 }
-
-/* When sidebar is closed, hide the logo SVG */
 .process-admin-dashboard .sidebar.closed .pad-logo-wrap { display: none; }
 
 .process-admin-dashboard .sidebar-toggle {
@@ -138,8 +134,6 @@ body {
 .process-admin-dashboard .sidebar-toggle:hover {
   background: var(--primary); color: #fff; border-color: var(--primary);
 }
-
-/* When closed — show small icon placeholder */
 .process-admin-dashboard .sidebar.closed .sidebar-header {
   justify-content: center; padding: 14px 8px;
 }
@@ -208,9 +202,12 @@ body {
   flex-shrink: 0; transition: background var(--t), color var(--t);
 }
 .process-admin-dashboard .sb-ico-sm { width: 22px; height: 22px; border-radius: 5px; }
-.process-admin-dashboard .sb-teal  { background: var(--primary-lt); color: var(--primary); }
-.process-admin-dashboard .sb-blue  { background: var(--blue-lt); color: var(--blue); }
-.process-admin-dashboard .sb-amber { background: var(--amber-lt); color: var(--amber); }
+.process-admin-dashboard .sb-teal   { background: var(--primary-lt); color: var(--primary); }
+.process-admin-dashboard .sb-blue   { background: var(--blue-lt);    color: var(--blue); }
+.process-admin-dashboard .sb-amber  { background: var(--amber-lt);   color: var(--amber); }
+
+/* ── NEW: Master University sidebar icon colour ── */
+.process-admin-dashboard .sb-indigo { background: var(--violet-lt); color: var(--violet); }
 
 .process-admin-dashboard .sidebar.closed .sub-menu       { display: none; }
 .process-admin-dashboard .sidebar.closed .dropdown-arrow { display: none; }
@@ -518,11 +515,489 @@ body {
 ════════════════════════════════════ */
 .process-admin-dashboard .dashboard-footer { background: var(--surface); padding: 12px 24px; text-align: center; border-top: 1px solid var(--border); color: var(--text-lt); font-size: 12px; font-weight: 500; flex-shrink: 0; }
 
+
+/* ══════════════════════════════════════════════════════
+   MASTER UNIVERSITY — embedded panel overrides
+   MasterUniversity.js renders inside .content-area, so
+   its full-page layout (.mu-wrapper, .mu-sidebar,
+   .mu-topbar, .mu-main) must be neutralised and all its
+   components restyled to fit the parent dashboard shell.
+══════════════════════════════════════════════════════ */
+
+/* 1. Reset the full-page wrapper */
+.mu-wrapper {
+  display: block !important;
+  min-height: unset !important;
+  background: transparent !important;
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+}
+
+/* 2. Hide the duplicate sidebar, topbar, and standalone footer
+      that MasterUniversity renders — the parent dashboard already
+      has all of these. */
+.mu-wrapper .mu-sidebar,
+.mu-wrapper .mu-topbar,
+.mu-wrapper .mu-sidebar-logo,
+.mu-wrapper .mu-sidebar-logout {
+  display: none !important;
+}
+
+/* 3. Remove the left margin that was meant to clear the sidebar */
+.mu-wrapper .mu-main {
+  margin-left: 0 !important;
+  display: block !important;
+  min-height: unset !important;
+}
+
+/* 4. Banner — align with dashboard card style */
+.mu-wrapper .mu-banner {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.mu-wrapper .mu-banner-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+}
+
+.mu-wrapper .mu-banner-uni-badge {
+  background: var(--primary-lt);
+  color: var(--primary-dk);
+  border: 1px solid var(--primary-bd);
+  border-radius: 999px;
+  padding: 3px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'Outfit', sans-serif;
+}
+
+/* 5. Stat cards — 4 columns, match parent card style */
+.mu-wrapper .mu-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.mu-wrapper .mu-stat-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  border: 1.5px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  border-top-width: 4px;
+  transition: transform var(--t), box-shadow var(--t);
+}
+.mu-wrapper .mu-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.mu-wrapper .mu-stat-card--total     { border-top-color: var(--primary); }
+.mu-wrapper .mu-stat-card--incomplete { border-top-color: var(--amber); }
+.mu-wrapper .mu-stat-card--completed  { border-top-color: #22c55e; }
+.mu-wrapper .mu-stat-card--inprogress { border-top-color: var(--blue); }
+
+.mu-wrapper .mu-stat-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .6px;
+  color: var(--text-lt);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  font-family: 'Outfit', sans-serif;
+}
+
+.mu-wrapper .mu-stat-value {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+  letter-spacing: -1px;
+  font-family: 'Outfit', sans-serif;
+}
+
+/* 6. Table section card */
+.mu-wrapper .mu-table-section {
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1.5px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  margin: 0;
+}
+
+/* 7. University quick-tab strip */
+.mu-wrapper .mu-uni-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  padding: 0 16px;
+  background: var(--primary-lt);
+  scrollbar-width: none;
+}
+.mu-wrapper .mu-uni-tabs::-webkit-scrollbar { display: none; }
+
+.mu-wrapper .mu-uni-tab {
+  padding: 10px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-mid);
+  background: transparent;
+  border: none;
+  border-bottom: 2.5px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--t), border-color var(--t);
+  font-family: 'Outfit', sans-serif;
+}
+.mu-wrapper .mu-uni-tab:hover { color: var(--primary); }
+.mu-wrapper .mu-uni-tab--active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  font-weight: 700;
+}
+
+/* 8. Filter row */
+.mu-wrapper .mu-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.mu-wrapper .mu-table-search {
+  flex: 1;
+  min-width: 180px;
+  max-width: 360px;
+  padding: 8px 14px 8px 38px;
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  font-size: 13px;
+  outline: none;
+  background: #f8fafc;
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  transition: border-color var(--t), box-shadow var(--t);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 12px center;
+}
+.mu-wrapper .mu-table-search:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(20,184,166,0.12);
+  background-color: #fff;
+}
+
+.mu-wrapper .mu-filter-btns {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.mu-wrapper .mu-filter-btn {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text-mid);
+  cursor: pointer;
+  transition: all var(--t);
+  font-family: 'Outfit', sans-serif;
+}
+.mu-wrapper .mu-filter-btn:hover { border-color: var(--primary); color: var(--primary); }
+.mu-wrapper .mu-filter-btn--active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+/* 9. Table */
+.mu-wrapper .mu-table-wrap { overflow-x: auto; }
+
+.mu-wrapper .mu-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  font-family: 'Outfit', sans-serif;
+}
+
+.mu-wrapper .mu-table thead tr {
+  background: var(--primary-lt);
+  border-bottom: 1px solid var(--border);
+}
+
+.mu-wrapper .mu-table thead th {
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  color: var(--primary);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.mu-wrapper .mu-table-row {
+  border-bottom: 1px solid var(--border);
+  transition: background var(--t);
+}
+.mu-wrapper .mu-table-row:last-child { border-bottom: none; }
+.mu-wrapper .mu-table-row:hover { background: var(--primary-lt); }
+
+.mu-wrapper .mu-table td {
+  padding: 13px 16px;
+  vertical-align: middle;
+}
+
+/* 10. Application ID badge */
+.mu-wrapper .mu-app-id {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--primary-dk);
+  background: var(--primary-lt);
+  border: 1px solid var(--primary-bd);
+  border-radius: 20px;
+  padding: 2px 10px;
+  display: inline-block;
+  margin-bottom: 4px;
+  font-family: 'Outfit', sans-serif;
+}
+
+.mu-wrapper .mu-app-subid {
+  font-size: 11px;
+  color: var(--text-lt);
+  font-family: 'Outfit', sans-serif;
+}
+
+/* 11. University name pill — teal to match design system */
+.mu-wrapper .mu-uni-name-cell {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary-dk);
+  background: var(--primary-lt);
+  border: 1px solid var(--primary-bd);
+  border-radius: 20px;
+  padding: 4px 12px;
+  display: inline-block;
+  white-space: nowrap;
+  font-family: 'Outfit', sans-serif;
+}
+
+/* 12. Student cell */
+.mu-wrapper .mu-student-cell {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.mu-wrapper .mu-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dk));
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-family: 'Outfit', sans-serif;
+}
+
+.mu-wrapper .mu-student-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+}
+
+.mu-wrapper .mu-student-email {
+  font-size: 11.5px;
+  color: var(--blue);
+  font-family: 'Outfit', sans-serif;
+}
+
+.mu-wrapper .mu-student-phone {
+  font-size: 11.5px;
+  color: var(--primary);
+  font-family: 'Outfit', sans-serif;
+}
+
+/* 13. Status badges — aligned with global .status-badge */
+.mu-wrapper .mu-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  font-family: 'Outfit', sans-serif;
+  white-space: nowrap;
+}
+.mu-wrapper .status-completed  { background: var(--primary-lt); color: var(--primary-dk); }
+.mu-wrapper .status-incomplete { background: #fff1f2;           color: var(--danger); }
+.mu-wrapper .status-inprogress { background: var(--blue-lt);   color: var(--blue); }
+
+/* 14. Submitted date */
+.mu-wrapper .mu-submitted {
+  font-size: 12.5px;
+  color: var(--text-mid);
+  white-space: nowrap;
+  font-family: 'Outfit', sans-serif;
+}
+
+/* 15. Progress bar */
+.mu-wrapper .mu-progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 110px;
+}
+
+.mu-wrapper .mu-progress-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.mu-wrapper .mu-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--primary-dk));
+  border-radius: 4px;
+  transition: width .4s ease;
+}
+
+.mu-wrapper .mu-progress-pct {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  font-family: 'Outfit', sans-serif;
+}
+
+/* 16. Action buttons */
+.mu-wrapper .mu-action-btns {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+
+.mu-wrapper .mu-btn-view {
+  padding: 6px 14px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  transition: all var(--t);
+}
+.mu-wrapper .mu-btn-view:hover {
+  background: var(--primary-dk);
+  transform: translateY(-1px);
+}
+
+.mu-wrapper .mu-btn-doc {
+  padding: 6px 10px;
+  background: transparent;
+  color: var(--text-mid);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  transition: all var(--t);
+}
+.mu-wrapper .mu-btn-doc:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* 17. Banner action buttons */
+.mu-wrapper .mu-btn {
+  padding: 8px 18px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-family: 'Outfit', sans-serif;
+  transition: all var(--t);
+}
+.mu-wrapper .mu-btn--primary {
+  background: var(--primary);
+  color: #fff;
+}
+.mu-wrapper .mu-btn--primary:hover { background: var(--primary-dk); }
+.mu-wrapper .mu-btn--outline {
+  background: transparent;
+  border: 1.5px solid var(--primary-bd);
+  color: var(--primary);
+}
+.mu-wrapper .mu-btn--outline:hover { background: var(--primary-lt); }
+
+/* 18. Empty state */
+.mu-wrapper .mu-table-empty {
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--text-lt);
+  font-size: 14px;
+  font-family: 'Outfit', sans-serif;
+}
+
+/* 19. Table footer */
+.mu-wrapper .mu-table-footer {
+  padding: 10px 16px;
+  text-align: right;
+  font-size: 12px;
+  color: var(--text-lt);
+  border-top: 1px solid var(--border);
+  font-family: 'Outfit', sans-serif;
+}
+
+/* 20. Banner left flex alignment */
+.mu-wrapper .mu-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.mu-wrapper .mu-banner-right {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
 /* ════════════════════════════════════
    RESPONSIVE — 1200px
 ════════════════════════════════════ */
 @media (max-width: 1200px) {
   .process-admin-dashboard .pad-stats-row { grid-template-columns: repeat(3, 1fr); }
+  .mu-wrapper .mu-stats-row { grid-template-columns: repeat(2, 1fr); }
 }
 
 /* ════════════════════════════════════
@@ -533,6 +1008,9 @@ body {
   .process-admin-dashboard .pad-charts-row { grid-template-columns: 1fr; }
   .process-admin-dashboard .pad-stats-row  { grid-template-columns: repeat(3, 1fr); }
   .process-admin-dashboard .pad-bottom-row { grid-template-columns: 1fr; }
+  .mu-wrapper .mu-stats-row { grid-template-columns: repeat(2, 1fr); }
+  .mu-wrapper .mu-filter-row { flex-wrap: wrap; }
+  .mu-wrapper .mu-filter-btns { margin-left: 0; }
 }
 
 /* ════════════════════════════════════
@@ -568,6 +1046,18 @@ body {
   .process-admin-dashboard .modal-actions { flex-wrap: wrap; }
   .process-admin-dashboard .modal-actions button { flex: 1; min-width: 120px; }
   .pad-logo-svg { width: 130px; }
+
+  /* MasterUniversity mobile */
+  .mu-wrapper .mu-stats-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .mu-wrapper .mu-stat-value { font-size: 26px; }
+  .mu-wrapper .mu-banner { flex-wrap: wrap; gap: 10px; }
+  .mu-wrapper .mu-banner-right { width: 100%; justify-content: flex-end; }
+  .mu-wrapper .mu-uni-tabs { padding: 0 10px; }
+  .mu-wrapper .mu-filter-row { padding: 10px 12px; }
+  .mu-wrapper .mu-table-search { max-width: 100%; }
+  .mu-wrapper .mu-filter-btns { margin-left: 0; }
+  .mu-wrapper .mu-table td,
+  .mu-wrapper .mu-table th { padding: 10px 10px; }
 }
 
 /* ════════════════════════════════════
@@ -588,4 +1078,12 @@ body {
   .process-admin-dashboard .navbar-left h1 { font-size: 14px; }
   .process-admin-dashboard .navbar-left h1 span { display: none; }
   .process-admin-dashboard .dashboard-footer { font-size: 10px; padding: 8px 10px; }
+
+  /* MasterUniversity 480px */
+  .mu-wrapper .mu-stats-row { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .mu-wrapper .mu-stat-value { font-size: 22px; }
+  .mu-wrapper .mu-stat-label { font-size: 9px; }
+  .mu-wrapper .mu-banner-title { font-size: 14px; }
+  .mu-wrapper .mu-table-wrap { overflow-x: auto; }
+  .mu-wrapper .mu-table { min-width: 560px; }
 }

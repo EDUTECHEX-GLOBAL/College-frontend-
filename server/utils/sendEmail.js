@@ -58,15 +58,16 @@ export const sendEmailEnhanced = async (options) => {
       console.error('Missing required email parameters');
       return { success: false, error: 'Missing required parameters' };
     }
-
-    const mailOptions = {
-      from: `"University Admissions" <${process.env.EMAIL_USER}>`,
-      to: to,
-      subject: subject,
-      html: html,
-      text: text || html.replace(/<[^>]*>/g, ''), // Fallback text version
-      replyTo: replyTo || process.env.ADMIN_EMAIL || process.env.EMAIL_USER
-    };
+// In sendEmailEnhanced, add attachments to mailOptions:
+const mailOptions = {
+  from: `"University Admissions" <${process.env.EMAIL_USER}>`,
+  to: to,
+  subject: subject,
+  html: html,
+  text: text || html.replace(/<[^>]*>/g, ''),
+  replyTo: replyTo || process.env.ADMIN_EMAIL || process.env.EMAIL_USER,
+  ...(options.attachments && { attachments: options.attachments }), // ← THIS LINE WAS MISSING
+};
 
     const info = await transporter.sendMail(mailOptions);
     console.log("✅ Email sent successfully to:", to);

@@ -1,21 +1,20 @@
-import express from "express";
+import express from 'express';
 import {
   saveOrUpdateOverview,
   getOverview,
-  deleteOverview,
-} from "../controllers/masteroverviewcontroller.js";
-
-import { authenticateToken } from "../middleware/authMiddleware.js";
+  deleteOverview
+} from '../controllers/masteroverviewcontroller.js';
+import authenticateToken from '../middleware/authmiddleware.js';
 
 const router = express.Router();
 
-// Save or update
-router.post("/save", authenticateToken, saveOrUpdateOverview);
+// POST /api/master-overview/save
+router.post('/save', authenticateToken, saveOrUpdateOverview);
 
-// Get overview
-router.get("/", authenticateToken, getOverview);
+// GET /api/master-overview
+router.get('/', authenticateToken, getOverview);
 
-// Delete (optional)
-router.delete("/", authenticateToken, deleteOverview);
+// DELETE /api/master-overview
+router.delete('/', authenticateToken, deleteOverview);
 
 export default router;

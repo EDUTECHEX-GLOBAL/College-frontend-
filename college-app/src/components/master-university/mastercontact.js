@@ -1,196 +1,242 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './mastercontact.css';
 
+const EMPTY_FORM = {
+  _id: null,
+  emailAddress: '',
+  mobileNumber: '',
+  alternatePhone: '',
+  addressLine1: '',
+  addressLine2: '',
+  city: '',
+  state: '',
+  country: '',
+  postalCode: ''
+};
+
+// ── Full country list ─────────────────────────────────────────────────────────
+const COUNTRIES = [
+  'Afghanistan','Albania','Algeria','Andorra','Angola','Argentina','Armenia',
+  'Australia','Austria','Azerbaijan','Bahamas','Bahrain','Bangladesh','Belarus',
+  'Belgium','Belize','Bhutan','Bolivia','Bosnia and Herzegovina','Botswana',
+  'Brazil','Brunei','Bulgaria','Cambodia','Cameroon','Canada','Chile','China',
+  'Colombia','Costa Rica','Croatia','Cuba','Cyprus','Czech Republic','Denmark',
+  'Dominican Republic','Ecuador','Egypt','El Salvador','Estonia','Ethiopia',
+  'Fiji','Finland','France','Georgia','Germany','Ghana','Greece','Guatemala',
+  'Honduras','Hungary','Iceland','India','Indonesia','Iran','Iraq','Ireland',
+  'Israel','Italy','Jamaica','Japan','Jordan','Kazakhstan','Kenya','Kuwait',
+  'Kyrgyzstan','Latvia','Lebanon','Libya','Lithuania','Luxembourg','Madagascar',
+  'Malawi','Malaysia','Maldives','Malta','Mauritius','Mexico','Moldova',
+  'Mongolia','Montenegro','Morocco','Mozambique','Myanmar','Namibia','Nepal',
+  'Netherlands','New Zealand','Nicaragua','Niger','Nigeria','North Macedonia',
+  'Norway','Oman','Pakistan','Panama','Paraguay','Peru','Philippines','Poland',
+  'Portugal','Qatar','Romania','Russia','Rwanda','Saudi Arabia','Senegal',
+  'Serbia','Singapore','Slovakia','Slovenia','Somalia','South Africa',
+  'South Korea','Spain','Sri Lanka','Sudan','Sweden','Switzerland','Syria',
+  'Taiwan','Tanzania','Thailand','Tunisia','Turkey','Turkmenistan','Uganda',
+  'Ukraine','United Arab Emirates','United Kingdom','United States','Uruguay',
+  'Uzbekistan','Venezuela','Vietnam','Yemen','Zambia','Zimbabwe','Other'
+];
+
 const MasterContact = ({ data, updateData }) => {
-  const [formData, setFormData] = useState({
-    _id: null,
-    emailAddress: '',
-    mobileNumber: '',
-    alternatePhone: '',
-    addressLine1: '',
-    addressLine2: '',
-    city: '',
-    state: '',
-    country: '',
-    postalCode: ''
-  });
+  const [formData,      setFormData]      = useState(EMPTY_FORM);
+  const [errors,        setErrors]        = useState({});
+  const [fetchState,    setFetchState]    = useState('loading');
+  const [countryOpen,   setCountryOpen]   = useState(false);
+  const [countrySearch, setCountrySearch] = useState('');
+  const countryRef      = useRef(null);
+  const searchInputRef  = useRef(null);
 
-  const [errors, setErrors] = useState({});
-  const [countryOpen, setCountryOpen] = useState(false);
-  const countryRef = useRef(null);
+  const debounceRef          = useRef(null);
+  const isSavingRef          = useRef(false);
+  const lastSavedRef         = useRef(null);
+  const lastUpdatedRef       = useRef(null);
+  const lastFetchedUserIdRef = useRef(null);
 
-  const isInitialMount = useRef(true);
-  const debounceRef = useRef(null);
-  const isSavingRef = useRef(false);
-  const lastSavedRef = useRef(null);
-  const lastUpdatedRef = useRef(null);
+  const updateDataRef = useRef(updateData);
+  useEffect(() => { updateDataRef.current = updateData; }, [updateData]);
 
-  const countries = [
-    'United States', 'United Kingdom', 'Canada',
-    'Australia', 'India', 'Germany', 'France', 'Other'
-  ];
+  // ── Filtered countries for search ─────────────────────────────────────────
+  const filteredCountries = countrySearch.trim()
+    ? COUNTRIES.filter(c => c.toLowerCase().includes(countrySearch.toLowerCase()))
+    : COUNTRIES;
 
-  // Close dropdown on outside click
-// ── FETCH FROM BACKEND ON MOUNT ──
-useEffect(() => {
-  const fetchData = async () => {
+  // ── Decode userId from JWT ────────────────────────────────────────────────
+  const getTokenUserId = useCallback(() => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) return;
-
-      const res = await fetch("http://localhost:5000/api/master-contact", {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      const result = await res.json();
-
-      if (result.success && result.data && result.data.length > 0) {
-        const latest = result.data[0];
-        console.log("✅ Contact Loaded from DB:", latest);
-
-        setFormData({
-          _id:            latest._id            || null,
-          emailAddress:   latest.emailAddress   || '',
-          mobileNumber:   latest.mobileNumber   || '',
-          alternatePhone: latest.alternatePhone  || '',
-          addressLine1:   latest.addressLine1   || '',
-          addressLine2:   latest.addressLine2   || '',
-          city:           latest.city           || '',
-          state:          latest.state          || '',
-          country:        latest.country        || '',
-          postalCode:     latest.postalCode     || '',
-        });
-
-        lastSavedRef.current = latest;
-      }
-    } catch (error) {
-      console.error("❌ Fetch Error:", error);
+      if (!token) return null;
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return (payload.userId || payload.id || payload._id || payload.sub || '').toString();
+    } catch {
+      return null;
     }
-  };
-
-  fetchData();
-}, []); // runs once on mount
-
-  // Load data from parent ONLY once (or when data._id changes)
-  useEffect(() => {
-    if (data && Object.keys(data).length > 0) {
-      const { _isValid, ...rest } = data;
-      setFormData(prev => {
-        const isSame = Object.keys(rest).every(k => prev[k] === rest[k]);
-        if (isSame) return prev;
-        return { ...prev, ...rest };
-      });
-    }
-  }, [data?._id]);
-
-  const validateField = useCallback((name, value) => {
-    let error = '';
-    switch (name) {
-      case 'emailAddress':
-        if (!value.trim()) error = 'Email address is required';
-        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
-          error = 'Enter a valid email address';
-        break;
-      case 'mobileNumber':
-        if (!value.trim()) error = 'Mobile number is required';
-        else if (!/^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/.test(value))
-          error = 'Enter a valid mobile number';
-        break;
-      case 'addressLine1':
-        if (!value.trim()) error = 'Address is required';
-        break;
-      case 'city':
-        if (!value.trim()) error = 'City is required';
-        break;
-      case 'state':
-        if (!value.trim()) error = 'State is required';
-        break;
-      case 'country':
-        if (!value.trim()) error = 'Country is required';
-        break;
-      case 'postalCode':
-        if (!value.trim()) error = 'Postal code is required';
-        break;
-      default:
-        break;
-    }
-    return error;
   }, []);
 
-  const handleChange = (e) => {
+  // ── FETCH FROM BACKEND ────────────────────────────────────────────────────
+  useEffect(() => {
+    const currentUserId = getTokenUserId();
+    if (lastFetchedUserIdRef.current === currentUserId && currentUserId !== null) return;
+
+    setFormData(EMPTY_FORM);
+    setErrors({});
+    setFetchState('loading');
+    lastSavedRef.current         = null;
+    lastUpdatedRef.current       = null;
+    lastFetchedUserIdRef.current = currentUserId;
+
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) { setFetchState('ready-empty'); return; }
+
+        const res    = await fetch('http://localhost:5000/api/master-contact/me', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const result = await res.json();
+
+        if (result.success && result.data) {
+          const d = result.data;
+          const formatted = {
+            _id:            d._id            || null,
+            emailAddress:   d.emailAddress   || '',
+            mobileNumber:   d.mobileNumber   || '',
+            alternatePhone: d.alternatePhone || '',
+            addressLine1:   d.addressLine1   || '',
+            addressLine2:   d.addressLine2   || '',
+            city:           d.city           || '',
+            state:          d.state          || '',
+            // ✅ FIX: ensure saved country is always used
+            country:        d.country        || '',
+            postalCode:     d.postalCode     || '',
+          };
+          setFormData(formatted);
+          lastSavedRef.current = formatted;
+          // ✅ FIX: use 'ready-filled' to skip parent-prop override
+          setFetchState('ready-filled');
+        } else {
+          setFetchState('ready-empty');
+        }
+      } catch (err) {
+        console.error('❌ Fetch Error:', err);
+        setFetchState('ready-empty');
+      }
+    };
+
+    fetchData();
+  }, [getTokenUserId]);
+
+  // ── LOAD FROM PARENT — only when DB returned nothing ─────────────────────
+  useEffect(() => {
+    if (fetchState !== 'ready-empty') return;
+    if (!data || Object.keys(data).length === 0) return;
+
+    const { _isValid, ...rest } = data;
+    const currentUserId = getTokenUserId();
+    if (rest.userId && rest.userId.toString() !== currentUserId) return;
+
+    setFormData(prev => {
+      const isSame = Object.keys(rest).every(k => prev[k] === rest[k]);
+      return isSame ? prev : { ...prev, ...rest };
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchState]);
+
+  // ── VALIDATION ────────────────────────────────────────────────────────────
+  const validateField = useCallback((name, value) => {
+    switch (name) {
+      case 'emailAddress':
+        if (!value.trim()) return 'Email address is required';
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Enter a valid email address';
+        return '';
+      case 'mobileNumber':
+        if (!value.trim()) return 'Mobile number is required';
+        if (!/^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/.test(value))
+          return 'Enter a valid mobile number';
+        return '';
+      case 'addressLine1': return value.trim() ? '' : 'Address is required';
+      case 'city':         return value.trim() ? '' : 'City is required';
+      case 'state':        return value.trim() ? '' : 'State is required';
+      case 'country':      return value.trim() ? '' : 'Country is required';
+      case 'postalCode':   return value.trim() ? '' : 'Postal code is required';
+      default:             return '';
+    }
+  }, []);
+
+  const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    const error = validateField(name, value);
-    setErrors(prev => ({ ...prev, [name]: error }));
-  };
+    setErrors(prev => ({ ...prev, [name]: validateField(name, value) }));
+  }, [validateField]);
 
-  const handleBlur = (e) => {
+  const handleBlur = useCallback((e) => {
     const { name, value } = e.target;
-    const error = validateField(name, value);
-    setErrors(prev => ({ ...prev, [name]: error }));
-  };
+    setErrors(prev => ({ ...prev, [name]: validateField(name, value) }));
+  }, [validateField]);
 
-  // Custom country select handler
-  const handleCountrySelect = (country) => {
+  // ✅ FIX: country select handler — also clears search
+  const handleCountrySelect = useCallback((country) => {
     setFormData(prev => ({ ...prev, country }));
-    const error = validateField('country', country);
-    setErrors(prev => ({ ...prev, country: error }));
+    setErrors(prev => ({ ...prev, country: validateField('country', country) }));
     setCountryOpen(false);
-  };
+    setCountrySearch('');
+  }, [validateField]);
 
-  const saveDataToBackend = useCallback(async (currentFormData) => {
-  try {
-    if (isSavingRef.current) return;
-    if (JSON.stringify(lastSavedRef.current) === JSON.stringify(currentFormData)) return;
-    isSavingRef.current = true;
-
-    const token = localStorage.getItem('token'); // ← add this
-
-    const url = currentFormData._id
-      ? `http://localhost:5000/api/master-contact/${currentFormData._id}`
-      : `http://localhost:5000/api/master-contact`;
-    const method = currentFormData._id ? 'PUT' : 'POST';
-
-    const res = await fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}` // ← add this
-      },
-      body: JSON.stringify(currentFormData)
-    });
-    const result = await res.json();
-
-    if (result.success) {
-      lastSavedRef.current = result.data;
-      if (!currentFormData._id && result.data._id) {
-        setFormData(prev => ({ ...prev, _id: result.data._id }));
+  // ✅ FIX: when dropdown opens, focus the search input
+  const handleCountryOpen = useCallback(() => {
+    setCountryOpen(prev => {
+      const next = !prev;
+      if (next) {
+        setCountrySearch('');
+        setTimeout(() => searchInputRef.current?.focus(), 50);
       }
-    }
-  } catch (error) {
-    console.error('❌ API Error:', error);
-  } finally {
-    isSavingRef.current = false;
-  }
-}, []);
+      return next;
+    });
+  }, []);
 
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
+  // ── SAVE TO BACKEND ───────────────────────────────────────────────────────
+  const saveDataToBackend = useCallback(async (snapshot) => {
+    if (isSavingRef.current) return;
+    if (JSON.stringify(lastSavedRef.current) === JSON.stringify(snapshot)) return;
+
+    isSavingRef.current = true;
+    try {
+      const token = localStorage.getItem('token');
+      const res   = await fetch('http://localhost:5000/api/master-contact', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body:    JSON.stringify(snapshot)
+      });
+      const result = await res.json();
+      if (result.success) {
+        lastSavedRef.current = snapshot;
+        if (!snapshot._id && result.data?._id) {
+          setFormData(prev => ({ ...prev, _id: result.data._id }));
+        }
+      } else {
+        console.error('❌ Save failed:', result.message);
+      }
+    } catch (err) {
+      console.error('❌ API Error:', err);
+    } finally {
+      isSavingRef.current = false;
     }
+  }, []);
+
+  // ── AUTO-SAVE + NOTIFY PARENT ─────────────────────────────────────────────
+  useEffect(() => {
+    if (fetchState === 'loading') return;
 
     const requiredFields = [
-      'emailAddress', 'mobileNumber', 'addressLine1',
-      'city', 'state', 'country', 'postalCode'
+      'emailAddress','mobileNumber','addressLine1',
+      'city','state','country','postalCode'
     ];
-    const isValid = requiredFields.every(key => !validateField(key, formData[key] || ''));
+    const isValid = requiredFields.every(k => validateField(k, formData[k] || '') === '');
 
-    const nextUpdate = JSON.stringify({ ...formData, _isValid: isValid });
-    if (lastUpdatedRef.current !== nextUpdate) {
-      lastUpdatedRef.current = nextUpdate;
-      updateData({ ...formData, _isValid: isValid });
+    const nextPayload = JSON.stringify({ ...formData, _isValid: isValid });
+    if (lastUpdatedRef.current !== nextPayload) {
+      lastUpdatedRef.current = nextPayload;
+      updateDataRef.current({ ...formData, _isValid: isValid });
     }
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -199,7 +245,40 @@ useEffect(() => {
     }, 800);
 
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [formData, validateField, saveDataToBackend, updateData]);
+  }, [formData, fetchState, validateField, saveDataToBackend]);
+
+  // ── CLOSE DROPDOWN ON OUTSIDE CLICK ──────────────────────────────────────
+  useEffect(() => {
+    if (!countryOpen) return;
+    const handleClickOutside = (e) => {
+      if (countryRef.current && !countryRef.current.contains(e.target)) {
+        setCountryOpen(false);
+        setCountrySearch('');
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [countryOpen]);
+
+  // ── LOADING SKELETON ──────────────────────────────────────────────────────
+  if (fetchState === 'loading') {
+    return (
+      <div className="mastercontact-form">
+        <div className="mastercontact-header">
+          <h2 className="mastercontact-title">Contact Details</h2>
+          <p className="mastercontact-subtitle">Loading your details…</p>
+        </div>
+        <div className="mastercontact-grid" style={{ opacity: 0.4, pointerEvents: 'none' }}>
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className={`mastercontact-group${i < 2 ? ' mastercontact-group-full' : ''}`}>
+              <div style={{ height: 16, background: '#e0e0e0', borderRadius: 4, marginBottom: 8, width: '40%' }} />
+              <div style={{ height: 44, background: '#e0e0e0', borderRadius: 6 }} />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mastercontact-form">
@@ -210,116 +289,103 @@ useEffect(() => {
 
       <div className="mastercontact-grid">
 
+        {/* Email */}
         <div className="mastercontact-group mastercontact-group-full">
           <label className="mastercontact-label">
             Email Address <span className="mastercontact-required">*</span>
           </label>
           <input
-            type="email"
-            name="emailAddress"
-            value={formData.emailAddress}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            placeholder="you@example.com"
+            type="email" name="emailAddress" value={formData.emailAddress}
+            onChange={handleChange} onBlur={handleBlur} placeholder="you@example.com"
             className={`mastercontact-input ${errors.emailAddress ? 'mastercontact-error' : ''}`}
           />
           {errors.emailAddress && <span className="mastercontact-error-text">{errors.emailAddress}</span>}
         </div>
 
+        {/* Mobile */}
         <div className="mastercontact-group">
           <label className="mastercontact-label">
             Mobile Number <span className="mastercontact-required">*</span>
           </label>
           <input
-            type="tel"
-            name="mobileNumber"
-            value={formData.mobileNumber}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            placeholder="+1 234 567 8900"
+            type="tel" name="mobileNumber" value={formData.mobileNumber}
+            onChange={handleChange} onBlur={handleBlur} placeholder="+91 234 567 8900"
             className={`mastercontact-input ${errors.mobileNumber ? 'mastercontact-error' : ''}`}
           />
           {errors.mobileNumber && <span className="mastercontact-error-text">{errors.mobileNumber}</span>}
         </div>
 
+        {/* Alternate Phone */}
         <div className="mastercontact-group">
           <label className="mastercontact-label">Alternate Phone Number</label>
           <input
-            type="tel"
-            name="alternatePhone"
-            value={formData.alternatePhone}
-            onChange={handleChange}
-            placeholder="Optional"
-            className="mastercontact-input"
+            type="tel" name="alternatePhone" value={formData.alternatePhone}
+            onChange={handleChange} placeholder="Optional" className="mastercontact-input"
           />
         </div>
 
+        {/* Address Line 1 */}
         <div className="mastercontact-group mastercontact-group-full">
           <label className="mastercontact-label">
             Address Line 1 <span className="mastercontact-required">*</span>
           </label>
           <input
-            type="text"
-            name="addressLine1"
-            value={formData.addressLine1}
-            onChange={handleChange}
-            onBlur={handleBlur}
+            type="text" name="addressLine1" value={formData.addressLine1}
+            onChange={handleChange} onBlur={handleBlur}
             className={`mastercontact-input ${errors.addressLine1 ? 'mastercontact-error' : ''}`}
           />
           {errors.addressLine1 && <span className="mastercontact-error-text">{errors.addressLine1}</span>}
         </div>
 
+        {/* Address Line 2 */}
         <div className="mastercontact-group mastercontact-group-full">
           <label className="mastercontact-label">Address Line 2</label>
           <input
-            type="text"
-            name="addressLine2"
-            value={formData.addressLine2}
-            onChange={handleChange}
-            className="mastercontact-input"
+            type="text" name="addressLine2" value={formData.addressLine2}
+            onChange={handleChange} className="mastercontact-input"
           />
         </div>
 
+        {/* City */}
         <div className="mastercontact-group">
           <label className="mastercontact-label">
             City <span className="mastercontact-required">*</span>
           </label>
           <input
-            type="text"
-            name="city"
-            value={formData.city}
-            onChange={handleChange}
-            onBlur={handleBlur}
+            type="text" name="city" value={formData.city}
+            onChange={handleChange} onBlur={handleBlur}
             className={`mastercontact-input ${errors.city ? 'mastercontact-error' : ''}`}
           />
           {errors.city && <span className="mastercontact-error-text">{errors.city}</span>}
         </div>
 
+        {/* State */}
         <div className="mastercontact-group">
           <label className="mastercontact-label">
             State <span className="mastercontact-required">*</span>
           </label>
           <input
-            type="text"
-            name="state"
-            value={formData.state}
-            onChange={handleChange}
-            onBlur={handleBlur}
+            type="text" name="state" value={formData.state}
+            onChange={handleChange} onBlur={handleBlur}
             className={`mastercontact-input ${errors.state ? 'mastercontact-error' : ''}`}
           />
           {errors.state && <span className="mastercontact-error-text">{errors.state}</span>}
         </div>
 
-        {/* ── Custom Country Dropdown ── */}
+        {/* ✅ FIX: Country dropdown with search + key prop forces re-render */}
         <div className="mastercontact-group" ref={countryRef}>
           <label className="mastercontact-label">
             Country <span className="mastercontact-required">*</span>
           </label>
           <div className="mastercontact-custom-select-wrapper">
+            {/* ✅ key={formData.country} forces React to remount when value loads from DB */}
             <button
               type="button"
-              className={`mastercontact-custom-select-trigger ${errors.country ? 'mastercontact-error' : ''} ${formData.country ? '' : 'mastercontact-placeholder'}`}
-              onClick={() => setCountryOpen(prev => !prev)}
+              key={formData.country}
+              className={`mastercontact-custom-select-trigger
+                ${errors.country ? 'mastercontact-error' : ''}
+                ${formData.country ? '' : 'mastercontact-placeholder'}`}
+              onClick={handleCountryOpen}
               aria-haspopup="listbox"
               aria-expanded={countryOpen}
             >
@@ -335,34 +401,57 @@ useEffect(() => {
             </button>
 
             {countryOpen && (
-              <ul className="mastercontact-dropdown" role="listbox">
-                {countries.map(c => (
-                  <li
-                    key={c}
-                    role="option"
-                    aria-selected={formData.country === c}
-                    className={`mastercontact-dropdown-item ${formData.country === c ? 'mastercontact-dropdown-item-active' : ''}`}
-                    onClick={() => handleCountrySelect(c)}
-                  >
-                    {c}
-                  </li>
-                ))}
-              </ul>
+              <div className="mastercontact-dropdown" role="listbox">
+                {/* ✅ Search input inside dropdown */}
+                <div className="mastercontact-dropdown-search-wrap">
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    className="mastercontact-dropdown-search"
+                    placeholder="Search country…"
+                    value={countrySearch}
+                    onChange={e => setCountrySearch(e.target.value)}
+                    onClick={e => e.stopPropagation()}
+                  />
+                </div>
+                <ul className="mastercontact-dropdown-list">
+                  {filteredCountries.length > 0 ? (
+                    filteredCountries.map(c => (
+                      <li
+                        key={c}
+                        role="option"
+                        aria-selected={formData.country === c}
+                        className={`mastercontact-dropdown-item
+                          ${formData.country === c ? 'mastercontact-dropdown-item-active' : ''}`}
+                        onClick={() => handleCountrySelect(c)}
+                      >
+                        {/* ✅ Checkmark for currently selected country */}
+                        {formData.country === c && (
+                          <span className="mastercontact-dropdown-check">✓</span>
+                        )}
+                        {c}
+                      </li>
+                    ))
+                  ) : (
+                    <li className="mastercontact-dropdown-item mastercontact-dropdown-no-results">
+                      No country found
+                    </li>
+                  )}
+                </ul>
+              </div>
             )}
           </div>
           {errors.country && <span className="mastercontact-error-text">{errors.country}</span>}
         </div>
 
+        {/* Postal Code */}
         <div className="mastercontact-group">
           <label className="mastercontact-label">
             Postal Code <span className="mastercontact-required">*</span>
           </label>
           <input
-            type="text"
-            name="postalCode"
-            value={formData.postalCode}
-            onChange={handleChange}
-            onBlur={handleBlur}
+            type="text" name="postalCode" value={formData.postalCode}
+            onChange={handleChange} onBlur={handleBlur}
             className={`mastercontact-input ${errors.postalCode ? 'mastercontact-error' : ''}`}
           />
           {errors.postalCode && <span className="mastercontact-error-text">{errors.postalCode}</span>}

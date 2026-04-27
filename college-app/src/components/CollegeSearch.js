@@ -165,7 +165,7 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
   useEffect(() => {
     if (!profileLoaded) return;
     fetchColleges(query);
-  }, [profileLoaded]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [profileLoaded]);
 
   useEffect(() => {
     if (!profileLoaded) return;
@@ -192,7 +192,7 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
           }
         }
       } catch (err) {
-        console.log("⚠️ Failed to clear old colleges (continuing)");
+        console.log("Failed to clear old colleges (continuing)");
       }
 
       await axios.post(
@@ -204,7 +204,7 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
       setUserColleges(new Set([college.UNITID]));
       triggerCollegeUpdate();
     } catch (error) {
-      console.error("❌ Error:", error);
+      console.error("Error:", error);
       alert(error.response?.data?.message || "Failed to update university");
     } finally {
       setAddingCollege(null);
@@ -238,7 +238,6 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
   };
 
   // ─── Navigate based on university type ───────────────────────────────────
-  // This is the key function — routes to master-application or bachelor application
   const handleCollegeClick = (college) => {
     const isFirstYear = window.location.pathname.includes('/firstyear/');
     const basePath = isFirstYear ? '/firstyear/dashboard' : '/transfer/dashboard';
@@ -265,14 +264,12 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
       );
     }
 
-    // ── Route to master courses page OR regular courses page ──
     if (isMasterUniversity(college)) {
-      // Master universities → courses page that will route to master-application
       navigate(`${basePath}/courses/${college.UNITID}`, {
         state: {
           university: enhancedCollege,
           selectedCourses: enhancedCollege.selectedCourses || [],
-          isMasterUniversity: true   // pass hint so Courses.js can use it
+          isMasterUniversity: true
         }
       });
     } else {
@@ -295,6 +292,19 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
     );
     if (shouldAdd) await handleAddCollege(college);
   };
+
+  // SVG Icon Components
+  const PlusIcon = () => (
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 5v14M5 12h14" />
+    </svg>
+  );
+
+  const XIcon = () => (
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M18 6L6 18M6 6l12 12" />
+    </svg>
+  );
 
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
@@ -414,7 +424,7 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
                   </div>
                 </div>
 
-                {/* ── Action Buttons ── */}
+                {/* Action Buttons */}
 
                 {/* Kansas */}
                 {isKansas && (
@@ -433,7 +443,7 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
                         title="Add to My Colleges"
                       >
                         <span className="collegesearch-add-icon">
-                          {isAdding ? <span className="collegesearch-adding-spinner"></span> : '+'}
+                          {isAdding ? <span className="collegesearch-adding-spinner"></span> : <PlusIcon />}
                         </span>
                         {isAdding ? 'Adding...' : 'Add'}
                       </button>
@@ -444,9 +454,9 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
                         disabled={isRemoving}
                         title="Remove from My Colleges"
                       >
-                        {isRemoving
-                          ? <span className="collegesearch-removing-spinner"></span>
-                          : <span style={{ fontSize: '18px' }}>x</span>}
+                        <span className="collegesearch-remove-icon">
+                          {isRemoving ? <span className="collegesearch-removing-spinner"></span> : <XIcon />}
+                        </span>
                       </button>
                     )}
                   </div>
@@ -468,9 +478,9 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
                         disabled={isRemoving}
                         title="Remove from My Colleges"
                       >
-                        {isRemoving
-                          ? <span className="collegesearch-removing-spinner"></span>
-                          : <span style={{ fontSize: '18px' }}>x</span>}
+                        <span className="collegesearch-remove-icon">
+                          {isRemoving ? <span className="collegesearch-removing-spinner"></span> : <XIcon />}
+                        </span>
                       </button>
                     </div>
                   ) : (
@@ -487,9 +497,9 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
                         disabled={isAdding}
                         title="Add university without selecting program"
                       >
-                        {isAdding
-                          ? <span className="collegesearch-adding-spinner"></span>
-                          : <span style={{ fontSize: '18px' }}>+</span>}
+                        <span className="collegesearch-add-icon">
+                          {isAdding ? <span className="collegesearch-adding-spinner"></span> : <PlusIcon />}
+                        </span>
                       </button>
                     </div>
                   )
@@ -511,9 +521,9 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
                         disabled={isRemoving}
                         title="Remove from My Colleges"
                       >
-                        {isRemoving
-                          ? <span className="collegesearch-removing-spinner"></span>
-                          : <span style={{ fontSize: '18px' }}>x</span>}
+                        <span className="collegesearch-remove-icon">
+                          {isRemoving ? <span className="collegesearch-removing-spinner"></span> : <XIcon />}
+                        </span>
                       </button>
                     </div>
                   ) : (
@@ -530,9 +540,9 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
                         disabled={isAdding}
                         title="Add university without selecting program"
                       >
-                        {isAdding
-                          ? <span className="collegesearch-adding-spinner"></span>
-                          : <span style={{ fontSize: '18px' }}>+</span>}
+                        <span className="collegesearch-add-icon">
+                          {isAdding ? <span className="collegesearch-adding-spinner"></span> : <PlusIcon />}
+                        </span>
                       </button>
                     </div>
                   )

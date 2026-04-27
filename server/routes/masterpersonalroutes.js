@@ -1,19 +1,24 @@
+// masterpersonalroutes.js
+
 import express from "express";
-const router = express.Router();
+import authenticateToken from "../middleware/authMiddleware.js"; // ← correct import
 
 import {
   createMasterPersonal,
+  getMyMasterPersonal,
   getAllMasterPersonal,
   getMasterPersonalById,
   updateMasterPersonal,
   deleteMasterPersonal,
 } from "../controllers/masterpersonalcontroller.js";
 
-// 🔥 TEMP: no auth (add later)
-router.post("/", createMasterPersonal);
-router.get("/", getAllMasterPersonal);
-router.get("/:id", getMasterPersonalById);
-router.put("/:id", updateMasterPersonal);
-router.delete("/:id", deleteMasterPersonal);
+const router = express.Router();
+
+router.post("/",      authenticateToken, createMasterPersonal);
+router.get("/me",     authenticateToken, getMyMasterPersonal);
+router.get("/",       authenticateToken, getAllMasterPersonal);
+router.get("/:id",    authenticateToken, getMasterPersonalById);
+router.put("/:id",    authenticateToken, updateMasterPersonal);
+router.delete("/:id", authenticateToken, deleteMasterPersonal);
 
 export default router;

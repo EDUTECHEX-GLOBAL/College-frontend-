@@ -6,7 +6,7 @@ import MasterCourse from '../models/mastercoursemodel.js';
  */
 export const getMasterCourse = async (req, res) => {
   try {
-    const userId = req.userId;
+    const userId = req.userId || req.user?.id; // ✅ support both patterns
 
     if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({
@@ -17,21 +17,22 @@ export const getMasterCourse = async (req, res) => {
 
     const data = await MasterCourse.findOne({ userId });
 
+    // ✅ Instead of 404, return empty (better for frontend UX)
     if (!data) {
-      return res.status(404).json({
-        success: false,
-        message: 'No course data found'
+      return res.status(200).json({
+        success: true,
+        data: null
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data
     });
 
   } catch (error) {
     console.error('❌ Get Master Course Error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Server error while fetching course data'
     });
@@ -44,7 +45,7 @@ export const getMasterCourse = async (req, res) => {
  */
 export const saveMasterCourse = async (req, res) => {
   try {
-    const userId = req.userId;
+    const userId = req.userId || req.user?.id; // ✅ support both middleware styles
 
     if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({
@@ -53,25 +54,50 @@ export const saveMasterCourse = async (req, res) => {
       });
     }
 
-    const {
+    let {
       preferredCourse,
       specialization,
       intake,
       modeOfStudy
     } = req.body;
 
-    // ✅ Validation
+    // ✅ Normalize inputs (avoid empty string issues)
+    preferredCourse = preferredCourse?.trim();
+    specialization  = specialization?.trim() || '';
+    intake          = intake?.trim();
+    modeOfStudy     = modeOfStudy?.trim();
+
+    // ✅ Strong validation
     if (!preferredCourse || !intake || !modeOfStudy) {
       return res.status(400).json({
         success: false,
-        message: 'Required fields missing'
+        message: 'Preferred course, intake, and mode of study are required'
       });
     }
 
-    // 🔄 Upsert (update if exists, else create)
+    // 🔒 Allowed values (extra safety)
+    const validIntakes = ['Fall', 'Spring', 'Summer'];
+    const validModes   = ['Full-time', 'Part-time', 'Online', 'Hybrid'];
+
+    if (!validIntakes.includes(intake)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid intake value'
+      });
+    }
+
+    if (!validModes.includes(modeOfStudy)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid mode of study'
+      });
+    }
+
+    // 🔄 Upsert (update or create)
     const updated = await MasterCourse.findOneAndUpdate(
-      { userId },
+      { userId }, // 🔒 ensures one record per user
       {
+        userId, // ✅ always store userId
         preferredCourse,
         specialization,
         intake,
@@ -80,11 +106,12 @@ export const saveMasterCourse = async (req, res) => {
       {
         new: true,
         upsert: true,
-        runValidators: true
+        runValidators: true,
+        setDefaultsOnInsert: true
       }
     );
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Course data saved successfully',
       data: updated
@@ -92,7 +119,16 @@ export const saveMasterCourse = async (req, res) => {
 
   } catch (error) {
     console.error('❌ Save Master Course Error:', error);
-    res.status(500).json({
+
+    // ✅ Handle duplicate key error safely
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Duplicate entry detected for this user'
+      });
+    }
+
+    return res.status(500).json({
       success: false,
       message: 'Server error while saving course data'
     });

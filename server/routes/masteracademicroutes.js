@@ -1,4 +1,5 @@
 import express from "express";
+import authenticateToken from "../middleware/authMiddleware.js";
 import {
   saveMasterAcademic,
   getMasterAcademicByUser,
@@ -7,13 +8,9 @@ import {
 
 const router = express.Router();
 
-// ✅ UPSERT (create/update)
-router.post("/", saveMasterAcademic);
-
-// ✅ GET by user
-router.get("/:userId", getMasterAcademicByUser);
-
-// ✅ DELETE
-router.delete("/:userId", deleteMasterAcademic);
+// FIX: all routes protected — userId comes from token, not URL params
+router.post("/",   authenticateToken, saveMasterAcademic);
+router.get("/",    authenticateToken, getMasterAcademicByUser);  // ← was /:userId
+router.delete("/", authenticateToken, deleteMasterAcademic);     // ← was /:userId
 
 export default router;

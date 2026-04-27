@@ -76,7 +76,7 @@
   background: white;
   border: 1px solid #e2e8f0;
   border-radius: 20px;
-  padding: 12px 18px;        /* decreased from 16px 24px → more compact */
+  padding: 12px 18px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -93,14 +93,14 @@
 .collegesearch-info {
   display: flex;
   align-items: center;
-  gap: 14px;                /* reduced from 20px */
+  gap: 14px;
 }
 
-/* REDUCED LOGO / ABBREVIATION BOX (AU, CC, BS, UO) */
+/* REDUCED LOGO / ABBREVIATION BOX */
 .collegesearch-logo-small {
-  width: 48px;              /* was 60px → smaller */
-  height: 48px;             /* was 60px → smaller */
-  border-radius: 14px;      /* slightly reduced rounding */
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
   background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
   overflow: hidden;
   display: flex;
@@ -117,7 +117,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;          /* reduced from 24px */
+  font-size: 20px;
   font-weight: 800;
   letter-spacing: 0.5px;
 }
@@ -143,7 +143,7 @@
 }
 
 .collegesearch-name-link {
-  font-size: 17px;          /* slightly compact (was 18px) */
+  font-size: 17px;
   font-weight: 700;
   margin: 0;
   transition: color 0.2s ease;
@@ -151,7 +151,18 @@
 
 .collegesearch-name-link.kansas-university {
   color: #334155;
-  cursor: default;
+  cursor: pointer;
+  position: relative;
+}
+
+.collegesearch-name-link.master-university {
+  color: #7c3aed;
+  cursor: pointer;
+  position: relative;
+}
+
+.collegesearch-name-link.master-university:hover {
+  color: #6d28d9;
 }
 
 .collegesearch-name-link.gus-university {
@@ -165,6 +176,9 @@
   text-decoration: none;
 }
 
+/* Hover underline effect for all clickable names */
+.collegesearch-name-link.kansas-university::after,
+.collegesearch-name-link.master-university::after,
 .collegesearch-name-link.gus-university::after {
   content: '';
   position: absolute;
@@ -176,22 +190,24 @@
   transition: width 0.3s ease;
 }
 
+.collegesearch-name-link.kansas-university:hover::after,
+.collegesearch-name-link.master-university:hover::after,
 .collegesearch-name-link.gus-university:hover::after {
   width: 100%;
 }
 
 .collegesearch-location-small {
-  font-size: 12px;          /* reduced from 13px */
+  font-size: 12px;
   color: #64748b;
   margin: 0 0 4px 0;
 }
 
-/* University Type Badge */
+/* University Type Badges */
 .collegesearch-type-badge {
   display: inline-block;
   background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
   color: white;
-  font-size: 10px;          /* smaller */
+  font-size: 10px;
   font-weight: 700;
   padding: 3px 7px;
   border-radius: 30px;
@@ -200,13 +216,23 @@
   box-shadow: 0 2px 4px rgba(245, 158, 11, 0.25);
 }
 
+.collegesearch-type-badge.kansas-badge {
+  background: linear-gradient(135deg, #0051BA 0%, #003c8a 100%);
+  box-shadow: 0 2px 4px rgba(0, 81, 186, 0.25);
+}
+
+.collegesearch-type-badge.master-badge {
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  box-shadow: 0 2px 4px rgba(124, 58, 237, 0.25);
+}
+
 /* Program Count Badge */
 .collegesearch-programs-preview {
   margin-top: 2px;
 }
 
 .collegesearch-programs-count {
-  font-size: 11px;          /* reduced from 12px */
+  font-size: 11px;
   color: #0891b2;
   background: #f0f9ff;
   padding: 3px 10px;
@@ -214,6 +240,32 @@
   display: inline-block;
   font-weight: 600;
   border: 1px solid #bae6fd;
+}
+
+/* Selected Courses Display */
+.collegesearch-selected-courses {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.collegesearch-courses-label {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.collegesearch-course-tag {
+  font-size: 10px;
+  background: #f1f5f9;
+  color: #334155;
+  padding: 2px 8px;
+  border-radius: 20px;
+  display: inline-block;
+  font-weight: 500;
+  border: 1px solid #e2e8f0;
 }
 
 /* College Status Badge */
@@ -230,8 +282,15 @@
 }
 
 /* =============================
-   Action Buttons - Plalite Theme (compact adjustments)
+   Action Buttons - Plalite Theme with SVG Icons
    ============================= */
+
+/* Button container */
+.collegesearch-gus-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
 
 /* Add Button */
 .collegesearch-add-circle-button {
@@ -239,8 +298,8 @@
   color: white;
   border: none;
   border-radius: 40px;
-  padding: 8px 20px 8px 18px;    /* reduced vertical padding */
-  font-size: 13px;                /* slightly smaller */
+  padding: 8px 20px 8px 18px;
+  font-size: 13px;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -264,18 +323,26 @@
   box-shadow: none;
 }
 
+/* SVG Plus Icon */
 .collegesearch-add-icon {
-  background: white;
-  color: #0891b2;
-  font-weight: 800;
-  font-size: 14px;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.collegesearch-add-icon svg {
+  width: 14px;
+  height: 14px;
+  stroke: #0891b2;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
 }
 
 /* Remove Button */
@@ -309,6 +376,7 @@
   box-shadow: none;
 }
 
+/* Small circular remove button */
 .collegesearch-remove-circle-button.small {
   width: 38px;
   height: 38px;
@@ -320,18 +388,36 @@
   justify-content: center;
 }
 
+/* SVG X Icon */
 .collegesearch-remove-icon {
-  background: white;
-  color: #f59e0b;
-  font-weight: 800;
-  font-size: 14px;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.collegesearch-remove-icon svg {
+  width: 12px;
+  height: 12px;
+  stroke: #f59e0b;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+.collegesearch-remove-circle-button.small .collegesearch-remove-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.collegesearch-remove-circle-button.small .collegesearch-remove-icon svg {
+  width: 10px;
+  height: 10px;
 }
 
 /* View Courses Button */
@@ -371,6 +457,27 @@
   box-shadow: 0 8px 14px -3px rgba(8, 145, 178, 0.3);
 }
 
+/* Master button variant */
+.collegesearch-view-courses-button.master-btn {
+  border-color: #7c3aed;
+  color: #7c3aed;
+}
+
+.collegesearch-view-courses-button.master-btn:hover {
+  background: #f5f3ff;
+  box-shadow: 0 4px 10px rgba(124, 58, 237, 0.12);
+}
+
+.collegesearch-view-courses-button.master-btn.primary {
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  color: white;
+  border: none;
+}
+
+.collegesearch-view-courses-button.master-btn.primary:hover {
+  background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%);
+}
+
 /* Add GUS Button (secondary compact) */
 .collegesearch-add-gus-button.secondary {
   background: white;
@@ -385,8 +492,6 @@
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-size: 18px;
-  font-weight: 700;
 }
 
 .collegesearch-add-gus-button.secondary:hover {
@@ -402,11 +507,18 @@
   transform: none;
 }
 
-/* GUS University Buttons Container */
-.collegesearch-gus-buttons {
-  display: flex;
-  gap: 10px;
-  align-items: center;
+/* SVG for add GUS button */
+.collegesearch-add-gus-button.secondary .collegesearch-add-icon {
+  width: 18px;
+  height: 18px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.collegesearch-add-gus-button.secondary .collegesearch-add-icon svg {
+  width: 14px;
+  height: 14px;
+  stroke: #0891b2;
 }
 
 /* =============================
@@ -490,7 +602,7 @@
 }
 
 /* =============================
-   Responsive Design (updated for compactness)
+   Responsive Design
    ============================= */
 
 @media (max-width: 768px) {
@@ -535,6 +647,14 @@
   
   .collegesearch-logo-initials {
     font-size: 18px;
+  }
+
+  .collegesearch-selected-courses {
+    flex-wrap: wrap;
+  }
+  
+  .collegesearch-course-tag {
+    font-size: 9px;
   }
 }
 

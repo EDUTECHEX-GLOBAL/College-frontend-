@@ -12,20 +12,15 @@ import educationRoutes from "./routes/educationRoutes.js";
 import collegesearchRoutes from "./routes/collegesearchRoutes.js";
 import collegeRoutes from "./routes/collegeRoutes.js";
 import generalRoutes from "./routes/generalRoutes.js";
-
 import highSchoolCurriculumRoutes from "./routes/highSchoolCurriculumRoutes.js";
 import firstactivitiesRoutes from "./routes/firstmycollegeactivitiesRoutes.js";
-
-
-
 import internationalStudentRoutes from "./routes/InternationalStudentRoutes.js";
-
 import firstTestingRoutes from "./routes/firstTestingRoutes.js";
 import transferActivitiesRoutes from "./routes/activitiestestRoutes.js";
 import firstYearActivitiesRoutes from "./routes/activitiesRoutes.js";
 import responsibilitiesRoutes from "./routes/responsibilitiesRoutes.js";
 import writingRoutes from "./routes/writingRoutes.js";
-import adminRoutes from "./routes/adminRoutes.js";           // ✅ Handles ALL /api/admin/* routes
+import adminRoutes from "./routes/adminRoutes.js";
 import transferRoutes from "./routes/transferRoutes.js";
 import extendedProfileRoutes from "./routes/extendedProfileRoutes.js";
 import familyRoutes from "./routes/familytestRoutes.js";
@@ -36,7 +31,6 @@ import firstfamilydashbRoutes from "./routes/firstfamilydashbRoutes.js";
 import adminUserRoutes from "./routes/adminuserroutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import courseRoutes from "./routes/courseroutes.js";
-
 import overviewRoutes from "./routes/overviewRoutes.js";
 import applicationPersonalRoutes from "./routes/applicationPersonalRoutes.js";
 import applicationAddressRoutes from "./routes/applicationAddressRoutes.js";
@@ -56,14 +50,15 @@ import previewRoutes from './routes/applicationPreviewRoutes.js';
 import applicationScoreRoutes from "./routes/applicationscoreroutes.js";
 import gusUniversityRoutes from "./routes/gusuniversityroutes.js";
 import analyticsRoutes from './routes/studentanalyticsroutes.js';
+import masterPreviewRoutes from './routes/masterpreviewroutes.js'; // ← MUST be before masterPersonalRoutes
 import masterPersonalRoutes from "./routes/masterpersonalroutes.js";
-import masterContactRoutes from "./routes/mastercontactroutes.js";
+import masterContactRoutes  from "./routes/mastercontactroutes.js";
 import masterAcademicRoutes from "./routes/masteracademicroutes.js";
-import masterCourseRoutes from './routes/mastercourseroutes.js';
-import masterTestRoutes from './routes/mastertestroutes.js';
+import masterCourseRoutes   from './routes/mastercourseroutes.js ';
+import masterTestRoutes     from './routes/mastertestroutes.js';
 import masterDocumentRoutes from "./routes/masterdocumentroutes.js";
-import masterPreviewRoutes from "./routes/masterpreviewroutes.js";
-import masterOverviewRoutes from "./routes/masteroverviewroutes.js"; 
+import masterOverviewRoutes from "./routes/masteroverviewroutes.js";
+import masterUniversityRoutes from './routes/masterUniversityRoutes.js';
 dotenv.config();
 
 // =====================================================
@@ -236,12 +231,18 @@ app.get('/api/debug/s3/:key', (req, res) => {
   res.json({ key: req.params.key, bucket: BUCKET_NAME, region: process.env.AWS_REGION, s3Url });
 });
 
+// =====================================================
+// IMPROVED DEBUG — shows ALL registered routes
+// =====================================================
 app.get('/api/routes', (req, res) => {
   const routes = [];
   const extractRoutes = (stack, basePath = '') => {
     stack.forEach(layer => {
       if (layer.route) {
-        routes.push({ path: basePath + layer.route.path, methods: Object.keys(layer.route.methods).join(', ').toUpperCase() });
+        routes.push({
+          path:    basePath + layer.route.path,
+          methods: Object.keys(layer.route.methods).join(', ').toUpperCase(),
+        });
       } else if (layer.name === 'router' && layer.handle.stack) {
         const routerPath = basePath + (layer.regexp.source
           .replace('\\/?(?=\\/|$)', '').replace(/\\\//g, '/').replace(/\^/g, '').replace(/\?/g, '')
@@ -251,26 +252,16 @@ app.get('/api/routes', (req, res) => {
     });
   };
   extractRoutes(app._router.stack);
+  // Return ALL routes so nothing is hidden
   res.json({
     success: true,
-    routes: routes.filter(r =>
-      r.path.includes('/api/admin') || r.path.includes('/api/user') ||
-      r.path.includes('/api/analytics') || r.path === '/api/test' || r.path === '/api/routes'
-    ).sort((a, b) => a.path.localeCompare(b.path))
+    total:   routes.length,
+    routes:  routes.sort((a, b) => a.path.localeCompare(b.path)),
   });
 });
 
 // =====================================================
-// ✅ ADMIN ROUTES — mounted FIRST, before everything else
-//
-// ❌ WHAT WAS BROKEN (old code had this):
-//      app.post('/api/admin/login', adminLogin);
-//    `adminLogin` was NEVER imported → calling undefined as
-//    middleware crashed every login request with 401/500.
-//
-// ✅ THE FIX: Just mount adminRoutes here. The /login route
-//    is already defined as PUBLIC inside adminRoutes.js
-//    (it appears before authenticateAdmin middleware in that file).
+// ADMIN ROUTES
 // =====================================================
 app.use("/api/admin", adminRoutes);
 app.use("/api/admin/users", adminUserRoutes);
@@ -280,14 +271,12 @@ console.log('✅ Admin routes mounted at /api/admin');
 // =====================================================
 // USER ROUTES
 // =====================================================
-console.log('📌 Mounting user routes at /api/user...');
 app.use("/api/user", userProfileRoutes);
-console.log('✅ User routes mounted');
+console.log('✅ User routes mounted at /api/user');
 
 // =====================================================
 // PROCESS ADMIN ROUTES
 // =====================================================
-console.log('📌 Mounting process admin routes...');
 app.use("/api/process-admin/documents", processAdminDocumentRoutes);
 app.use("/api/process-admin", processAdminRoutes);
 console.log('✅ Process admin routes mounted');
@@ -299,58 +288,73 @@ app.use('/api/analytics', analyticsRoutes);
 console.log('✅ Analytics routes mounted at /api/analytics');
 
 // =====================================================
+// MASTER PREVIEW — HARDCODED PING (remove after confirmed working)
+// Visit: GET http://localhost:5000/api/master-preview/ping
+// 200 = routing works | 404 = server.js changes not saved
+// =====================================================
+app.get('/api/master-preview/ping', (req, res) => {
+  res.json({ success: true, message: '✅ master-preview router is reachable' });
+});
+
+// =====================================================
+// MASTER APPLICATION ROUTES
+// ⚠️  /api/master-preview MUST be mounted before /api/master-personal
+// =====================================================
+app.use("/api/master-preview",  masterPreviewRoutes);   // ← FIRST
+app.use("/api/master-personal", masterPersonalRoutes);
+app.use("/api/master-overview", masterOverviewRoutes);
+app.use("/api/master-contact",  masterContactRoutes);
+app.use("/api/master-academic", masterAcademicRoutes);
+app.use('/api/master-course',   masterCourseRoutes);
+app.use('/api/master-test',     masterTestRoutes);
+app.use("/api/master-documents", masterDocumentRoutes);
+console.log('✅ All master/* routes mounted');
+
+// =====================================================
+// APPLICATION ROUTES
+// =====================================================
+app.use("/api/application/education",      applicationEducationRoutes);
+app.use("/api/application/language",       applicationLanguageRoutes);
+app.use("/api/application/documents",      applicationDocumentRoutes);
+app.use("/api/application/special-needs",  applicationSpecialNeedRoutes);
+app.use("/api/application/resume",         resumeRoutes);
+app.use("/api/application/personal",       applicationPersonalRoutes);
+app.use("/api/application/address",        applicationAddressRoutes);
+app.use('/api/application/preview',        previewRoutes);
+app.use("/api/application/score",          applicationScoreRoutes);
+app.use("/api/application/process-admin/gus-university", gusUniversityRoutes);
+console.log('✅ Application routes mounted');
+
+// =====================================================
 // ALL OTHER API ROUTES
 // =====================================================
-console.log('📌 Mounting remaining API routes...');
-
-app.use("/api/students", accountRoutes);
-app.use("/api/education", educationRoutes);
-app.use("/api/college-search", collegesearchRoutes);
-app.use("/api/notifications", notificationRoutes);
-app.use("/api/application/education", applicationEducationRoutes);
-app.use("/api/application/language", applicationLanguageRoutes);
-app.use("/api/application/documents", applicationDocumentRoutes);
-app.use("/api/application/special-needs", applicationSpecialNeedRoutes);
-app.use("/api/application/resume", resumeRoutes);
-app.use("/api/application/personal", applicationPersonalRoutes);
-app.use("/api/application/address", applicationAddressRoutes);
-app.use("/api/master-personal", masterPersonalRoutes);
-app.use('/api/application/preview', previewRoutes);
-app.use("/api/application/score", applicationScoreRoutes);
-app.use("/api/application/process-admin/gus-university", gusUniversityRoutes);
-app.use("/api/bachelors", bachelorsRoutes);
-app.use('/api/masters/universities', mastersRoutes);
-app.use("/api/master-overview", masterOverviewRoutes);
-app.use("/api/master-contact", masterContactRoutes);
-app.use("/api/master-academic", masterAcademicRoutes);
-app.use('/api/master-course', masterCourseRoutes);
-app.use('/api/master-test', masterTestRoutes);
-app.use("/api/master-documents", masterDocumentRoutes);
-app.use("/api/master-preview", masterPreviewRoutes);
-app.use("/api/courses", courseRoutes);
-app.use("/api/documents", documentRoutes);
-app.use("/api/colleges", collegeRoutes);
-app.use("/api/general", generalRoutes);
-
+app.use("/api/students",              accountRoutes);
+app.use("/api/education",             educationRoutes);
+app.use("/api/college-search",        collegesearchRoutes);
+app.use("/api/notifications",         notificationRoutes);
+app.use("/api/bachelors",             bachelorsRoutes);
+app.use('/api/masters/universities',  mastersRoutes);
+app.use('/api/master-university', masterUniversityRoutes);
+app.use("/api/courses",               courseRoutes);
+app.use("/api/documents",             documentRoutes);
+app.use("/api/colleges",              collegeRoutes);
+app.use("/api/general",               generalRoutes);
 app.use("/api/high-school-curriculum", highSchoolCurriculumRoutes);
-app.use("/api/first-activities", firstactivitiesRoutes);
-
-
-app.use("/api/international", internationalStudentRoutes);
-
-app.use("/api/students/testing", firstTestingRoutes);
-app.use("/api/students", firstYearActivitiesRoutes);
-app.use("/api/transfer", transferActivitiesRoutes);
-app.use("/api/students", responsibilitiesRoutes);
-app.use("/api/overview", overviewRoutes);
-app.use("/api/writing", writingRoutes);
+app.use("/api/first-activities",      firstactivitiesRoutes);
+app.use("/api/international",         internationalStudentRoutes);
+app.use("/api/students/testing",      firstTestingRoutes);
+app.use("/api/students",              firstYearActivitiesRoutes);
+app.use("/api/transfer",              transferActivitiesRoutes);
+app.use("/api/students",              responsibilitiesRoutes);
+app.use("/api/overview",              overviewRoutes);
+app.use("/api/writing",               writingRoutes);
 app.use("/api/students/family-dashb", firstfamilydashbRoutes);
-app.use("/api/transfer", transferRoutes);
-app.use("/api/profile", extendedProfileRoutes);
-app.use("/api/family-background", familyRoutes);
-app.use("/api/education-transfer", educationtestRoutes);
-app.use("/api/testing", testRoutes);
-app.use("/api/writingtest", writingtestRoutes);
+app.use("/api/transfer",              transferRoutes);
+app.use("/api/profile",               extendedProfileRoutes);
+app.use("/api/family-background",     familyRoutes);
+app.use("/api/education-transfer",    educationtestRoutes);
+app.use("/api/testing",               testRoutes);
+app.use("/api/writingtest",           writingtestRoutes);
 
 console.log('✅ All API routes mounted successfully');
 
@@ -364,28 +368,13 @@ app.get("/", (req, res) => {
     version: "1.0.0",
     timestamp: new Date().toISOString(),
     storage: { type: "AWS S3", bucket: BUCKET_NAME, region: process.env.AWS_REGION },
-    adminRoutes: {
-      login:          "POST /api/admin/login            (public)",
-      profile:        "GET  /api/admin/profile          (protected)",
-      logout:         "POST /api/admin/logout           (protected)",
-      changePassword: "PUT  /api/admin/change-password  (protected)",
+    masterPreviewRoutes: {
+      preview:     "GET  /api/master-preview",
+      submit:      "POST /api/master-preview/submit",
+      resendEmail: "POST /api/master-preview/resend-email",
+      downloadPDF: "GET  /api/master-preview/download-pdf",
+      downloadHTML:"GET  /api/master-preview/download-html",
     },
-    analyticsRoutes: {
-      stats:    "GET /api/analytics/stats",
-      profiles: "GET /api/analytics/profiles",
-      detail:   "GET /api/analytics/profiles/:userId",
-    },
-    processAdminRoutes: {
-      documents:   "/api/process-admin/documents/all",
-      stats:       "/api/process-admin/stats",
-      generatePDF: "/api/process-admin/generate-pdf/:studentId",
-    },
-    userRoutes: {
-      test:    "/api/user/test",
-      profile: "/api/user/profile",
-      status:  "/api/user/profile/status",
-      image:   "/api/user/profile/image",
-    }
   });
 });
 
@@ -414,7 +403,7 @@ app.use((req, res) => {
   res.status(404).json({
     success: false,
     message: `Route ${req.method} ${req.originalUrl} not found`,
-    suggestion: "Check available routes via '/api/routes' or '/'",
+    suggestion: "Visit GET /api/routes to see all registered routes",
   });
 });
 
@@ -482,20 +471,16 @@ app.listen(PORT, async () => {
    ${s3Connected ? '✅' : '❌'} Region : ${process.env.AWS_REGION}
    ${s3Connected ? '✅' : '❌'} Status : ${s3Connected ? 'Connected ✅' : 'FAILED ❌ — Check .env!'}
 
-🔐 Admin:
-   ✅ POST /api/admin/login           (public)
-   ✅ GET  /api/admin/profile         (protected)
-   ✅ POST /api/admin/logout          (protected)
-   ✅ PUT  /api/admin/change-password (protected)
-
-📊 Analytics:
-   ✅ GET /api/analytics/stats
-   ✅ GET /api/analytics/profiles
-   ✅ GET /api/analytics/profiles/:userId
+📋 Master Preview:
+   ✅ GET  /api/master-preview
+   ✅ POST /api/master-preview/submit
+   ✅ POST /api/master-preview/resend-email
+   ✅ GET  /api/master-preview/download-pdf
+   ✅ GET  /api/master-preview/download-html
 
 🔧 Debug:
    ✅ GET /api/test
-   ✅ GET /api/routes
+   ✅ GET /api/routes      ← shows ALL routes
    ✅ GET /api/debug/s3
    ✅ GET /api/health
 

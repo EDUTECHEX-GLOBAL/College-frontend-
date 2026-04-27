@@ -6,6 +6,7 @@ import "./processAdminDashboard.css";
 import Applications from "./Applications";
 import Documents from "./documents";
 import GusUniversity from "./gusuniversity";
+import MasterUniversity from "./MasterUniversity";
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -136,11 +137,17 @@ const IcoClose = () => (
   </svg>
 );
 
+/* ─── Master University Icon ─── */
+const IcoMortarBoard = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="12 2 22 8.5 12 15 2 8.5 12 2"/>
+    <path d="M6 11.5V17c0 0 2 3 6 3s6-3 6-3v-5.5"/>
+    <line x1="22" y1="8.5" x2="22" y2="14"/>
+  </svg>
+);
+
 /* ─────────────────────────────────────────────────
    REAL EDUTECHEX SVG LOGO
-   Embedded inline — no external file dependency.
-   Unique gradient IDs prefixed with "pad-" to avoid
-   conflicts with other SVGs on the same page.
 ───────────────────────────────────────────────── */
 const EdutechExLogo = () => (
   <div className="pad-logo-wrap">
@@ -151,7 +158,6 @@ const EdutechExLogo = () => (
       xmlnsXlink="http://www.w3.org/1999/xlink"
     >
       <defs>
-        {/* Main text gradient — navy blue */}
         <linearGradient id="pad-lg1" gradientUnits="userSpaceOnUse"
           x1="516.3248" y1="53.11" x2="67.3956" y2="53.11"
           gradientTransform="matrix(1 0 0 -1 0 106.11)">
@@ -161,22 +167,17 @@ const EdutechExLogo = () => (
           <stop offset="0.71" stopColor="#2A3887"/>
           <stop offset="1"    stopColor="#293682"/>
         </linearGradient>
-
-        {/* EX arrow gradient — teal */}
         <linearGradient id="pad-lg2" gradientUnits="userSpaceOnUse"
           x1="398.72" y1="52.8" x2="485.17" y2="52.8">
           <stop offset="0"   stopColor="#14b8a6"/>
           <stop offset="0.5" stopColor="#0ea5e9"/>
           <stop offset="1"   stopColor="#6366f1"/>
         </linearGradient>
-
-        {/* Clip paths for the EX chevron */}
         <clipPath id="pad-cp1">
           <polygon points="460.82,22.08 446.1,22.08 467.17,49.13 398.72,49.13 398.72,57.31 467.13,57.32 446.73,83.52 461.45,83.52 485.17,53.35"/>
         </clipPath>
       </defs>
 
-      {/* EDUTEC letters */}
       <path fill="url(#pad-lg1)" d="
         M39.36,30.19c1.18,0,2.17-0.38,2.96-1.13c0.79-0.75,1.21-1.75,1.21-2.88
         c0-1.12-0.41-2.12-1.19-2.9c-0.79-0.79-1.79-1.19-2.98-1.19H3.97c-1.13,0-2.11,0.39-2.92,1.17
@@ -228,16 +229,11 @@ const EdutechExLogo = () => (
         c0-1.18-0.4-2.19-1.19-2.98C380.89,22.5,379.94,22.1,378.8,22.08z
       "/>
 
-      {/* EX bar top */}
       <path fill="url(#pad-lg1)" d="M446.1,30.26l-47.37,0.01v-8.18h18.89h22.54L446.1,30.26z"/>
-      {/* EX bar bottom */}
       <path fill="url(#pad-lg1)" d="M446.1,75.34l-47.37-0.01v8.18h18.89h22.54L446.1,75.34z"/>
-      {/* X right leg top */}
       <path fill="url(#pad-lg1)" d="M505.57,83.52h-10.57L481.9,66.68l5.28-6.78L505.57,83.52z"/>
-      {/* X right leg bottom */}
       <path fill="url(#pad-lg1)" d="M495.63,22.08l-13.68,17.56l5.28,6.78l18.96-24.35L495.63,22.08z"/>
 
-      {/* EX chevron body — teal gradient */}
       <polygon
         clipPath="url(#pad-cp1)"
         fill="url(#pad-lg2)"
@@ -262,18 +258,26 @@ const StatIcon = ({ bg, stroke, children }) => (
 const ProcessAdminDashboard = () => {
   const navigate = useNavigate();
 
-  const [sidebarOpen,         setSidebarOpen]         = useState(true);
-  const [mobileSidebarOpen,   setMobileSidebarOpen]   = useState(false);
-  const [activeTab,           setActiveTab]           = useState("dashboard");
-  const [processAdminData,    setProcessAdminData]    = useState(null);
-  const [loading,             setLoading]             = useState(true);
-  const [searchQuery,         setSearchQuery]         = useState("");
-  const [kansasExpanded,      setKansasExpanded]      = useState(true);
-  const [gusExpanded,         setGusExpanded]         = useState(false);
-  const [applications,        setApplications]        = useState([]);
-  const [applicationsLoading, setApplicationsLoading] = useState(false);
-  const [selectedApplication, setSelectedApplication] = useState(null);
-  const [isMobile,            setIsMobile]            = useState(false);
+  const [sidebarOpen,           setSidebarOpen]           = useState(true);
+  const [mobileSidebarOpen,     setMobileSidebarOpen]     = useState(false);
+  const [activeTab,             setActiveTab]             = useState("dashboard");
+  const [processAdminData,      setProcessAdminData]      = useState(null);
+  const [loading,               setLoading]               = useState(true);
+  const [searchQuery,           setSearchQuery]           = useState("");
+
+  /* Kansas sidebar state */
+  const [kansasExpanded,        setKansasExpanded]        = useState(true);
+
+  /* GUS sidebar state */
+  const [gusExpanded,           setGusExpanded]           = useState(false);
+
+  /* ── NEW: Master University sidebar state ── */
+  const [masterExpanded,        setMasterExpanded]        = useState(false);
+
+  const [applications,          setApplications]          = useState([]);
+  const [applicationsLoading,   setApplicationsLoading]   = useState(false);
+  const [selectedApplication,   setSelectedApplication]   = useState(null);
+  const [isMobile,              setIsMobile]              = useState(false);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth <= 768);
@@ -475,7 +479,7 @@ const ProcessAdminDashboard = () => {
             </svg>
           </div>
           <div className="pad-bar-xlbls">
-            {['Kansas','Stanford','MIT','GUS','GUS'].map((l, i) => (<span key={i}>{l}</span>))}
+            {['Kansas','Stanford','MIT','GUS','Master'].map((l, i) => (<span key={i}>{l}</span>))}
           </div>
           <div className="pad-chart-footer">
             <span className="pad-cfi"><span className="pad-cfd" style={{background:'#14b8a6'}}></span><strong>55</strong> Total</span>
@@ -494,7 +498,7 @@ const ProcessAdminDashboard = () => {
           <table className="pad-table">
             <thead>
               <tr>
-                <th>Student</th><th>University</th><th>Course</th>
+                <th>Student</th><th>University</th><th>Program</th>
                 <th>Status</th><th>Date</th><th></th>
               </tr>
             </thead>
@@ -513,6 +517,12 @@ const ProcessAdminDashboard = () => {
                 <td>Krishna</td><td>Stanford University</td><td>MSc</td>
                 <td><span className="pad-badge pad-review">● Review</span></td>
                 <td>Apr 9</td><td className="pad-chev">∨</td>
+              </tr>
+              {/* ── NEW: Master row ── */}
+              <tr>
+                <td>Praneeth</td><td>Master University</td><td>Masters</td>
+                <td><span className="pad-badge pad-pending">● Pending</span></td>
+                <td>Apr 24</td><td className="pad-chev">∨</td>
               </tr>
             </tbody>
           </table>
@@ -536,6 +546,11 @@ const ProcessAdminDashboard = () => {
               <span className="pad-act-dot pad-dot-teal"><IcoCheck /></span>
               <span className="pad-act-txt"><strong>Aravind:</strong> Submitted to Kansas University</span>
             </div>
+            {/* ── NEW: Master activity entry ── */}
+            <div className="pad-act-item">
+              <span className="pad-act-dot pad-dot-indigo"><IcoCheck /></span>
+              <span className="pad-act-txt"><strong>Praneeth:</strong> Master application submitted</span>
+            </div>
             <div className="pad-act-day" style={{ marginTop: 10 }}>Yesterday</div>
             <div className="pad-act-item">
               <span className="pad-act-dot pad-dot-blue"><IcoCheck /></span>
@@ -551,25 +566,39 @@ const ProcessAdminDashboard = () => {
     </div>
   );
 
+  /* ── Content switcher ── */
   const renderContent = () => {
     switch (activeTab) {
-      case "dashboard": return renderDashboard();
-      case "applications": return (
-        <Applications
-          applications={applications}
-          applicationsLoading={applicationsLoading}
-          searchQuery={searchQuery}
-          onViewDetails={viewApplicationDetails}
-          onRefresh={fetchApplications}
-          selectedApplication={selectedApplication}
-          onCloseModal={() => setSelectedApplication(null)}
-          onUpdateStatus={updateApplicationStatus}
-          formatDate={formatDate}
-        />
-      );
-      case "documents":        return <Documents />;
-      case "gus-applications": return <GusUniversity />;
-      default: return null;
+      case "dashboard":
+        return renderDashboard();
+
+      case "applications":
+        return (
+          <Applications
+            applications={applications}
+            applicationsLoading={applicationsLoading}
+            searchQuery={searchQuery}
+            onViewDetails={viewApplicationDetails}
+            onRefresh={fetchApplications}
+            selectedApplication={selectedApplication}
+            onCloseModal={() => setSelectedApplication(null)}
+            onUpdateStatus={updateApplicationStatus}
+            formatDate={formatDate}
+          />
+        );
+
+      case "documents":
+        return <Documents />;
+
+      case "gus-applications":
+        return <GusUniversity />;
+
+      /* ── NEW: Master University tab ── */
+      case "master-applications":
+        return <MasterUniversity />;
+
+      default:
+        return null;
     }
   };
 
@@ -601,9 +630,7 @@ const ProcessAdminDashboard = () => {
       {/* ══ SIDEBAR ══ */}
       <div className={sidebarClass}>
         <div className="sidebar-header">
-          {/* Real EDUTECHEX SVG logo */}
           <EdutechExLogo />
-
           {!isMobile && (
             <button className="sidebar-toggle" onClick={() => setSidebarOpen(p => !p)}>
               {sidebarOpen ? <IcoChevLeft /> : <IcoChevRight />}
@@ -617,52 +644,110 @@ const ProcessAdminDashboard = () => {
         </div>
 
         <ul className="sidebar-menu">
-          <li className={activeTab === "dashboard" ? "active" : ""} onClick={() => handleTabChange("dashboard")}>
+
+          {/* Dashboard */}
+          <li
+            className={activeTab === "dashboard" ? "active" : ""}
+            onClick={() => handleTabChange("dashboard")}
+          >
             <span className="sb-ico sb-teal"><IcoGrid /></span>
             {(sidebarOpen || isMobile) && <span>Dashboard</span>}
           </li>
 
-          <li className={`kansas-parent ${kansasExpanded ? 'expanded' : ''}`} onClick={() => setKansasExpanded(p => !p)}>
+          {/* ── Kansas University ── */}
+          <li
+            className={`kansas-parent ${kansasExpanded ? 'expanded' : ''}`}
+            onClick={() => setKansasExpanded(p => !p)}
+          >
             <span className="sb-ico sb-blue"><IcoBuilding /></span>
             {(sidebarOpen || isMobile) && (
               <>
                 <span>Kansas University</span>
-                <span className="dropdown-arrow">{kansasExpanded ? <IcoChevDown /> : <IcoChevRight />}</span>
+                <span className="dropdown-arrow">
+                  {kansasExpanded ? <IcoChevDown /> : <IcoChevRight />}
+                </span>
               </>
             )}
           </li>
 
           {kansasExpanded && (sidebarOpen || isMobile) && (
             <ul className="sub-menu">
-              <li className={activeTab === "applications" ? "active" : ""} onClick={() => handleTabChange("applications")}>
+              <li
+                className={activeTab === "applications" ? "active" : ""}
+                onClick={() => handleTabChange("applications")}
+              >
                 <span className="sb-ico sb-ico-sm sb-teal"><IcoFileText /></span>
                 <span>Applications</span>
               </li>
-              <li className={activeTab === "documents" ? "active" : ""} onClick={() => handleTabChange("documents")}>
+              <li
+                className={activeTab === "documents" ? "active" : ""}
+                onClick={() => handleTabChange("documents")}
+              >
                 <span className="sb-ico sb-ico-sm sb-amber"><IcoFolder /></span>
                 <span>Documents</span>
               </li>
             </ul>
           )}
 
-          <li className={`kansas-parent ${gusExpanded ? 'expanded' : ''}`} onClick={() => setGusExpanded(p => !p)}>
+          {/* ── GUS University ── */}
+          <li
+            className={`kansas-parent ${gusExpanded ? 'expanded' : ''}`}
+            onClick={() => setGusExpanded(p => !p)}
+          >
             <span className="sb-ico sb-teal"><IcoGradCap /></span>
             {(sidebarOpen || isMobile) && (
               <>
                 <span>GUS University</span>
-                <span className="dropdown-arrow">{gusExpanded ? <IcoChevDown /> : <IcoChevRight />}</span>
+                <span className="dropdown-arrow">
+                  {gusExpanded ? <IcoChevDown /> : <IcoChevRight />}
+                </span>
               </>
             )}
           </li>
 
           {gusExpanded && (sidebarOpen || isMobile) && (
             <ul className="sub-menu">
-              <li className={activeTab === "gus-applications" ? "active" : ""} onClick={() => handleTabChange("gus-applications")}>
+              <li
+                className={activeTab === "gus-applications" ? "active" : ""}
+                onClick={() => handleTabChange("gus-applications")}
+              >
                 <span className="sb-ico sb-ico-sm sb-teal"><IcoFileText /></span>
                 <span>Applications</span>
               </li>
             </ul>
           )}
+
+          {/* ══════════════════════════════════════
+              NEW — Master University sidebar item
+          ══════════════════════════════════════ */}
+          <li
+            className={`kansas-parent ${masterExpanded ? 'expanded' : ''}`}
+            onClick={() => setMasterExpanded(p => !p)}
+          >
+            <span className="sb-ico sb-indigo"><IcoMortarBoard /></span>
+            {(sidebarOpen || isMobile) && (
+              <>
+                <span>Master University</span>
+                <span className="dropdown-arrow">
+                  {masterExpanded ? <IcoChevDown /> : <IcoChevRight />}
+                </span>
+              </>
+            )}
+          </li>
+
+          {masterExpanded && (sidebarOpen || isMobile) && (
+            <ul className="sub-menu">
+              <li
+                className={activeTab === "master-applications" ? "active" : ""}
+                onClick={() => handleTabChange("master-applications")}
+              >
+                <span className="sb-ico sb-ico-sm sb-teal"><IcoFileText /></span>
+                <span>Applications</span>
+              </li>
+            </ul>
+          )}
+          {/* ══════════════════════════════════════ */}
+
         </ul>
 
         <div className="sidebar-footer">
@@ -677,7 +762,11 @@ const ProcessAdminDashboard = () => {
       <div className="main-content">
         <nav className="navbar">
           <div className="navbar-left">
-            <button className="pad-hamburger" onClick={() => setMobileSidebarOpen(p => !p)} aria-label="Toggle menu">
+            <button
+              className="pad-hamburger"
+              onClick={() => setMobileSidebarOpen(p => !p)}
+              aria-label="Toggle menu"
+            >
               <IcoHamburger />
             </button>
             <h1>Process Admin <span>Dashboard</span></h1>
@@ -701,7 +790,9 @@ const ProcessAdminDashboard = () => {
             </button>
             <div className="admin-profile">
               <div className="profile-icon"><IcoUser /></div>
-              <span className="profile-name">{processAdminData?.email || "process-admin@..."}</span>
+              <span className="profile-name">
+                {processAdminData?.email || "process-admin@..."}
+              </span>
             </div>
             <button className="mail-btn" title="Mail"><IcoMail /></button>
           </div>

@@ -1,81 +1,101 @@
-import MasterOverview from "../models/masteroverviewmodels.js";
+import mongoose from 'mongoose';
+import MasterOverview from '../models/masteroverviewmodels.js';
 
-// CREATE or UPDATE (UPSERT)
+const getRawUserId = (req) =>
+  req.userId       ||
+  req.user?.userId ||
+  req.user?.id     ||
+  req.user?._id    ||
+  '';
+
+const resolveUserId = (rawId) => {
+  if (!rawId) return null;
+  const str = rawId.toString().trim();
+  if (!mongoose.Types.ObjectId.isValid(str)) return null;
+  return new mongoose.Types.ObjectId(str);
+};
+
+// POST /api/master-overview/save
 export const saveOrUpdateOverview = async (req, res) => {
   try {
-    const userId = req.user.id; // from auth middleware
+    const rawId = getRawUserId(req);
+    const oid   = resolveUserId(rawId);
+
+    console.log(`saveOrUpdateOverview → rawId: ${rawId} | oid: ${oid}`);
+
+    if (!oid) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized — userId not found in token.',
+      });
+    }
+
     const { course } = req.body;
 
     if (!course || !course.preferredCourse) {
       return res.status(400).json({
         success: false,
-        message: "Preferred course is required",
+        message: 'Preferred course is required.',
       });
     }
 
     const overview = await MasterOverview.findOneAndUpdate(
-      { userId },
-      { course },
-      { new: true, upsert: true }
+      { userId: oid },
+      { $set: { userId: oid, course } },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
     );
 
-    res.status(200).json({
+    console.log(`✅ Overview saved for userId: ${oid}`);
+
+    return res.status(200).json({
       success: true,
-      message: "Overview saved successfully",
-      data: overview,
+      message: 'Overview saved successfully.',
+      data:    overview,
     });
   } catch (error) {
-    console.error("Save Overview Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    console.error('saveOrUpdateOverview error:', error);
+    return res.status(500).json({ success: false, message: 'Server error.' });
   }
 };
 
-// GET Overview
+// GET /api/master-overview
 export const getOverview = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const rawId = getRawUserId(req);
+    const oid   = resolveUserId(rawId);
 
-    const overview = await MasterOverview.findOne({ userId });
-
-    if (!overview) {
-      return res.status(404).json({
-        success: false,
-        message: "No overview found",
-      });
+    if (!oid) {
+      return res.status(401).json({ success: false, message: 'Unauthorized.' });
     }
 
-    res.status(200).json({
-      success: true,
-      data: overview,
-    });
+    const overview = await MasterOverview.findOne({ userId: oid });
+
+    if (!overview) {
+      return res.status(404).json({ success: false, message: 'No overview found.' });
+    }
+
+    return res.status(200).json({ success: true, data: overview });
   } catch (error) {
-    console.error("Get Overview Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    console.error('getOverview error:', error);
+    return res.status(500).json({ success: false, message: 'Server error.' });
   }
 };
 
-// DELETE Overview (optional)
+// DELETE /api/master-overview
 export const deleteOverview = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const rawId = getRawUserId(req);
+    const oid   = resolveUserId(rawId);
 
-    await MasterOverview.findOneAndDelete({ userId });
+    if (!oid) {
+      return res.status(401).json({ success: false, message: 'Unauthorized.' });
+    }
 
-    res.status(200).json({
-      success: true,
-      message: "Overview deleted successfully",
-    });
+    await MasterOverview.findOneAndDelete({ userId: oid });
+
+    return res.status(200).json({ success: true, message: 'Overview deleted successfully.' });
   } catch (error) {
-    console.error("Delete Overview Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    console.error('deleteOverview error:', error);
+    return res.status(500).json({ success: false, message: 'Server error.' });
   }
 };

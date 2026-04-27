@@ -36,36 +36,54 @@ const SignIn = () => {
     console.log("token:", localStorage.getItem('token') ? "Present" : "Missing");
   }, []);
 
-  const hasCompletedProfile = () => {
-    const profileCompleted = localStorage.getItem('profileCompleted');
-    const userProfile = localStorage.getItem('userProfile');
-
-    console.log("hasCompletedProfile check:");
-    console.log("  profileCompleted:", profileCompleted);
-    console.log("  userProfile exists:", !!userProfile);
-
-    if (profileCompleted === 'true' && userProfile) {
-      console.log("  Profile is completed");
+  /**
+   * Single source of truth: check backend response FIRST,
+   * then fall back to localStorage. This handles:
+   *  - New users     → profileCompleted is false  → go to /profile
+   *  - Admin-approved returning users → profileCompleted is true → go to dashboard
+   *  - Returning users who completed profile before → localStorage flag → go to dashboard
+   */
+  const isProfileComplete = (backendUser) => {
+    // 1. Backend is the authority — always check it first
+    if (backendUser?.profileCompleted === true) {
+      console.log("  ✅ profileCompleted=true from backend");
       return true;
     }
 
-    console.log("  Profile not completed");
+    // 2. Fallback: localStorage flag (covers edge cases where backend hasn't updated yet)
+    if (
+      localStorage.getItem('profileCompleted') === 'true' &&
+      localStorage.getItem('userProfile')
+    ) {
+      console.log("  ✅ profileCompleted=true from localStorage fallback");
+      return true;
+    }
+
+    console.log("  ❌ Profile not completed");
     return false;
   };
 
-  const clearUserData = () => {
-    localStorage.removeItem('profileCompleted');
-    localStorage.removeItem('userProfile');
-    localStorage.removeItem('token');
-    localStorage.removeItem('userData');
-    localStorage.removeItem('studentType');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('selectedUniversities');
-    localStorage.removeItem('eligibleProgram');
-    console.log("All user data cleared from localStorage");
+  /**
+   * Store all essential auth data after a successful login.
+   * Called before any navigation so data is always present.
+   */
+  const storeAuthData = (token, user, type, identifier) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("userData", JSON.stringify(user));
+    localStorage.setItem("studentType", type);
+    localStorage.setItem("userEmail", identifier);
   };
 
-  // First-Year Student Sign-In
+  /**
+   * Mark the profile as completed in localStorage so returning users
+   * skip the profile page without needing an extra API call.
+   */
+  const markProfileCompleted = (user) => {
+    localStorage.setItem("profileCompleted", "true");
+    localStorage.setItem("userProfile", JSON.stringify(user));
+  };
+
+  // ─── First-Year Student Sign-In ───────────────────────────────────────────
   const handleFirstYearSignIn = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -89,43 +107,29 @@ const SignIn = () => {
       });
 
       console.log("Response data:", response.data);
-if (response.data.success && response.data.token) {
-  console.log("Token received");
 
-  // ✅ Step 1: Always store auth data first
-  localStorage.setItem("token", response.data.token);
-  localStorage.setItem("userData", JSON.stringify(response.data.user));
-  localStorage.setItem("studentType", "firstyear");
-  localStorage.setItem("userEmail", email);
+      if (response.data.success && response.data.token) {
+        const { token, user } = response.data;
 
-  // ✅ Step 2: Check profile completion (Backend FIRST, fallback to localStorage)
-  const isProfileCompleted =
-    response.data.user?.profileCompleted === true ||
-    localStorage.getItem("profileCompleted") === "true";
+        // Step 1: Always store auth data first
+        storeAuthData(token, user, "firstyear", email);
 
-  if (isProfileCompleted) {
-    console.log("Profile already completed - Redirecting to dashboard");
-
-    // ✅ Keep profile flags consistent (important for future reloads)
-    localStorage.setItem("profileCompleted", "true");
-    localStorage.setItem("userProfile", JSON.stringify(response.data.user));
-
-    navigate("/firstyear/dashboard");
-
-  } else {
-    console.log("Profile not completed - Redirecting to profile");
-
-    // ⚠️ Clear only unnecessary data (avoid breaking auth flow)
-    localStorage.removeItem('profileCompleted');
-    localStorage.removeItem('userProfile');
-
-    navigate("/profile");
-  }
-
-} else {
-  console.error("Response missing success or token");
-  setError(response.data.message || "Sign in failed. Please try again.");
-}
+        // Step 2: Check profile completion (backend is the authority)
+        if (isProfileComplete(user)) {
+          console.log("Profile completed → Redirecting to dashboard");
+          markProfileCompleted(user); // keep localStorage in sync
+          navigate("/firstyear/dashboard");
+        } else {
+          console.log("Profile not completed → Redirecting to profile");
+          // Clear stale profile flags so profile page starts fresh
+          localStorage.removeItem('profileCompleted');
+          localStorage.removeItem('userProfile');
+          navigate("/profile");
+        }
+      } else {
+        console.error("Response missing success or token");
+        setError(response.data.message || "Sign in failed. Please try again.");
+      }
     } catch (err) {
       console.error("Sign in error:", err);
       if (err.response?.status === 401) {
@@ -142,7 +146,7 @@ if (response.data.success && response.data.token) {
     }
   };
 
-  // Transfer Student Sign-In
+  // ─── Transfer Student Sign-In ─────────────────────────────────────────────
   const handleTransferSignIn = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -161,36 +165,30 @@ if (response.data.success && response.data.token) {
       console.log("Signing in (Transfer Student):", username);
 
       const response = await axiosInstance.post("/api/transfer/login", {
-        username: username,
+        username,
         password,
       });
 
       console.log("Response data:", response.data);
 
       if (response.data.success && response.data.token) {
+        const { token, user } = response.data;
 
-        // Step 1: Set new token and user data FIRST
-        localStorage.setItem("token", response.data.token);
-        localStorage.setItem("userData", JSON.stringify(response.data.user));
-        localStorage.setItem("studentType", "transfer");
-        localStorage.setItem("userEmail", username);
+        // Step 1: Always store auth data first
+        storeAuthData(token, user, "transfer", username);
 
-        // Step 2: NOW check if profile is completed (profileCompleted still exists)
-        if (hasCompletedProfile()) {
-          console.log("Profile already completed - Redirecting to dashboard");
+        // Step 2: Check profile completion (backend is the authority)
+        if (isProfileComplete(user)) {
+          console.log("Profile completed → Redirecting to transfer dashboard");
+          markProfileCompleted(user); // keep localStorage in sync
           navigate("/transfer/dashboard");
         } else {
-          // Step 3: Only clear if going to profile (new/incomplete student)
-          console.log("Profile not completed - Redirecting to profile");
-          clearUserData();
-          // Re-set essentials after clearing
-          localStorage.setItem("token", response.data.token);
-          localStorage.setItem("userData", JSON.stringify(response.data.user));
-          localStorage.setItem("studentType", "transfer");
-          localStorage.setItem("userEmail", username);
+          console.log("Profile not completed → Redirecting to profile");
+          // Clear stale profile flags so profile page starts fresh
+          localStorage.removeItem('profileCompleted');
+          localStorage.removeItem('userProfile');
           navigate("/profile");
         }
-
       } else {
         setError(response.data.message || "Sign in failed. Please try again.");
       }

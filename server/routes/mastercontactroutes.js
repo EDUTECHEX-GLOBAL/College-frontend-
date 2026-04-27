@@ -1,18 +1,21 @@
 import express from "express";
+import authenticateToken from "../middleware/authMiddleware.js";
 import {
   createMasterContact,
+  getMyMasterContact,       // ← add this
   getAllMasterContact,
   getMasterContactById,
   updateMasterContact,
-  deleteMasterContact
+  deleteMasterContact,
 } from "../controllers/mastercontactcontroller.js";
 
 const router = express.Router();
 
-router.post("/", createMasterContact);
-router.get("/", getAllMasterContact);
-router.get("/:id", getMasterContactById);
-router.put("/:id", updateMasterContact);
-router.delete("/:id", deleteMasterContact);
+router.post("/",      authenticateToken, createMasterContact);
+router.get("/me",     authenticateToken, getMyMasterContact);    // ← BEFORE /:id
+router.get("/",       authenticateToken, getAllMasterContact);
+router.get("/:id",    authenticateToken, getMasterContactById);
+router.put("/:id",    authenticateToken, updateMasterContact);
+router.delete("/:id", authenticateToken, deleteMasterContact);
 
 export default router;

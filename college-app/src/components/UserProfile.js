@@ -780,7 +780,11 @@ const UserProfile = () => {
 
  
 
-  useEffect(() => { fetchUniversities(); }, []);
+ useEffect(() => {
+  const profileCompleted = localStorage.getItem('profileCompleted');
+  if (profileCompleted === 'true') return; // skip — they'll be redirected
+  fetchUniversities();
+}, []);
 
   useEffect(() => {
     let filtered = [...universities];
@@ -832,19 +836,22 @@ const UserProfile = () => {
     setLoading(true); setError('');
     try {
       const fetchAdmin = async () => {
-        let all=[]; let page=1;
-        while (true) {
-          try {
-            const r=await axios.get(`${API_URL}/api/admin/universities`,{params:{page,limit:100},headers:{Authorization:`Bearer ${token}`}});
-            const d=r.data?.data||[];
-            if (!Array.isArray(d)||!d.length) break;
-            all=[...all,...d];
-            if (d.length<100) break;
-            page++;
-          } catch { break; }
-        }
-        return all;
-      };
+  let all = []; let page = 1;
+  while (true) {
+    try {
+      const r = await axios.get(`${API_URL}/api/universities`, { // ← /api not /api/admin
+        params: { page, limit: 100 },
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const d = r.data?.data || [];
+      if (!Array.isArray(d) || !d.length) break;
+      all = [...all, ...d];
+      if (d.length < 100) break;
+      page++;
+    } catch { break; }
+  }
+  return all;
+};
       const [adminData,bachRes,mastRes] = await Promise.all([
         fetchAdmin(),
         axios.get(`${API_URL}/api/bachelors/universities`,{params:{limit:500},headers:{Authorization:`Bearer ${token}`}}).catch(()=>({data:{success:false,data:[]}})),

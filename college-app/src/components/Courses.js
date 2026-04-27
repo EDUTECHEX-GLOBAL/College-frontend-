@@ -18,8 +18,10 @@ const containsMasterKeyword = (str = '') => {
   return MASTER_KEYWORDS.some(kw => lower.includes(kw));
 };
 
+// Checks processed program object — level field is already normalised by processPrograms
 const isMasterLevel = (program = {}, uniHint = false) => {
   if (uniHint) return true;
+  if ((program.level || '').toLowerCase() === 'master') return true;
   if (containsMasterKeyword(program.level || ''))       return true;
   if (containsMasterKeyword(program.title || ''))       return true;
   if (containsMasterKeyword(program.description || '')) return true;
@@ -34,17 +36,26 @@ const Courses = ({ onCourseSelect }) => {
   const studentType = location.pathname.includes('/transfer/') ? 'transfer' : 'firstyear';
 
   // ─── Resolve isMasterUniversity from ALL available sources ───────────────
-  // Called once synchronously so it is ready before any click handler runs.
   const resolveIsMasterUniversity = () => {
-    // 1. Navigation state — most reliable when coming from CollegeSearch
+    // 1. Navigation state flag
     if (location.state?.isMasterUniversity === true) return true;
 
-    // 2. Stored university data in localStorage
+    // 2. University object in navigation state
+    const stateUni = location.state?.university;
+    if (stateUni) {
+      if (stateUni.universityType === 'master')         return true;
+      if (stateUni.type           === 'master')         return true;
+      if (stateUni.isMaster       === true)             return true;
+      if (containsMasterKeyword(stateUni.INSTNM || '')) return true;
+      if (stateUni.programs?.some(p =>
+        containsMasterKeyword(p.title || '') ||
+        containsMasterKeyword(p.level || '')
+      )) return true;
+    }
+
+    // 3. localStorage
     try {
-      const keys = [
-        `university_${universityId}`,
-        'currentUniversity'
-      ];
+      const keys = [`university_${universityId}`, 'currentUniversity'];
       for (const key of keys) {
         const raw = localStorage.getItem(key);
         if (!raw) continue;
@@ -63,30 +74,29 @@ const Courses = ({ onCourseSelect }) => {
     return false;
   };
 
-  // Compute once — stable for the lifetime of this component render
   const uniIsMasterHint = resolveIsMasterUniversity();
 
-  const [university,       setUniversity]       = useState(null);
-  const [programs,         setPrograms]         = useState([]);
-  const [filteredPrograms, setFilteredPrograms] = useState([]);
-  const [selectedProgram,  setSelectedProgram]  = useState(null);
-  const [loading,          setLoading]          = useState(true);
-  const [error,            setError]            = useState(null);
-  const [searchTerm,       setSearchTerm]       = useState("");
-  const [selectedMajorArea,setSelectedMajorArea]= useState("All");
-  const [selectedStudyMode,setSelectedStudyMode]= useState("All");
-  const [selectedLevel,    setSelectedLevel]    = useState("All");
-  const [majorAreas,       setMajorAreas]       = useState([]);
-  const [studyModes,       setStudyModes]       = useState([]);
-  const [programLevels,    setProgramLevels]    = useState([]);
-  const [activeTab,        setActiveTab]        = useState("programs");
-  const [savingToBackend,  setSavingToBackend]  = useState(false);
-  const [debugInfo,        setDebugInfo]        = useState(null);
-  const [selectedCourses,  setSelectedCourses]  = useState([]);
-  const [showFilters,      setShowFilters]      = useState(false);
-  const [sortBy,           setSortBy]           = useState("title");
-  const [favorites,        setFavorites]        = useState([]);
-  const [showFavoritesOnly,setShowFavoritesOnly]= useState(false);
+  const [university,        setUniversity]        = useState(null);
+  const [programs,          setPrograms]          = useState([]);
+  const [filteredPrograms,  setFilteredPrograms]  = useState([]);
+  const [selectedProgram,   setSelectedProgram]   = useState(null);
+  const [loading,           setLoading]           = useState(true);
+  const [error,             setError]             = useState(null);
+  const [searchTerm,        setSearchTerm]        = useState("");
+  const [selectedMajorArea, setSelectedMajorArea] = useState("All");
+  const [selectedStudyMode, setSelectedStudyMode] = useState("All");
+  const [selectedLevel,     setSelectedLevel]     = useState("All");
+  const [majorAreas,        setMajorAreas]        = useState([]);
+  const [studyModes,        setStudyModes]        = useState([]);
+  const [programLevels,     setProgramLevels]     = useState([]);
+  const [activeTab,         setActiveTab]         = useState("programs");
+  const [savingToBackend,   setSavingToBackend]   = useState(false);
+  const [debugInfo,         setDebugInfo]         = useState(null);
+  const [selectedCourses,   setSelectedCourses]   = useState([]);
+  const [showFilters,       setShowFilters]       = useState(false);
+  const [sortBy,            setSortBy]            = useState("title");
+  const [favorites,         setFavorites]         = useState([]);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
   useEffect(() => {
     loadUniversityData();
@@ -112,7 +122,7 @@ const Courses = ({ onCourseSelect }) => {
       setLoading(true);
       setError(null);
 
-      let universityData     = null;
+      let universityData      = null;
       let selectedCoursesData = [];
 
       if (location.state?.university)      universityData      = location.state.university;
@@ -184,7 +194,11 @@ const Courses = ({ onCourseSelect }) => {
     if (extractedPrograms.length > 0) {
       processPrograms(extractedPrograms, uniData);
     } else {
-      setDebugInfo({ hasPrograms: !!uniData.programs, programsLength: uniData.programs?.length || 0, isMasterHint: uniIsMasterHint });
+      setDebugInfo({
+        hasPrograms:    !!uniData.programs,
+        programsLength: uniData.programs?.length || 0,
+        isMasterHint:   uniIsMasterHint
+      });
       setPrograms([]);
       setFilteredPrograms([]);
       setLoading(false);
@@ -205,7 +219,6 @@ const Courses = ({ onCourseSelect }) => {
         level = level.charAt(0).toUpperCase() + level.slice(1).toLowerCase();
       }
 
-      // ── If the whole university is master, force every program to Master ──
       if (uniIsMasterHint) {
         level = 'Master';
       } else if (!containsMasterKeyword(level) && containsMasterKeyword(title)) {
@@ -276,7 +289,7 @@ const Courses = ({ onCourseSelect }) => {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(p =>
-        p.title.toLowerCase().includes(term)       ||
+        p.title.toLowerCase().includes(term)        ||
         p.description?.toLowerCase().includes(term) ||
         p.majorArea?.toLowerCase().includes(term)
       );
@@ -315,32 +328,39 @@ const Courses = ({ onCourseSelect }) => {
     selectedAt: new Date().toISOString()
   });
 
-  // ─── APPLY NOW — guaranteed master routing ─────────────────────────────────
+  // ─── APPLY NOW ─────────────────────────────────────────────────────────────
   const handleApplyNow = (program) => {
     if (!university || !program) { alert("Please select a program first"); return; }
 
     setSavingToBackend(true);
     try {
       const courseData = buildCourseData(program);
-
-      // uniIsMasterHint is resolved from state + localStorage at component mount
-      // so it can never be undefined/null here.
-      const isMaster = isMasterLevel(program, uniIsMasterHint);
+      const isMaster   = isMasterLevel(program, uniIsMasterHint);
 
       // ── Route ────────────────────────────────────────────────────────────
       const applicationPath = isMaster
         ? `/${studentType}/dashboard/master-application/overview`
         : `/${studentType}/dashboard/application/overview`;
 
-      // ── Persist ──────────────────────────────────────────────────────────
+      // ── CRITICAL: Keep master and bachelor localStorage keys SEPARATE ──
+      // Master application reads 'selectedMasterCourseForApplication'
+      // Bachelor Overview reads 'selectedCourseForApplication'
+      // NEVER write 'selectedCourseForApplication' for a master application —
+      // that is what was causing Overview.js to open instead of MasterOverview.
       if (isMaster) {
         localStorage.setItem('selectedMasterCourseForApplication', JSON.stringify(courseData));
         localStorage.removeItem('masterCourseConfirmed');
+        // ✅ Remove bachelor key so Overview.js cannot accidentally load this course
+        localStorage.removeItem('selectedCourseForApplication');
+        localStorage.removeItem('currentSelectedCourse');
       } else {
+        // Bachelor path — write only the bachelor keys
+        localStorage.setItem('selectedCourseForApplication', JSON.stringify(courseData));
+        localStorage.setItem('currentSelectedCourse', JSON.stringify(courseData));
+        // ✅ Remove master key so MasterOverview cannot accidentally load this course
         localStorage.removeItem('selectedMasterCourseForApplication');
         localStorage.removeItem('masterCourseConfirmed');
       }
-      localStorage.setItem('selectedCourseForApplication', JSON.stringify(courseData));
 
       setSelectedProgram(program);
 
@@ -395,7 +415,7 @@ const Courses = ({ onCourseSelect }) => {
     }).format(amount);
   };
 
-  // ─── Loading / error / not-found guards ────────────────────────────────────
+  // ─── Guards ────────────────────────────────────────────────────────────────
   if (loading) return (
     <div className="course-loading">
       <div className="course-loading-spinner"></div>
@@ -508,8 +528,16 @@ const Courses = ({ onCourseSelect }) => {
               </div>
               <div className="course-sidebar-search">
                 <div className="course-search-wrapper">
-                  <input type="text" placeholder="Search programs..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="course-search-input" />
-                  {searchTerm && <button className="course-clear-search-btn" onClick={() => setSearchTerm("")} aria-label="Clear search">×</button>}
+                  <input
+                    type="text"
+                    placeholder="Search programs..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="course-search-input"
+                  />
+                  {searchTerm && (
+                    <button className="course-clear-search-btn" onClick={() => setSearchTerm("")} aria-label="Clear search">×</button>
+                  )}
                 </div>
               </div>
               <div className="course-filters-section">
@@ -544,12 +572,23 @@ const Courses = ({ onCourseSelect }) => {
                 </div>
                 <div className="course-filter-group">
                   <label className="course-filter-label checkbox-label">
-                    <input type="checkbox" checked={showFavoritesOnly} onChange={(e) => setShowFavoritesOnly(e.target.checked)} />
+                    <input
+                      type="checkbox"
+                      checked={showFavoritesOnly}
+                      onChange={(e) => setShowFavoritesOnly(e.target.checked)}
+                    />
                     <span className="course-checkbox-text">Show favorites only</span>
                   </label>
                 </div>
                 {(searchTerm || selectedMajorArea !== "All" || selectedStudyMode !== "All" || selectedLevel !== "All" || showFavoritesOnly) && (
-                  <button className="course-reset-filters-btn" onClick={() => { setSearchTerm(""); setSelectedMajorArea("All"); setSelectedStudyMode("All"); setSelectedLevel("All"); setShowFavoritesOnly(false); setSortBy("title"); }}>
+                  <button
+                    className="course-reset-filters-btn"
+                    onClick={() => {
+                      setSearchTerm(""); setSelectedMajorArea("All");
+                      setSelectedStudyMode("All"); setSelectedLevel("All");
+                      setShowFavoritesOnly(false); setSortBy("title");
+                    }}
+                  >
                     Clear All Filters
                   </button>
                 )}
@@ -611,10 +650,38 @@ const Courses = ({ onCourseSelect }) => {
                         </div>
 
                         <div className="course-program-details-grid">
-                          {program.duration         && <div className="course-program-detail-item"><div className="course-detail-content"><span className="course-detail-label">Duration</span><span className="course-detail-value">{program.duration}</span></div></div>}
-                          {program.tuition          && <div className="course-program-detail-item"><div className="course-detail-content"><span className="course-detail-label">Tuition</span><span className="course-detail-value">{formatCurrency(program.tuition)}</span></div></div>}
-                          {program.startDates?.length > 0 && <div className="course-program-detail-item"><div className="course-detail-content"><span className="course-detail-label">Start Dates</span><span className="course-detail-value">{program.startDates.join(', ')}</span></div></div>}
-                          {program.applicationDeadline && <div className="course-program-detail-item"><div className="course-detail-content"><span className="course-detail-label">Deadline</span><span className="course-detail-value">{program.applicationDeadline}</span></div></div>}
+                          {program.duration && (
+                            <div className="course-program-detail-item">
+                              <div className="course-detail-content">
+                                <span className="course-detail-label">Duration</span>
+                                <span className="course-detail-value">{program.duration}</span>
+                              </div>
+                            </div>
+                          )}
+                          {program.tuition && (
+                            <div className="course-program-detail-item">
+                              <div className="course-detail-content">
+                                <span className="course-detail-label">Tuition</span>
+                                <span className="course-detail-value">{formatCurrency(program.tuition)}</span>
+                              </div>
+                            </div>
+                          )}
+                          {program.startDates?.length > 0 && (
+                            <div className="course-program-detail-item">
+                              <div className="course-detail-content">
+                                <span className="course-detail-label">Start Dates</span>
+                                <span className="course-detail-value">{program.startDates.join(', ')}</span>
+                              </div>
+                            </div>
+                          )}
+                          {program.applicationDeadline && (
+                            <div className="course-program-detail-item">
+                              <div className="course-detail-content">
+                                <span className="course-detail-label">Deadline</span>
+                                <span className="course-detail-value">{program.applicationDeadline}</span>
+                              </div>
+                            </div>
+                          )}
                         </div>
 
                         {program.majorArea && program.majorArea !== 'General' && (
@@ -666,7 +733,14 @@ const Courses = ({ onCourseSelect }) => {
               <div className="course-no-programs-icon"></div>
               <h3>No Programs Match Your Filters</h3>
               <p>Try adjusting your search criteria or filters.</p>
-              <button className="course-reset-filters-btn" onClick={() => { setSearchTerm(""); setSelectedMajorArea("All"); setSelectedStudyMode("All"); setSelectedLevel("All"); setShowFavoritesOnly(false); }}>
+              <button
+                className="course-reset-filters-btn"
+                onClick={() => {
+                  setSearchTerm(""); setSelectedMajorArea("All");
+                  setSelectedStudyMode("All"); setSelectedLevel("All");
+                  setShowFavoritesOnly(false);
+                }}
+              >
                 Clear All Filters
               </button>
             </div>
@@ -675,67 +749,110 @@ const Courses = ({ onCourseSelect }) => {
       </div>
 
       {/* ── Selected Program Side Panel ── */}
-      {selectedProgram && activeTab === 'selected' && (
-        <div className="course-selected-panel">
-          <div className="course-panel-header">
-            <div className="course-panel-title">
-              <h3>Selected Program</h3>
-              <span className={`course-panel-app-type ${isMasterLevel(selectedProgram, uniIsMasterHint) ? 'course-panel-app-type--master' : 'course-panel-app-type--bachelor'}`}>
-                → {isMasterLevel(selectedProgram, uniIsMasterHint) ? 'Master Application' : 'Bachelor Application'}
-              </span>
-            </div>
-            <button className="course-close-panel-btn" onClick={() => setActiveTab('programs')}>×</button>
-          </div>
-
-          <div className="course-panel-content">
-            <div className="course-selected-program-header">
-              <h4>{selectedProgram.title}</h4>
-              <button
-                className={`course-favorite-btn ${favorites.includes(selectedProgram.id) ? 'active' : ''}`}
-                onClick={() => toggleFavorite(selectedProgram)}
-              >
-                {favorites.includes(selectedProgram.id) ? '★' : '☆'}
-              </button>
+      {selectedProgram && activeTab === 'selected' && (() => {
+        const panelIsMaster = isMasterLevel(selectedProgram, uniIsMasterHint);
+        return (
+          <div className="course-selected-panel">
+            <div className="course-panel-header">
+              <div className="course-panel-title">
+                <h3>Selected Program</h3>
+                <span className={`course-panel-app-type ${panelIsMaster ? 'course-panel-app-type--master' : 'course-panel-app-type--bachelor'}`}>
+                  → {panelIsMaster ? 'Master Application' : 'Bachelor Application'}
+                </span>
+              </div>
+              <button className="course-close-panel-btn" onClick={() => setActiveTab('programs')}>×</button>
             </div>
 
-            <div className="course-panel-details">
-              <div className="course-detail-row"><span className="course-detail-row-label">Level:</span><span className="course-detail-row-value"><span className="course-badge">{selectedProgram.level}</span></span></div>
-              <div className="course-detail-row"><span className="course-detail-row-label">Study Mode:</span><span className="course-detail-row-value">{selectedProgram.studyMode}</span></div>
-              <div className="course-detail-row"><span className="course-detail-row-label">Duration:</span><span className="course-detail-row-value">{selectedProgram.duration}</span></div>
-              <div className="course-detail-row"><span className="course-detail-row-label">Location:</span><span className="course-detail-row-value">{selectedProgram.locations.join(', ')}</span></div>
-              {selectedProgram.tuition && <div className="course-detail-row"><span className="course-detail-row-label">Tuition:</span><span className="course-detail-row-value course-tuition-value">{formatCurrency(selectedProgram.tuition)}</span></div>}
-              {selectedProgram.majorArea && selectedProgram.majorArea !== 'General' && <div className="course-detail-row"><span className="course-detail-row-label">Field of Study:</span><span className="course-detail-row-value"><span className="course-major-tag">{selectedProgram.majorArea}</span></span></div>}
-              {selectedProgram.startDates?.length > 0 && <div className="course-detail-row"><span className="course-detail-row-label">Start Dates:</span><span className="course-detail-row-value">{selectedProgram.startDates.join(', ')}</span></div>}
-              {selectedProgram.applicationDeadline && <div className="course-detail-row"><span className="course-detail-row-label">Deadline:</span><span className="course-detail-row-value course-deadline-value">{selectedProgram.applicationDeadline}</span></div>}
-              {selectedProgram.requirements?.length > 0 && (
-                <div className="course-detail-section">
-                  <span className="course-detail-section-label">Requirements:</span>
-                  <ul className="course-requirements-list">{selectedProgram.requirements.map((r, i) => <li key={i}>{r}</li>)}</ul>
+            <div className="course-panel-content">
+              <div className="course-selected-program-header">
+                <h4>{selectedProgram.title}</h4>
+                <button
+                  className={`course-favorite-btn ${favorites.includes(selectedProgram.id) ? 'active' : ''}`}
+                  onClick={() => toggleFavorite(selectedProgram)}
+                >
+                  {favorites.includes(selectedProgram.id) ? '★' : '☆'}
+                </button>
+              </div>
+
+              <div className="course-panel-details">
+                <div className="course-detail-row">
+                  <span className="course-detail-row-label">Level:</span>
+                  <span className="course-detail-row-value"><span className="course-badge">{selectedProgram.level}</span></span>
                 </div>
-              )}
-              {selectedProgram.careerPaths?.length > 0 && (
-                <div className="course-detail-section">
-                  <span className="course-detail-section-label">Career Opportunities:</span>
-                  <ul className="course-career-list">{selectedProgram.careerPaths.map((c, i) => <li key={i}>{c}</li>)}</ul>
+                <div className="course-detail-row">
+                  <span className="course-detail-row-label">Study Mode:</span>
+                  <span className="course-detail-row-value">{selectedProgram.studyMode}</span>
                 </div>
-              )}
-            </div>
+                <div className="course-detail-row">
+                  <span className="course-detail-row-label">Duration:</span>
+                  <span className="course-detail-row-value">{selectedProgram.duration}</span>
+                </div>
+                <div className="course-detail-row">
+                  <span className="course-detail-row-label">Location:</span>
+                  <span className="course-detail-row-value">{selectedProgram.locations.join(', ')}</span>
+                </div>
+                {selectedProgram.tuition && (
+                  <div className="course-detail-row">
+                    <span className="course-detail-row-label">Tuition:</span>
+                    <span className="course-detail-row-value course-tuition-value">{formatCurrency(selectedProgram.tuition)}</span>
+                  </div>
+                )}
+                {selectedProgram.majorArea && selectedProgram.majorArea !== 'General' && (
+                  <div className="course-detail-row">
+                    <span className="course-detail-row-label">Field of Study:</span>
+                    <span className="course-detail-row-value"><span className="course-major-tag">{selectedProgram.majorArea}</span></span>
+                  </div>
+                )}
+                {selectedProgram.startDates?.length > 0 && (
+                  <div className="course-detail-row">
+                    <span className="course-detail-row-label">Start Dates:</span>
+                    <span className="course-detail-row-value">{selectedProgram.startDates.join(', ')}</span>
+                  </div>
+                )}
+                {selectedProgram.applicationDeadline && (
+                  <div className="course-detail-row">
+                    <span className="course-detail-row-label">Deadline:</span>
+                    <span className="course-detail-row-value course-deadline-value">{selectedProgram.applicationDeadline}</span>
+                  </div>
+                )}
+                {selectedProgram.requirements?.length > 0 && (
+                  <div className="course-detail-section">
+                    <span className="course-detail-section-label">Requirements:</span>
+                    <ul className="course-requirements-list">
+                      {selectedProgram.requirements.map((r, i) => <li key={i}>{r}</li>)}
+                    </ul>
+                  </div>
+                )}
+                {selectedProgram.careerPaths?.length > 0 && (
+                  <div className="course-detail-section">
+                    <span className="course-detail-section-label">Career Opportunities:</span>
+                    <ul className="course-career-list">
+                      {selectedProgram.careerPaths.map((c, i) => <li key={i}>{c}</li>)}
+                    </ul>
+                  </div>
+                )}
+              </div>
 
-            <div className="course-panel-actions">
-              <button className="course-apply-button" onClick={navigateToApplicationOverview} disabled={savingToBackend}>
-                {savingToBackend
-                  ? <><span className="course-spinner"></span>Saving...</>
-                  : isMasterLevel(selectedProgram, uniIsMasterHint)
-                    ? 'Start Master Application →'
-                    : 'Start Application →'}
-              </button>
-              <button className="course-back-to-programs-btn" onClick={() => setActiveTab('programs')}>
-                Browse More Programs
-              </button>
+              <div className="course-panel-actions">
+                <button
+                  className="course-apply-button"
+                  onClick={navigateToApplicationOverview}
+                  disabled={savingToBackend}
+                >
+                  {savingToBackend
+                    ? <><span className="course-spinner"></span>Saving...</>
+                    : panelIsMaster
+                      ? 'Start Master Application →'
+                      : 'Start Application →'}
+                </button>
+                <button className="course-back-to-programs-btn" onClick={() => setActiveTab('programs')}>
+                  Browse More Programs
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 };

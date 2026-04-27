@@ -120,11 +120,11 @@ const MasterAcademic = ({ data, updateData }) => {
 
       try {
         const token    = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/api/master-academic/${userId}`, {
-          method:  'GET',
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          signal:  controller.signal
-        });
+     const response = await fetch(`${API_URL}/api/master-academic`, {
+  method:  'GET',
+  headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+  signal:  controller.signal
+});
 
         if (response.status === 404) return;
         if (!response.ok) throw new Error(`Server error: ${response.status}`);

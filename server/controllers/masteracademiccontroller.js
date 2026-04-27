@@ -1,21 +1,35 @@
+import mongoose from "mongoose";
 import MasterAcademic from "../models/masteracademicmodel.js";
 
-// ✅ Degrees that qualify for master's application
 const QUALIFYING_DEGREES = ["Bachelor's Degree"];
 
-/**
- * CREATE or UPDATE (UPSERT)
- */
+const getRawUserId = (req) =>
+  req.userId       ||
+  req.user?.userId ||
+  req.user?.id     ||
+  req.user?._id    ||
+  "";
+
+const resolveUserId = (rawId) => {
+  if (!rawId) return null;
+  const str = rawId.toString().trim();
+  if (!mongoose.Types.ObjectId.isValid(str)) return null;
+  return new mongoose.Types.ObjectId(str);
+};
+
+// CREATE OR UPDATE (UPSERT)
 export const saveMasterAcademic = async (req, res) => {
   try {
-    const { userId, academics } = req.body;
-
+    // FIX: get userId from token, never from req.body
+    const userId = resolveUserId(getRawUserId(req));
     if (!userId) {
-      return res.status(400).json({
+      return res.status(401).json({
         success: false,
-        message: "userId is required",
+        message: "Unauthorized: user ID not found in token.",
       });
     }
+
+    const { academics } = req.body;   // ← only take academics from body
 
     if (!Array.isArray(academics) || academics.length === 0) {
       return res.status(400).json({
@@ -24,25 +38,20 @@ export const saveMasterAcademic = async (req, res) => {
       });
     }
 
-    // ✅ Check at least one Bachelor's Degree exists
     const hasBachelor = academics.some((entry) =>
       QUALIFYING_DEGREES.includes(entry.degree)
     );
-
     if (!hasBachelor) {
       return res.status(400).json({
         success: false,
-        message:
-          "At least one Bachelor's Degree is required to apply for a master's program.",
-        errorCode: "NO_BACHELOR_DEGREE", // frontend can use this to show specific UI
+        message: "At least one Bachelor's Degree is required.",
+        errorCode: "NO_BACHELOR_DEGREE",
       });
     }
 
-    // ✅ Validate each entry has required fields
     for (let i = 0; i < academics.length; i++) {
-      const entry = academics[i];
+      const entry   = academics[i];
       const missing = [];
-
       if (!entry.degree?.trim())       missing.push("degree");
       if (!entry.university?.trim())   missing.push("university");
       if (!entry.country?.trim())      missing.push("country");
@@ -56,16 +65,12 @@ export const saveMasterAcademic = async (req, res) => {
           message: `Entry #${i + 1} is missing: ${missing.join(", ")}`,
         });
       }
-
-      // ✅ Validate date order
       if (new Date(entry.startDate) > new Date(entry.endDate)) {
         return res.status(400).json({
           success: false,
           message: `Entry #${i + 1}: End date must be after start date`,
         });
       }
-
-      // ✅ Validate GPA if provided
       if (entry.gpa?.trim()) {
         const gpaNum = parseFloat(entry.gpa);
         if (isNaN(gpaNum) || gpaNum < 0 || gpaNum > 4.0) {
@@ -77,14 +82,16 @@ export const saveMasterAcademic = async (req, res) => {
       }
     }
 
-    // ✅ Strip internal frontend IDs before saving
     const cleanAcademics = academics.map(({ _id, id, ...rest }) => rest);
 
+    // FIX: upsert filtered by userId from token — never from body
     const saved = await MasterAcademic.findOneAndUpdate(
-      { userId },
-      { $set: { academics: cleanAcademics } },
-      { new: true, upsert: true, runValidators: true }
+      { userId },                                        // ← scope to THIS user
+      { $set: { academics: cleanAcademics, userId } },   // ← stamp userId
+      { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true }
     );
+
+    console.log(`✅ Academic saved — userId: ${userId} | _id: ${saved._id}`);
 
     res.status(200).json({
       success: true,
@@ -94,69 +101,47 @@ export const saveMasterAcademic = async (req, res) => {
 
   } catch (error) {
     console.error("❌ SAVE ERROR:", error.message);
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-/**
- * GET BY USER
- */
+// GET BY USER — from token, not URL param
 export const getMasterAcademicByUser = async (req, res) => {
   try {
-    const { userId } = req.params;
-
-    const data = await MasterAcademic.findOne({ userId });
-
-    if (!data) {
-      return res.status(404).json({
-        success: false,
-        message: "No academic data found",
-      });
+    // FIX: read userId from token, not from req.params
+    const userId = resolveUserId(getRawUserId(req));
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized." });
     }
 
-    res.status(200).json({
-      success: true,
-      data,
-    });
+    const data = await MasterAcademic.findOne({ userId });
+    if (!data) {
+      return res.status(200).json({ success: true, data: null });
+    }
 
+    res.status(200).json({ success: true, data });
   } catch (error) {
     console.error("❌ FETCH ERROR:", error.message);
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-/**
- * DELETE
- */
+// DELETE — scoped to logged-in user
 export const deleteMasterAcademic = async (req, res) => {
   try {
-    const { userId } = req.params;
-
-    const deleted = await MasterAcademic.findOneAndDelete({ userId });
-
-    if (!deleted) {
-      return res.status(404).json({
-        success: false,
-        message: "Record not found",
-      });
+    const userId = resolveUserId(getRawUserId(req));
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized." });
     }
 
-    res.status(200).json({
-      success: true,
-      message: "Deleted successfully",
-    });
+    const deleted = await MasterAcademic.findOneAndDelete({ userId });
+    if (!deleted) {
+      return res.status(404).json({ success: false, message: "Record not found" });
+    }
 
+    res.status(200).json({ success: true, message: "Deleted successfully" });
   } catch (error) {
     console.error("❌ DELETE ERROR:", error.message);
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };

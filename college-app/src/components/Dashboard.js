@@ -210,10 +210,30 @@ const Dashboard = () => {
   }, [userData]);
 
   const handleCourseSelection = (courseData) => {
+  // Check if this is a master course
+  const level = (courseData?.programDetails?.level || '').toLowerCase();
+  const isMaster = level === 'master' || 
+    localStorage.getItem('selectedMasterCourseForApplication') !== null;
+
+  if (isMaster) {
+    // Master path — do NOT write to bachelor keys
+    localStorage.setItem('selectedMasterCourseForApplication', JSON.stringify(courseData));
+    localStorage.removeItem('selectedCourseForApplication');
+    localStorage.removeItem('currentSelectedCourse');
+    navigate(`${basePath}/master-application/overview`, { 
+      state: { fromCoursesPage: true, courseData, isMasterApplication: true } 
+    });
+  } else {
+    // Bachelor path
     setSelectedCourseData(courseData);
     localStorage.setItem('selectedCourseForApplication', JSON.stringify(courseData));
-    navigate(`${basePath}/application/overview`, { state: { fromCoursesPage: true, courseData } });
-  };
+    localStorage.setItem('currentSelectedCourse', JSON.stringify(courseData));
+    localStorage.removeItem('selectedMasterCourseForApplication');
+    navigate(`${basePath}/application/overview`, { 
+      state: { fromCoursesPage: true, courseData } 
+    });
+  }
+};
 
   const handleMasterApplicationUpdate = useCallback(() => {
     const masterAppData = localStorage.getItem('masterApplicationData');
@@ -823,9 +843,9 @@ const Dashboard = () => {
       >
         <Routes>
           <Route path="/" element={<DashboardHome />} />
-          <Route path="/application/*" element={<ApplicationWrapper />} />
           <Route path="/application/overview" element={<OverviewWrapper />} />
-          <Route path="/master-application/*" element={<MasterApplicationWrapper />} />
+<Route path="/application/*" element={<ApplicationWrapper />} />
+<Route path="/master-application/*" element={<MasterApplicationWrapper />} />
           <Route path="/colleges" element={<CollegesSection />} />
           
           
