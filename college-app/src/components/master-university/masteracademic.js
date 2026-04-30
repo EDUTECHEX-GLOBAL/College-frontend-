@@ -317,7 +317,7 @@ const MasterAcademic = ({ data, updateData }) => {
             textAlign: 'left',
             background: 'white',
             color: value ? '#0f172a' : '#94a3b8',
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontFamily: "'Poppins', sans-serif",
           }}
         >
           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -367,7 +367,7 @@ const MasterAcademic = ({ data, updateData }) => {
                   cursor: 'pointer',
                   borderBottom: '1px solid #f1f5f9',
                   transition: 'background 0.15s ease',
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontFamily: "'Poppins', sans-serif",
                   userSelect: 'none',
                   WebkitUserSelect: 'none',
                 }}

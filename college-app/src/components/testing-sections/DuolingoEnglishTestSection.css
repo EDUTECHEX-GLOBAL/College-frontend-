@@ -33,8 +33,8 @@
   --duo-radius:           12px;
   --duo-radius-full:      9999px;
 
-  --duo-font:             'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --duo-font-display:     'Sora', 'Plus Jakarta Sans', Georgia, serif;
+  --duo-font:             'Poppins', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --duo-font-display:     'Sora', 'Poppins', Georgia, serif;
   --duo-transition:       150ms ease;
 }
 

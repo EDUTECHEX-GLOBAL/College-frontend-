@@ -36,6 +36,31 @@ const makeApplicationId = (userId) =>
   'UEG-M-' + userId.toString().slice(-10).toUpperCase();
 
 /* ─────────────────────────────────────────────────────────────────────────────
+   S3 CLIENT
+───────────────────────────────────────────────────────────────────────────── */
+const s3 = new S3Client({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId:     process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
+});
+
+const getDynamicFileUrl = async (key) => {
+  if (!key) return null;
+  try {
+    const command = new GetObjectCommand({
+      Bucket: "ups-bucket-s3",
+      Key: key,
+    });
+    return await getSignedUrl(s3, command, { expiresIn: 3600 }); // 1 hour
+  } catch (err) {
+    console.error(`❌ Failed to generate signed URL for key "${key}":`, err.message);
+    return null;
+  }
+};
+
+/* ─────────────────────────────────────────────────────────────────────────────
    DOCUMENT FIELDS (must match masterpreviewmodel.js + masterpreviewcontroller.js)
 ───────────────────────────────────────────────────────────────────────────── */
 const DOC_FIELDS = [
@@ -63,55 +88,42 @@ const DOC_LABELS = {
 };
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   DOCUMENT MAPPER
-   Maps each document field into a consistent shape for the admin dashboard.
+   DOCUMENT MAPPER  (async — generates presigned S3 URLs for uploaded files)
 ───────────────────────────────────────────────────────────────────────────── */
-const mapDocuments = (docsObj) => {
+const mapDocuments = async (docsObj) => {
   const result = {};
   let uploadedCount = 0;
 
-  DOC_FIELDS.forEach((field) => {
-    const raw = docsObj?.[field];
-    const hasFile = !!(raw?.fileName && raw.fileName.trim() !== '');
+  // Generate all signed URLs in parallel
+  const urlResults = await Promise.all(
+    DOC_FIELDS.map(async (field) => {
+      const raw     = docsObj?.[field];
+      const hasFile = !!(raw?.fileName && raw.fileName.trim() !== '');
+      const fileUrl = hasFile ? await getDynamicFileUrl(raw.fileKey) : null;
+      return { field, raw, hasFile, fileUrl };
+    })
+  );
 
+  urlResults.forEach(({ field, raw, hasFile, fileUrl }) => {
     result[field] = {
       label:        DOC_LABELS[field] || field,
       uploaded:     hasFile,
-      fileName:     hasFile ? raw.fileName     : null,
-      fileKey:      hasFile ? raw.fileKey      : null,
-     fileUrl: null,
-      originalName: hasFile ? (raw.originalName || raw.fileName) : null,
-      uploadedAt:   hasFile ? raw.uploadedAt   : null,
-      size:         hasFile ? raw.size         : 0,
+      fileName:     hasFile ? raw.fileName                        : null,
+      fileKey:      hasFile ? raw.fileKey                         : null,
+      fileUrl,                                                        // ← presigned URL
+      originalName: hasFile ? (raw.originalName || raw.fileName)  : null,
+      uploadedAt:   hasFile ? raw.uploadedAt                      : null,
+      size:         hasFile ? raw.size                            : 0,
     };
-
     if (hasFile) uploadedCount++;
   });
 
   const completionPct = Math.round((uploadedCount / DOC_FIELDS.length) * 100);
-
   return { fields: result, uploadedCount, totalDocs: DOC_FIELDS.length, completionPct };
 };
-const s3 = new S3Client({
-  region: process.env.AWS_REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  },
-});
-const getDynamicFileUrl = async (key) => {
-  if (!key) return null;
 
-  const command = new GetObjectCommand({
-    Bucket: "ups-bucket-s3",
-    Key: key,
-  });
-
-  return await getSignedUrl(s3, command, { expiresIn: 3600 }); // 1 hour
-};
 /* ─────────────────────────────────────────────────────────────────────────────
    TEST SCORE SUMMARIZER
-   Produces a flat summary string per test type for quick display.
 ───────────────────────────────────────────────────────────────────────────── */
 const TEST_LABELS = {
   sat: 'SAT', act: 'ACT', satSubject: 'SAT Subject',
@@ -145,7 +157,6 @@ const summarizeTests = (testsObj) => {
       }
     });
 
-    // Future planned dates
     const futureDates = testsObj[`${key}_futureDates`];
     if (Array.isArray(futureDates) && futureDates.filter(Boolean).length > 0) {
       summary.push({
@@ -161,38 +172,37 @@ const summarizeTests = (testsObj) => {
 };
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   ROW BUILDER — maps a MasterPreview document to the admin dashboard row shape
+   ROW BUILDER  (async — awaits document URL generation)
 ───────────────────────────────────────────────────────────────────────────── */
 const buildRow = async (preview, accountMap) => {
-  const userId = preview.userId?.toString() || '';
+  const userId  = preview.userId?.toString() || '';
   const account = accountMap[userId] || {};
 
   const applicationId = makeApplicationId(userId);
 
   // ── Personal ──────────────────────────────────────────────────────────
-  const personal = preview.personal || {};
- const contactRaw =
-  preview.contact ||
-  preview.contactDetails ||
-  preview.contactInfo ||
-  {};
+  const personal    = preview.personal || {};
+  const contactRaw  =
+    preview.contact      ||
+    preview.contactDetails ||
+    preview.contactInfo    ||
+    {};
 
-  // Prefer contact email; fall back to account email
- const email =
- contactRaw.emailAddress  ||
-  contactRaw.email ||
-  account.email ||
-  '';
-const course = preview.course || {};
-const phone =
-  contactRaw.mobileNumber ||
-  contactRaw.phone ||
-  account.phone ||
-  '';
-  // ── Documents ─────────────────────────────────────────────────────────
-  const documents = mapDocuments(preview.documents);
- 
-  
+  const email =
+    contactRaw.emailAddress ||
+    contactRaw.email        ||
+    account.email           ||
+    '';
+
+  const course = preview.course || {};
+  const phone  =
+    contactRaw.mobileNumber ||
+    contactRaw.phone        ||
+    account.phone           ||
+    '';
+
+  // ── Documents (async — generates presigned URLs) ──────────────────────
+  const documents = await mapDocuments(preview.documents);
 
   // ── Academics ─────────────────────────────────────────────────────────
   const academicsArray = Array.isArray(preview.academics) ? preview.academics : [];
@@ -204,7 +214,6 @@ const phone =
   // ── Status / progress ─────────────────────────────────────────────────
   const appStatus = preview.applicationStatus || 'draft';
 
-  // Overall progress: weight docs 50%, academics 30%, personal+contact+course 20%
   const personalFields = [
     personal.fullName, personal.gender, personal.nationality,
     personal.passportNumber, personal.maritalStatus, personal.dateOfBirth,
@@ -212,11 +221,11 @@ const phone =
   const personalPct = Math.round((personalFields / 6) * 100);
 
   const contactFields = [
-  contactRaw.emailAddress,
-  contactRaw.mobileNumber,
-  contactRaw.city,
-  contactRaw.country,
-].filter(Boolean).length;
+    contactRaw.emailAddress,
+    contactRaw.mobileNumber,
+    contactRaw.city,
+    contactRaw.country,
+  ].filter(Boolean).length;
   const contactPct = Math.round((contactFields / 4) * 100);
 
   const courseFields = [
@@ -239,9 +248,9 @@ const phone =
     studentId:     userId,
 
     // ── Student info ───────────────────────────────────────────────────
-    studentName:    personal.fullName || account.firstName
+    studentName:    personal.fullName || (account.firstName
                       ? [account.firstName, account.lastName].filter(Boolean).join(' ')
-                      : (personal.fullName || 'Unknown'),
+                      : 'Unknown'),
     fullName:       personal.fullName    || '',
     email,
     phone,
@@ -252,41 +261,17 @@ const phone =
     maritalStatus:  personal.maritalStatus  || '',
 
     // ── Contact ────────────────────────────────────────────────────────
-   contact: {
-  emailAddress:
-    contactRaw.emailAddress ||
-    contactRaw.email ||
-    preview.email ||
-    '',
-
-  mobileNumber:
-    contactRaw.mobileNumber ||
-    contactRaw.phone ||
-    preview.phone ||
-    '',
-
-  alternatePhone: contactRaw.alternatePhone || '',
-
-  addressLine1:
-    contactRaw.addressLine1 ||
-    contactRaw.address1 ||
-    preview.addressLine1 ||
-    '',
-
-  addressLine2:
-    contactRaw.addressLine2 ||
-    contactRaw.address2 ||
-    '',
-
-  city: contactRaw.city || preview.city || '',
-  state: contactRaw.state || '',
-  postalCode:
-    contactRaw.postalCode ||
-    contactRaw.zip ||
-    '',
-
-  country: contactRaw.country || '',
-},
+    contact: {
+      emailAddress:   contactRaw.emailAddress  || contactRaw.email      || preview.email || '',
+      mobileNumber:   contactRaw.mobileNumber  || contactRaw.phone      || preview.phone || '',
+      alternatePhone: contactRaw.alternatePhone || '',
+      addressLine1:   contactRaw.addressLine1  || contactRaw.address1   || preview.addressLine1 || '',
+      addressLine2:   contactRaw.addressLine2  || contactRaw.address2   || '',
+      city:           contactRaw.city          || preview.city          || '',
+      state:          contactRaw.state         || '',
+      postalCode:     contactRaw.postalCode    || contactRaw.zip        || '',
+      country:        contactRaw.country       || '',
+    },
 
     // ── Course ─────────────────────────────────────────────────────────
     course: {
@@ -302,19 +287,19 @@ const phone =
 
     // ── Academics ──────────────────────────────────────────────────────
     academics: {
-      entries:          academicsArray,
-      count:            academicsArray.length,
-      primaryDegree:    firstAcademic.degree       || '',
-      primaryField:     firstAcademic.fieldOfStudy || '',
-      primaryUniversity:firstAcademic.university   || '',
-      primaryCountry:   firstAcademic.country      || '',
-      primaryGpa:       firstAcademic.gpa          || '',
+      entries:           academicsArray,
+      count:             academicsArray.length,
+      primaryDegree:     firstAcademic.degree       || '',
+      primaryField:      firstAcademic.fieldOfStudy || '',
+      primaryUniversity: firstAcademic.university   || '',
+      primaryCountry:    firstAcademic.country      || '',
+      primaryGpa:        firstAcademic.gpa          || '',
     },
 
     // ── Tests ──────────────────────────────────────────────────────────
     tests,
 
-    // ── Documents ──────────────────────────────────────────────────────
+    // ── Documents (includes presigned fileUrl per uploaded doc) ────────
     documents,
 
     // ── Status & progress ──────────────────────────────────────────────
@@ -350,17 +335,11 @@ export const getMasterUniversityApplications = async (req, res) => {
 
     // ── Build Mongo filter ─────────────────────────────────────────────
     const mongoFilter = {};
-
-    // Status filter (maps dashboard tab → applicationStatus value)
     if (status && status !== 'all') {
-      if (status === 'submitted')  mongoFilter.applicationStatus = 'submitted';
-      if (status === 'draft')      mongoFilter.applicationStatus = 'draft';
+      if (status === 'submitted')    mongoFilter.applicationStatus = 'submitted';
+      if (status === 'draft')        mongoFilter.applicationStatus = 'draft';
       if (status === 'under_review') mongoFilter.applicationStatus = 'under_review';
     }
-
-    // Text search — push to post-processing (personal.fullName is nested)
-    // We fetch all matching status docs then apply search filter in JS.
-    // For large collections consider a MongoDB text index instead.
 
     const [previews, total] = await Promise.all([
       MasterPreview.find(mongoFilter)
@@ -380,9 +359,7 @@ export const getMasterUniversityApplications = async (req, res) => {
     }
 
     // ── Fetch matching Account docs in one query ───────────────────────
-    const userObjectIds = previews
-      .map((p) => toObjectId(p.userId))
-      .filter(Boolean);
+    const userObjectIds = previews.map((p) => toObjectId(p.userId)).filter(Boolean);
 
     const accounts = await Account
       .find({ _id: { $in: userObjectIds } })
@@ -392,27 +369,25 @@ export const getMasterUniversityApplications = async (req, res) => {
     const accountMap = {};
     accounts.forEach((a) => { accountMap[a._id.toString()] = a; });
 
-    // ── Build rows ────────────────────────────────────────────────────
-   let data = await Promise.all(
-  previews.map((p) => buildRow(p, accountMap))
-);
+    // ── Build rows (async — generates presigned URLs) ──────────────────
+    let data = await Promise.all(previews.map((p) => buildRow(p, accountMap)));
 
     // ── JS-side search filter ─────────────────────────────────────────
     if (search) {
       const q = search.toLowerCase();
       data = data.filter((app) =>
-        app.fullName?.toLowerCase().includes(q)        ||
-        app.studentName?.toLowerCase().includes(q)     ||
-        app.email?.toLowerCase().includes(q)           ||
-        app.phone?.includes(q)                         ||
-        app.applicationId?.toLowerCase().includes(q)   ||
-        app.passportNumber?.toLowerCase().includes(q)  ||
+        app.fullName?.toLowerCase().includes(q)       ||
+        app.studentName?.toLowerCase().includes(q)    ||
+        app.email?.toLowerCase().includes(q)          ||
+        app.phone?.includes(q)                        ||
+        app.applicationId?.toLowerCase().includes(q)  ||
+        app.passportNumber?.toLowerCase().includes(q) ||
         app.studentId?.includes(q)
       );
     }
 
-    // ── Completion-based status filter (if not a DB-level filter) ─────
-    if (status && status !== 'all' && !['submitted','draft','under_review'].includes(status)) {
+    // ── Completion-based status filter (non-DB statuses) ──────────────
+    if (status && status !== 'all' && !['submitted', 'draft', 'under_review'].includes(status)) {
       data = data.filter((app) => {
         const pct = app.completionPercentage;
         if (status === 'completed')  return pct === 100;
@@ -471,8 +446,6 @@ export const getMasterUniversityApplicationById = async (req, res) => {
     }
 
     const accountMap = account ? { [studentId]: account } : {};
-
-    // ✅ FIX HERE
     const data = await buildRow(preview, accountMap);
 
     return res.status(200).json({ success: true, data });
@@ -507,7 +480,6 @@ export const getMasterUniversityStats = async (req, res) => {
         submitted,
         draft,
         underReview,
-        // Map to dashboard card labels
         completed:  submitted,
         incomplete: draft,
         inProgress: underReview,

@@ -27,7 +27,7 @@
   font-weight: 800;
   color: #0f172a;
   margin-bottom: 8px;
-  font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Sora', 'Poppins', sans-serif;
 }
 
 .master-preview-subtitle {
@@ -63,7 +63,7 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
-  font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Sora', 'Poppins', sans-serif;
 }
 
 /* Edit Button */
@@ -77,7 +77,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 
 .master-preview-edit-btn:hover {
@@ -1006,7 +1006,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 
 .master-preview-action-btn:hover {
@@ -1061,7 +1061,7 @@
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 
 .master-preview-submit-btn:hover:not(:disabled) {

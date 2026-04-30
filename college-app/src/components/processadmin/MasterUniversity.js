@@ -82,42 +82,20 @@ const formatDate = (d) => {
   if (!d) return "—";
   try {
     return new Date(d).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
+      year: "numeric", month: "short", day: "numeric",
     });
-  } catch {
-    return "—";
-  }
+  } catch { return "—"; }
 };
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   SVG ICONS
-───────────────────────────────────────────────────────────────────────────── */
-const IconTotal = () => (
-  <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#2563eb" strokeWidth="2">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-  </svg>
-);
-
-const IconIncomplete = () => (
-  <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#f59e0b" strokeWidth="2">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);
-
-const IconCompleted = () => (
-  <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#059669" strokeWidth="2">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);
-
-const IconInProgress = () => (
-  <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#7c3aed" strokeWidth="2">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-  </svg>
-);
+/* short date for mobile (e.g. "Apr 28") */
+const formatDateShort = (d) => {
+  if (!d) return "—";
+  try {
+    return new Date(d).toLocaleDateString("en-US", {
+      month: "short", day: "numeric",
+    });
+  } catch { return "—"; }
+};
 
 /* ─────────────────────────────────────────────────────────────────────────────
    DETAIL MODAL
@@ -137,6 +115,13 @@ const DetailModal = ({ studentId, onClose }) => {
       .finally(()  => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [studentId]);
+
+  /* close on Escape */
+  useEffect(() => {
+    const handler = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
 
   const TABS = ["personal", "contact", "course", "academics", "tests", "documents"];
 
@@ -231,17 +216,32 @@ const DetailModal = ({ studentId, onClose }) => {
 
   const renderDocuments = (d) => {
     const fields = d.documents?.fields || {};
-    return Object.entries(fields).map(([key, doc]) => (
+    const entries = Object.entries(fields);
+    if (!entries.length)
+      return <p className="modal-empty-msg">No document information available.</p>;
+
+    return entries.map(([key, doc]) => (
       <div key={key} className="modal-doc-row">
         <div className="modal-doc-label">{doc.label}</div>
         <div className="modal-doc-status">
           {doc.uploaded ? (
             <>
               <span className="modal-doc-uploaded">Uploaded</span>
-              {doc.fileUrl && (
-                <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="modal-doc-link">
+              {doc.fileUrl ? (
+                <a
+                  href={doc.fileUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="modal-doc-link"
+                >
                   View
                 </a>
+              ) : (
+                doc.fileKey && (
+                  <span style={{ fontSize: 11, color: "var(--text-lt)" }}>
+                    (URL unavailable)
+                  </span>
+                )
               )}
             </>
           ) : (
@@ -277,7 +277,7 @@ const DetailModal = ({ studentId, onClose }) => {
         <div className="modal-box">
           <div className="modal-error">
             <p>Error: {error}</p>
-            <button className="btn-view" onClick={onClose} style={{ marginTop: 16 }}>Close</button>
+            <button className="btn-view" onClick={onClose}>Close</button>
           </div>
         </div>
       </div>
@@ -289,6 +289,7 @@ const DetailModal = ({ studentId, onClose }) => {
       <div className="modal-box">
         {detail && (
           <>
+            {/* Header */}
             <div className="modal-header">
               <div className="modal-header-info">
                 <div className="modal-header-eyebrow">Master University Application</div>
@@ -301,20 +302,25 @@ const DetailModal = ({ studentId, onClose }) => {
                 <span className={`status-badge ${getStatusClass(detail.applicationStatus)}`}>
                   {getStatusLabel(detail.applicationStatus)}
                 </span>
-                <button className="modal-close-btn" onClick={onClose}>✕</button>
+                <button className="modal-close-btn" onClick={onClose} aria-label="Close">×</button>
               </div>
             </div>
 
+            {/* Progress strip */}
             <div className="modal-progress-strip">
               <div className="modal-progress-label">
                 Progress · Docs: {detail.documents?.uploadedCount}/{detail.documents?.totalDocs}
               </div>
               <div className="progress-bar" style={{ flex: 1 }}>
-                <div className="progress-fill" style={{ width: `${detail.completionPercentage}%` }} />
+                <div
+                  className="progress-fill"
+                  style={{ width: `${detail.completionPercentage}%` }}
+                />
               </div>
               <span className="progress-pct">{detail.completionPercentage}%</span>
             </div>
 
+            {/* Tabs */}
             <div className="modal-tabs">
               {TABS.map((tab) => (
                 <button
@@ -327,10 +333,12 @@ const DetailModal = ({ studentId, onClose }) => {
               ))}
             </div>
 
+            {/* Tab content */}
             <div className="modal-content">
               {tabContent(detail)[activeTab]}
             </div>
 
+            {/* Footer */}
             <div className="modal-footer">
               <button className="modal-close-footer-btn" onClick={onClose}>Close</button>
             </div>
@@ -420,6 +428,15 @@ export default function MasterUniversity() {
   useEffect(() => { loadStats(); },        [loadStats]);
   useEffect(() => { loadApplications(); }, [loadApplications]);
 
+  /* close sidebar on resize back to desktop */
+  useEffect(() => {
+    const handler = () => {
+      if (window.innerWidth > 900) setMobileMenuOpen(false);
+    };
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
+
   const toggleSidebar = (id) =>
     setExpandedSidebar((prev) => ({ ...prev, [id]: !prev[id] }));
 
@@ -457,27 +474,38 @@ export default function MasterUniversity() {
   return (
     <div className="mu-wrapper">
       {/* ── Mobile Menu Toggle ── */}
-      <button
-        className="mobile-menu-toggle"
-        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        aria-label="Open menu"
-      >
-        ☰
-      </button>
+      
 
       {/* ── SIDEBAR ── */}
       <aside className={`mu-sidebar ${mobileMenuOpen ? "mobile-open" : ""}`}>
-        {/* Mobile header */}
+        {/* Mobile header inside sidebar */}
         <div className="mu-sidebar-header">
-          <span className="mu-sidebar-header-title">EDU TECH</span>
-          <button className="mobile-menu-close" onClick={() => setMobileMenuOpen(false)}>✕</button>
+          <span style={{ fontWeight: 800, fontSize: 14, color: "var(--primary)" }}>EDU TECH</span>
+          <button
+            className="mobile-menu-close"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-label="Close menu"
+          >
+            ×
+          </button>
         </div>
 
         {/* Desktop logo */}
         <div className="mu-sidebar-logo">EDU TECH</div>
 
         <nav className="mu-nav">
-          <div className="mu-nav-item mu-nav-item--dashboard">Dashboard</div>
+          <div
+            className="mu-nav-item mu-nav-item--dashboard"
+            onClick={() => {
+              setSelectedUniversity(null);
+              setActiveFilter("All");
+              setSearchQuery("");
+              setPage(1);
+              setMobileMenuOpen(false);
+            }}
+          >
+            Dashboard
+          </div>
 
           {universities.map((uni) => (
             <div key={uni.id} className="mu-nav-group">
@@ -491,7 +519,9 @@ export default function MasterUniversity() {
                 }}
               >
                 <span className="mu-nav-uni-name">{uni.name}</span>
-                <span className="mu-nav-chevron">{expandedSidebar[uni.id] ? "−" : "+"}</span>
+                <span className="mu-nav-chevron">
+                  {expandedSidebar[uni.id] ? "−" : "+"}
+                </span>
               </div>
 
               {expandedSidebar[uni.id] && (
@@ -507,54 +537,49 @@ export default function MasterUniversity() {
         <div className="mu-sidebar-logout">Logout</div>
       </aside>
 
-      {/* Mobile overlay */}
+      {/* ── Mobile overlay ── */}
       {mobileMenuOpen && (
-        <div className="mobile-overlay" onClick={() => setMobileMenuOpen(false)} />
+        <div
+          className="mobile-overlay"
+          onClick={() => setMobileMenuOpen(false)}
+        />
       )}
 
       {/* ── MAIN ── */}
       <main className="mu-main">
 
-        {/* ── Topbar ── */}
+        {/* Topbar */}
         <header className="mu-topbar">
           <div className="mu-topbar-title">
             <span className="mu-topbar-label">Process</span>
             <span className="mu-topbar-sub">Admin</span>
           </div>
-
           <div className="mu-topbar-search">
             <input
               type="text"
-              placeholder="Search by name, email or student ID..."
+              placeholder="Search students..."
               value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setPage(1);
-              }}
+              onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
               className="mu-search-input"
             />
           </div>
-
-          {/* Desktop icons */}
-          <div className="mu-topbar-icons">
-            <button className="topbar-icon-btn" onClick={handleRefresh} title="Refresh">
-              ↻
-            </button>
-            <div className="topbar-avatar" title="Admin">PA</div>
-          </div>
-
-          {/* Mobile refresh */}
-          <button className="refresh-mobile" onClick={handleRefresh} aria-label="Refresh">↻</button>
+          <button
+            className="refresh-mobile"
+            onClick={handleRefresh}
+            aria-label="Refresh"
+          >
+            ↻
+          </button>
         </header>
 
-        {/* ── Banner ── */}
+        {/* Banner */}
         <div className="mu-banner">
           <div className="mu-banner-left">
-            <h2 className="mu-banner-title">
-              {selectedUniversity ? selectedUniversity.name : "Master University"}
-            </h2>
+            <h2 className="mu-banner-title">Applications</h2>
             {selectedUniversity && (
-              <span className="mu-banner-uni-badge">Application Management Dashboard</span>
+              <span className="mu-banner-uni-badge" title={selectedUniversity.name}>
+                {selectedUniversity.name}
+              </span>
             )}
           </div>
           <div className="mu-banner-right">
@@ -570,9 +595,8 @@ export default function MasterUniversity() {
             >
               All Universities
             </button>
-            <button className="btn-primary" onClick={handleRefresh}>
-              ↻ Refresh
-            </button>
+            <button className="btn-primary" onClick={handleRefresh}>↻ Refresh</button>
+
             {/* Mobile */}
             <button
               className="btn-outline-mobile"
@@ -589,196 +613,184 @@ export default function MasterUniversity() {
           </div>
         </div>
 
-        {/* ── Stat Cards ── */}
+        {/* Stat Cards */}
         <div className="stats-row">
           <div className="stat-card stat-card-total">
-            <div className="stat-card-icon"><IconTotal /></div>
             <div className="stat-card-text">
-              <div className="stat-label">Total Applications</div>
+              <div className="stat-label">Total</div>
               <div className="stat-value">{displayStats.total}</div>
             </div>
           </div>
           <div className="stat-card stat-card-incomplete">
-            <div className="stat-card-icon"><IconIncomplete /></div>
             <div className="stat-card-text">
-              <div className="stat-label">Incomplete</div>
+              <div className="stat-label">Draft</div>
               <div className="stat-value">{displayStats.incomplete}</div>
             </div>
           </div>
           <div className="stat-card stat-card-completed">
-            <div className="stat-card-icon"><IconCompleted /></div>
             <div className="stat-card-text">
-              <div className="stat-label">Completed</div>
+              <div className="stat-label">Done</div>
               <div className="stat-value">{displayStats.completed}</div>
             </div>
           </div>
           <div className="stat-card stat-card-inprogress">
-            <div className="stat-card-icon"><IconInProgress /></div>
             <div className="stat-card-text">
-              <div className="stat-label">In Progress</div>
+              <div className="stat-label">Review</div>
               <div className="stat-value">{displayStats.inProgress}</div>
             </div>
           </div>
         </div>
 
-        {/* ── Filter Section ── */}
+        {/* Filter Row */}
         <div className="filter-section">
-          {/* University tabs */}
-          <div className="uni-tabs-scroll">
-            <button
-              className={`uni-tab ${!selectedUniversity ? "uni-tab-active" : ""}`}
-              onClick={() => setSelectedUniversity(null)}
-            >
-              All
-            </button>
-            {universities.slice(0, 8).map((uni) => (
+          {/* Search bar replacing university tabs */}
+          <div className="filter-search-bar">
+            
+            <input
+              type="text"
+              className="filter-search-input"
+              placeholder="Search by name, email or application ID…"
+              value={searchQuery}
+              onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
+            />
+            {searchQuery && (
               <button
-                key={uni.id}
-                className={`uni-tab ${selectedUniversity?.id === uni.id ? "uni-tab-active" : ""}`}
-                onClick={() => selectUniversity(uni)}
+                className="filter-search-clear"
+                onClick={() => { setSearchQuery(""); setPage(1); }}
+                aria-label="Clear search"
               >
-                {uni.name.length > 18 ? uni.name.slice(0, 15) + "..." : uni.name}
+                ×
               </button>
-            ))}
+            )}
           </div>
 
-          {/* Status filter buttons */}
           <div className="filter-btns-scroll">
             {["All", "Completed", "Incomplete", "In Progress"].map((f) => (
               <button
                 key={f}
                 className={`filter-btn ${activeFilter === f ? "filter-btn-active" : ""}`}
-                onClick={() => {
-                  setActiveFilter(f);
-                  setPage(1);
-                }}
+                onClick={() => { setActiveFilter(f); setPage(1); }}
               >
-                {f}
+                {f === "In Progress" ? "Progress" : f}
               </button>
             ))}
           </div>
         </div>
 
-        {/* ── Error ── */}
+        {/* Error */}
         {error && <div className="error-box">⚠ {error}</div>}
 
-        {/* ══════════════════════════════════════════════════════
-            MOBILE CARDS VIEW (shown on ≤ 768px)
-        ══════════════════════════════════════════════════════ */}
+        {/* ── Mobile Cards ── */}
         <div className="mobile-cards">
           {loading ? (
-            <div className="loading-cards">Loading applications...</div>
+            <div className="loading-cards">Loading applications…</div>
           ) : filteredApps.length === 0 ? (
             <div className="empty-cards">No applications found.</div>
           ) : (
-            filteredApps.map((app, idx) => (
-              <div
-                key={app._id}
-                className="mobile-card"
-                style={{ animationDelay: `${idx * 0.04}s` }}
-              >
-                {/* Header row */}
-                <div className="mobile-card-header">
-                  <div className="mobile-card-id">{app.applicationId}</div>
-                  <span className={`status-badge ${getStatusClass(app.applicationStatus)}`}>
-                    {getStatusLabel(app.applicationStatus)}
-                  </span>
-                </div>
-
-                {/* Body */}
-                <div className="mobile-card-body">
-                  {/* Student info */}
-                  <div className="mobile-student-row">
-                    <div className="avatar-small">
-                      {getInitials(app.fullName || app.studentName)}
-                    </div>
-                    <div className="mobile-student-info">
-                      <div className="mobile-student-name">
-                        {app.fullName || app.studentName}
-                      </div>
-                      <div className="mobile-student-email">{app.email}</div>
-                    </div>
+            <>
+              {filteredApps.map((app) => (
+                <div key={app._id} className="mobile-card">
+                  <div className="mobile-card-header">
+                    <div className="mobile-card-id">{app.applicationId}</div>
+                    <span className={`status-badge ${getStatusClass(app.applicationStatus)}`}>
+                      {getStatusLabel(app.applicationStatus)}
+                    </span>
                   </div>
 
-                  {/* Meta grid */}
-                  <div className="mobile-meta-grid">
-                    <div className="mobile-meta-item">
-                      <span className="mobile-meta-label">University</span>
-                      <span className="mobile-meta-value">
-                        {app.course?.universityName
-                          ? app.course.universityName.length > 20
-                            ? app.course.universityName.slice(0, 18) + "…"
-                            : app.course.universityName
-                          : "—"}
-                      </span>
-                    </div>
-                    <div className="mobile-meta-item">
-                      <span className="mobile-meta-label">Submitted</span>
-                      <span className="mobile-meta-value">
-                        {formatDate(app.submittedAt)}
-                      </span>
-                    </div>
-                    <div className="mobile-meta-item">
-                      <span className="mobile-meta-label">Student ID</span>
-                      <span className="mobile-meta-value">
-                        {app.studentId ? app.studentId.slice(-8) : "—"}
-                      </span>
-                    </div>
-                    <div className="mobile-meta-item">
-                      <span className="mobile-meta-label">Course</span>
-                      <span className="mobile-meta-value">
-                        {app.course?.preferredCourse || "—"}
-                      </span>
-                    </div>
-                    <div className="mobile-meta-item full-width">
-                      <span className="mobile-meta-label">Progress</span>
-                      <div className="mobile-progress">
-                        <div className="progress-bar-mobile">
-                          <div
-                            className="progress-fill-mobile"
-                            style={{ width: `${app.completionPercentage}%` }}
-                          />
+                  <div className="mobile-card-body">
+                    {/* Student row */}
+                    <div className="mobile-student-row">
+                      <div className="avatar-small">
+                        {getInitials(app.fullName || app.studentName)}
+                      </div>
+                      <div className="mobile-student-info">
+                        <div className="mobile-student-name">
+                          {app.fullName || app.studentName}
                         </div>
-                        <span className="progress-pct-mobile">
-                          {app.completionPercentage}%
+                        <div className="mobile-student-email">{app.email}</div>
+                        {app.contact?.mobileNumber && (
+                          <div className="mobile-student-phone">
+                            {app.contact.mobileNumber}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mobile-meta-grid">
+                      {/* University + course */}
+                      <div className="mobile-meta-item full-width">
+                        <span className="mobile-meta-label">University</span>
+                        <span className="mobile-meta-value">
+                          {app.course?.universityName || "—"}
+                        </span>
+                        {app.course?.preferredCourse && (
+                          <span className="mobile-meta-sub">
+                            {app.course.preferredCourse}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="mobile-meta-item">
+                        <span className="mobile-meta-label">Submitted</span>
+                        <span className="mobile-meta-value">
+                          {formatDateShort(app.submittedAt)}
                         </span>
                       </div>
+
+                      <div className="mobile-meta-item">
+                        <span className="mobile-meta-label">Progress</span>
+                        <span className="mobile-meta-value">{app.completionPercentage}%</span>
+                      </div>
+
+                      <div className="mobile-meta-item full-width">
+                        <div className="mobile-progress">
+                          <div className="progress-bar-mobile">
+                            <div
+                              className="progress-fill-mobile"
+                              style={{ width: `${app.completionPercentage}%` }}
+                            />
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Footer */}
-                <div className="mobile-card-footer">
-                  <button
-                    className="btn-view-mobile"
-                    onClick={() => setSelectedId(app.studentId)}
-                  >
-                    View Details
-                  </button>
+                  <div className="mobile-card-footer">
+                    <button
+                      className="btn-view-mobile"
+                      onClick={() => setSelectedId(app.studentId)}
+                    >
+                      View Details
+                    </button>
+                  
+                  </div>
                 </div>
+              ))}
+
+              {/* Showing X of X */}
+              <div className="mobile-showing-label">
+                Showing {filteredApps.length} of {pagination.total} applications
               </div>
-            ))
+            </>
           )}
         </div>
 
-        {/* ══════════════════════════════════════════════════════
-            DESKTOP TABLE VIEW (shown on > 768px)
-        ══════════════════════════════════════════════════════ */}
+        {/* ── Desktop Table ── */}
         <div className="desktop-table-view">
           <div className="table-wrap">
             {loading ? (
-              <div className="table-loading">Loading applications...</div>
+              <div className="table-loading">Loading applications…</div>
             ) : (
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>APP ID</th>
+                    <th>APPLICATION ID</th>
                     <th>UNIVERSITY</th>
                     <th>STUDENT</th>
                     <th>STATUS</th>
-                    <th>DATE</th>
+                    <th>SUBMITTED</th>
                     <th>PROGRESS</th>
-                    <th></th>
+                    <th>ACTION</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -791,38 +803,61 @@ export default function MasterUniversity() {
                   ) : (
                     filteredApps.map((app) => (
                       <tr key={app._id} className="table-row">
+                        {/* APP ID */}
                         <td>
                           <div className="app-id">{app.applicationId}</div>
                           <div className="app-subid">
                             {app.studentId ? app.studentId.slice(-8) : "—"}
                           </div>
                         </td>
+
+                        {/* UNIVERSITY + course */}
                         <td>
-                          <div className="uni-name-cell">
+                          <div className="uni-name-main">
                             {app.course?.universityName || "—"}
                           </div>
+                          {app.course?.preferredCourse && (
+                            <div className="uni-course-sub">
+                              {app.course.preferredCourse}
+                            </div>
+                          )}
                         </td>
+
+                        {/* STUDENT — avatar + name + email + phone */}
                         <td>
                           <div className="student-cell">
                             <div className="avatar">
                               {getInitials(app.fullName || app.studentName)}
                             </div>
                             <div className="student-info">
-                              <div className="student-name">
+                              <div className="student-name" title={app.fullName || app.studentName}>
                                 {app.fullName || app.studentName}
                               </div>
-                              <div className="student-email">{app.email}</div>
+                              <div className="student-email" title={app.email}>
+                                {app.email}
+                              </div>
+                              {app.contact?.mobileNumber && (
+                                <div className="student-phone">
+                                  {app.contact.mobileNumber}
+                                </div>
+                              )}
                             </div>
                           </div>
                         </td>
+
+                        {/* STATUS */}
                         <td>
                           <span className={`status-badge ${getStatusClass(app.applicationStatus)}`}>
                             {getStatusLabel(app.applicationStatus)}
                           </span>
                         </td>
+
+                        {/* SUBMITTED DATE */}
                         <td className="submitted-date">
                           {formatDate(app.submittedAt)}
                         </td>
+
+                        {/* PROGRESS */}
                         <td>
                           <div className="progress-wrap">
                             <div className="progress-bar">
@@ -836,13 +871,18 @@ export default function MasterUniversity() {
                             </span>
                           </div>
                         </td>
+
+                        {/* ACTION — View + PDF */}
                         <td>
-                          <button
-                            className="btn-view"
-                            onClick={() => setSelectedId(app.studentId)}
-                          >
-                            View
-                          </button>
+                          <div className="action-btns">
+                            <button
+                              className="btn-view"
+                              onClick={() => setSelectedId(app.studentId)}
+                            >
+                              View
+                            </button>
+                           
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -852,32 +892,37 @@ export default function MasterUniversity() {
             )}
           </div>
 
-          {/* Pagination */}
+          {/* Footer — "Showing X of X applications" + pagination */}
           <div className="table-footer">
             {pagination.pages > 1 ? (
-              <div className="pagination">
-                <button
-                  className="page-btn"
-                  disabled={page === 1}
-                  onClick={() => setPage((p) => p - 1)}
-                >
-                  ← Prev
-                </button>
-                <span className="page-info">
-                  {page} / {pagination.pages}
+              <div className="table-footer-inner">
+                <span className="showing-label">
+                  Showing {filteredApps.length} of {pagination.total} applications
                 </span>
-                <button
-                  className="page-btn"
-                  disabled={page === pagination.pages}
-                  onClick={() => setPage((p) => p + 1)}
-                >
-                  Next →
-                </button>
+                <div className="pagination">
+                  <button
+                    className="page-btn"
+                    disabled={page === 1}
+                    onClick={() => setPage((p) => p - 1)}
+                  >
+                    ← Prev
+                  </button>
+                  <span className="page-info">{page} / {pagination.pages}</span>
+                  <button
+                    className="page-btn"
+                    disabled={page === pagination.pages}
+                    onClick={() => setPage((p) => p + 1)}
+                  >
+                    Next →
+                  </button>
+                </div>
               </div>
             ) : (
-              <span>
-                {filteredApps.length} of {pagination.total} applications
-              </span>
+              <div className="table-footer-inner">
+                <span className="showing-label">
+                  Showing {filteredApps.length} of {pagination.total} applications
+                </span>
+              </div>
             )}
           </div>
         </div>
@@ -885,7 +930,10 @@ export default function MasterUniversity() {
 
       {/* ── DETAIL MODAL ── */}
       {selectedId && (
-        <DetailModal studentId={selectedId} onClose={() => setSelectedId(null)} />
+        <DetailModal
+          studentId={selectedId}
+          onClose={() => setSelectedId(null)}
+        />
       )}
     </div>
   );

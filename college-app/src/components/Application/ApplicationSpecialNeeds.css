@@ -51,7 +51,7 @@
     min-height: 100vh;
     background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
     padding: 40px 20px;
-    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
 }
 
 /* ===== LOADING STATE ===== */
@@ -171,7 +171,7 @@
     font-weight: 700;
     color: var(--text-primary);
     margin: 0 0 4px 0;
-    font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Sora', 'Poppins', sans-serif;
 }
 
 .applicationspecialneeds-section-subtitle {
@@ -227,7 +227,7 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Poppins', sans-serif;
 }
 
 .applicationspecialneeds-yes-no-btn:hover {
@@ -259,7 +259,7 @@
     font-weight: 700;
     color: var(--text-primary);
     margin: 0;
-    font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Sora', 'Poppins', sans-serif;
 }
 
 .applicationspecialneeds-section-description {
@@ -370,7 +370,7 @@
     border-radius: var(--border-radius-lg);
     font-size: 14px;
     line-height: 1.6;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Poppins', sans-serif;
     resize: vertical;
     transition: all var(--transition-fast);
     background-color: white;
@@ -445,7 +445,7 @@
     font-weight: 700;
     color: var(--text-primary);
     margin: 0 0 8px 0;
-    font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Sora', 'Poppins', sans-serif;
 }
 
 .applicationspecialneeds-no-needs-message p {
@@ -482,7 +482,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Poppins', sans-serif;
 }
 
 .applicationspecialneeds-btn-primary {

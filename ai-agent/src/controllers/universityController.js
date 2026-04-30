@@ -97,13 +97,14 @@ export const getChatResponse = async (req, res) => {
           detectedContext = 'general';
         }
         // Short pure university name (no question words) → template
-        else if (hasUniWords && !looksLikeQuestion && cleanInput.split(' ').length <= 5) {
-          detectedContext = 'university';
-        }
+       else if (hasUniWords && !looksLikeQuestion && cleanInput.split(' ').length <= 5) {
+  detectedContext = 'university';
+}
         // Questions about universities (documents, fees, etc.) → general Q&A
-        else {
-          detectedContext = 'general';
-        }
+       else if (hasUniWords && looksLikeQuestion) {
+  detectedContext = 'university';
+}
+
       }
     }
     

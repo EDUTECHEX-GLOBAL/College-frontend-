@@ -8,7 +8,7 @@
     padding: 24px;
     background-color: #f5f7fa;
     min-height: calc(100vh - 80px);
-    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
 }
 
 /* Header Styles */
@@ -30,7 +30,7 @@
     font-weight: 700;
     color: #0f172a;
     margin-bottom: 4px;
-    font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Sora', 'Poppins', sans-serif;
 }
 
 .applicationpersonal-application-id {
@@ -202,7 +202,7 @@
     font-weight: 700;
     color: #0f172a;
     margin-bottom: 8px;
-    font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Sora', 'Poppins', sans-serif;
 }
 
 .applicationpersonal-form-subtitle {
@@ -234,7 +234,7 @@
     padding-bottom: 10px;
     border-bottom: 2px solid #0891b2;
     display: inline-block;
-    font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Sora', 'Poppins', sans-serif;
 }
 
 /* Form Grid */
@@ -285,7 +285,7 @@
     transition: all 0.2s ease;
     background-color: white;
     width: 100%;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Poppins', sans-serif;
 }
 
 .applicationpersonal-form-input:focus,
@@ -416,7 +416,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Poppins', sans-serif;
 }
 
 .applicationpersonal-upload-button:hover {
@@ -561,7 +561,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Poppins', sans-serif;
 }
 
 .applicationpersonal-btn-secondary {

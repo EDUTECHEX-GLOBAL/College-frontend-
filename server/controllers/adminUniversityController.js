@@ -217,13 +217,22 @@ export const importUniversities = async (req, res) => {
 ================================ */
 export const getAllUniversities = async (req, res) => {
   try {
-    const universities = await University.find().sort({ INSTNM: 1 });
-    res.json({ success: true, data: universities });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
+    const page  = Math.max(1, parseInt(req.query.page)  || 1);
+    const limit = Math.min(500, parseInt(req.query.limit) || 100);
+    const skip  = (page - 1) * limit;
+
+    const [universities, total] = await Promise.all([
+      University.find().sort({ INSTNM: 1 }).skip(skip).limit(limit).lean(),
+      University.countDocuments(),
+    ]);
+
+    res.json({
+      success: true,
+      data: universities,
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 

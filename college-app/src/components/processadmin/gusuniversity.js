@@ -51,6 +51,7 @@ const GusUniversity = () => {
     }
     const api = apiRef.current;
 
+    /* ── Formatters ── */
     const formatDate = (d) => {
         if (!d) return '—';
         try { return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }); }
@@ -61,13 +62,13 @@ const GusUniversity = () => {
     const yesNo    = (v) => v === true ? 'Yes' : v === false ? 'No' : '—';
     const capFirst = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : '—';
 
-    const getFileIcon = (fileType) => {
-        if (!fileType) return '📄';
+    const getFileTypeText = (fileType) => {
+        if (!fileType) return 'File';
         const t = fileType.toLowerCase();
-        if (t === 'pdf') return '📕';
-        if (['jpg','jpeg','png','webp'].includes(t)) return '🖼️';
-        if (['doc','docx'].includes(t)) return '📝';
-        return '📄';
+        if (t === 'pdf') return 'PDF';
+        if (['jpg','jpeg','png','webp'].includes(t)) return 'Image';
+        if (['doc','docx'].includes(t)) return 'Document';
+        return 'File';
     };
 
     const formatFileSize = (bytes) => {
@@ -85,9 +86,10 @@ const GusUniversity = () => {
         } catch { return ym; }
     };
 
+    /* ── Status helpers — now use applicationStatus from overview ── */
     const getStatusLabel = (app) => {
-        if (app.completionPercentage === 100) return 'COMPLETED';
-        if (app.completionPercentage > 0)     return 'IN PROGRESS';
+        if (app.overviewStatus === 'completed'  || app.completionPercentage === 100) return 'COMPLETED';
+        if (app.overviewStatus === 'in_progress' || (app.completionPercentage > 0 && app.completionPercentage < 100)) return 'IN PROGRESS';
         return 'INCOMPLETE';
     };
 
@@ -101,6 +103,16 @@ const GusUniversity = () => {
     const getInitials    = (name) => (name || '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
     const avatarColors   = ['#0891b2','#0e7490','#6366f1','#8b5cf6','#10b981'];
     const getAvatarColor = (name) => avatarColors[(name?.charCodeAt(0) || 0) % avatarColors.length];
+
+    const getUniversityName = (app) =>
+        app.selectedCourse?.universityName ||
+        app.universityName                 ||
+        '—';
+
+    const getProgramName = (app) =>
+        app.selectedCourse?.programName ||
+        app.programName                 ||
+        '—';
 
     const eqheTitleMap = {
         'senior_secondary_india':  'Senior Secondary School Certificate (India)',
@@ -129,9 +141,9 @@ const GusUniversity = () => {
     const calculateStats = useCallback((apps) => {
         setStats({
             total:       apps.length,
-            completed:   apps.filter(a => a.completionPercentage === 100).length,
-            incomplete:  apps.filter(a => a.completionPercentage === 0).length,
-            underReview: apps.filter(a => a.completionPercentage > 0 && a.completionPercentage < 100).length
+            completed:   apps.filter(a => getStatusLabel(a) === 'COMPLETED').length,
+            incomplete:  apps.filter(a => getStatusLabel(a) === 'INCOMPLETE').length,
+            underReview: apps.filter(a => getStatusLabel(a) === 'IN PROGRESS').length,
         });
     }, []);
 
@@ -164,11 +176,13 @@ const GusUniversity = () => {
 
     const filtered = applications.filter(app => {
         const q = searchQuery.toLowerCase();
+        const uniName = getUniversityName(app).toLowerCase();
         const matchSearch =
             app.studentName?.toLowerCase().includes(q) ||
             app.email?.toLowerCase().includes(q)       ||
             String(app.studentId).includes(q)          ||
-            app.applicationId?.toLowerCase().includes(q);
+            app.applicationId?.toLowerCase().includes(q) ||
+            uniName.includes(q);
         const s = getStatusLabel(app);
         const matchFilter =
             filterStatus === 'all'                                 ||
@@ -238,30 +252,13 @@ const GusUniversity = () => {
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(blobUrl);
-        } catch (err) {
+        } catch {
             alert('Download failed. Try "Open in New Tab" and save from there.');
         } finally {
             setDownloadingDoc(false);
         }
     };
 
-    /* ── SVG Icons ── */
-    const IcoView = () => (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="gus-btn-ico">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-        </svg>
-    );
-    const IcoPdf = () => (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="gus-btn-ico">
-            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-            <line x1="12" y1="18" x2="12" y2="12"/>
-            <line x1="9" y1="15" x2="15" y2="15"/>
-        </svg>
-    );
-
-    /* ── PDF Generator (unchanged from original) ── */
     const handleDownloadPDF = async (app) => {
         setPdfLoading(app.studentId);
         try {
@@ -285,6 +282,10 @@ const GusUniversity = () => {
             drawRow([{k:'Title',v:app.title},{k:'Full Name',v:app.studentName}]);
             drawRow([{k:'Gender',v:capFirst(app.gender)},{k:'Date of Birth',v:formatDate(app.dateOfBirth)}]);
             drawRow([{k:'Place of Birth',v:app.placeOfBirth},{k:'Country of Birth',v:app.countryOfBirth}]);
+            drawSectionHeader('University & Programme',C.accent);
+            drawFullRow('University',getUniversityName(app));
+            drawFullRow('Programme',getProgramName(app));
+            drawRow([{k:'Intake',v:`${app.selectedCourse?.intakeMonth||'—'} ${app.selectedCourse?.intakeYear||''}`},{k:'Campus',v:app.selectedCourse?.campus||'—'}]);
             drawSectionHeader('Contact Information',C.accent);
             drawRow([{k:'Email Address',v:app.email},{k:'Mobile',v:app.phone}]);
             drawRow([{k:'Landline',v:app.landline},{k:'Country of Residence',v:app.countryOfResidence}]);
@@ -327,7 +328,6 @@ const GusUniversity = () => {
         }
     };
 
-    /* ── Doc cards list (reusable for modal) ── */
     const DOC_LIST_DEF = (d) => [
         { lbl:'CV',                    required:true,  up:d.cvUploaded,         st:d.cvStatus,         meta:d.cvMeta,         exp:null },
         { lbl:'Photo',                 required:true,  up:d.photoUploaded,      st:d.photoStatus,      meta:d.photoMeta,      exp:null },
@@ -348,10 +348,10 @@ const GusUniversity = () => {
         const statusLabel = up ? (st==='approved'?'Approved':st==='rejected'?'Rejected':'Pending') : hasExpected?'Expected':'Not Uploaded';
         const statusClass = up ? (st==='approved'?'doc-status-approved':st==='rejected'?'doc-status-rejected':'doc-status-pending') : hasExpected?'doc-status-expected':'doc-status-missing';
         const cardClass   = up ? 'doc-card-uploaded' : hasExpected ? 'doc-card-expected' : 'doc-card-missing';
-        const icon        = up ? getFileIcon(meta?.fileType) : hasExpected ? '🗓️' : '📭';
+        const fileTypeText = up ? getFileTypeText(meta?.fileType) : (hasExpected ? 'Expected' : 'Missing');
         return (
             <div key={lbl} className={`gus-doc-card ${cardClass}`}>
-                <div className="gus-doc-card-icon">{icon}</div>
+                <div className="gus-doc-card-icon">{fileTypeText}</div>
                 <div className="gus-doc-card-body">
                     <div className="gus-doc-card-top">
                         <span className="gus-doc-card-label">{lbl}</span>
@@ -370,10 +370,6 @@ const GusUniversity = () => {
                                 </span>
                             )}
                             <button className="gus-doc-view-btn" onClick={() => openDocViewer(meta, lbl)}>
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{width:11,height:11}}>
-                                    <circle cx="12" cy="12" r="3"/>
-                                    <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                </svg>
                                 View Document
                             </button>
                         </div>
@@ -397,10 +393,10 @@ const GusUniversity = () => {
 
     if (error) return (
         <div className="gus-loading">
-            <div className="gus-error-icon">⚠️</div>
+            <div className="gus-error-icon">!</div>
             <p className="gus-error-msg">{error}</p>
             <div className="gus-error-actions">
-                <button className="gus-refresh-btn" onClick={fetchApplications}>↻ Retry</button>
+                <button className="gus-refresh-btn" onClick={fetchApplications}>Retry</button>
                 <button className="gus-refresh-btn" onClick={() => window.location.href='/process-admin-login'}>Go to Login</button>
             </div>
         </div>
@@ -409,7 +405,6 @@ const GusUniversity = () => {
     return (
         <div className="gus-wrap">
 
-            {/* ── Page Header ── */}
             <div className="gus-page-header">
                 <div className="gus-page-header-accent" />
                 <div className="gus-page-header-left">
@@ -422,27 +417,19 @@ const GusUniversity = () => {
                         <div className="gus-hero-badge-lbl">Applications</div>
                     </div>
                     <button className="gus-refresh-btn" onClick={fetchApplications}>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
-                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-                        </svg>
                         Refresh
                     </button>
                 </div>
             </div>
 
-            {/* ── Stat Cards ── */}
             <div className="gus-stats-row">
                 {[
-                    { cls:'gus-stat-total',      label:'TOTAL APPLICATIONS', val:stats.total,       icon:'📋' },
-                    { cls:'gus-stat-incomplete',  label:'INCOMPLETE',         val:stats.incomplete,  icon:'⏱' },
-                    { cls:'gus-stat-completed',   label:'COMPLETED',          val:stats.completed,   icon:'✅' },
-                    { cls:'gus-stat-review',      label:'IN PROGRESS',        val:stats.underReview, icon:'👁' },
-                ].map(({ cls, label, val: v, icon }) => (
+                    { cls:'gus-stat-total',      label:'TOTAL APPLICATIONS', val:stats.total },
+                    { cls:'gus-stat-incomplete',  label:'INCOMPLETE',         val:stats.incomplete },
+                    { cls:'gus-stat-completed',   label:'COMPLETED',          val:stats.completed },
+                    { cls:'gus-stat-review',      label:'IN PROGRESS',        val:stats.underReview },
+                ].map(({ cls, label, val: v }) => (
                     <div key={cls} className={`gus-stat-card ${cls}`}>
-                        <div className="gus-stat-icon-wrap">
-                            <span className="gus-stat-emoji">{icon}</span>
-                        </div>
                         <div className="gus-stat-text">
                             <span className="gus-stat-label">{label}</span>
                             <span className="gus-stat-num">{v}</span>
@@ -451,19 +438,15 @@ const GusUniversity = () => {
                 ))}
             </div>
 
-            {/* ── Controls ── */}
             <div className="gus-controls">
                 <div className="gus-search-box">
-                    <svg className="gus-search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-                    </svg>
                     <input
                         type="text" className="gus-search-input"
-                        placeholder="Search by name, email or student ID..."
+                        placeholder="Search by name, email, university or ID..."
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
                     />
-                    {searchQuery && <button className="gus-search-clear" onClick={() => setSearchQuery('')}>✕</button>}
+                    {searchQuery && <button className="gus-search-clear" onClick={() => setSearchQuery('')}>×</button>}
                 </div>
                 <div className="gus-filters">
                     {[
@@ -481,13 +464,13 @@ const GusUniversity = () => {
                 </div>
             </div>
 
-            {/* ── Desktop Table ── */}
             <div className="gus-table-card gus-desktop-table">
                 <div className="gus-table-wrap-scroll">
                     <table className="gus-table">
                         <thead>
                             <tr className="gus-thead-row">
                                 <th>APPLICATION ID</th>
+                                <th>UNIVERSITY</th>
                                 <th>STUDENT</th>
                                 <th>STATUS</th>
                                 <th>SUBMITTED</th>
@@ -497,12 +480,13 @@ const GusUniversity = () => {
                         </thead>
                         <tbody>
                             {filtered.length === 0 ? (
-                                <tr><td colSpan="6">
-                                    <div className="gus-empty-state">
-                                        <div className="gus-empty-icon">📭</div>
-                                        <p>{applications.length===0?'No applications found.':'No applications match your search.'}</p>
-                                    </div>
-                                </td></tr>
+                                <tr>
+                                    <td colSpan="7">
+                                        <div className="gus-empty-state">
+                                            <p>{applications.length===0?'No applications found.':'No applications match your search.'}</p>
+                                        </div>
+                                    </td>
+                                </tr>
                             ) : (
                                 filtered.map((app, idx) => (
                                     <tr key={app._id||idx} className="gus-tbody-row" style={{animationDelay:`${idx*0.04}s`}}>
@@ -510,6 +494,14 @@ const GusUniversity = () => {
                                             <div>
                                                 <span className="gus-college-badge">{app.applicationId||'—'}</span>
                                                 <div style={{fontSize:'11px',color:'#94a3b8',marginTop:2}}>{app.studentId?.slice(-8)}</div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div className="gus-uni-cell">
+                                                <span className="gus-uni-name">{getUniversityName(app)}</span>
+                                                {getProgramName(app) !== '—' && (
+                                                    <span className="gus-uni-program">{getProgramName(app)}</span>
+                                                )}
                                             </div>
                                         </td>
                                         <td>
@@ -537,10 +529,10 @@ const GusUniversity = () => {
                                         <td>
                                             <div className="gus-action-group">
                                                 <button className="gus-btn-view" onClick={() => openModal({...app})}>
-                                                    <IcoView/> View
+                                                    View
                                                 </button>
                                                 <button className="gus-btn-dl" onClick={() => handleDownloadPDF(app)} disabled={pdfLoading===app.studentId} title="Download PDF">
-                                                    {pdfLoading===app.studentId ? <span className="gus-btn-spinner"/> : <IcoPdf/>}
+                                                    {pdfLoading===app.studentId ? <span className="gus-btn-spinner"/> : 'PDF'}
                                                 </button>
                                             </div>
                                         </td>
@@ -555,25 +547,23 @@ const GusUniversity = () => {
                 </div>
             </div>
 
-            {/* ── Mobile Card List ── */}
             <div className="gus-mobile-cards">
                 {filtered.length === 0 ? (
                     <div className="gus-empty-state" style={{background:'#fff',borderRadius:14,padding:'2rem'}}>
-                        <div className="gus-empty-icon">📭</div>
                         <p>{applications.length===0?'No applications found.':'No applications match your search.'}</p>
                     </div>
                 ) : (
                     <>
                         {filtered.map((app, idx) => (
                             <div key={app._id||idx} className="gus-mob-card" style={{animationDelay:`${idx*0.05}s`}}>
-                                {/* Card top bar */}
                                 <div className="gus-mob-card-top">
                                     <span className="gus-college-badge">{app.applicationId||'—'}</span>
                                     <span className={`gus-badge ${getStatusClass(app)}`}>{getStatusLabel(app)}</span>
                                 </div>
-
-                                {/* Student info */}
                                 <div className="gus-mob-card-body">
+                                    <div className="gus-mob-uni-row">
+                                        <span className="gus-mob-uni-name">{getUniversityName(app)}</span>
+                                    </div>
                                     <div className="gus-mob-student">
                                         <div className="gus-avatar gus-avatar-md" style={{background:getAvatarColor(app.studentName)}}>
                                             {getInitials(app.studentName)}
@@ -584,8 +574,6 @@ const GusUniversity = () => {
                                             {app.phone && <div className="gus-mob-phone">{app.phone}</div>}
                                         </div>
                                     </div>
-
-                                    {/* Meta grid */}
                                     <div className="gus-mob-meta-grid">
                                         <div className="gus-mob-meta-item">
                                             <span className="gus-mob-meta-lbl">Submitted</span>
@@ -606,27 +594,24 @@ const GusUniversity = () => {
                                         </div>
                                     </div>
                                 </div>
-
-                                {/* Card footer actions */}
                                 <div className="gus-mob-card-footer">
                                     <button className="gus-btn-view gus-mob-btn-full" onClick={() => openModal({...app})}>
-                                        <IcoView/> View Details
+                                        View Details
                                     </button>
                                     <button className="gus-btn-dl" onClick={() => handleDownloadPDF(app)} disabled={pdfLoading===app.studentId} title="Download PDF">
-                                        {pdfLoading===app.studentId ? <span className="gus-btn-spinner"/> : <IcoPdf/>}
+                                        {pdfLoading===app.studentId ? <span className="gus-btn-spinner"/> : 'PDF'}
                                     </button>
                                 </div>
                             </div>
                         ))}
                         <div className="gus-mob-list-footer">
                             <span>Showing <strong>{filtered.length}</strong> of <strong>{applications.length}</strong></span>
-                            <button className="gus-refresh-btn" onClick={fetchApplications}>↻ Refresh</button>
+                            <button className="gus-refresh-btn" onClick={fetchApplications}>Refresh</button>
                         </div>
                     </>
                 )}
             </div>
 
-            {/* ══ DETAIL MODAL ══ */}
             {selectedApp && (
                 <div className="gus-overlay" onClick={closeModal}>
                     <div className="gus-modal" onClick={e => e.stopPropagation()}>
@@ -643,11 +628,48 @@ const GusUniversity = () => {
                             </div>
                             <div className="gus-modal-hdr-right">
                                 <span className={`gus-badge ${getStatusClass(selectedApp)}`}>{getStatusLabel(selectedApp)}</span>
-                                <button className="gus-modal-x" onClick={closeModal}>✕</button>
+                                <button className="gus-modal-x" onClick={closeModal}>×</button>
                             </div>
                         </div>
 
                         <div className="gus-modal-body">
+                            <div className="gus-modal-sec">
+                                <div className="gus-modal-sec-title"><span className="gus-sec-dot gus-dot-green"/>University & Programme</div>
+                                <div className="gus-modal-grid">
+                                    <div className="gus-modal-field gus-field-full">
+                                        <span className="gus-field-lbl">University</span>
+                                        <span className="gus-field-val" style={{fontWeight:700,color:'#1d4ed8'}}>
+                                            {getUniversityName(selectedApp)}
+                                        </span>
+                                    </div>
+                                    <div className="gus-modal-field gus-field-full">
+                                        <span className="gus-field-lbl">Programme</span>
+                                        <span className="gus-field-val">{getProgramName(selectedApp)}</span>
+                                    </div>
+                                    <div className="gus-modal-field">
+                                        <span className="gus-field-lbl">Intake</span>
+                                        <span className="gus-field-val">
+                                            {selectedApp.selectedCourse?.intakeMonth || '—'} {selectedApp.selectedCourse?.intakeYear || ''}
+                                        </span>
+                                    </div>
+                                    <div className="gus-modal-field">
+                                        <span className="gus-field-lbl">Campus</span>
+                                        <span className="gus-field-val">{selectedApp.selectedCourse?.campus || '—'}</span>
+                                    </div>
+                                    <div className="gus-modal-field">
+                                        <span className="gus-field-lbl">Country</span>
+                                        <span className="gus-field-val">{selectedApp.selectedCourse?.country || '—'}</span>
+                                    </div>
+                                    <div className="gus-modal-field">
+                                        <span className="gus-field-lbl">Application Fee</span>
+                                        <span className="gus-field-val">
+                                            {selectedApp.selectedCourse?.applicationFee != null
+                                                ? `€${selectedApp.selectedCourse.applicationFee}`
+                                                : '—'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
 
                             <div className="gus-modal-sec">
                                 <div className="gus-modal-sec-title"><span className="gus-sec-dot gus-dot-blue"/>Student Information</div>
@@ -686,8 +708,8 @@ const GusUniversity = () => {
                                     <div className="gus-modal-field"><span className="gus-field-lbl">Document Type</span><span className="gus-field-val">{capFirst(selectedApp.documentType)}</span></div>
                                     <div className="gus-modal-field"><span className="gus-field-lbl">EU Citizen</span><span className="gus-field-val">{yesNo(selectedApp.isEUCitizen)}</span></div>
                                     <div className="gus-modal-field"><span className="gus-field-lbl">Needs Visa</span><span className="gus-field-val">{capFirst(selectedApp.needVisa)}</span></div>
-                                    <div className="gus-modal-field"><span className="gus-field-lbl">Passport Uploaded</span><span className="gus-field-val">{selectedApp.passportUploaded?'✅ Yes':'❌ No'}</span></div>
-                                    <div className="gus-modal-field"><span className="gus-field-lbl">Photo Uploaded</span><span className="gus-field-val">{selectedApp.photographUploaded?'✅ Yes':'❌ No'}</span></div>
+                                    <div className="gus-modal-field"><span className="gus-field-lbl">Passport Uploaded</span><span className="gus-field-val">{selectedApp.passportUploaded?'Yes':'No'}</span></div>
+                                    <div className="gus-modal-field"><span className="gus-field-lbl">Photo Uploaded</span><span className="gus-field-val">{selectedApp.photographUploaded?'Yes':'No'}</span></div>
                                 </div>
                             </div>
 
@@ -698,7 +720,7 @@ const GusUniversity = () => {
                                     <div className="gus-modal-field"><span className="gus-field-lbl">Country</span><span className="gus-field-val">{fmt(countryMap,selectedApp.eqheCountry)}</span></div>
                                     <div className="gus-modal-field"><span className="gus-field-lbl">City</span><span className="gus-field-val">{val(selectedApp.eqheCity)}</span></div>
                                     <div className="gus-modal-field"><span className="gus-field-lbl">Date</span><span className="gus-field-val">{formatDate(selectedApp.eqheDate)}</span></div>
-                                    <div className="gus-modal-field"><span className="gus-field-lbl">Certificate</span><span className="gus-field-val">{selectedApp.eqheCertificateFileName?`✅ ${selectedApp.eqheCertificateFileName}`:'❌ No'}</span></div>
+                                    <div className="gus-modal-field"><span className="gus-field-lbl">Certificate</span><span className="gus-field-val">{selectedApp.eqheCertificateFileName?`Yes (${selectedApp.eqheCertificateFileName})`:'No'}</span></div>
                                     <div className="gus-modal-field"><span className="gus-field-lbl">Has Additional EQHE</span><span className="gus-field-val">{yesNo(selectedApp.hasAnotherEQHE)}</span></div>
                                 </div>
                             </div>
@@ -711,7 +733,7 @@ const GusUniversity = () => {
                                         <div className="gus-modal-field"><span className="gus-field-lbl">Country</span><span className="gus-field-val">{fmt(countryMap,selectedApp.anotherEqheCountry)}</span></div>
                                         <div className="gus-modal-field"><span className="gus-field-lbl">City</span><span className="gus-field-val">{val(selectedApp.anotherEqheCity)}</span></div>
                                         <div className="gus-modal-field"><span className="gus-field-lbl">Date</span><span className="gus-field-val">{formatDate(selectedApp.anotherEqheDate)}</span></div>
-                                        <div className="gus-modal-field"><span className="gus-field-lbl">Certificate</span><span className="gus-field-val">{selectedApp.anotherEqheCertificateFileName?`✅ ${selectedApp.anotherEqheCertificateFileName}`:'❌ No'}</span></div>
+                                        <div className="gus-modal-field"><span className="gus-field-lbl">Certificate</span><span className="gus-field-val">{selectedApp.anotherEqheCertificateFileName?`Yes (${selectedApp.anotherEqheCertificateFileName})`:'No'}</span></div>
                                     </div>
                                 </div>
                             )}
@@ -768,7 +790,7 @@ const GusUniversity = () => {
                                 <div className="gus-modal-sec">
                                     <div className="gus-modal-sec-title"><span className="gus-sec-dot gus-dot-pink"/>Special Needs</div>
                                     <div className="gus-modal-grid">
-                                        <div className="gus-modal-field"><span className="gus-field-lbl">Has Special Needs</span><span className="gus-field-val">{selectedApp.specialNeeds.hasSpecialNeeds==='yes'?'✅ Yes':'❌ No'}</span></div>
+                                        <div className="gus-modal-field"><span className="gus-field-lbl">Has Special Needs</span><span className="gus-field-val">{selectedApp.specialNeeds.hasSpecialNeeds==='yes'?'Yes':'No'}</span></div>
                                         {selectedApp.specialNeeds.hasSpecialNeeds==='yes' && <>
                                             {selectedApp.specialNeeds.specialNeeds?.length>0 && <div className="gus-modal-field gus-field-full"><span className="gus-field-lbl">Special Needs</span><span className="gus-field-val">{selectedApp.specialNeeds.specialNeeds.join(', ')}</span></div>}
                                             {selectedApp.specialNeeds.requiredArrangements?.length>0 && <div className="gus-modal-field gus-field-full"><span className="gus-field-lbl">Required Arrangements</span><span className="gus-field-val">{selectedApp.specialNeeds.requiredArrangements.join(', ')}</span></div>}
@@ -781,7 +803,7 @@ const GusUniversity = () => {
                                 <div className="gus-modal-sec-title"><span className="gus-sec-dot gus-dot-green"/>Application Status</div>
                                 <div className="gus-modal-grid">
                                     <div className="gus-modal-field"><span className="gus-field-lbl">App Status</span><span className="gus-field-val">{capFirst(selectedApp.applicationStatus)}</span></div>
-                                    <div className="gus-modal-field"><span className="gus-field-lbl">Verified</span><span className="gus-field-val">{selectedApp.isVerified?'✅ Yes':'❌ No'}</span></div>
+                                    <div className="gus-modal-field"><span className="gus-field-lbl">Verified</span><span className="gus-field-val">{selectedApp.isVerified?'Yes':'No'}</span></div>
                                     <div className="gus-modal-field"><span className="gus-field-lbl">Account Status</span><span className="gus-field-val">{capFirst(selectedApp.accountStatus)}</span></div>
                                     <div className="gus-modal-field"><span className="gus-field-lbl">Role</span><span className="gus-field-val">{capFirst(selectedApp.role)}</span></div>
                                     <div className="gus-modal-field"><span className="gus-field-lbl">Joined</span><span className="gus-field-val">{formatDate(selectedApp.joinDate)}</span></div>
@@ -800,16 +822,11 @@ const GusUniversity = () => {
                                     <span className="gus-modal-prog-lbl">{selectedApp.completionPercentage||0}% Complete</span>
                                 </div>
                             </div>
-
                         </div>
 
                         <div className="gus-modal-ftr">
                             <button className="gus-modal-dl-btn" onClick={() => {closeModal();handleDownloadPDF(selectedApp);}} disabled={pdfLoading===selectedApp.studentId}>
-                                {pdfLoading===selectedApp.studentId ? (
-                                    <><span className="gus-btn-spinner" style={{marginRight:6}}/> Generating...</>
-                                ) : (
-                                    <><IcoPdf/> Download PDF</>
-                                )}
+                                {pdfLoading===selectedApp.studentId ? 'Generating...' : 'PDF'}
                             </button>
                             <button className="gus-modal-close-btn" onClick={closeModal}>Close</button>
                         </div>
@@ -817,14 +834,13 @@ const GusUniversity = () => {
                 </div>
             )}
 
-            {/* ══ DOCUMENT VIEWER ══ */}
             {docViewer && (
                 <div className="gus-docviewer-overlay" onClick={closeDocViewer}>
                     <div className="gus-docviewer-box" onClick={e => e.stopPropagation()}>
                         <div className="gus-docviewer-hdr">
                             <div className="gus-docviewer-hdr-left">
                                 <span className="gus-docviewer-icon">
-                                    {isImageType(docViewer.fileType)?'🖼️':docViewer.fileType==='pdf'?'📕':'📄'}
+                                    {isImageType(docViewer.fileType) ? 'Image' : (docViewer.fileType==='pdf' ? 'PDF' : 'File')}
                                 </span>
                                 <div>
                                     <div className="gus-docviewer-title">{docViewer.label}</div>
@@ -833,24 +849,12 @@ const GusUniversity = () => {
                             </div>
                             <div className="gus-docviewer-hdr-right">
                                 <a href={docViewer.url} target="_blank" rel="noopener noreferrer" className="gus-docviewer-open-btn" title="Open in new tab">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{width:14,height:14}}>
-                                        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
-                                        <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-                                    </svg>
                                     Open
                                 </a>
                                 <button className="gus-docviewer-open-btn" disabled={downloadingDoc} onClick={handleDownloadDoc}>
-                                    {downloadingDoc ? 'Downloading...' : (
-                                        <>
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{width:14,height:14}}>
-                                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                                                <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-                                            </svg>
-                                            Download
-                                        </>
-                                    )}
+                                    {downloadingDoc ? 'Downloading...' : 'Download'}
                                 </button>
-                                <button className="gus-docviewer-close" onClick={closeDocViewer}>✕</button>
+                                <button className="gus-docviewer-close" onClick={closeDocViewer}>×</button>
                             </div>
                         </div>
                         <div className="gus-docviewer-body">
@@ -859,7 +863,6 @@ const GusUniversity = () => {
                                     <img src={docViewer.url} alt={docViewer.originalName} className="gus-docviewer-img"
                                         onError={e=>{e.target.style.display='none';e.target.nextSibling.style.display='flex';}}/>
                                     <div className="gus-docviewer-fallback" style={{display:'none'}}>
-                                        <span style={{fontSize:48}}>🖼️</span>
                                         <p>Could not load image preview.</p>
                                         <button className="gus-docviewer-open-btn" onClick={handleDownloadDoc} disabled={downloadingDoc}>
                                             {downloadingDoc?'Downloading...':'Download File'}
@@ -872,14 +875,9 @@ const GusUniversity = () => {
                                 </object>
                             ) : (
                                 <div className="gus-docviewer-fallback">
-                                    <span style={{fontSize:56}}>📄</span>
                                     <p style={{fontWeight:600,color:'#374151'}}>{docViewer.originalName}</p>
                                     <p style={{color:'#9ca3af',fontSize:13}}>Preview not available for <strong>.{docViewer.fileType}</strong> files.</p>
                                     <button className="gus-docviewer-open-btn" onClick={handleDownloadDoc} disabled={downloadingDoc}>
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{width:14,height:14}}>
-                                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                                            <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-                                        </svg>
                                         {downloadingDoc?'Downloading...':'Download File'}
                                     </button>
                                 </div>

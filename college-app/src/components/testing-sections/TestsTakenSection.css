@@ -34,8 +34,8 @@
   --tt-radius:           12px;
   --tt-radius-full:      9999px;
 
-  --tt-font:             'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --tt-font-display:     'Sora', 'Plus Jakarta Sans', Georgia, serif;
+  --tt-font:             'Poppins', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --tt-font-display:     'Sora', 'Poppins', Georgia, serif;
   --tt-transition:       150ms ease;
 }
 

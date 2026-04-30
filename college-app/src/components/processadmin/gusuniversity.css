@@ -61,7 +61,7 @@
 
 @keyframes gus-spin { to { transform: rotate(360deg); } }
 
-.gus-error-icon    { font-size: 36px; }
+.gus-error-icon    { font-size: 36px; font-weight: 800; color: var(--danger); }
 .gus-error-msg     { font-size: 14px; color: var(--danger); font-weight: 500; text-align: center; }
 .gus-error-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
 
@@ -189,19 +189,6 @@
 .gus-stat-completed::after  { background: var(--green); }
 .gus-stat-review::after     { background: var(--violet); }
 
-.gus-stat-icon-wrap {
-  width: 52px; height: 52px; border-radius: 14px;
-  display: flex; align-items: center; justify-content: center; 
-  flex-shrink: 0;
-}
-
-.gus-stat-total      .gus-stat-icon-wrap { background: #dbeafe; }
-.gus-stat-incomplete .gus-stat-icon-wrap { background: #fef3c7; }
-.gus-stat-completed  .gus-stat-icon-wrap { background: #d1fae5; }
-.gus-stat-review     .gus-stat-icon-wrap { background: #ede9fe; }
-
-.gus-stat-emoji { font-size: 22px; line-height: 1; }
-
 .gus-stat-text { 
   display: flex; 
   flex-direction: column; 
@@ -236,16 +223,9 @@
   position: relative; display: flex; align-items: center;
 }
 
-.gus-search-ico {
-  position: absolute; left: 12px;
-  width: 13px; height: 13px;
-  color: var(--text-lt); pointer-events: none;
-  stroke: var(--text-lt);
-}
-
 .gus-search-input {
   width: 100%; height: 38px;
-  padding: 0 30px 0 36px;
+  padding: 0 30px 0 15px;
   border: 1.5px solid var(--border); border-radius: 9px;
   font-size: 13px; font-family: 'Outfit', sans-serif;
   color: var(--text); background: var(--surface);
@@ -261,7 +241,7 @@
   position: absolute; right: 10px; background: none; border: none;
   color: var(--text-lt); cursor: pointer; padding: 4px;
   display: flex; align-items: center; justify-content: center;
-  border-radius: 4px; font-size: 12px; transition: color var(--t);
+  border-radius: 4px; font-size: 14px; font-weight: 700; transition: color var(--t);
 }
 .gus-search-clear:hover { color: var(--danger); }
 
@@ -293,7 +273,7 @@
 
 .gus-table-wrap-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
-.gus-table { width: 100%; border-collapse: collapse; min-width: 700px; font-size: 13px; }
+.gus-table { width: 100%; border-collapse: collapse; min-width: 820px; font-size: 13px; }
 
 .gus-thead-row th {
   padding: 12px 18px;
@@ -328,6 +308,83 @@
   color: var(--primary-dk);
   font-family: monospace;
   letter-spacing: 0.02em;
+}
+
+/* ══ UNIVERSITY BADGE ══════════════════════════════════════ */
+.gus-university-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #f0f9ff;
+  border: 1.5px solid #bae6fd;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #0369a1;
+  white-space: nowrap;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: all var(--t);
+  cursor: default;
+}
+.gus-university-badge:hover {
+  background: #e0f2fe;
+  border-color: #7dd3fc;
+  color: #0284c7;
+}
+
+.gus-uni-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gus-uni-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.gus-uni-program {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-lt);
+}
+
+/* ── Mobile university name strip ── */
+.gus-mob-university-strip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: #f0f9ff;
+  border-top: 1px solid #bae6fd;
+  border-bottom: 1px solid #bae6fd;
+}
+.gus-mob-university-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0369a1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gus-mob-uni-row {
+  margin-bottom: 10px;
+  padding: 6px 10px;
+  background: #f0f9ff;
+  border-radius: 8px;
+  border: 1px solid #bae6fd;
+}
+
+.gus-mob-uni-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0369a1;
+  display: block;
 }
 
 /* Student cell */
@@ -403,13 +460,13 @@
   border-radius: 7px;
   cursor: pointer; color: var(--primary-dk);
   transition: all var(--t); flex-shrink: 0;
+  font-size: 11px; font-weight: 700;
 }
 .gus-btn-dl:hover { 
   background: var(--primary); 
   border-color: var(--primary); 
   color: #fff; 
 }
-.gus-btn-ico { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
 
 .gus-btn-spinner {
   display: inline-block; width: 13px; height: 13px;
@@ -435,7 +492,6 @@
   align-items: center; justify-content: center;
   padding: 48px 20px; color: var(--text-lt); gap: 10px; font-size: 13px;
 }
-.gus-empty-icon { font-size: 36px; opacity: 0.55; }
 
 /* ══ DETAIL MODAL ════════════════════════════════════════════ */
 .gus-overlay {
@@ -506,7 +562,7 @@
   border: 1.5px solid var(--border);
   cursor: pointer; color: var(--text-mid);
   display: flex; align-items: center; justify-content: center;
-  transition: all var(--t); font-size: 20px; flex-shrink: 0;
+  transition: all var(--t); font-size: 20px; font-weight: 700; flex-shrink: 0;
 }
 .gus-modal-x:hover { 
   background: #fff; 
@@ -665,11 +721,17 @@
 }
 
 .gus-doc-card {
-  display: flex; align-items: flex-start; gap: 9px;
-  padding: 10px 12px; border-radius: 9px;
+  display: flex; 
+  align-items: flex-start; 
+  gap: 9px;
+  padding: 10px 12px; 
+  border-radius: 9px;
   border: 1.5px solid var(--border-lt);
   background: #fafafa; 
   transition: box-shadow var(--t), border-color var(--t);
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 .gus-doc-card:hover { 
   box-shadow: 0 2px 8px rgba(37,99,235,0.08); 
@@ -681,21 +743,54 @@
 .doc-card-missing  { border-color: #fecaca; background: #fff5f5; }
 
 .gus-doc-card-icon {
-  flex-shrink: 0; width: 30px; height: 30px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 7px; background: #fff;
-  border: 1px solid var(--border); font-size: 14px;
+  flex-shrink: 0; 
+  width: 30px; 
+  height: 30px;
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  border-radius: 7px; 
+  background: #fff;
+  border: 1px solid var(--border); 
+  font-size: 11px; 
+  font-weight: 600;
 }
 
-.gus-doc-card-body { flex: 1; min-width: 0; }
-.gus-doc-card-top  { display: flex; align-items: center; gap: 5px; margin-bottom: 3px; flex-wrap: wrap; }
-.gus-doc-card-label { font-size: 10px; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: 0.4px; }
+.gus-doc-card-body { 
+  flex: 1; 
+  min-width: 0;
+  overflow: hidden;
+}
+
+.gus-doc-card-top { 
+  display: flex; 
+  align-items: center; 
+  gap: 5px; 
+  margin-bottom: 3px; 
+  flex-wrap: wrap; 
+}
+
+.gus-doc-card-label { 
+  font-size: 10px; 
+  font-weight: 700; 
+  color: var(--text); 
+  text-transform: uppercase; 
+  letter-spacing: 0.4px;
+  white-space: normal;
+  word-break: break-word;
+}
 
 .gus-doc-required-badge {
-  font-size: 8.5px; font-weight: 600;
-  color: var(--primary-dk); background: var(--primary-lt);
-  border-radius: 99px; padding: 1px 5px;
-  text-transform: uppercase; letter-spacing: 0.3px;
+  font-size: 8.5px; 
+  font-weight: 600;
+  color: var(--primary-dk); 
+  background: var(--primary-lt);
+  border-radius: 99px; 
+  padding: 1px 5px;
+  text-transform: uppercase; 
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .gus-doc-status-pill { 
@@ -705,31 +800,84 @@
   border-radius: 99px; 
   padding: 2px 7px; 
   margin-bottom: 4px; 
-  letter-spacing: 0.3px; 
+  letter-spacing: 0.3px;
+  white-space: nowrap;
 }
+
 .doc-status-approved { background: #d1fae5; color: #065f46; }
 .doc-status-rejected { background: #fee2e2; color: #991b1b; }
 .doc-status-pending  { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
 .doc-status-expected { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
 .doc-status-missing  { background: #fff1f2; color: #be123c; border: 1px solid #fecdd3; }
 
-.gus-doc-file-info    { display: flex; flex-direction: column; gap: 1px; }
-.gus-doc-filename     { font-size: 10px; font-weight: 600; color: var(--text-mid); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.gus-doc-filesize     { font-size: 9px; color: var(--text-lt); font-weight: 500; }
-.gus-doc-uploaddate   { font-size: 9px; color: var(--primary); font-weight: 500; }
-.gus-doc-expected-info  { margin-top: 2px; }
-.gus-doc-expected-label { font-size: 9.5px; color: #b45309; font-weight: 600; }
+.gus-doc-file-info { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 1px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.gus-doc-filename { 
+  font-size: 10px; 
+  font-weight: 600; 
+  color: var(--text-mid); 
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+  max-width: 100%;
+}
+
+.gus-doc-filesize { 
+  font-size: 9px; 
+  color: var(--text-lt); 
+  font-weight: 500; 
+}
+
+.gus-doc-uploaddate { 
+  font-size: 9px; 
+  color: var(--primary); 
+  font-weight: 500; 
+}
+
+.gus-doc-expected-info { 
+  margin-top: 2px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.gus-doc-expected-label { 
+  font-size: 9.5px; 
+  color: #b45309; 
+  font-weight: 600;
+  word-wrap: break-word;
+  word-break: break-word;
+  display: block;
+}
 
 .gus-doc-view-btn {
-  display: inline-flex; align-items: center; gap: 3px; margin-top: 5px;
-  padding: 3px 8px; background: var(--primary-lt); color: var(--primary-dk);
-  border: 1.5px solid var(--primary-bd); border-radius: 5px;
-  font-size: 9.5px; font-weight: 700;
-  font-family: 'Outfit', sans-serif; cursor: pointer;
-  transition: all var(--t); letter-spacing: 0.2px;
+  display: inline-flex; 
+  align-items: center; 
+  gap: 3px; 
+  margin-top: 5px;
+  padding: 3px 8px; 
+  background: var(--primary-lt); 
+  color: var(--primary-dk);
+  border: 1.5px solid var(--primary-bd); 
+  border-radius: 5px;
+  font-size: 9.5px; 
+  font-weight: 700;
+  font-family: 'Outfit', sans-serif; 
+  cursor: pointer;
+  transition: all var(--t); 
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  max-width: 100%;
 }
 .gus-doc-view-btn:hover {
-  background: var(--primary); color: #fff; border-color: var(--primary);
+  background: var(--primary); 
+  color: #fff; 
+  border-color: var(--primary);
   transform: translateY(-1px); 
   box-shadow: 0 2px 6px rgba(37,99,235,0.28);
 }
@@ -781,7 +929,7 @@
 .gus-docviewer-icon {
   flex-shrink: 0; display: flex; align-items: center; justify-content: center;
   width: 40px; height: 40px; background: #fff; border-radius: 10px;
-  border: 1px solid var(--border); font-size: 18px;
+  border: 1px solid var(--border); font-size: 13px; font-weight: 700;
 }
 
 .gus-docviewer-title    { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: 0.3px; }
@@ -810,7 +958,7 @@
   border: 1.5px solid var(--border);
   cursor: pointer; color: var(--text-mid);
   display: flex; align-items: center; justify-content: center;
-  transition: all var(--t); flex-shrink: 0; font-size: 16px;
+  transition: all var(--t); flex-shrink: 0; font-size: 16px; font-weight: 700;
 }
 .gus-docviewer-close:hover { 
   background: #fff; 
@@ -931,12 +1079,14 @@
 @media (max-width: 1100px) {
   .gus-wrap { padding: 22px 20px 36px; }
   .gus-stats-row { grid-template-columns: repeat(2, 1fr); }
+  .gus-university-badge { max-width: 160px; font-size: 11.5px; }
 }
 
 /* ── 900px ── */
 @media (max-width: 900px) {
   .gus-stats-row { grid-template-columns: repeat(2, 1fr); }
   .gus-hero-badge { display: none; }
+  .gus-university-badge { max-width: 130px; font-size: 11px; }
 }
 
 /* ── 768px (switch to mobile cards) ── */
@@ -951,8 +1101,6 @@
 
   .gus-stats-row { gap: 10px; margin-bottom: 14px; }
   .gus-stat-card { padding: 16px; }
-  .gus-stat-icon-wrap { width: 44px; height: 44px; border-radius: 12px; }
-  .gus-stat-emoji { font-size: 18px; }
   .gus-stat-num   { font-size: 28px; }
   .gus-stat-label { font-size: 9px; }
 
@@ -977,13 +1125,19 @@
   .gus-modal-title { font-size: 16px; }
   .gus-modal-avatar { width: 40px; height: 40px; font-size: 15px; }
 
-  .gus-doc-cards { grid-template-columns: 1fr; gap: 7px; }
+  .gus-doc-cards { 
+    grid-template-columns: 1fr; 
+    gap: 7px; 
+  }
 
   .gus-docviewer-overlay { padding: 0; align-items: flex-end; }
   .gus-docviewer-box     { height: 90vh; border-radius: 16px 16px 0 0; max-width: 100%; }
   .gus-docviewer-hdr     { padding: 14px 16px; }
   .gus-docviewer-open-btn { padding: 6px 12px; font-size: 11px; }
   .gus-docviewer-filename { max-width: 180px; }
+
+  .gus-mob-university-strip { padding: 6px 12px; }
+  .gus-mob-university-name  { font-size: 11.5px; }
 }
 
 /* ── 540px ── */
@@ -997,8 +1151,6 @@
 
   .gus-stats-row { gap: 8px; }
   .gus-stat-card { padding: 12px; gap: 10px; }
-  .gus-stat-icon-wrap { width: 38px; height: 38px; border-radius: 10px; }
-  .gus-stat-emoji { font-size: 16px; }
   .gus-stat-num   { font-size: 24px; }
   .gus-stat-label { font-size: 8.5px; }
 
@@ -1025,6 +1177,39 @@
 
   .gus-docviewer-hdr { flex-direction: column; align-items: flex-start; }
   .gus-docviewer-hdr-right { width: 100%; justify-content: flex-end; }
+  
+  /* Document card fixes for very small screens */
+  .gus-doc-card {
+    flex-direction: column;
+  }
+  
+  .gus-doc-card-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 10px;
+  }
+  
+  .gus-doc-card-body {
+    width: 100%;
+  }
+  
+  .gus-doc-card-top {
+    flex-wrap: wrap;
+  }
+  
+  .gus-doc-status-pill {
+    font-size: 8px;
+    white-space: nowrap;
+  }
+  
+  .gus-doc-filename {
+    font-size: 9px;
+  }
+  
+  .gus-doc-view-btn {
+    font-size: 8.5px;
+    padding: 3px 6px;
+  }
 }
 
 /* ── 360px ── */
@@ -1032,8 +1217,6 @@
   .gus-wrap { padding: 8px 6px 24px; }
   .gus-stats-row { gap: 6px; }
   .gus-stat-card { padding: 10px; border-radius: 10px; }
-  .gus-stat-icon-wrap { width: 32px; height: 32px; border-radius: 8px; }
-  .gus-stat-emoji { font-size: 14px; }
   .gus-stat-num   { font-size: 20px; }
   .gus-page-title { font-size: 16px; }
   .gus-refresh-btn { padding: 7px 12px; font-size: 11px; }
@@ -1044,4 +1227,16 @@
   .gus-modal-hdr  { padding: 12px 14px; }
   .gus-modal-body { padding: 12px 14px; }
   .gus-modal-ftr  { padding: 10px 14px 14px; }
+  
+  .gus-doc-card {
+    padding: 8px 10px;
+  }
+  
+  .gus-doc-card-label {
+    font-size: 8px;
+  }
+  
+  .gus-doc-expected-label {
+    font-size: 8px;
+  }
 }

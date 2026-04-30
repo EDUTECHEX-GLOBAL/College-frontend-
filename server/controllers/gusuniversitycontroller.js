@@ -8,15 +8,10 @@ import ApplicationDocument    from '../models/applicationDocumentModel.js';
 import ApplicationEducation   from '../models/applicationEducationModel.js';
 import ApplicationScore       from '../models/ApplicationScore.js';
 import ApplicationSpecialNeed from '../models/ApplicationSpecialNeed.js';
+import Overview               from '../models/overviewModel.js';   // ✅ NEW
 
 /* =====================================================
-   S3 CONFIG
-===================================================== */
-const BUCKET_NAME = process.env.AWS_BUCKET_NAME;
-const AWS_REGION  = process.env.AWS_REGION;
-
-/* =====================================================
-   FOLDER MAP — maps field names to S3/local folder paths
+   FOLDER MAP
 ===================================================== */
 const DOC_FOLDER_MAP = {
   cv:                   'documents/cv',
@@ -35,47 +30,28 @@ const DOC_FOLDER_MAP = {
 
 /* =====================================================
    URL RESOLVER
-   ─────────────────────────────────────────────────────
-   ALL files are served via /api/files/ proxy endpoint.
-   Server fetches from S3 privately — bucket stays private.
-
-   Priority:
-   1. fileKey stored in DB  → /api/files/documents/cv/key
-   2. fileUrl (S3 URL)      → extract key → /api/files/key
-   3. fileName only (old)   → /api/files/folder/filename
 ===================================================== */
 const resolveFileUrl = (fieldObj, folder = '') => {
   if (!fieldObj?.fileName || fieldObj.fileName.trim() === '') return null;
-
   const { fileUrl, fileKey, fileName } = fieldObj;
-
-  // 1. S3 key stored in DB — use proxy with key directly
   if (fileKey) {
     const key = fileKey.startsWith('/') ? fileKey.slice(1) : fileKey;
     return `/api/files/${key}`;
   }
-
-  // 2. Full S3 URL stored — extract the key part after .amazonaws.com/
   if (fileUrl && fileUrl.startsWith('https://')) {
     try {
       const url = new URL(fileUrl);
-      const key = url.pathname.replace(/^\//, ''); // remove leading slash
+      const key = url.pathname.replace(/^\//, '');
       return `/api/files/${key}`;
-    } catch {
-      // fall through
-    }
+    } catch { /* fall through */ }
   }
-
-  // 3. Old file — only fileName exists (pre-S3 migration, stored locally)
-  //    Try /api/files/ proxy first (works if migrated to S3)
-  //    Falls back to /uploads/ which serves from local disk
   const cleanName = fileName.replace(/^\/+/, '');
   if (folder) return `/api/files/${folder}/${cleanName}`;
   return `/uploads/${cleanName}`;
 };
 
 /* =====================================================
-   HELPER — safe date formatter
+   HELPERS
 ===================================================== */
 const fmtDate = (d) => {
   if (!d) return '';
@@ -83,9 +59,6 @@ const fmtDate = (d) => {
   catch { return ''; }
 };
 
-/* =====================================================
-   HELPER — convert string → ObjectId safely
-===================================================== */
 const toObjectId = (id) => {
   if (!id) return null;
   const s = id.toString().trim();
@@ -93,9 +66,6 @@ const toObjectId = (id) => {
   return new mongoose.Types.ObjectId(s);
 };
 
-/* =====================================================
-   HELPER — build lookup map
-===================================================== */
 const buildMap = (records, idField) => {
   const map = {};
   records.forEach((r) => {
@@ -106,31 +76,55 @@ const buildMap = (records, idField) => {
 };
 
 /* =====================================================
-   HELPER — resolve a single document field
+   HELPER — build overview map keyed by userId
+   One user may have multiple overviews (one per university).
+   We store ALL overviews per userId so we can match by
+   applicationId or just grab the most recent one.
+===================================================== */
+const buildOverviewMap = (overviews) => {
+  const map = {};
+  overviews.forEach((ov) => {
+    const key = ov.userId?.toString();
+    if (!key) return;
+    if (!map[key]) map[key] = [];
+    map[key].push(ov);
+  });
+  return map;
+};
+
+/* =====================================================
+   HELPER — pick the correct overview for a student
+   Match by applicationId stored on the language record,
+   or fall back to most recent overview for that user.
+===================================================== */
+const pickOverview = (overviewsByUserId, userId, applicationId) => {
+  const list = overviewsByUserId[userId] || [];
+  if (!list.length) return null;
+
+  // Prefer exact applicationId match
+  if (applicationId) {
+    const exact = list.find((ov) => ov.applicationId === applicationId);
+    if (exact) return exact;
+  }
+
+  // Fallback: most recent (list is sorted desc by createdAt)
+  return list[0] || null;
+};
+
+/* =====================================================
+   RESOLVE DOCUMENT FIELD
 ===================================================== */
 const resolveDoc = (fieldObj, folder = '') => {
   const hasFile = !!(fieldObj?.fileName && fieldObj.fileName.trim() !== '');
-
   if (!hasFile) {
-    return {
-      uploaded:     false,
-      status:       'not_uploaded',
-      fileName:     null,
-      fileKey:      null,
-      fileUrl:      null,
-      originalName: null,
-      fileType:     null,
-      fileSize:     null,
-      uploadedAt:   null,
-    };
+    return { uploaded: false, status: 'not_uploaded', fileName: null, fileKey: null, fileUrl: null, originalName: null, fileType: null, fileSize: null, uploadedAt: null };
   }
-
   return {
     uploaded:     true,
     status:       fieldObj.documentStatus || 'pending',
     fileName:     fieldObj.fileName       || null,
     fileKey:      fieldObj.fileKey        || null,
-    fileUrl:      resolveFileUrl(fieldObj, folder),  // ✅ handles both old & new
+    fileUrl:      resolveFileUrl(fieldObj, folder),
     originalName: fieldObj.originalName   || fieldObj.fileName || null,
     fileType:     fieldObj.fileType       || null,
     fileSize:     fieldObj.fileSize       || null,
@@ -180,7 +174,6 @@ const mapDocuments = (docRec) => {
     docsCompletionPct: 0,
     docsCompleted: false,
   };
-
   if (!docRec) return empty;
 
   const cv         = resolveDoc(docRec.cv,                   DOC_FOLDER_MAP.cv);
@@ -196,18 +189,9 @@ const mapDocuments = (docRec) => {
   const langProf   = resolveDoc(docRec.languageProficiency,  DOC_FOLDER_MAP.languageProficiency);
   const recLetter  = resolveDoc(docRec.recommendationLetter, DOC_FOLDER_MAP.recommendationLetter);
 
-  // Build meta object — fileUrl is now always a valid path
   const meta = (r) => {
     if (!r.uploaded) return null;
-    return {
-      fileName:     r.fileName,
-      fileKey:      r.fileKey,
-      originalName: r.originalName,
-      fileType:     r.fileType,
-      fileSize:     r.fileSize,
-      uploadedAt:   r.uploadedAt,
-      fileUrl:      r.fileUrl,   // ✅ S3 URL or /uploads/ path
-    };
+    return { fileName: r.fileName, fileKey: r.fileKey, originalName: r.originalName, fileType: r.fileType, fileSize: r.fileSize, uploadedAt: r.uploadedAt, fileUrl: r.fileUrl };
   };
 
   return {
@@ -266,6 +250,7 @@ export const getGusUniversityApplications = async (req, res) => {
       educationRecords,
       scoreRecords,
       specialNeedRecords,
+      overviewRecords,          // ✅ fetch overviews for all students
     ] = await Promise.all([
       PersonalInfo.find({ _id: { $in: studentObjectIds } })
         .select(
@@ -300,14 +285,22 @@ export const getGusUniversityApplications = async (req, res) => {
       ApplicationSpecialNeed.find({ studentId: { $in: studentObjectIds } })
         .select('studentId hasSpecialNeeds specialNeeds requiredArrangements status')
         .lean(),
+
+      // ✅ Fetch ALL overviews for these users (sorted newest first)
+      Overview.find({ userId: { $in: studentObjectIds } })
+        .select('userId applicationId selectedCourse applicationStatus progress')
+        .sort({ createdAt: -1 })
+        .lean(),
     ]);
 
-    const personalMap  = buildMap(personalRecords,    '_id');
-    const accountMap   = buildMap(accountRecords,     '_id');
-    const documentMap  = buildMap(documentRecords,    'userId');
-    const educationMap = buildMap(educationRecords,   'userId');
-    const scoreMap     = buildMap(scoreRecords,       'studentId');
-    const specialMap   = buildMap(specialNeedRecords, 'studentId');
+    const personalMap      = buildMap(personalRecords,    '_id');
+    const accountMap       = buildMap(accountRecords,     '_id');
+    const documentMap      = buildMap(documentRecords,    'userId');
+    const educationMap     = buildMap(educationRecords,   'userId');
+    const scoreMap         = buildMap(scoreRecords,       'studentId');
+    const specialMap       = buildMap(specialNeedRecords, 'studentId');
+    // ✅ Overview map: userId → array of overviews (newest first)
+    const overviewsByUserId = buildOverviewMap(overviewRecords);
 
     const data = languageRecords.map((lang) => {
       const sid      = lang.studentId?.toString() || '';
@@ -318,6 +311,10 @@ export const getGusUniversityApplications = async (req, res) => {
       const scoreRec = scoreMap    [sid] || {};
       const snRec    = specialMap  [sid] || {};
 
+      // ✅ Pick the matching overview — exact applicationId match preferred
+      const overview     = pickOverview(overviewsByUserId, sid, lang.applicationId);
+      const selectedCourse = overview?.selectedCourse || null;
+
       const firstName = personal.firstName || account.firstName || '';
       const lastName  = personal.lastName  || account.lastName  || '';
 
@@ -326,7 +323,7 @@ export const getGusUniversityApplications = async (req, res) => {
 
       return {
         _id:           lang._id,
-        applicationId: lang.applicationId || '',
+        applicationId: lang.applicationId || overview?.applicationId || '',
         studentId:     sid,
         studentName:   [firstName, lastName].filter(Boolean).join(' ') || 'Unknown',
         title:         personal.title || '',
@@ -350,7 +347,9 @@ export const getGusUniversityApplications = async (req, res) => {
         countryOfResidence:     personal.countryOfResidence     || '',
         correspondenceLanguage: personal.correspondenceLanguage || '',
         applicationStatus: personal.applicationStatus || 'draft',
-        isVerified:        personal.isVerified        || false,
+        // ✅ Overview status separate so frontend can use it for status badge
+        overviewStatus: overview?.applicationStatus || null,
+        isVerified:     personal.isVerified || false,
         eqheOriginalTitle:       lang.eqheOriginalTitle       || '',
         eqheCountry:             lang.eqheCountry             || '',
         eqheDate:                fmtDate(lang.eqheDate),
@@ -365,6 +364,23 @@ export const getGusUniversityApplications = async (req, res) => {
         completionPercentage: documents.docsCompletionPct,
         isCompleted:          lang.isCompleted || false,
         documents,
+        // ✅ selectedCourse — university name lives here, always correct
+        selectedCourse: selectedCourse ? {
+          programId:      selectedCourse.programId      || '',
+          programName:    selectedCourse.programName    || '',
+          universityId:   selectedCourse.universityId   || '',
+          universityName: selectedCourse.universityName || '',
+          universityLogo: selectedCourse.universityLogo || '',
+          campus:         selectedCourse.campus         || '',
+          country:        selectedCourse.country        || '',
+          intakeMonth:    selectedCourse.intakeMonth    || '',
+          intakeYear:     selectedCourse.intakeYear     || '',
+          applicationFee: selectedCourse.applicationFee ?? 0,
+          tuitionFee:     selectedCourse.tuitionFee     ?? 0,
+        } : null,
+        // ✅ Also expose flat fields for backward compatibility
+        universityName: selectedCourse?.universityName || '',
+        programName:    selectedCourse?.programName    || '',
         education: {
           wasEnrolled:         eduRec.wasEnrolled         ?? null,
           isCurrentlyEnrolled: eduRec.isCurrentlyEnrolled ?? null,
@@ -418,11 +434,13 @@ export const getGusUniversityApplications = async (req, res) => {
     if (search) {
       const q = search.toLowerCase();
       filtered = filtered.filter((app) =>
-        app.studentName?.toLowerCase().includes(q)   ||
-        app.email?.toLowerCase().includes(q)         ||
-        String(app.studentId).includes(q)            ||
-        app.applicationId?.toLowerCase().includes(q) ||
-        app.passportNumber?.toLowerCase().includes(q)
+        app.studentName?.toLowerCase().includes(q)                       ||
+        app.email?.toLowerCase().includes(q)                             ||
+        String(app.studentId).includes(q)                                ||
+        app.applicationId?.toLowerCase().includes(q)                     ||
+        app.passportNumber?.toLowerCase().includes(q)                    ||
+        app.selectedCourse?.universityName?.toLowerCase().includes(q)    ||
+        app.selectedCourse?.programName?.toLowerCase().includes(q)
       );
     }
 
@@ -458,43 +476,42 @@ export const getGusUniversityApplicationById = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid studentId format.' });
     }
 
-    const [lang, personal, account, docRec, eduRec, scoreRec, snRec] = await Promise.all([
+    const [lang, personal, account, docRec, eduRec, scoreRec, snRec, overviews] = await Promise.all([
       ApplicationLanguage.findOne({ studentId }).lean(),
       PersonalInfo.findById(objectId).lean(),
       Account.findById(objectId)
         .select('firstName lastName email phone birthDate joinDate lastLogin status role')
         .lean(),
-      ApplicationDocument.findOne({
-        $or: [{ userId: objectId }, { userId: studentId }],
-      }).lean(),
-      ApplicationEducation.findOne({
-        $or: [{ userId: objectId }, { userId: studentId }],
-      }).lean(),
-      ApplicationScore.findOne({
-        $or: [{ studentId: objectId }, { studentId: studentId }],
-      }).lean(),
-      ApplicationSpecialNeed.findOne({
-        $or: [{ studentId: objectId }, { studentId: studentId }],
-      }).lean(),
+      ApplicationDocument.findOne({ $or: [{ userId: objectId }, { userId: studentId }] }).lean(),
+      ApplicationEducation.findOne({ $or: [{ userId: objectId }, { userId: studentId }] }).lean(),
+      ApplicationScore.findOne({ $or: [{ studentId: objectId }, { studentId }] }).lean(),
+      ApplicationSpecialNeed.findOne({ $or: [{ studentId: objectId }, { studentId }] }).lean(),
+      // ✅ Fetch overviews for this user — newest first
+      Overview.find({ userId: objectId })
+        .select('userId applicationId selectedCourse applicationStatus')
+        .sort({ createdAt: -1 })
+        .lean(),
     ]);
 
     if (!lang) {
-      return res.status(404).json({
-        success: false,
-        message: 'No EQHE application found for this student.',
-      });
+      return res.status(404).json({ success: false, message: 'No EQHE application found for this student.' });
     }
 
-    const firstName  = personal?.firstName || account?.firstName || '';
-    const lastName   = personal?.lastName  || account?.lastName  || '';
-    const firstEntry = eduRec?.educationEntries?.[0] || {};
-    const documents  = mapDocuments(docRec);
+    const firstName    = personal?.firstName || account?.firstName || '';
+    const lastName     = personal?.lastName  || account?.lastName  || '';
+    const firstEntry   = eduRec?.educationEntries?.[0] || {};
+    const documents    = mapDocuments(docRec);
+
+    // ✅ Pick matching overview
+    const overviewsByUserId = buildOverviewMap(overviews);
+    const overview          = pickOverview(overviewsByUserId, objectId.toString(), lang.applicationId);
+    const selectedCourse    = overview?.selectedCourse || null;
 
     return res.status(200).json({
       success: true,
       data: {
         _id:           lang._id,
-        applicationId: lang.applicationId || '',
+        applicationId: lang.applicationId || overview?.applicationId || '',
         studentId,
         studentName:   [firstName, lastName].filter(Boolean).join(' ') || 'Unknown',
         title:         personal?.title || '',
@@ -517,8 +534,9 @@ export const getGusUniversityApplicationById = async (req, res) => {
         landline:               personal?.landline               || '',
         countryOfResidence:     personal?.countryOfResidence     || '',
         correspondenceLanguage: personal?.correspondenceLanguage || '',
-        applicationStatus: personal?.applicationStatus || 'draft',
-        isVerified:        personal?.isVerified        || false,
+        applicationStatus:  personal?.applicationStatus || 'draft',
+        overviewStatus:     overview?.applicationStatus || null,
+        isVerified:         personal?.isVerified        || false,
         eqheOriginalTitle:       lang.eqheOriginalTitle       || '',
         eqheCountry:             lang.eqheCountry             || '',
         eqheDate:                fmtDate(lang.eqheDate),
@@ -533,6 +551,22 @@ export const getGusUniversityApplicationById = async (req, res) => {
         completionPercentage: documents.docsCompletionPct,
         isCompleted:          lang.isCompleted || false,
         documents,
+        // ✅ selectedCourse always from Overview — correct university per application
+        selectedCourse: selectedCourse ? {
+          programId:      selectedCourse.programId      || '',
+          programName:    selectedCourse.programName    || '',
+          universityId:   selectedCourse.universityId   || '',
+          universityName: selectedCourse.universityName || '',
+          universityLogo: selectedCourse.universityLogo || '',
+          campus:         selectedCourse.campus         || '',
+          country:        selectedCourse.country        || '',
+          intakeMonth:    selectedCourse.intakeMonth    || '',
+          intakeYear:     selectedCourse.intakeYear     || '',
+          applicationFee: selectedCourse.applicationFee ?? 0,
+          tuitionFee:     selectedCourse.tuitionFee     ?? 0,
+        } : null,
+        universityName: selectedCourse?.universityName || '',
+        programName:    selectedCourse?.programName    || '',
         education: eduRec ? {
           wasEnrolled:         eduRec.wasEnrolled         ?? null,
           isCurrentlyEnrolled: eduRec.isCurrentlyEnrolled ?? null,
@@ -587,26 +621,20 @@ export const getGusUniversityApplicationById = async (req, res) => {
 ===================================================== */
 export const getGusUniversityStats = async (req, res) => {
   try {
-    const all = await ApplicationLanguage.find()
-      .select('completionPercentage')
-      .lean();
-
+    const all = await ApplicationLanguage.find().select('completionPercentage').lean();
     const total    = all.length;
     let completed  = 0;
     let incomplete = 0;
     let inProgress = 0;
-
     all.forEach(({ completionPercentage: pct = 0 }) => {
       if (pct === 100)    completed++;
       else if (pct === 0) incomplete++;
       else                inProgress++;
     });
-
     return res.status(200).json({
       success: true,
       stats: { total, completed, incomplete, underReview: inProgress },
     });
-
   } catch (error) {
     console.error('❌ getGusUniversityStats Error:', error);
     return res.status(500).json({

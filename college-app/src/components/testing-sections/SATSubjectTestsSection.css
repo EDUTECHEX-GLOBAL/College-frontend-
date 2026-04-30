@@ -37,8 +37,8 @@
   --sat-radius:           12px;
   --sat-radius-full:      9999px;
 
-  --sat-font:             'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --sat-font-display:     'Sora', 'Plus Jakarta Sans', Georgia, serif;
+  --sat-font:             'Poppins', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --sat-font-display:     'Sora', 'Poppins', Georgia, serif;
   --sat-transition:       150ms ease;
 }
 

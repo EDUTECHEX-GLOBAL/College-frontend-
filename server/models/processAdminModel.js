@@ -20,41 +20,61 @@ const processAdminSchema = new mongoose.Schema({
   },
   firstName: {
     type: String,
-    default: 'Process'
+    required: [true, 'First name is required'],
+    trim: true
   },
   lastName: {
     type: String,
-    default: 'Admin'
+    required: [true, 'Last name is required'],
+    trim: true
   },
   role: {
     type: String,
     default: 'process-admin',
     enum: ['process-admin']
   },
-  lastLogin: {
-    type: Date,
+
+  // ── OTP Fields ──
+  otp: { type: String, default: null },
+  otpExpiry: { type: Date, default: null },
+  isEmailVerified: { type: Boolean, default: false },
+
+  // ── Approval Fields ──
+  isApproved: { type: Boolean, default: false },
+
+  // ✅ FIX 1: String instead of ObjectId ref
+  approvedBy: {
+    type: String,
     default: null
   },
-  loginAttempts: {
-    type: Number,
-    default: 0
+  approvedAt: { type: Date, default: null },
+
+  // ✅ FIX 2: Keep pending_verification as default (correct flow)
+  // but make sure OTP verify sets it to pending_approval
+  status: {
+    type: String,
+    enum: [
+      'pending_verification',
+      'pending_approval',
+      'active',
+      'rejected',
+      'suspended'
+    ],
+    default: 'pending_verification'
   },
-  lockUntil: {
-    type: Date,
-    default: null
-  },
-  isActive: {
-    type: Boolean,
-    default: true
-  }
+
+  rejectionReason: { type: String, default: null },
+  lastLogin: { type: Date, default: null },
+  loginAttempts: { type: Number, default: 0 },
+  lockUntil: { type: Date, default: null },
+  isActive: { type: Boolean, default: true }
 }, {
   timestamps: true
 });
 
-// Hash password before saving
-processAdminSchema.pre('save', async function(next) {
+// ── Hash password before saving ──
+processAdminSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
-  
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
@@ -64,51 +84,53 @@ processAdminSchema.pre('save', async function(next) {
   }
 });
 
-// Compare password method
-processAdminSchema.methods.comparePassword = async function(candidatePassword) {
+processAdminSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Check if account is locked
-processAdminSchema.methods.isLocked = function() {
+processAdminSchema.methods.generateOTP = function () {
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  this.otp = otp;
+  this.otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+  return otp;
+};
+
+processAdminSchema.methods.verifyOTP = function (inputOtp) {
+  if (!this.otp || !this.otpExpiry) return { valid: false, reason: 'No OTP found' };
+  if (new Date() > this.otpExpiry)   return { valid: false, reason: 'OTP has expired' };
+  if (this.otp !== inputOtp)         return { valid: false, reason: 'Incorrect OTP' };
+  return { valid: true };
+};
+
+processAdminSchema.methods.clearOTP = function () {
+  this.otp = null;
+  this.otpExpiry = null;
+};
+
+processAdminSchema.methods.isLocked = function () {
   return !!(this.lockUntil && this.lockUntil > Date.now());
 };
 
-// Increment login attempts
-processAdminSchema.methods.incrementLoginAttempts = function() {
-  // Reset attempts if lock has expired
+processAdminSchema.methods.incrementLoginAttempts = function () {
   if (this.lockUntil && this.lockUntil < Date.now()) {
     return this.updateOne({
       $set: { loginAttempts: 1 },
       $unset: { lockUntil: 1 }
     });
   }
-  
   const updates = { $inc: { loginAttempts: 1 } };
-  
-  // Lock account after 5 failed attempts
   if (this.loginAttempts + 1 >= 5 && !this.isLocked()) {
-    updates.$set = { lockUntil: Date.now() + 30 * 60 * 1000 }; // Lock for 30 minutes
+    updates.$set = { lockUntil: Date.now() + 30 * 60 * 1000 };
   }
-  
   return this.updateOne(updates);
 };
 
-// Reset login attempts
-processAdminSchema.methods.resetLoginAttempts = function() {
+processAdminSchema.methods.resetLoginAttempts = function () {
   return this.updateOne({
     $set: { loginAttempts: 0 },
     $unset: { lockUntil: 1 }
   });
 };
 
-// Check if this is the first admin (enforce single admin)
-processAdminSchema.statics.isFirstAdmin = async function() {
-  const count = await this.countDocuments();
-  return count === 0;
-};
-
-// Create and export the model
 const ProcessAdmin = mongoose.model('ProcessAdmin', processAdminSchema);
-
 export default ProcessAdmin;

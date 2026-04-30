@@ -37,19 +37,20 @@
 ══════════════════════════════ */
 .process-form-side {
   flex: 1;
-  padding: 40px 36px;
+  padding: 36px 36px 32px;
   background: #fff;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
 }
 
-/* ── Logo block — no box, just image + role tag ── */
+/* ── Logo block ── */
 .process-logo-block {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 6px;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .process-logo {
@@ -67,12 +68,44 @@
   text-transform: uppercase;
 }
 
+/* ── Step header ── */
+.process-step-header {
+  margin-bottom: 22px;
+}
+
+.process-step-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 4px;
+  letter-spacing: -0.3px;
+}
+
+.process-step-sub {
+  font-size: 0.83rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.process-email-highlight {
+  color: #0d9488;
+  font-size: 0.85rem;
+}
+
+/* ── Name row (side by side) ── */
+.process-name-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
 /* ── Field group ── */
 .process-field-group {
   display: flex;
   flex-direction: column;
   gap: 7px;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 
 .process-label {
@@ -115,7 +148,7 @@
 
 .process-input {
   flex: 1;
-  height: 46px;
+  height: 44px;
   border: none;
   background: transparent;
   font-size: 0.9rem;
@@ -153,7 +186,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 46px;
+  height: 44px;
   flex-shrink: 0;
   transition: color 0.15s;
 }
@@ -172,7 +205,7 @@
   padding: 9px 12px;
   font-size: 0.8rem;
   color: #be123c;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   line-height: 1.45;
 }
 
@@ -210,7 +243,7 @@
   gap: 8px;
   letter-spacing: 0.01em;
   font-family: inherit;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   box-shadow: 0 4px 14px rgba(20, 184, 166, 0.32);
   transition: opacity 0.18s, transform 0.18s, box-shadow 0.18s;
 }
@@ -247,6 +280,32 @@
   to { transform: rotate(360deg); }
 }
 
+/* ── Switch row (Login / Register toggle) ── */
+.process-switch-row {
+  text-align: center;
+  font-size: 0.82rem;
+  color: #64748b;
+  margin-bottom: 14px;
+}
+
+/* ── Link button ── */
+.process-link-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: inherit;
+  font-weight: 700;
+  color: #14b8a6;
+  padding: 0;
+  font-family: inherit;
+  transition: color 0.15s;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.process-link-btn:hover:not(:disabled) { color: #0d9488; }
+.process-link-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
 /* ── Back button ── */
 .process-back-btn {
   display: inline-flex;
@@ -267,6 +326,140 @@
 
 .process-back-btn:hover:not(:disabled) { color: #14b8a6; gap: 9px; }
 .process-back-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ══════════════════════════════
+   OTP SCREEN
+══════════════════════════════ */
+.process-otp-icon-wrap {
+  width: 52px;
+  height: 52px;
+  background: #f0fdf9;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  border: 1.5px solid #ccfbf1;
+}
+
+.process-otp-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.process-otp-box {
+  width: 48px;
+  height: 56px;
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #0f172a;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
+  caret-color: #14b8a6;
+}
+
+.process-otp-box:focus {
+  border-color: #14b8a6;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.12);
+}
+
+.process-otp-box.process-otp-filled {
+  border-color: #14b8a6;
+  background: #f0fdf9;
+  color: #0d9488;
+}
+
+.process-otp-box:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ── Resend row ── */
+.process-resend-row {
+  text-align: center;
+  font-size: 0.82rem;
+  color: #64748b;
+  margin-bottom: 16px;
+}
+
+.process-resend-timer {
+  color: #94a3b8;
+  font-size: 0.82rem;
+}
+
+/* ══════════════════════════════
+   PENDING APPROVAL SCREEN
+══════════════════════════════ */
+.process-pending-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 12px 0;
+  flex: 1;
+}
+
+.process-pending-icon {
+  width: 72px;
+  height: 72px;
+  background: #f0fdf9;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+  border: 1.5px solid #ccfbf1;
+}
+
+.process-pending-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 12px;
+  letter-spacing: -0.3px;
+}
+
+.process-pending-desc {
+  font-size: 0.86rem;
+  color: #64748b;
+  line-height: 1.7;
+  margin: 0 0 18px;
+  max-width: 320px;
+}
+
+.process-pending-info {
+  margin-bottom: 12px;
+}
+
+.process-pending-badge {
+  display: inline-block;
+  background: #fef9c3;
+  color: #92400e;
+  border: 1px solid #fde68a;
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.process-pending-email {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin: 0 0 18px;
+}
+
+.process-pending-email strong {
+  color: #0d9488;
+}
 
 /* ══════════════════════════════
    RIGHT — ILLUSTRATION SIDE
@@ -366,7 +559,10 @@
   .process-info-desc  { font-size: 0.78rem; text-align: left; max-width: none; }
   .process-form-side  { padding: 28px 24px; }
   .process-logo       { height: 38px; }
-  .process-logo-block { margin-bottom: 24px; }
+  .process-logo-block { margin-bottom: 20px; }
+
+  .process-otp-box { width: 42px; height: 50px; font-size: 1.2rem; }
+  .process-name-row { grid-template-columns: 1fr 1fr; gap: 10px; }
 }
 
 /* ══════════════════════════════
@@ -381,14 +577,19 @@
   .process-info-desc  { display: none; }
   .process-form-side  { padding: 22px 18px 26px; }
   .process-logo       { height: 32px; }
-  .process-logo-block { margin-bottom: 20px; }
-  .process-field-group { margin-bottom: 14px; }
+  .process-logo-block { margin-bottom: 18px; }
+  .process-field-group { margin-bottom: 12px; }
   .process-label      { font-size: 0.78rem; }
-  .process-input      { height: 42px; font-size: 0.87rem; }
+  .process-input      { height: 40px; font-size: 0.87rem; }
   .process-submit-btn { height: 44px; font-size: 0.88rem; border-radius: 9px; }
   .process-error      { font-size: 0.77rem; padding: 8px 10px; }
   .process-back-btn   { font-size: 0.77rem; }
   .process-copyright  { font-size: 0.68rem; margin-top: 10px; }
+  .process-otp-box    { width: 38px; height: 46px; font-size: 1.1rem; gap: 6px; }
+  .process-otp-row    { gap: 7px; }
+  .process-step-title { font-size: 1.1rem; }
+  .process-name-row   { grid-template-columns: 1fr; gap: 0; }
+  .process-pending-icon { width: 60px; height: 60px; }
 }
 
 /* ══════════════════════════════
@@ -401,6 +602,8 @@
   .process-form-side  { padding: 20px 16px 24px; }
   .process-logo       { height: 28px; }
   .process-logo-block { margin-bottom: 16px; }
-  .process-input      { height: 40px; font-size: 0.85rem; }
+  .process-input      { height: 38px; font-size: 0.85rem; }
   .process-submit-btn { height: 42px; font-size: 0.85rem; }
+  .process-otp-box    { width: 36px; height: 44px; font-size: 1rem; }
+  .process-otp-row    { gap: 5px; }
 }

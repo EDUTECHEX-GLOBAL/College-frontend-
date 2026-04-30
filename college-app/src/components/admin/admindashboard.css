@@ -902,3 +902,172 @@
   .mobile-nav-icon { font-size: 1rem; }
   .mobile-nav-label { font-size: 0.55rem; }
 }
+/* ══════════════════════════════════════
+   DASHBOARD SECTIONS — new stat rows
+══════════════════════════════════════ */
+
+/* Section wrapper with label */
+.dash-section {
+  margin-bottom: 28px;
+}
+
+/* Section label (USERS / UNIVERSITY / etc.) */
+.dash-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 10px;
+  padding-left: 2px;
+}
+
+/* 4-column stat grid for each section */
+.stats-grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+@media (max-width: 1100px) {
+  .stats-grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .stats-grid-4 { grid-template-columns: 1fr; }
+}
+
+/* Additional accent colours */
+.admin-dashboard .stat-teal::before  { background: linear-gradient(90deg, #14b8a6, #0d9488); }
+.admin-dashboard .stat-amber::before { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+.admin-dashboard .stat-red::before   { background: linear-gradient(90deg, #f87171, #ef4444); }
+
+.admin-dashboard .stat-teal  .stat-icon { background: linear-gradient(135deg, #ccfbf1, #99f6e4); }
+.admin-dashboard .stat-amber .stat-icon { background: linear-gradient(135deg, #fef3c7, #fde68a); }
+.admin-dashboard .stat-red   .stat-icon { background: linear-gradient(135deg, #fee2e2, #fecaca); }
+
+/* Skeleton placeholder while loading */
+.stat-skeleton {
+  display: inline-block;
+  width: 64px;
+  height: 28px;
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 6px;
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Link-style sub value (clickable) */
+.stat-link-btn {
+  background: none;
+  border: none;
+  color: #0891b2;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  font-family: inherit;
+}
+.stat-link-btn:hover { color: #0e7490; }
+
+/* ══════════════════════════════════════
+   WELCOME SECTION UPDATE — with actions
+══════════════════════════════════════ */
+.welcome-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.welcome-text h2 { font-size: 1.6rem; color: #1e293b; margin-bottom: 4px; font-weight: 700; }
+.welcome-text p  { color: #64748b; font-size: 0.95rem; margin: 0; }
+.welcome-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+/* Compact refresh button in header */
+.refresh-btn-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: linear-gradient(90deg, #22d3ee, #0891b2);
+  color: white;
+  border: none;
+  padding: 9px 18px;
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 14px rgba(8,145,178,0.3);
+  font-family: inherit;
+}
+.refresh-btn-sm:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(8,145,178,0.4);
+}
+.refresh-btn-sm:disabled { opacity: 0.65; cursor: not-allowed; }
+.refresh-btn-sm.spinning svg { animation: spin 0.8s linear infinite; }
+
+/* API error badge */
+.api-error-badge {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+/* ══════════════════════════════════════
+   CHART UPDATES
+══════════════════════════════════════ */
+.chart-sub {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-left: 8px;
+  font-weight: 400;
+}
+.chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: #94a3b8;
+  font-size: 13px;
+  font-style: italic;
+}
+
+/* ══════════════════════════════════════
+   FUNNEL UPDATES
+══════════════════════════════════════ */
+.funnel-loading {
+  text-align: center;
+  padding: 40px 20px;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+/* ══════════════════════════════════════
+   QUICK ACTIONS — 4 columns
+══════════════════════════════════════ */
+.quick-action-cards {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+/* ══════════════════════════════════════
+   RESPONSIVE OVERRIDES
+══════════════════════════════════════ */
+@media (max-width: 768px) {
+  .welcome-section { flex-direction: column; align-items: flex-start; }
+  .welcome-actions { width: 100%; justify-content: flex-end; }
+  .stats-grid-4    { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .dash-section    { margin-bottom: 20px; }
+}
+@media (max-width: 480px) {
+  .stats-grid-4 { grid-template-columns: 1fr; }
+  .refresh-btn-sm { padding: 8px 14px; font-size: 12px; }
+}

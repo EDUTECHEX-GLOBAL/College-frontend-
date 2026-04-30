@@ -28,7 +28,7 @@
   --fy-shadow-md:  0 6px 24px rgba(8,145,178,0.12);
   --fy-shadow-lg:  0 16px 48px rgba(8,145,178,0.16);
   --fy-t:          0.2s cubic-bezier(.4,0,.2,1);
-  --fy-font:       'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+  --fy-font:       'Poppins', 'Segoe UI', sans-serif;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }

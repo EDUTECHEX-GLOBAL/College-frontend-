@@ -103,7 +103,7 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Sora', 'Poppins', sans-serif;
 }
 
 /* ===== Student Section ===== */
@@ -121,7 +121,7 @@
   color: #0891b2;
   margin-bottom: 20px;
   text-align: center;
-  font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Sora', 'Poppins', sans-serif;
 }
 
 /* ===== Buttons ===== */
@@ -140,7 +140,7 @@
   box-shadow: 0 4px 15px rgba(8, 145, 178, 0.3);
   position: relative;
   overflow: hidden;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 
 .signin-btn-primary::before {
@@ -231,7 +231,7 @@
   color: #0891b2;
   margin-bottom: 25px;
   text-align: center;
-  font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Sora', 'Poppins', sans-serif;
 }
 
 .signin-form-container form {
@@ -255,7 +255,7 @@
   border-radius: 12px;
   border: 2px solid #e2e8f0;
   font-size: 1rem;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Poppins', sans-serif;
   transition: all 0.3s ease;
   background: white;
   color: #0f172a;
@@ -293,7 +293,7 @@
   transition: all 0.3s ease;
   box-sizing: border-box;
   background: white;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Poppins', sans-serif;
   height: 52px;
   margin-top: 8px;
 }
@@ -324,7 +324,7 @@
   color: #64748b;
   font-weight: 600;
   font-size: 12px;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 
 .signin-password-toggle-btn:hover {

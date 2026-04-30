@@ -1,11 +1,10 @@
 // ProcessAdminDashboard.js — Teal Design System + Real EDUTECHEX SVG Logo
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./processAdminDashboard.css";
-import Applications from "./Applications";
-import Documents from "./documents";
-import GusUniversity from "./gusuniversity";
+
+import GusUniversity    from "./gusuniversity";
 import MasterUniversity from "./MasterUniversity";
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
@@ -18,22 +17,6 @@ const getProcessAdminToken = () => {
   return null;
 };
 
-const formatDate = (dateString) => {
-  if (!dateString) return '';
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric', month: 'short', day: 'numeric'
-  });
-};
-
-const getStatusBadgeClass = (status) => {
-  const s = (status || '').toLowerCase();
-  if (s.includes('completed') || s === 'validated')        return 'status-badge completed';
-  if (s.includes('incomplete'))                            return 'status-badge incomplete';
-  if (s.includes('in progress') || s.includes('pending')) return 'status-badge in-progress';
-  if (s.includes('not started'))                           return 'status-badge not-started';
-  return 'status-badge';
-};
-
 /* ─── SVG Icons ─── */
 const IcoGrid = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -41,10 +24,10 @@ const IcoGrid = () => (
     <rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
   </svg>
 );
-const IcoBuilding = () => (
+const IcoGradCap = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-    <polyline points="9 22 9 12 15 12 15 22"/>
+    <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+    <path d="M6 12v5c3 3 9 3 12 0v-5"/>
   </svg>
 );
 const IcoFileText = () => (
@@ -53,17 +36,6 @@ const IcoFileText = () => (
     <polyline points="14 2 14 8 20 8"/>
     <line x1="16" y1="13" x2="8" y2="13"/>
     <line x1="16" y1="17" x2="8" y2="17"/>
-  </svg>
-);
-const IcoFolder = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
-  </svg>
-);
-const IcoGradCap = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-    <path d="M6 12v5c3 3 9 3 12 0v-5"/>
   </svg>
 );
 const IcoChevDown = () => (
@@ -136,6 +108,12 @@ const IcoClose = () => (
     <line x1="6"  y1="6" x2="18" y2="18"/>
   </svg>
 );
+const IcoRefresh = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="23 4 23 10 17 10"/>
+    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+  </svg>
+);
 
 /* ─── Master University Icon ─── */
 const IcoMortarBoard = () => (
@@ -146,29 +124,19 @@ const IcoMortarBoard = () => (
   </svg>
 );
 
-/* ─────────────────────────────────────────────────
-   REAL EDUTECHEX SVG LOGO
-───────────────────────────────────────────────── */
+/* ─── EDUTECHEX SVG LOGO ─── */
 const EdutechExLogo = () => (
   <div className="pad-logo-wrap">
-    <svg
-      className="pad-logo-svg"
-      viewBox="0 0 506 106"
-      xmlns="http://www.w3.org/2000/svg"
-      xmlnsXlink="http://www.w3.org/1999/xlink"
-    >
+    <svg className="pad-logo-svg" viewBox="0 0 506 106" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink">
       <defs>
-        <linearGradient id="pad-lg1" gradientUnits="userSpaceOnUse"
-          x1="516.3248" y1="53.11" x2="67.3956" y2="53.11"
-          gradientTransform="matrix(1 0 0 -1 0 106.11)">
+        <linearGradient id="pad-lg1" gradientUnits="userSpaceOnUse" x1="516.3248" y1="53.11" x2="67.3956" y2="53.11" gradientTransform="matrix(1 0 0 -1 0 106.11)">
           <stop offset="0"    stopColor="#3C4C9B"/>
           <stop offset="0.08" stopColor="#3A4999"/>
           <stop offset="0.40" stopColor="#323E91"/>
           <stop offset="0.71" stopColor="#2A3887"/>
           <stop offset="1"    stopColor="#293682"/>
         </linearGradient>
-        <linearGradient id="pad-lg2" gradientUnits="userSpaceOnUse"
-          x1="398.72" y1="52.8" x2="485.17" y2="52.8">
+        <linearGradient id="pad-lg2" gradientUnits="userSpaceOnUse" x1="398.72" y1="52.8" x2="485.17" y2="52.8">
           <stop offset="0"   stopColor="#14b8a6"/>
           <stop offset="0.5" stopColor="#0ea5e9"/>
           <stop offset="1"   stopColor="#6366f1"/>
@@ -177,68 +145,12 @@ const EdutechExLogo = () => (
           <polygon points="460.82,22.08 446.1,22.08 467.17,49.13 398.72,49.13 398.72,57.31 467.13,57.32 446.73,83.52 461.45,83.52 485.17,53.35"/>
         </clipPath>
       </defs>
-
-      <path fill="url(#pad-lg1)" d="
-        M39.36,30.19c1.18,0,2.17-0.38,2.96-1.13c0.79-0.75,1.21-1.75,1.21-2.88
-        c0-1.12-0.41-2.12-1.19-2.9c-0.79-0.79-1.79-1.19-2.98-1.19H3.97c-1.13,0-2.11,0.39-2.92,1.17
-        C0.23,24.04-0.2,25.08-0.2,26.26v53.05c0,1.14,0.41,2.13,1.23,2.94c0.82,0.82,1.8,1.23,2.95,1.23h35.4
-        c1.19,0,2.19-0.4,2.98-1.19c0.78-0.78,1.19-1.78,1.19-2.9c0-1.14-0.42-2.13-1.21-2.88
-        c-0.79-0.75-1.78-1.13-2.96-1.13H8.15V56.76h22.4c1.09,0,2.05-0.37,2.84-1.09
-        c0.83-0.77,1.33-1.87,1.33-3c0-1.12-0.41-2.12-1.19-2.9c-0.79-0.79-1.79-1.18-2.98-1.18H8.13V30.19H39.36z
-        M85.62,26.01c-4.64-2.61-9.98-3.93-15.84-3.93H56.19c-1.18,0-2.19,0.4-2.98,1.18
-        c-0.79,0.79-1.19,1.79-1.19,2.98V79.3c0,1.19,0.4,2.19,1.19,2.98c0.79,0.79,1.79,1.19,2.98,1.19h13.59
-        c5.87,0,11.2-1.33,15.84-3.93c4.66-2.61,8.33-6.31,10.92-10.96c2.58-4.64,3.89-9.97,3.89-15.84
-        c0-5.87-1.31-11.19-3.89-15.81C93.95,32.3,90.28,28.63,85.62,26.01z
-        M89.31,64.6c-0.8,1.45-1.74,2.78-2.81,3.98c-1.47,1.65-3.17,3.06-5.12,4.2
-        c-3.37,1.97-7.27,2.96-11.61,2.96h-9.42V29.81h9.42c3.99,0,7.61,0.85,10.79,2.49
-        c0.28,0.14,0.56,0.28,0.83,0.44c0.51,0.29,0.99,0.61,1.47,0.94c1.6,1.1,3.01,2.41,4.23,3.91
-        c0.82,1.01,1.57,2.1,2.22,3.28c1.9,3.47,2.87,7.47,2.87,11.86C92.17,57.13,91.21,61.13,89.31,64.6z
-        M155.13,22.08c-1.19,0-2.19,0.4-2.98,1.19c-0.79,0.79-1.19,1.79-1.19,2.98v36.53
-        c0,2.66-0.68,5.07-2.03,7.14c-1.36,2.09-3.26,3.75-5.66,4.93c-2.44,1.2-5.28,1.8-8.44,1.8
-        c-3.22,0-6.11-0.61-8.6-1.8c-2.45-1.18-4.37-2.83-5.73-4.92c-1.34-2.07-2.03-4.48-2.03-7.14V26.25
-        c0-1.18-0.4-2.19-1.19-2.98c-0.79-0.79-1.79-1.19-2.98-1.19c-1.19,0-2.19,0.4-2.98,1.19
-        s-1.19,1.79-1.19,2.98v36.53c0,4.2,1.07,8.01,3.17,11.33c2.1,3.33,5.07,5.95,8.84,7.8
-        c3.72,1.83,7.99,2.77,12.69,2.77c4.65,0,8.87-0.93,12.55-2.77c3.71-1.85,6.65-4.48,8.75-7.8
-        c2.1-3.33,3.17-7.14,3.17-11.33V26.25c0-1.18-0.4-2.19-1.19-2.98C157.33,22.48,156.32,22.08,155.13,22.08z
-        M214.04,23.19c-0.73-0.72-1.71-1.11-2.83-1.11h-41.73c-1.12,0-2.1,0.39-2.83,1.11
-        c-0.74,0.74-1.12,1.69-1.12,2.83c0,1.07,0.39,2.02,1.11,2.75c0.74,0.74,1.69,1.12,2.83,1.12h16.66v49.42
-        c0,1.14,0.41,2.13,1.23,2.94c0.8,0.8,1.82,1.23,2.95,1.23c1.27,0,2.37-0.5,3.17-1.44
-        c0.67-0.8,1-1.84,1-2.88V29.89h16.74c1.14,0,2.09-0.37,2.83-1.11c0.73-0.73,1.12-1.68,1.12-2.75
-        C215.15,24.9,214.77,23.92,214.04,23.19z
-        M260.94,30.19c1.18,0,2.17-0.38,2.96-1.13c0.79-0.75,1.21-1.75,1.21-2.88
-        c0-1.12-0.41-2.12-1.19-2.9c-0.79-0.79-1.79-1.19-2.98-1.19h-35.4c-1.13,0-2.11,0.39-2.92,1.17
-        c-0.82,0.78-1.25,1.82-1.25,3v53.05c0,1.14,0.41,2.13,1.23,2.94c0.82,0.82,1.8,1.23,2.95,1.23h35.4
-        c1.19,0,2.19-0.4,2.98-1.19c0.78-0.78,1.19-1.78,1.19-2.9c0-1.14-0.42-2.13-1.21-2.88
-        c-0.79-0.75-1.78-1.13-2.96-1.13h-31.23V56.76h22.4c1.09,0,2.05-0.37,2.84-1.09
-        c0.83-0.77,1.33-1.87,1.33-3c0-1.12-0.41-2.12-1.19-2.9c-0.79-0.79-1.79-1.18-2.98-1.18h-22.4V30.19H260.94z
-        M290.19,32.53c3.41-2.1,7.15-3.18,11.13-3.18c2.91,0,5.5,0.38,7.68,1.14
-        c2.15,0.75,4.17,1.96,5.99,3.6c0.73,0.66,1.64,0.99,2.71,0.99c0.61,0,1.2-0.15,1.74-0.47
-        c0.45-0.26,0.8-0.6,1.02-1.02c0.37-0.24,0.67-0.56,0.92-0.95c0.32-0.52,0.48-1.1,0.48-1.74
-        c0-1.15-0.46-2.09-1.27-2.68c-2.87-2.4-5.88-4.17-8.98-5.27c-3.09-1.1-6.55-1.66-10.3-1.66
-        c-5.58,0-10.77,1.43-15.42,4.25c-4.64,2.82-8.36,6.67-11.07,11.46c-2.71,4.79-4.08,10.07-4.08,15.69
-        c0,5.68,1.39,10.98,4.12,15.77c2.73,4.79,6.47,8.65,11.11,11.46c4.65,2.82,9.82,4.25,15.35,4.25
-        c7.88,0,14.38-2.29,19.31-6.81l0.07-0.07c0.77-0.83,1.15-1.82,1.15-2.94c0-1.18-0.42-2.2-1.21-2.96
-        c-0.79-0.75-1.73-1.13-2.8-1.13c-0.82,0-1.61,0.28-2.42,0.87c-4.18,3.33-8.93,5.02-14.11,5.02
-        c-4.03,0-7.8-1.06-11.21-3.14c-3.42-2.09-6.17-4.96-8.17-8.53c-2-3.57-3.01-7.53-3.01-11.78
-        c0-4.14,1.02-8.06,3.05-11.62C283.99,37.54,286.76,34.65,290.19,32.53z
-        M378.8,22.08c-0.86-0.02-1.73,0.21-2.44,0.69c-1.2,0.81-1.84,2.04-1.84,3.48v22.32h-34.38V26.25
-        c0-1.18-0.4-2.19-1.19-2.98c-0.79-0.79-1.79-1.19-2.98-1.19c-1.13,0-2.11,0.39-2.92,1.17
-        c-0.82,0.78-1.25,1.82-1.25,3V79.3c0,1.14,0.41,2.13,1.23,2.94c0.82,0.82,1.8,1.23,2.95,1.23
-        c1.27,0,2.37-0.5,3.17-1.44c0.67-0.8,1-1.84,1-2.88V56.3h34.38v23c0,1.12,0.42,2.14,1.23,2.94
-        c0.82,0.82,1.8,1.23,2.95,1.23c1.27,0,2.37-0.5,3.17-1.44c0.67-0.8,1-1.84,1-2.88v-52.9
-        c0-1.18-0.4-2.19-1.19-2.98C380.89,22.5,379.94,22.1,378.8,22.08z
-      "/>
-
+      <path fill="url(#pad-lg1)" d="M39.36,30.19c1.18,0,2.17-0.38,2.96-1.13c0.79-0.75,1.21-1.75,1.21-2.88c0-1.12-0.41-2.12-1.19-2.9c-0.79-0.79-1.79-1.19-2.98-1.19H3.97c-1.13,0-2.11,0.39-2.92,1.17C0.23,24.04-0.2,25.08-0.2,26.26v53.05c0,1.14,0.41,2.13,1.23,2.94c0.82,0.82,1.8,1.23,2.95,1.23h35.4c1.19,0,2.19-0.4,2.98-1.19c0.78-0.78,1.19-1.78,1.19-2.9c0-1.14-0.42-2.13-1.21-2.88c-0.79-0.75-1.78-1.13-2.96-1.13H8.15V56.76h22.4c1.09,0,2.05-0.37,2.84-1.09c0.83-0.77,1.33-1.87,1.33-3c0-1.12-0.41-2.12-1.19-2.9c-0.79-0.79-1.79-1.18-2.98-1.18H8.13V30.19H39.36zM85.62,26.01c-4.64-2.61-9.98-3.93-15.84-3.93H56.19c-1.18,0-2.19,0.4-2.98,1.18c-0.79,0.79-1.19,1.79-1.19,2.98V79.3c0,1.19,0.4,2.19,1.19,2.98c0.79,0.79,1.79,1.19,2.98,1.19h13.59c5.87,0,11.2-1.33,15.84-3.93c4.66-2.61,8.33-6.31,10.92-10.96c2.58-4.64,3.89-9.97,3.89-15.84c0-5.87-1.31-11.19-3.89-15.81C93.95,32.3,90.28,28.63,85.62,26.01zM89.31,64.6c-0.8,1.45-1.74,2.78-2.81,3.98c-1.47,1.65-3.17,3.06-5.12,4.2c-3.37,1.97-7.27,2.96-11.61,2.96h-9.42V29.81h9.42c3.99,0,7.61,0.85,10.79,2.49c0.28,0.14,0.56,0.28,0.83,0.44c0.51,0.29,0.99,0.61,1.47,0.94c1.6,1.1,3.01,2.41,4.23,3.91c0.82,1.01,1.57,2.1,2.22,3.28c1.9,3.47,2.87,7.47,2.87,11.86C92.17,57.13,91.21,61.13,89.31,64.6zM155.13,22.08c-1.19,0-2.19,0.4-2.98,1.19c-0.79,0.79-1.19,1.79-1.19,2.98v36.53c0,2.66-0.68,5.07-2.03,7.14c-1.36,2.09-3.26,3.75-5.66,4.93c-2.44,1.2-5.28,1.8-8.44,1.8c-3.22,0-6.11-0.61-8.6-1.8c-2.45-1.18-4.37-2.83-5.73-4.92c-1.34-2.07-2.03-4.48-2.03-7.14V26.25c0-1.18-0.4-2.19-1.19-2.98c-0.79-0.79-1.79-1.19-2.98-1.19c-1.19,0-2.19,0.4-2.98,1.19s-1.19,1.79-1.19,2.98v36.53c0,4.2,1.07,8.01,3.17,11.33c2.1,3.33,5.07,5.95,8.84,7.8c3.72,1.83,7.99,2.77,12.69,2.77c4.65,0,8.87-0.93,12.55-2.77c3.71-1.85,6.65-4.48,8.75-7.8c2.1-3.33,3.17-7.14,3.17-11.33V26.25c0-1.18-0.4-2.19-1.19-2.98C157.33,22.48,156.32,22.08,155.13,22.08zM214.04,23.19c-0.73-0.72-1.71-1.11-2.83-1.11h-41.73c-1.12,0-2.1,0.39-2.83,1.11c-0.74,0.74-1.12,1.69-1.12,2.83c0,1.07,0.39,2.02,1.11,2.75c0.74,0.74,1.69,1.12,2.83,1.12h16.66v49.42c0,1.14,0.41,2.13,1.23,2.94c0.8,0.8,1.82,1.23,2.95,1.23c1.27,0,2.37-0.5,3.17-1.44c0.67-0.8,1-1.84,1-2.88V29.89h16.74c1.14,0,2.09-0.37,2.83-1.11c0.73-0.73,1.12-1.68,1.12-2.75C215.15,24.9,214.77,23.92,214.04,23.19zM260.94,30.19c1.18,0,2.17-0.38,2.96-1.13c0.79-0.75,1.21-1.75,1.21-2.88c0-1.12-0.41-2.12-1.19-2.9c-0.79-0.79-1.79-1.19-2.98-1.19h-35.4c-1.13,0-2.11,0.39-2.92,1.17c-0.82,0.78-1.25,1.82-1.25,3v53.05c0,1.14,0.41,2.13,1.23,2.94c0.82,0.82,1.8,1.23,2.95,1.23h35.4c1.19,0,2.19-0.4,2.98-1.19c0.78-0.78,1.19-1.78,1.19-2.9c0-1.14-0.42-2.13-1.21-2.88c-0.79-0.75-1.78-1.13-2.96-1.13h-31.23V56.76h22.4c1.09,0,2.05-0.37,2.84-1.09c0.83-0.77,1.33-1.87,1.33-3c0-1.12-0.41-2.12-1.19-2.9c-0.79-0.79-1.79-1.18-2.98-1.18h-22.4V30.19H260.94zM290.19,32.53c3.41-2.1,7.15-3.18,11.13-3.18c2.91,0,5.5,0.38,7.68,1.14c2.15,0.75,4.17,1.96,5.99,3.6c0.73,0.66,1.64,0.99,2.71,0.99c0.61,0,1.2-0.15,1.74-0.47c0.45-0.26,0.8-0.6,1.02-1.02c0.37-0.24,0.67-0.56,0.92-0.95c0.32-0.52,0.48-1.1,0.48-1.74c0-1.15-0.46-2.09-1.27-2.68c-2.87-2.4-5.88-4.17-8.98-5.27c-3.09-1.1-6.55-1.66-10.3-1.66c-5.58,0-10.77,1.43-15.42,4.25c-4.64,2.82-8.36,6.67-11.07,11.46c-2.71,4.79-4.08,10.07-4.08,15.69c0,5.68,1.39,10.98,4.12,15.77c2.73,4.79,6.47,8.65,11.11,11.46c4.65,2.82,9.82,4.25,15.35,4.25c7.88,0,14.38-2.29,19.31-6.81l0.07-0.07c0.77-0.83,1.15-1.82,1.15-2.94c0-1.18-0.42-2.2-1.21-2.96c-0.79-0.75-1.73-1.13-2.8-1.13c-0.82,0-1.61,0.28-2.42,0.87c-4.18,3.33-8.93,5.02-14.11,5.02c-4.03,0-7.8-1.06-11.21-3.14c-3.42-2.09-6.17-4.96-8.17-8.53c-2-3.57-3.01-7.53-3.01-11.78c0-4.14,1.02-8.06,3.05-11.62C283.99,37.54,286.76,34.65,290.19,32.53zM378.8,22.08c-0.86-0.02-1.73,0.21-2.44,0.69c-1.2,0.81-1.84,2.04-1.84,3.48v22.32h-34.38V26.25c0-1.18-0.4-2.19-1.19-2.98c-0.79-0.79-1.79-1.19-2.98-1.19c-1.13,0-2.11,0.39-2.92,1.17c-0.82,0.78-1.25,1.82-1.25,3V79.3c0,1.14,0.41,2.13,1.23,2.94c0.82,0.82,1.8,1.23,2.95,1.23c1.27,0,2.37-0.5,3.17-1.44c0.67-0.8,1-1.84,1-2.88V56.3h34.38v23c0,1.12,0.42,2.14,1.23,2.94c0.82,0.82,1.8,1.23,2.95,1.23c1.27,0,2.37-0.5,3.17-1.44c0.67-0.8,1-1.84,1-2.88v-52.9c0-1.18-0.4-2.19-1.19-2.98C380.89,22.5,379.94,22.1,378.8,22.08z"/>
       <path fill="url(#pad-lg1)" d="M446.1,30.26l-47.37,0.01v-8.18h18.89h22.54L446.1,30.26z"/>
       <path fill="url(#pad-lg1)" d="M446.1,75.34l-47.37-0.01v8.18h18.89h22.54L446.1,75.34z"/>
       <path fill="url(#pad-lg1)" d="M505.57,83.52h-10.57L481.9,66.68l5.28-6.78L505.57,83.52z"/>
       <path fill="url(#pad-lg1)" d="M495.63,22.08l-13.68,17.56l5.28,6.78l18.96-24.35L495.63,22.08z"/>
-
-      <polygon
-        clipPath="url(#pad-cp1)"
-        fill="url(#pad-lg2)"
-        points="460.82,22.08 446.1,22.08 467.17,49.13 398.72,49.13 398.72,57.32 467.13,57.32 446.73,83.52 461.45,83.52 485.17,53.35"
-      />
+      <polygon clipPath="url(#pad-cp1)" fill="url(#pad-lg2)" points="460.82,22.08 446.1,22.08 467.17,49.13 398.72,49.13 398.72,57.32 467.13,57.32 446.73,83.52 461.45,83.52 485.17,53.35"/>
     </svg>
   </div>
 );
@@ -252,33 +164,55 @@ const StatIcon = ({ bg, stroke, children }) => (
   </div>
 );
 
+/* ─── Skeleton loader for stat cards ─── */
+const SkeletonCard = () => (
+  <div className="pad-stat-card" style={{ animation: 'pulse 1.5s ease-in-out infinite' }}>
+    <div style={{ width: 44, height: 44, borderRadius: 11, background: '#eef0f4', flexShrink: 0 }} />
+    <div style={{ flex: 1 }}>
+      <div style={{ width: 60, height: 24, borderRadius: 6, background: '#eef0f4', marginBottom: 8 }} />
+      <div style={{ width: 90, height: 12, borderRadius: 4, background: '#f4f6f9' }} />
+    </div>
+  </div>
+);
+
+/* ─── Skeleton row for table ─── */
+const SkeletonRow = () => (
+  <tr>
+    {[1,2,3,4,5].map(i => (
+      <td key={i}>
+        <div style={{ height: 14, borderRadius: 4, background: '#eef0f4', width: i === 1 ? '80%' : i === 4 ? 60 : '60%' }} />
+      </td>
+    ))}
+    <td />
+  </tr>
+);
+
 /* ════════════════════════════════════════
    COMPONENT
 ════════════════════════════════════════ */
 const ProcessAdminDashboard = () => {
   const navigate = useNavigate();
 
-  const [sidebarOpen,           setSidebarOpen]           = useState(true);
-  const [mobileSidebarOpen,     setMobileSidebarOpen]     = useState(false);
-  const [activeTab,             setActiveTab]             = useState("dashboard");
-  const [processAdminData,      setProcessAdminData]      = useState(null);
-  const [loading,               setLoading]               = useState(true);
-  const [searchQuery,           setSearchQuery]           = useState("");
+  const [sidebarOpen,       setSidebarOpen]       = useState(true);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [activeTab,         setActiveTab]         = useState("dashboard");
+  const [processAdminData,  setProcessAdminData]  = useState(null);
+  const [loading,           setLoading]           = useState(true);
 
-  /* Kansas sidebar state */
-  const [kansasExpanded,        setKansasExpanded]        = useState(true);
+  /* Sidebar expand state */
+  const [gusExpanded,    setGusExpanded]    = useState(false);
+  const [masterExpanded, setMasterExpanded] = useState(false);
 
-  /* GUS sidebar state */
-  const [gusExpanded,           setGusExpanded]           = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
-  /* ── NEW: Master University sidebar state ── */
-  const [masterExpanded,        setMasterExpanded]        = useState(false);
+  /* ── Dashboard API state ── */
+  const [stats,           setStats]           = useState(null);
+  const [statsLoading,    setStatsLoading]    = useState(false);
+  const [recentApps,      setRecentApps]      = useState([]);
+  const [recentLoading,   setRecentLoading]   = useState(false);
+  const [dashboardError,  setDashboardError]  = useState(null);
 
-  const [applications,          setApplications]          = useState([]);
-  const [applicationsLoading,   setApplicationsLoading]   = useState(false);
-  const [selectedApplication,   setSelectedApplication]   = useState(null);
-  const [isMobile,              setIsMobile]              = useState(false);
-
+  /* ── Mobile detection ── */
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth <= 768);
     check();
@@ -293,6 +227,7 @@ const ProcessAdminDashboard = () => {
     return () => { document.body.style.overflow = ''; };
   }, [mobileSidebarOpen]);
 
+  /* ── Auth check ── */
   useEffect(() => {
     const token     = getProcessAdminToken();
     const adminData = localStorage.getItem('processAdminData');
@@ -303,9 +238,47 @@ const ProcessAdminDashboard = () => {
     setLoading(false);
   }, [navigate]);
 
+  /* ── Fetch dashboard data ── */
+  const fetchDashboardData = useCallback(async () => {
+    const token = getProcessAdminToken();
+    if (!token) { navigate('/process-admin-login'); return; }
+
+    setStatsLoading(true);
+    setRecentLoading(true);
+    setDashboardError(null);
+
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const [statsRes, recentRes] = await Promise.all([
+        axios.get(`${API_BASE_URL}/process-admin/dashboard/stats`,               { headers }),
+        axios.get(`${API_BASE_URL}/process-admin/dashboard/recent-applications`, { headers }),
+      ]);
+
+      if (statsRes.data?.success)  setStats(statsRes.data.stats);
+      if (recentRes.data?.success) setRecentApps(recentRes.data.data || []);
+
+    } catch (error) {
+      console.error('❌ Dashboard fetch error:', error);
+      if (error.response?.status === 401) {
+        localStorage.removeItem('processAdminToken');
+        localStorage.removeItem('processAdminData');
+        navigate('/process-admin-login');
+      } else {
+        setDashboardError('Failed to load dashboard data. Please try again.');
+      }
+    } finally {
+      setStatsLoading(false);
+      setRecentLoading(false);
+    }
+  }, [navigate]);
+
+  /* Fetch when dashboard tab is active */
   useEffect(() => {
-    if (activeTab === "applications") fetchApplications();
-  }, [activeTab]);
+    if (activeTab === 'dashboard' && !loading) {
+      fetchDashboardData();
+    }
+  }, [activeTab, loading, fetchDashboardData]);
 
   const handleLogout = () => {
     localStorage.removeItem('processAdminToken');
@@ -320,102 +293,149 @@ const ProcessAdminDashboard = () => {
     closeMobileSidebar();
   };
 
-  const fetchApplications = async () => {
-    setApplicationsLoading(true);
-    try {
-      const token = getProcessAdminToken();
-      if (!token) { navigate('/process-admin-login'); return; }
-      const response = await axios.get(`${API_BASE_URL}/process-admin/documents/all`, {
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
-      });
-      if (response.data?.success && response.data?.data?.applications) {
-        setApplications(response.data.data.applications);
-      } else { setApplications([]); }
-    } catch (error) {
-      if (error.response?.status === 401) {
-        localStorage.removeItem('processAdminToken');
-        localStorage.removeItem('processAdminData');
-        navigate('/process-admin-login');
-      }
-      setApplications([]);
-    } finally { setApplicationsLoading(false); }
+  /* ── Status badge class ── */
+  const getBadgeClass = (statusType) => {
+    if (statusType === 'approved') return 'pad-badge pad-approved';
+    if (statusType === 'review')   return 'pad-badge pad-review';
+    return 'pad-badge pad-pending';
   };
 
-  const viewApplicationDetails = async (applicationId) => {
-    try {
-      const token    = getProcessAdminToken();
-      const response = await axios.get(
-        `${API_BASE_URL}/process-admin/applications/${applicationId}/details`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setSelectedApplication(response.data.data || response.data);
-    } catch (e) { alert('Failed to load application details'); }
+  /* ── Status badge icon ── */
+  const getBadgeIcon = (statusType) => {
+    if (statusType === 'approved') return '✓ ';
+    if (statusType === 'review')   return '● ';
+    return '● ';
   };
 
-  const updateApplicationStatus = async (applicationId, status) => {
-    try {
-      const token = getProcessAdminToken();
-      await axios.put(
-        `${API_BASE_URL}/process-admin/applications/${applicationId}/status`,
-        { status },
-        { headers: { Authorization: `Bearer ${token}` } }
+  /* ── Type pill ── */
+  const getTypePill = (type) => {
+    if (type === 'master') {
+      return (
+        <span style={{
+          fontSize: 10, fontWeight: 700, padding: '2px 8px',
+          borderRadius: 20, background: '#ede9fe', color: '#7c3aed',
+          marginLeft: 6, verticalAlign: 'middle'
+        }}>Master</span>
       );
-      fetchApplications();
-      setSelectedApplication(null);
-    } catch (e) { console.error("Error updating status:", e); }
+    }
+    return (
+      <span style={{
+        fontSize: 10, fontWeight: 700, padding: '2px 8px',
+        borderRadius: 20, background: '#e0f2fe', color: '#0284c7',
+        marginLeft: 6, verticalAlign: 'middle'
+      }}>Bachelor</span>
+    );
   };
+
+  /* ── Activity dot colour ── */
+  const getActivityDot = (type) =>
+    type === 'master' ? 'pad-act-dot pad-dot-indigo' : 'pad-act-dot pad-dot-teal';
 
   /* ── Dashboard render ── */
   const renderDashboard = () => (
     <div className="pad-dash">
+
+      {/* Error banner */}
+      {dashboardError && (
+        <div style={{
+          background: '#fff1f2', border: '1.5px solid #fecaca', borderRadius: 10,
+          padding: '12px 18px', marginBottom: 16, display: 'flex',
+          alignItems: 'center', justifyContent: 'space-between', gap: 12,
+        }}>
+          <span style={{ color: '#ef4444', fontSize: 13, fontWeight: 600 }}>
+            ⚠ {dashboardError}
+          </span>
+          <button
+            onClick={fetchDashboardData}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '6px 14px', borderRadius: 8, border: 'none',
+              background: '#ef4444', color: '#fff', fontSize: 12,
+              fontWeight: 700, cursor: 'pointer', fontFamily: 'Outfit, sans-serif',
+            }}
+          >
+            <IcoRefresh /> Retry
+          </button>
+        </div>
+      )}
+
+      {/* ── Stats row ── */}
       <div className="pad-stats-row">
-        <div className="pad-stat-card">
-          <StatIcon bg="#e0f2fe" stroke="#0284c7">
-            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-            <line x1="16" y1="13" x2="8" y2="13"/>
-            <line x1="16" y1="17" x2="8" y2="17"/>
-          </StatIcon>
-          <div><div className="pad-sv">{applications.length || 120}</div><div className="pad-sl">Applications</div></div>
-        </div>
-        <div className="pad-stat-card">
-          <StatIcon bg="#ccfbf1" stroke="#0d9488">
-            <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
-          </StatIcon>
-          <div><div className="pad-sv">55</div><div className="pad-sl">Documents</div></div>
-        </div>
-        <div className="pad-stat-card">
-          <StatIcon bg="#ede9fe" stroke="#7c3aed">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-            <polyline points="9 22 9 12 15 12 15 22"/>
-          </StatIcon>
-          <div><div className="pad-sv">6</div><div className="pad-sl">Universities</div></div>
-        </div>
-        <div className="pad-stat-card">
-          <StatIcon bg="#d1fae5" stroke="#059669">
-            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
-          </StatIcon>
-          <div><div className="pad-sv">6</div><div className="pad-sl">Courses</div></div>
-        </div>
-        <div className="pad-stat-card">
-          <StatIcon bg="#fef3c7" stroke="#d97706">
-            <circle cx="12" cy="12" r="10"/>
-            <polyline points="12 6 12 12 16 14"/>
-          </StatIcon>
-          <div><div className="pad-sv">12</div><div className="pad-sl">Pending Reviews</div></div>
-        </div>
+
+        {statsLoading ? (
+          [1,2,3,4,5].map(i => <SkeletonCard key={i} />)
+        ) : (
+          <>
+            <div className="pad-stat-card">
+              <StatIcon bg="#e0f2fe" stroke="#0284c7">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </StatIcon>
+              <div>
+                <div className="pad-sv">{stats?.totalApplications ?? 0}</div>
+                <div className="pad-sl">Total Applications</div>
+              </div>
+            </div>
+
+            <div className="pad-stat-card">
+              <StatIcon bg="#ccfbf1" stroke="#0d9488">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+              </StatIcon>
+              <div>
+                <div className="pad-sv">{stats?.bachelor?.total ?? 0}</div>
+                <div className="pad-sl">Bachelor Apps</div>
+              </div>
+            </div>
+
+            <div className="pad-stat-card">
+              <StatIcon bg="#ede9fe" stroke="#7c3aed">
+                <polygon points="12 2 22 8.5 12 15 2 8.5 12 2"/>
+                <path d="M6 11.5V17c0 0 2 3 6 3s6-3 6-3v-5.5"/>
+                <line x1="22" y1="8.5" x2="22" y2="14"/>
+              </StatIcon>
+              <div>
+                <div className="pad-sv">{stats?.master?.total ?? 0}</div>
+                <div className="pad-sl">Master Apps</div>
+              </div>
+            </div>
+
+            <div className="pad-stat-card">
+              <StatIcon bg="#d1fae5" stroke="#059669">
+                <polyline points="20 6 9 17 4 12"/>
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              </StatIcon>
+              <div>
+                <div className="pad-sv">{stats?.totalCompleted ?? 0}</div>
+                <div className="pad-sl">Completed</div>
+              </div>
+            </div>
+
+            <div className="pad-stat-card">
+              <StatIcon bg="#fef3c7" stroke="#d97706">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </StatIcon>
+              <div>
+                <div className="pad-sv">{stats?.totalPending ?? 0}</div>
+                <div className="pad-sl">Pending Reviews</div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
+      {/* ── Charts row ── */}
       <div className="pad-charts-row">
+        {/* Bachelor breakdown chart */}
         <div className="pad-chart-card">
           <div className="pad-chart-hdr">
-            <span className="pad-chart-title"><strong>Applications</strong> Per Day</span>
+            <span className="pad-chart-title"><strong>Bachelor</strong> Applications</span>
             <div className="pad-pills">
-              <span className="pad-pill pad-pill-teal">2.41</span>
-              <span className="pad-pill">PITT</span>
-              <span className="pad-pill">VIM</span>
-              <span className="pad-pill pad-pill-amber">5%</span>
+              <span className="pad-pill pad-pill-teal">{stats?.bachelor?.total ?? 0} Total</span>
+              <span className="pad-pill pad-pill-amber">{stats?.bachelor?.inProgress ?? 0} Active</span>
             </div>
           </div>
           <div className="pad-chart-body">
@@ -429,9 +449,6 @@ const ProcessAdminDashboard = () => {
               {[10,35,60,85].map((y, i) => (
                 <line key={i} x1="22" y1={y} x2="498" y2={y} stroke="#eef0f4" strokeWidth="1"/>
               ))}
-              {['30','25','20','5'].map((t, i) => (
-                <text key={i} x="2" y={[13,38,63,88][i]} fontSize="8" fill="#94a3b8">{t}</text>
-              ))}
               <path d="M28,105 L98,80 L170,65 L244,63 L318,38 L393,50 L468,34 L468,112 L28,112Z" fill="url(#pad-lineGrad)"/>
               <path d="M28,105 L98,80 L170,65 L244,63 L318,38 L393,50 L468,34"
                 stroke="#14b8a6" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
@@ -441,26 +458,30 @@ const ProcessAdminDashboard = () => {
               ))}
             </svg>
           </div>
-          <div className="pad-chart-xlbls">
-            {['Apr 9','Apr 10','Apr 11','Apr 12','Apr 13','Apr 14','Apr 15'].map(l => (
-              <span key={l}>{l}</span>
-            ))}
-          </div>
           <div className="pad-chart-footer">
-            <span className="pad-cfi"><span className="pad-cfd" style={{background:'#14b8a6'}}></span><strong>120</strong> Total</span>
-            <span className="pad-cfi"><span className="pad-cfd" style={{background:'#0d9488'}}></span><strong>38</strong> this week</span>
-            <span className="pad-cfi"><span className="pad-cfd" style={{background:'#f59e0b'}}></span><strong>12</strong> pending</span>
+            <span className="pad-cfi">
+              <span className="pad-cfd" style={{ background: '#14b8a6' }}></span>
+              <strong>{stats?.bachelor?.completed ?? 0}</strong> Completed
+            </span>
+            <span className="pad-cfi">
+              <span className="pad-cfd" style={{ background: '#0d9488' }}></span>
+              <strong>{stats?.bachelor?.inProgress ?? 0}</strong> In Progress
+            </span>
+            <span className="pad-cfi">
+              <span className="pad-cfd" style={{ background: '#f59e0b' }}></span>
+              <strong>{stats?.bachelor?.incomplete ?? 0}</strong> Incomplete
+            </span>
             <span className="pad-lines-ico"><IcoLines /></span>
           </div>
         </div>
 
+        {/* Master breakdown chart */}
         <div className="pad-chart-card">
           <div className="pad-chart-hdr">
-            <span className="pad-chart-title"><strong>Documents</strong> Uploaded</span>
+            <span className="pad-chart-title"><strong>Master</strong> Applications</span>
             <div className="pad-pills">
-              <span className="pad-pill pad-pill-teal">5.35</span>
-              <span className="pad-pill">TOTAL</span>
-              <span className="pad-pill pad-pill-amber">5S</span>
+              <span className="pad-pill pad-pill-teal">{stats?.master?.total ?? 0} Total</span>
+              <span className="pad-pill pad-pill-amber">{stats?.master?.underReview ?? 0} Review</span>
             </div>
           </div>
           <div className="pad-chart-body">
@@ -468,98 +489,175 @@ const ProcessAdminDashboard = () => {
               {[10,35,60,85].map((y, i) => (
                 <line key={i} x1="22" y1={y} x2="398" y2={y} stroke="#eef0f4" strokeWidth="1"/>
               ))}
-              {['50','40','30','20'].map((t, i) => (
-                <text key={i} x="0" y={[13,38,63,88][i]} fontSize="8" fill="#94a3b8">{t}</text>
-              ))}
-              <rect x="32"  y="10" width="48" height="95" rx="5" fill="#14b8a6" opacity="0.82"/>
-              <rect x="100" y="34" width="48" height="71" rx="5" fill="#5eead4" opacity="0.80"/>
-              <rect x="168" y="50" width="48" height="55" rx="5" fill="#f59e0b" opacity="0.80"/>
-              <rect x="236" y="60" width="48" height="45" rx="5" fill="#0d9488" opacity="0.80"/>
-              <rect x="304" y="70" width="48" height="35" rx="5" fill="#fcd34d" opacity="0.88"/>
+              {/* Dynamic bar heights based on real data */}
+              {(() => {
+                const total     = Math.max(stats?.master?.total ?? 1, 1);
+                const submitted = stats?.master?.submitted    ?? 0;
+                const draft     = stats?.master?.draft        ?? 0;
+                const review    = stats?.master?.underReview  ?? 0;
+                const maxH      = 95;
+                const subH  = Math.max(Math.round((submitted / total) * maxH), 4);
+                const draftH = Math.max(Math.round((draft    / total) * maxH), 4);
+                const revH  = Math.max(Math.round((review   / total) * maxH), 4);
+                return (
+                  <>
+                    <rect x="60"  y={105 - subH}  width="60" height={subH}  rx="5" fill="#14b8a6" opacity="0.85"/>
+                    <rect x="170" y={105 - draftH} width="60" height={draftH} rx="5" fill="#f59e0b" opacity="0.85"/>
+                    <rect x="280" y={105 - revH}   width="60" height={revH}  rx="5" fill="#7c3aed" opacity="0.85"/>
+                  </>
+                );
+              })()}
             </svg>
           </div>
           <div className="pad-bar-xlbls">
-            {['Kansas','Stanford','MIT','GUS','Master'].map((l, i) => (<span key={i}>{l}</span>))}
+            <span style={{ flex: 1, textAlign: 'center' }}>Submitted</span>
+            <span style={{ flex: 1, textAlign: 'center' }}>Draft</span>
+            <span style={{ flex: 1, textAlign: 'center' }}>Under Review</span>
           </div>
           <div className="pad-chart-footer">
-            <span className="pad-cfi"><span className="pad-cfd" style={{background:'#14b8a6'}}></span><strong>55</strong> Total</span>
-            <span className="pad-cfi"><span className="pad-cfd" style={{background:'#f59e0b'}}></span><strong>12</strong> Pending</span>
-            <span className="pad-view-all-link">View All</span>
+            <span className="pad-cfi">
+              <span className="pad-cfd" style={{ background: '#14b8a6' }}></span>
+              <strong>{stats?.master?.submitted ?? 0}</strong> Submitted
+            </span>
+            <span className="pad-cfi">
+              <span className="pad-cfd" style={{ background: '#f59e0b' }}></span>
+              <strong>{stats?.master?.draft ?? 0}</strong> Draft
+            </span>
+            <span className="pad-cfi">
+              <span className="pad-cfd" style={{ background: '#7c3aed' }}></span>
+              <strong>{stats?.master?.underReview ?? 0}</strong> Review
+            </span>
           </div>
         </div>
       </div>
 
+      {/* ── Bottom row ── */}
       <div className="pad-bottom-row">
+
+        {/* Recent Applications table */}
         <div className="pad-table-card">
           <div className="pad-table-hdr">
             <span className="pad-section-title">Recent Applications</span>
-            <span className="pad-view-all-link">View All &rsaquo;</span>
+            <button
+              onClick={fetchDashboardData}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: 'var(--primary)', fontSize: 12, fontWeight: 700,
+                fontFamily: 'Outfit, sans-serif', padding: '4px 8px',
+                borderRadius: 7, transition: 'background .2s',
+              }}
+              title="Refresh"
+            >
+              <IcoRefresh /> Refresh
+            </button>
           </div>
+
           <table className="pad-table">
             <thead>
               <tr>
-                <th>Student</th><th>University</th><th>Program</th>
-                <th>Status</th><th>Date</th><th></th>
+                <th>Student</th>
+                <th>University</th>
+                <th>Program</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>Aravind</td><td>Kansas University</td><td>BSc</td>
-                <td><span className="pad-badge pad-pending">● Pending</span></td>
-                <td>Apr 11</td><td className="pad-chev">∨</td>
-              </tr>
-              <tr>
-                <td>Rahul</td><td>GUS University</td><td>MBA</td>
-                <td><span className="pad-badge pad-approved">✓ Approved</span></td>
-                <td>Apr 10</td><td className="pad-chev">∨</td>
-              </tr>
-              <tr>
-                <td>Krishna</td><td>Stanford University</td><td>MSc</td>
-                <td><span className="pad-badge pad-review">● Review</span></td>
-                <td>Apr 9</td><td className="pad-chev">∨</td>
-              </tr>
-              {/* ── NEW: Master row ── */}
-              <tr>
-                <td>Praneeth</td><td>Master University</td><td>Masters</td>
-                <td><span className="pad-badge pad-pending">● Pending</span></td>
-                <td>Apr 24</td><td className="pad-chev">∨</td>
-              </tr>
+              {recentLoading ? (
+                [1,2,3,4,5].map(i => <SkeletonRow key={i} />)
+              ) : recentApps.length === 0 ? (
+                <tr>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '28px 18px', color: 'var(--text-lt)', fontSize: 13 }}>
+                    No applications found.
+                  </td>
+                </tr>
+              ) : (
+                recentApps.map((app) => (
+                  <tr key={app._id}>
+                    <td style={{ fontWeight: 600 }}>
+                      {app.studentName}
+                      {getTypePill(app.type)}
+                    </td>
+                    <td style={{ fontSize: 12.5, color: 'var(--text-mid)' }}>{app.university}</td>
+                    <td style={{ fontSize: 12, color: 'var(--text-lt)' }}>{app.program}</td>
+                    <td>
+                      <span className={getBadgeClass(app.statusType)}>
+                        {getBadgeIcon(app.statusType)}{app.status}
+                      </span>
+                    </td>
+                    <td style={{ fontSize: 12, color: 'var(--text-lt)' }}>{app.date}</td>
+                    <td className="pad-chev">∨</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
+
           <div className="pad-table-footer">
-            <button className="pad-view-all-btn">View All &rsaquo;</button>
+            <button
+              className="pad-view-all-btn"
+              onClick={() => handleTabChange('gus-applications')}
+            >
+              View Bachelor &rsaquo;
+            </button>
+            <button
+              className="pad-view-all-btn"
+              style={{ marginLeft: 8 }}
+              onClick={() => handleTabChange('master-applications')}
+            >
+              View Master &rsaquo;
+            </button>
           </div>
         </div>
 
+        {/* Recent Activity */}
         <div className="pad-activity-card">
           <div className="pad-activity-hdr">
             <span className="pad-section-title">Recent Activity</span>
             <span className="pad-activity-arrow">‹</span>
           </div>
           <div className="pad-activity-list">
-            <div className="pad-act-day">Today</div>
-            <div className="pad-act-item">
-              <span className="pad-act-dot pad-dot-teal"><IcoCheck /></span>
-              <span className="pad-act-txt"><strong>Rahul:</strong> Document approved for GUS</span>
-            </div>
-            <div className="pad-act-item">
-              <span className="pad-act-dot pad-dot-teal"><IcoCheck /></span>
-              <span className="pad-act-txt"><strong>Aravind:</strong> Submitted to Kansas University</span>
-            </div>
-            {/* ── NEW: Master activity entry ── */}
-            <div className="pad-act-item">
-              <span className="pad-act-dot pad-dot-indigo"><IcoCheck /></span>
-              <span className="pad-act-txt"><strong>Praneeth:</strong> Master application submitted</span>
-            </div>
-            <div className="pad-act-day" style={{ marginTop: 10 }}>Yesterday</div>
-            <div className="pad-act-item">
-              <span className="pad-act-dot pad-dot-blue"><IcoCheck /></span>
-              <span className="pad-act-txt"><strong>Admin</strong> reviewed Krishna's application</span>
-            </div>
-            <div className="pad-act-item">
-              <span className="pad-act-dot pad-dot-indigo"><IcoCheck /></span>
-              <span className="pad-act-txt"><strong>New university</strong> MIT added to system</span>
-            </div>
+            {recentLoading ? (
+              [1,2,3,4].map(i => (
+                <div key={i} className="pad-act-item">
+                  <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#eef0f4', flexShrink: 0 }} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ height: 12, borderRadius: 4, background: '#eef0f4', width: '80%', marginBottom: 5 }} />
+                    <div style={{ height: 10, borderRadius: 4, background: '#f4f6f9', width: '60%' }} />
+                  </div>
+                </div>
+              ))
+            ) : recentApps.length === 0 ? (
+              <div style={{ color: 'var(--text-lt)', fontSize: 12, textAlign: 'center', padding: '20px 0' }}>
+                No recent activity.
+              </div>
+            ) : (
+              <>
+                <div className="pad-act-day">Recent</div>
+                {recentApps.slice(0, 5).map((app) => (
+                  <div key={app._id} className="pad-act-item">
+                    <span className={getActivityDot(app.type)}>
+                      <IcoCheck />
+                    </span>
+                    <span className="pad-act-txt">
+                      <strong>{app.studentName}:</strong>{' '}
+                      {app.type === 'master' ? 'Master' : 'Bachelor'} application{' '}
+                      <span style={{
+                        color: app.statusType === 'approved' ? 'var(--primary)'
+                             : app.statusType === 'review'   ? 'var(--blue)'
+                             : '#92400e',
+                        fontWeight: 600
+                      }}>
+                        {app.status.toLowerCase()}
+                      </span>
+                      {' '}— {app.university}
+                    </span>
+                  </div>
+                ))}
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -569,36 +667,10 @@ const ProcessAdminDashboard = () => {
   /* ── Content switcher ── */
   const renderContent = () => {
     switch (activeTab) {
-      case "dashboard":
-        return renderDashboard();
-
-      case "applications":
-        return (
-          <Applications
-            applications={applications}
-            applicationsLoading={applicationsLoading}
-            searchQuery={searchQuery}
-            onViewDetails={viewApplicationDetails}
-            onRefresh={fetchApplications}
-            selectedApplication={selectedApplication}
-            onCloseModal={() => setSelectedApplication(null)}
-            onUpdateStatus={updateApplicationStatus}
-            formatDate={formatDate}
-          />
-        );
-
-      case "documents":
-        return <Documents />;
-
-      case "gus-applications":
-        return <GusUniversity />;
-
-      /* ── NEW: Master University tab ── */
-      case "master-applications":
-        return <MasterUniversity />;
-
-      default:
-        return null;
+      case "dashboard":          return renderDashboard();
+      case "gus-applications":   return <GusUniversity />;
+      case "master-applications": return <MasterUniversity />;
+      default:                   return null;
     }
   };
 
@@ -644,7 +716,6 @@ const ProcessAdminDashboard = () => {
         </div>
 
         <ul className="sidebar-menu">
-
           {/* Dashboard */}
           <li
             className={activeTab === "dashboard" ? "active" : ""}
@@ -654,42 +725,7 @@ const ProcessAdminDashboard = () => {
             {(sidebarOpen || isMobile) && <span>Dashboard</span>}
           </li>
 
-          {/* ── Kansas University ── */}
-          <li
-            className={`kansas-parent ${kansasExpanded ? 'expanded' : ''}`}
-            onClick={() => setKansasExpanded(p => !p)}
-          >
-            <span className="sb-ico sb-blue"><IcoBuilding /></span>
-            {(sidebarOpen || isMobile) && (
-              <>
-                <span>Kansas University</span>
-                <span className="dropdown-arrow">
-                  {kansasExpanded ? <IcoChevDown /> : <IcoChevRight />}
-                </span>
-              </>
-            )}
-          </li>
-
-          {kansasExpanded && (sidebarOpen || isMobile) && (
-            <ul className="sub-menu">
-              <li
-                className={activeTab === "applications" ? "active" : ""}
-                onClick={() => handleTabChange("applications")}
-              >
-                <span className="sb-ico sb-ico-sm sb-teal"><IcoFileText /></span>
-                <span>Applications</span>
-              </li>
-              <li
-                className={activeTab === "documents" ? "active" : ""}
-                onClick={() => handleTabChange("documents")}
-              >
-                <span className="sb-ico sb-ico-sm sb-amber"><IcoFolder /></span>
-                <span>Documents</span>
-              </li>
-            </ul>
-          )}
-
-          {/* ── GUS University ── */}
+          {/* Bachelor Application */}
           <li
             className={`kansas-parent ${gusExpanded ? 'expanded' : ''}`}
             onClick={() => setGusExpanded(p => !p)}
@@ -697,14 +733,13 @@ const ProcessAdminDashboard = () => {
             <span className="sb-ico sb-teal"><IcoGradCap /></span>
             {(sidebarOpen || isMobile) && (
               <>
-                <span>GUS University</span>
+                <span>Bachelor Application</span>
                 <span className="dropdown-arrow">
                   {gusExpanded ? <IcoChevDown /> : <IcoChevRight />}
                 </span>
               </>
             )}
           </li>
-
           {gusExpanded && (sidebarOpen || isMobile) && (
             <ul className="sub-menu">
               <li
@@ -717,9 +752,7 @@ const ProcessAdminDashboard = () => {
             </ul>
           )}
 
-          {/* ══════════════════════════════════════
-              NEW — Master University sidebar item
-          ══════════════════════════════════════ */}
+          {/* Master Application */}
           <li
             className={`kansas-parent ${masterExpanded ? 'expanded' : ''}`}
             onClick={() => setMasterExpanded(p => !p)}
@@ -727,14 +760,13 @@ const ProcessAdminDashboard = () => {
             <span className="sb-ico sb-indigo"><IcoMortarBoard /></span>
             {(sidebarOpen || isMobile) && (
               <>
-                <span>Master University</span>
+                <span>Master Application</span>
                 <span className="dropdown-arrow">
                   {masterExpanded ? <IcoChevDown /> : <IcoChevRight />}
                 </span>
               </>
             )}
           </li>
-
           {masterExpanded && (sidebarOpen || isMobile) && (
             <ul className="sub-menu">
               <li
@@ -746,8 +778,6 @@ const ProcessAdminDashboard = () => {
               </li>
             </ul>
           )}
-          {/* ══════════════════════════════════════ */}
-
         </ul>
 
         <div className="sidebar-footer">
@@ -777,8 +807,6 @@ const ProcessAdminDashboard = () => {
               <input
                 type="text"
                 placeholder="Search applications, documents..."
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
                 className="search-input"
               />
             </div>

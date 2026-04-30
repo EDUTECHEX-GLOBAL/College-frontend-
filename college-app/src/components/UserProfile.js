@@ -8,7 +8,7 @@ import EdutechLogo from "./../assets/Edutech-logo.svg";
 const API_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SVG ICON COMPONENTS (replaces all emojis/icon fonts)
+// SVG ICON COMPONENTS
 // ─────────────────────────────────────────────────────────────────────────────
 const Icons = {
   Search: () => (
@@ -413,7 +413,7 @@ const URP_POLL_MS = 12000;
 const URP_WAIT_MS = 10 * 60 * 1000;
 
 // ─────────────────────────────────────────────────────────────────────────────
-// URP POPUP — SVG icons replacing emojis
+// URP POPUP
 // ─────────────────────────────────────────────────────────────────────────────
 const UniversityRequestPopup = ({ token, pendingRequest, onApproved, onRejected, onDismiss }) => {
   const [phase,      setPhase]      = React.useState("waiting");
@@ -600,34 +600,77 @@ const COURSE_SUGGESTIONS_LIST = [
   "Robotics","Aerospace Engineering",
 ];
 
+// ─────────────────────────────────────────────────────────────────────────────
+// NORMALIZE UNIVERSITY — handles ALL three sources:
+//   'admin'    → GUS/imported universities (INSTNM, UNITID, GUS_DATA fields)
+//   'bachelors'→ BachelorsUniversity model (universityName, universityCode fields)
+//   'masters'  → MastersUniversity model  (universityName, universityCode fields)
+// ─────────────────────────────────────────────────────────────────────────────
 const normalizeUniversity = (uni, source = 'admin') => {
-  const name    = uni.INSTNM || uni.universityName || 'Unknown University';
-  const city    = uni.CITY   || uni.city   || uni.location?.city  || '';
-  const state   = uni.STABBR || uni.state  || uni.location?.state || '';
-  const country = uni.country || uni.location?.country || uni.COUNTRY || 'USA';
+  // Handle both naming conventions
+  const name    = uni.INSTNM      || uni.universityName || uni.name || 'Unknown University';
+  const city    = uni.CITY        || uni.city           || uni.location?.city  || '';
+  const state   = uni.STABBR      || uni.state          || uni.location?.state || '';
+  const country = uni.country     || uni.location?.country || uni.COUNTRY || 'USA';
+  const unitid  = uni.UNITID      || uni.universityCode || uni._id?.toString() || '';
+
+  // Extract programs from all possible locations
   let programs = [];
+
   if (Array.isArray(uni.programs) && uni.programs.length > 0) {
     programs = uni.programs.map((p, i) => {
-      if (typeof p === 'string') return { id:`prog-str-${i}`,name:p,title:p,program_name:p,level:'Undergraduate',studyMode:'On Campus',duration:'3-4 years' };
-      const resolved = p.name||p.title||p.program_name||`Program ${i+1}`;
-      return { ...p,name:resolved,title:resolved,program_name:p.program_name||resolved };
+      if (typeof p === 'string') {
+        return {
+          id: `prog-str-${source}-${i}`,
+          name: p, title: p, program_name: p,
+          level: source === 'masters' ? 'Master' : 'Bachelor',
+          studyMode: 'On Campus', duration: source === 'masters' ? '2 years' : '4 years',
+        };
+      }
+      const resolved = p.name || p.title || p.program_name || `Program ${i + 1}`;
+      return { ...p, name: resolved, title: resolved, program_name: p.program_name || resolved };
     });
   } else if (uni.GUS_DATA?.programs_data?.length) {
-    programs = uni.GUS_DATA.programs_data.map((p,i) => { const r=p.title||p.program_name||`Program ${i+1}`; return {...p,name:r,title:r,program_name:p.program_name||r}; });
-  } else if (uni.GUS_DATA?.major_areas?.length) {
-    uni.GUS_DATA.major_areas.forEach(area => (area.specific_programs||[]).forEach(p => {
-      const pName=p.program_name||'Unknown Program';
-      programs.push({name:pName,title:pName,program_name:pName,level:uni.GUS_DATA?.level||'Undergraduate',studyMode:'On Campus',duration:'3-4 years',majorArea:area.major_area});
-    }));
-  } else if (uni.metadata?.programs?.length) {
-    programs = uni.metadata.programs.map((p,i) => { const r=p.title||p.program_name||p.name||`Program ${i+1}`; return {...p,name:r,title:r,program_name:p.program_name||r}; });
+    // Admin/GUS universities store programs in GUS_DATA
+    programs = uni.GUS_DATA.programs_data.map((p, i) => {
+      const r = p.title || p.program_name || `Program ${i + 1}`;
+      return { ...p, name: r, title: r, program_name: p.program_name || r };
+    });
   }
+
+  // Also extract from GUS_DATA.major_areas if programs still empty
+  if (!programs.length && uni.GUS_DATA?.major_areas?.length) {
+    uni.GUS_DATA.major_areas.forEach(area => {
+      (area.specific_programs || []).forEach(p => {
+        const pName = p.program_name || 'Unknown Program';
+        programs.push({
+          id: `area-${area.major_area}-${pName.replace(/\s+/g, '-')}`,
+          name: pName, title: pName, program_name: pName,
+          level: uni.GUS_DATA?.level || 'Undergraduate',
+          studyMode: 'On Campus', duration: '3-4 years',
+          majorArea: area.major_area,
+        });
+      });
+    });
+  }
+
+  // Also try metadata.programs
+  if (!programs.length && uni.metadata?.programs?.length) {
+    programs = uni.metadata.programs.map((p, i) => {
+      const r = p.title || p.program_name || p.name || `Program ${i + 1}`;
+      return { ...p, name: r, title: r, program_name: p.program_name || r };
+    });
+  }
+
   return {
     ...uni,
-    _normalizedId: uni.UNITID?.toString()||uni.universityCode||uni._id?.toString()||'',
-    INSTNM:name, CITY:city, STABBR:state,
-    location:{city,state,country,...(typeof uni.location==='object'?uni.location:{})},
-    programs, _source:source,
+    _normalizedId: unitid,
+    _source: source,
+    INSTNM: name,
+    CITY: city,
+    STABBR: state,
+    location: { city, state, country, ...(typeof uni.location === 'object' ? uni.location : {}) },
+    programs,
   };
 };
 
@@ -649,8 +692,7 @@ const universityMatchesSegment = (uni, segment) => {
     const pMajor = (p.majorArea || '').toLowerCase();
     return matchesSegment(pName + ' ' + pMajor, segment.keywords);
   });
-  const nameMatches = matchesSegment(uniName, segment.keywords);
-  return hasMatchingProgram || nameMatches;
+  return hasMatchingProgram || matchesSegment(uniName, segment.keywords);
 };
 
 const courseMatchesSegment = (course, segment) => {
@@ -748,68 +790,83 @@ const UserProfile = () => {
     setTimeout(() => setToast({ show:false,message:'',type:'success' }), 4000);
   }, []);
 
- useEffect(() => {
-  const load = async () => {
-    if (!token) { setFetchingProfile(false); return; }
-    try {
-      const res = await axios.get(`${API_URL}/api/user/profile`, { headers:{ Authorization:`Bearer ${token}` } });
-      if (res.data.success && res.data.data) {
-        const p = res.data.data;
+  // ── Load existing profile on mount ─────────────────────────────────────────
+  useEffect(() => {
+    const load = async () => {
+      if (!token) { setFetchingProfile(false); return; }
+      try {
+        const res = await axios.get(`${API_URL}/api/user/profile`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.data.success && res.data.data) {
+          const p = res.data.data;
+          setBasicInfo(p.basicInfo || { fullName:"",email:userEmail,mobile:"",dob:"",gender:"",nationality:"",residence:"" });
+          setEducation(p.education || { qualification:"",institution:"",field:"",year:"",cgpa:"" });
+          setEligibleProgram(p.eligibleProgram || "");
+          setSelectedUniversities(p.selectedUniversities?.length > 0 ? p.selectedUniversities : []);
+          if (p.profileImage) setImagePreview(p.profileImage);
 
-        setBasicInfo(p.basicInfo||{fullName:"",email:userEmail,mobile:"",dob:"",gender:"",nationality:"",residence:""});
-        setEducation(p.education||{qualification:"",institution:"",field:"",year:"",cgpa:""});
-        setEligibleProgram(p.eligibleProgram||"");
-        setSelectedUniversities(p.selectedUniversities?.length>0?p.selectedUniversities:[]);
-        if (p.profileImage) setImagePreview(p.profileImage);
-
-       if (p.profileCompleted === true && p.selectedUniversities?.length > 0) {
-  console.log("Server says profile completed - going to dashboard");
-  localStorage.setItem('profileCompleted', 'true');
-  localStorage.setItem('userProfile', JSON.stringify(p));
-  const type = localStorage.getItem('studentType') || 'firstyear';
-  navigate(type === 'transfer' ? '/transfer/dashboard' : '/firstyear/dashboard');
-  return;
-}
+          if (p.profileCompleted === true && p.selectedUniversities?.length > 0) {
+            console.log("Profile already completed — redirecting to dashboard");
+            localStorage.setItem('profileCompleted', 'true');
+            localStorage.setItem('userProfile', JSON.stringify(p));
+            const type = localStorage.getItem('studentType') || 'firstyear';
+            navigate(type === 'transfer' ? '/transfer/dashboard' : '/firstyear/dashboard');
+            return;
+          }
+        }
+      } catch (e) {
+        if (e.response?.status === 401) {
+          setError("Session expired. Please login again.");
+          setTimeout(() => navigate('/login'), 2000);
+        } else if (e.response?.status !== 404) {
+          console.warn('Profile fetch error (non-404):', e.response?.status, e.message);
+        }
+      } finally {
+        setFetchingProfile(false);
       }
-    } catch (e) {
-      if (e.response?.status !== 404) setError(`Server error: ${e.response?.status}`);
-    } finally { setFetchingProfile(false); }
-  };
-  load();
-},  [token, userEmail, navigate]);
+    };
+    load();
+  }, [token, userEmail, navigate]);
 
- 
+  useEffect(() => { fetchUniversities(); }, []);
 
- useEffect(() => {
-  const profileCompleted = localStorage.getItem('profileCompleted');
-  if (profileCompleted === 'true') return; // skip — they'll be redirected
-  fetchUniversities();
-}, []);
-
+  // ── Filter universities based on program, search and segment ───────────────
   useEffect(() => {
     let filtered = [...universities];
-    if (eligibleProgram==="Bachelor") filtered=filtered.filter(u=>u._source==='bachelors'||u._source==='admin');
-    else if (eligibleProgram==="Master") filtered=filtered.filter(u=>u._source==='masters'||u._source==='admin');
+
+    // Filter by eligible program / source
+    if (eligibleProgram === "Bachelor") {
+      filtered = filtered.filter(u => u._source === 'bachelors' || u._source === 'admin');
+    } else if (eligibleProgram === "Master") {
+      filtered = filtered.filter(u => u._source === 'masters' || u._source === 'admin');
+    }
+
+    // Filter by search term
     if (searchTerm.trim()) {
-      const t=searchTerm.toLowerCase();
-      filtered=filtered.filter(u=>
-        (u.INSTNM||'').toLowerCase().includes(t)||(u.CITY||u.location?.city||'').toLowerCase().includes(t)||
-        (u.STABBR||u.location?.state||'').toLowerCase().includes(t)||(u.IALIAS||'').toLowerCase().includes(t)||
-        (u.universityCode||'').toLowerCase().includes(t)
+      const t = searchTerm.toLowerCase();
+      filtered = filtered.filter(u =>
+        (u.INSTNM || '').toLowerCase().includes(t) ||
+        (u.CITY || u.location?.city || '').toLowerCase().includes(t) ||
+        (u.STABBR || u.location?.state || '').toLowerCase().includes(t) ||
+        (u.IALIAS || '').toLowerCase().includes(t) ||
+        (u._normalizedId || '').toLowerCase().includes(t)
       );
     }
+
+    // Filter by field of study or segment
     const fieldValue = education.field || '';
     const fieldKey = fieldValue.toLowerCase().trim();
     const domainKeys = FIELD_DOMAIN_KEYWORDS[fieldKey];
-    if (fieldValue && (domainKeys && domainKeys.length)) {
+
+    if (fieldValue && domainKeys && domainKeys.length) {
       const fieldFiltered = filtered.filter(u => {
         const programs = u.programs || [];
-        if (!programs.length) return true;
+        if (!programs.length) return true; // show if no programs to filter on
         return programs.some(p => {
           const pName = (p.name || p.title || p.program_name || '').toLowerCase();
           const pMajor = (p.majorArea || '').toLowerCase();
-          const haystack = pName + ' ' + pMajor;
-          return domainKeys.some(kw => haystack.includes(kw));
+          return domainKeys.some(kw => (pName + ' ' + pMajor).includes(kw));
         });
       });
       filtered = fieldFiltered.length > 0 ? fieldFiltered : filtered;
@@ -817,80 +874,194 @@ const UserProfile = () => {
       const segFiltered = filtered.filter(u => universityMatchesSegment(u, selectedSegment));
       filtered = segFiltered.length > 0 ? segFiltered : filtered;
     }
+
     setFilteredUniversities(filtered);
   }, [eligibleProgram, searchTerm, universities, selectedSegment, education.field]);
 
-  useEffect(() => { if (currentUniversityCourses.length>0) applyCourseFilers(); }, [courseSearchTerm,courseFilter,currentUniversityCourses]);
+  useEffect(() => { if (currentUniversityCourses.length > 0) applyCourseFilers(); }, [courseSearchTerm, courseFilter, currentUniversityCourses]);
 
   useEffect(() => {
-    const t=reqCourseInput.trim().toLowerCase();
+    const t = reqCourseInput.trim().toLowerCase();
     if (!t) { setReqSuggestions([]); setShowReqSuggestions(false); return; }
-    const s=COURSE_SUGGESTIONS_LIST.filter(c=>c.toLowerCase().includes(t)&&!reqCourses.includes(c)).slice(0,6);
-    setReqSuggestions(s); setShowReqSuggestions(s.length>0);
+    const s = COURSE_SUGGESTIONS_LIST.filter(c => c.toLowerCase().includes(t) && !reqCourses.includes(c)).slice(0, 6);
+    setReqSuggestions(s); setShowReqSuggestions(s.length > 0);
   }, [reqCourseInput, reqCourses]);
 
   useEffect(() => { return () => clearInterval(bgPollRef.current); }, []);
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // FETCH UNIVERSITIES — fetches from ALL three sources in parallel
+  // admin    → /api/admin/universities     (7 GUS/imported universities in MongoDB)
+  // bachelors→ /api/bachelors/universities (5 custom bachelor universities)
+  // masters  → /api/masters/universities   (3 custom master universities)
+  // ─────────────────────────────────────────────────────────────────────────────
   const fetchUniversities = async () => {
     if (!token) return;
-    setLoading(true); setError('');
+    setLoading(true);
+    setError('');
     try {
-      const fetchAdmin = async () => {
-  let all = []; let page = 1;
-  while (true) {
-    try {
-      const r = await axios.get(`${API_URL}/api/universities`, { // ← /api not /api/admin
-        params: { page, limit: 100 },
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const d = r.data?.data || [];
-      if (!Array.isArray(d) || !d.length) break;
-      all = [...all, ...d];
-      if (d.length < 100) break;
-      page++;
-    } catch { break; }
-  }
-  return all;
-};
-      const [adminData,bachRes,mastRes] = await Promise.all([
-        fetchAdmin(),
-        axios.get(`${API_URL}/api/bachelors/universities`,{params:{limit:500},headers:{Authorization:`Bearer ${token}`}}).catch(()=>({data:{success:false,data:[]}})),
-        axios.get(`${API_URL}/api/masters/universities`,{params:{limit:500},headers:{Authorization:`Bearer ${token}`}}).catch(()=>({data:{success:false,data:[]}})),
-      ]);
-      let all=[];
-      if (Array.isArray(adminData)&&adminData.length) all=[...all,...adminData.map(u=>normalizeUniversity(u,'admin'))];
-      if (bachRes.data?.success) all=[...all,...bachRes.data.data.map(u=>normalizeUniversity(u,'bachelors'))];
-      if (mastRes.data?.success) all=[...all,...mastRes.data.data.map(u=>normalizeUniversity(u,'masters'))];
-      const cache={};
-      for (const u of all) { if (u._normalizedId&&u.programs?.length) cache[u._normalizedId]=buildCourses(u); }
+      // Fetch all three sources in parallel — each catches its own error
+    const token = localStorage.getItem("token");
+
+const config = token
+  ? { headers: { Authorization: `Bearer ${token}` } }
+  : {};
+
+const [adminRes, bachelorsRes, mastersRes] = await Promise.all([
+
+  axios.get(`${API_URL}/api/admin/universities`, {
+    params: { limit: 500 },
+    ...config,
+  }).catch(e => {
+    console.warn('Admin universities fetch failed:', e.response?.status, e.message);
+    return { data: { success: false, data: [] } };
+  }),
+
+  axios.get(`${API_URL}/api/bachelors/universities`, {
+    params: { limit: 200, isActive: true },
+    ...config,
+  }).catch(e => {
+    console.warn('Bachelors universities fetch failed:', e.response?.status, e.message);
+    return { data: { success: false, data: [] } };
+  }),
+
+  axios.get(`${API_URL}/api/masters/universities`, {
+    params: { limit: 200, isActive: true },
+    ...config,
+  }).catch(e => {
+    console.warn('Masters universities fetch failed:', e.response?.status, e.message);
+    return { data: { success: false, data: [] } };
+  }),
+
+]);
+
+      // Extract arrays safely
+      const adminRaw     = adminRes.data?.data     || adminRes.data?.universities || [];
+      const bachelorsRaw = bachelorsRes.data?.data || [];
+      const mastersRaw   = mastersRes.data?.data   || [];
+
+      const cache = {};
+      const all   = [];
+
+      // ── Admin / GUS universities (imported via MongoDB) ──────────────────
+      for (const u of adminRaw) {
+        const norm = normalizeUniversity(u, 'admin');
+        // Use UNITID as key for admin universities
+        const key = norm.UNITID?.toString() || norm._id?.toString() || norm._normalizedId;
+        if (key) norm._normalizedId = key;
+        all.push(norm);
+        if (key && norm.programs?.length) cache[key] = buildCourses(norm);
+      }
+
+      // ── Bachelors universities ────────────────────────────────────────────
+      for (const u of bachelorsRaw) {
+        const norm = normalizeUniversity(u, 'bachelors');
+        const key  = norm._id?.toString() || norm._normalizedId;
+        if (key) norm._normalizedId = key;
+        all.push(norm);
+        if (key && norm.programs?.length) cache[key] = buildCourses(norm);
+      }
+
+      // ── Masters universities ──────────────────────────────────────────────
+      for (const u of mastersRaw) {
+        const norm = normalizeUniversity(u, 'masters');
+        const key  = norm._id?.toString() || norm._normalizedId;
+        if (key) norm._normalizedId = key;
+        all.push(norm);
+        if (key && norm.programs?.length) cache[key] = buildCourses(norm);
+      }
+
       setUniversityCourses(cache);
       setUniversities(all);
+
+      console.log(
+        `✅ Loaded universities —`,
+        `admin: ${adminRaw.length},`,
+        `bachelors: ${bachelorsRaw.length},`,
+        `masters: ${mastersRaw.length},`,
+        `total: ${all.length}`
+      );
+
+      if (all.length === 0) {
+        setError('No universities found. Please contact your administrator.');
+      }
+
     } catch (e) {
-      if (e.response?.status===401) { setError("Session expired. Please login again."); setTimeout(()=>navigate('/login'),2000); }
-      else setError(e.response?.data?.message||"Failed to load universities.");
-    } finally { setLoading(false); }
+      if (e.response?.status === 401) {
+        setError("Session expired. Please login again.");
+        setTimeout(() => navigate('/login'), 2000);
+      } else {
+        setError(e.response?.data?.message || "Failed to load universities. Please try again.");
+      }
+      console.error('fetchUniversities error:', e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const buildCourses = (university) => {
-    const city=university.CITY||''; const state=university.STABBR||'';
-    return (university.programs||[]).map((p,i) => {
-      if (typeof p==='string') return {id:`prog-${university._normalizedId}-${i}`,title:p,name:p,program_name:p,level:'Undergraduate',studyMode:'On Campus',duration:'3-4 years',locations:[`${city}, ${state}`],majorArea:'General',description:`${p} at ${university.INSTNM}`};
-      const name=p.name||p.title||p.program_name||`Program ${i+1}`;
-      return {id:p.id||p._id||`prog-${university._normalizedId}-${i}`,title:name,name,program_name:p.program_name||name,level:p.level||'Undergraduate',studyMode:p.studyMode||'On Campus',duration:p.duration||'3-4 years',locations:p.locations||[`${city}, ${state}`],majorArea:p.majorArea||'',description:p.description||`${name} at ${university.INSTNM}`};
+    const city  = university.CITY   || university.city  || '';
+    const state = university.STABBR || university.state || '';
+    const locStr = [city, state].filter(Boolean).join(', ');
+
+    return (university.programs || []).map((p, i) => {
+      if (typeof p === 'string') {
+        return {
+          id: `prog-${university._normalizedId}-${i}`,
+          title: p, name: p, program_name: p,
+          level: university._source === 'masters' ? 'Master' : 'Undergraduate',
+          studyMode: 'On Campus',
+          duration: university._source === 'masters' ? '2 years' : '3-4 years',
+          locations: [locStr].filter(Boolean),
+          majorArea: 'General',
+          description: `${p} at ${university.INSTNM}`,
+        };
+      }
+      const name = p.name || p.title || p.program_name || `Program ${i + 1}`;
+      return {
+        id:           p.id || p._id || `prog-${university._normalizedId}-${i}`,
+        title:        name,
+        name,
+        program_name: p.program_name || name,
+        level:        p.level        || (university._source === 'masters' ? 'Master' : 'Undergraduate'),
+        studyMode:    p.studyMode    || 'On Campus',
+        duration:     p.duration     || (university._source === 'masters' ? '2 years' : '3-4 years'),
+        locations:    p.locations    || [locStr].filter(Boolean),
+        majorArea:    p.majorArea    || '',
+        description:  p.description  || `${name} at ${university.INSTNM}`,
+      };
     });
   };
 
   const applyCourseFilers = () => {
-    let f=[...currentUniversityCourses];
-    if (courseSearchTerm.trim()) { const t=courseSearchTerm.toLowerCase(); f=f.filter(c=>(c.title||'').toLowerCase().includes(t)||(c.majorArea||'').toLowerCase().includes(t)||(c.level||'').toLowerCase().includes(t)); }
-    if (courseFilter.level) f=f.filter(c=>(c.level||'').toLowerCase()===courseFilter.level.toLowerCase());
-    if (courseFilter.studyMode) f=f.filter(c=>(c.studyMode||'').toLowerCase().includes(courseFilter.studyMode.toLowerCase()));
-    if (courseFilter.majorArea) f=f.filter(c=>(c.majorArea||'').toLowerCase().includes(courseFilter.majorArea.toLowerCase()));
+    let f = [...currentUniversityCourses];
+    if (courseSearchTerm.trim()) {
+      const t = courseSearchTerm.toLowerCase();
+      f = f.filter(c =>
+        (c.title || '').toLowerCase().includes(t) ||
+        (c.majorArea || '').toLowerCase().includes(t) ||
+        (c.level || '').toLowerCase().includes(t)
+      );
+    }
+    if (courseFilter.level)    f = f.filter(c => (c.level || '').toLowerCase() === courseFilter.level.toLowerCase());
+    if (courseFilter.studyMode) f = f.filter(c => (c.studyMode || '').toLowerCase().includes(courseFilter.studyMode.toLowerCase()));
+    if (courseFilter.majorArea) f = f.filter(c => (c.majorArea || '').toLowerCase().includes(courseFilter.majorArea.toLowerCase()));
     setFilteredCourses(f);
   };
 
-  const getUniKey = (u) => u._normalizedId||u.UNITID?.toString()||u._id?.toString()||'';
-  const detectProgram = (q) => { if(q==="12th"||q==="High School") return "Bachelor"; if(q==="Bachelor"||q==="Bachelor's Degree") return "Master"; if(q==="Master"||q==="Master's Degree") return "PhD"; return ""; };
+  const getUniKey = (u) =>
+    u._normalizedId ||
+    u._id?.toString() ||
+    u.UNITID?.toString() ||
+    u.universityCode ||
+    '';
+
+  const detectProgram = (q) => {
+    if (q === "12th" || q === "High School") return "Bachelor";
+    if (q === "Bachelor" || q === "Bachelor's Degree") return "Master";
+    if (q === "Master"   || q === "Master's Degree")   return "PhD";
+    return "";
+  };
 
   const handleQualificationChange = (value) => {
     setEducation(prev => ({ ...prev, qualification: value, field: '' }));
@@ -926,212 +1097,250 @@ const UserProfile = () => {
 
   const startBackgroundPoll = useCallback((uniName) => {
     if (bgPollRef.current) return;
-    bgPendingName.current=uniName?.toLowerCase()||"";
-    bgResolved.current=false;
+    bgPendingName.current = uniName?.toLowerCase() || "";
+    bgResolved.current = false;
     const poll = async () => {
-      if (bgResolved.current||!token) return;
+      if (bgResolved.current || !token) return;
       try {
-        const res=await axios.get(`${API_URL}/api/user/notifications`,{headers:{Authorization:`Bearer ${token}`}});
-        const all=res.data?.notifications||res.data?.data||[];
-        const matches=(n)=>!bgSeenIds.current.has(n._id)&&(!bgPendingName.current||n.message?.toLowerCase().includes(bgPendingName.current));
-        const approved=all.find(n=>n.type==="UNIVERSITY_APPROVED"&&matches(n));
-        const rejected=all.find(n=>n.type==="UNIVERSITY_REJECTED"&&matches(n));
-        if (approved||rejected) {
-          bgResolved.current=true; clearInterval(bgPollRef.current); bgPollRef.current=null;
-          const n=approved||rejected; bgSeenIds.current.add(n._id);
+        const res = await axios.get(`${API_URL}/api/user/notifications`, { headers: { Authorization: `Bearer ${token}` } });
+        const all = res.data?.notifications || res.data?.data || [];
+        const matches = (n) => !bgSeenIds.current.has(n._id) && (!bgPendingName.current || n.message?.toLowerCase().includes(bgPendingName.current));
+        const approved = all.find(n => n.type === "UNIVERSITY_APPROVED" && matches(n));
+        const rejected = all.find(n => n.type === "UNIVERSITY_REJECTED" && matches(n));
+        if (approved || rejected) {
+          bgResolved.current = true; clearInterval(bgPollRef.current); bgPollRef.current = null;
+          const n = approved || rejected; bgSeenIds.current.add(n._id);
           if (approved) {
-            const name=uniName||extractNameFromMsg(approved.message);
+            const name = uniName || extractNameFromMsg(approved.message);
             setApprovedUniName(name); setSearchTerm(name); await fetchUniversities();
-            setResultBanner({type:'approved',uniName:name}); showToast(`"${name}" is now available!`,'success');
+            setResultBanner({ type: 'approved', uniName: name }); showToast(`"${name}" is now available!`, 'success');
           } else {
-            const name=uniName||extractNameFromMsg(rejected.message);
-            const reason=extractReasonFromMsg(rejected.message);
-            setResultBanner({type:'rejected',uniName:name,reason}); showToast(`Your request for "${name}" was not approved.`,'warning');
+            const name   = uniName || extractNameFromMsg(rejected.message);
+            const reason = extractReasonFromMsg(rejected.message);
+            setResultBanner({ type: 'rejected', uniName: name, reason }); showToast(`Your request for "${name}" was not approved.`, 'warning');
           }
-          try { await axios.patch(`${API_URL}/api/user/notifications/${n._id}/read`,{},{headers:{Authorization:`Bearer ${token}`}}); } catch (_) {}
+          try { await axios.patch(`${API_URL}/api/user/notifications/${n._id}/read`, {}, { headers: { Authorization: `Bearer ${token}` } }); } catch (_) {}
         }
       } catch (_) {}
     };
-    poll(); bgPollRef.current=setInterval(poll,12000);
+    poll(); bgPollRef.current = setInterval(poll, 12000);
   }, [token, showToast]);
 
-  const extractNameFromMsg   = (msg="") => msg.match(/"([^"]+)"/)?.[1]||"";
-  const extractReasonFromMsg = (msg="") => msg.match(/[Rr]eason[:\s]+(.+)/)?.[1]?.trim()||null;
+  const extractNameFromMsg   = (msg = "") => msg.match(/"([^"]+)"/)?.[1] || "";
+  const extractReasonFromMsg = (msg = "") => msg.match(/[Rr]eason[:\s]+(.+)/)?.[1]?.trim() || null;
 
-  const handlePopupApproved = useCallback(async ({universityName}) => {
+  const handlePopupApproved = useCallback(async ({ universityName }) => {
     setShowRequestPopup(false); setPendingRequest(null);
-    bgResolved.current=true; clearInterval(bgPollRef.current); bgPollRef.current=null;
+    bgResolved.current = true; clearInterval(bgPollRef.current); bgPollRef.current = null;
     await fetchUniversities(); setApprovedUniName(universityName); setSearchTerm(universityName);
-    setResultBanner({type:'approved',uniName:universityName}); showToast(`"${universityName}" is now available!`,'success');
+    setResultBanner({ type: 'approved', uniName: universityName }); showToast(`"${universityName}" is now available!`, 'success');
   }, [showToast]);
 
-  const handlePopupRejected = useCallback(({universityName,reason}) => {
+  const handlePopupRejected = useCallback(({ universityName, reason }) => {
     setShowRequestPopup(false); setPendingRequest(null);
-    bgResolved.current=true; clearInterval(bgPollRef.current); bgPollRef.current=null;
-    setResultBanner({type:'rejected',uniName:universityName,reason}); showToast(`Your request for "${universityName}" was not approved.`,'warning');
+    bgResolved.current = true; clearInterval(bgPollRef.current); bgPollRef.current = null;
+    setResultBanner({ type: 'rejected', uniName: universityName, reason }); showToast(`Your request for "${universityName}" was not approved.`, 'warning');
   }, [showToast]);
 
   const handlePopupDismiss = useCallback(() => {
     setShowRequestPopup(false);
-    if (pendingRequest?.universityName&&!bgResolved.current) startBackgroundPoll(pendingRequest.universityName);
+    if (pendingRequest?.universityName && !bgResolved.current) startBackgroundPoll(pendingRequest.universityName);
   }, [pendingRequest, startBackgroundPoll]);
 
   const openRequestModal = () => {
-    setRequestForm({universityName:searchTerm||"",country:""});
+    setRequestForm({ universityName: searchTerm || "", country: "" });
     setRequestFormErrors({}); setRequestSuccess(false);
     setReqCourses([]); setReqCourseInput(""); setReqSuggestions([]); setShowReqSuggestions(false);
-    setShowRequestModal(true); document.body.style.overflow='hidden';
+    setShowRequestModal(true); document.body.style.overflow = 'hidden';
   };
   const closeRequestModal = () => {
-    setShowRequestModal(false); setRequestForm({universityName:"",country:""});
+    setShowRequestModal(false); setRequestForm({ universityName: "", country: "" });
     setRequestFormErrors({}); setRequestSuccess(false); setReqCourses([]); setReqCourseInput("");
-    document.body.style.overflow='auto';
+    document.body.style.overflow = 'auto';
   };
   const addReqCourse = (name) => {
-    const t=name.trim().replace(/,+$/,'');
-    if (!t||reqCourses.includes(t)) { setReqCourseInput(""); return; }
-    if (reqCourses.length>=5) { setRequestFormErrors(p=>({...p,courses:"Max 5 courses"})); return; }
-    setReqCourses(p=>[...p,t]); setReqCourseInput(""); setReqSuggestions([]); setShowReqSuggestions(false);
-    setRequestFormErrors(p=>({...p,courses:null})); setTimeout(()=>reqCourseInputRef.current?.focus(),0);
+    const t = name.trim().replace(/,+$/, '');
+    if (!t || reqCourses.includes(t)) { setReqCourseInput(""); return; }
+    if (reqCourses.length >= 5) { setRequestFormErrors(p => ({ ...p, courses: "Max 5 courses" })); return; }
+    setReqCourses(p => [...p, t]); setReqCourseInput(""); setReqSuggestions([]); setShowReqSuggestions(false);
+    setRequestFormErrors(p => ({ ...p, courses: null })); setTimeout(() => reqCourseInputRef.current?.focus(), 0);
   };
-  const removeReqCourse    = (c) => setReqCourses(p=>p.filter(x=>x!==c));
+  const removeReqCourse    = (c) => setReqCourses(p => p.filter(x => x !== c));
   const handleReqCourseKey = (e) => {
-    if (e.key==='Enter'||e.key===',') { e.preventDefault(); if(reqCourseInput.trim()) addReqCourse(reqCourseInput); }
-    else if (e.key==='Backspace'&&!reqCourseInput&&reqCourses.length) setReqCourses(p=>p.slice(0,-1));
+    if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); if (reqCourseInput.trim()) addReqCourse(reqCourseInput); }
+    else if (e.key === 'Backspace' && !reqCourseInput && reqCourses.length) setReqCourses(p => p.slice(0, -1));
   };
   const validateRequestForm = () => {
-    const err={};
-    if (!requestForm.universityName.trim()) err.universityName="University name is required";
-    if (!requestForm.country.trim()) err.country="Country is required";
-    if (!reqCourses.length) err.courses="Please add at least one course";
+    const err = {};
+    if (!requestForm.universityName.trim()) err.universityName = "University name is required";
+    if (!requestForm.country.trim()) err.country = "Country is required";
+    if (!reqCourses.length) err.courses = "Please add at least one course";
     setRequestFormErrors(err); return !Object.keys(err).length;
   };
   const handleSubmitRequest = async () => {
     if (!validateRequestForm()) return;
     setSubmittingRequest(true);
     try {
-      const res=await axios.post(`${API_URL}/api/user/university/request`,
-        {universityName:requestForm.universityName.trim(),country:requestForm.country.trim(),interestedCourses:reqCourses},
-        {headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'}});
+      const res = await axios.post(
+        `${API_URL}/api/user/university/request`,
+        { universityName: requestForm.universityName.trim(), country: requestForm.country.trim(), interestedCourses: reqCourses },
+        { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
+      );
       if (res.data.success) {
-        const pending={universityName:requestForm.universityName.trim(),country:requestForm.country.trim(),courses:[...reqCourses]};
+        const pending = { universityName: requestForm.universityName.trim(), country: requestForm.country.trim(), courses: [...reqCourses] };
         setRequestSuccess(true);
-        setTimeout(()=>{ closeRequestModal(); setPendingRequest(pending); setShowRequestPopup(true); },700);
-      } else setRequestFormErrors({submit:res.data.message||"Failed to submit request."});
-    } catch (e) { setRequestFormErrors({submit:e.response?.data?.message||"Failed to submit request."}); }
-    finally { setSubmittingRequest(false); }
+        setTimeout(() => { closeRequestModal(); setPendingRequest(pending); setShowRequestPopup(true); }, 700);
+      } else {
+        setRequestFormErrors({ submit: res.data.message || "Failed to submit request." });
+      }
+    } catch (e) {
+      setRequestFormErrors({ submit: e.response?.data?.message || "Failed to submit request." });
+    } finally {
+      setSubmittingRequest(false);
+    }
   };
 
   const openCourseModal = (uni) => {
-    const key=getUniKey(uni); const fresh=universities.find(u=>getUniKey(u)===key)||uni;
-    const allCourses=universityCourses[key]||buildCourses(fresh);
+    const key   = getUniKey(uni);
+    const fresh = universities.find(u => getUniKey(u) === key) || uni;
+    const allCourses = universityCourses[key] || buildCourses(fresh);
+
     const fieldValue = education.field || '';
     let courses = fieldValue ? allCourses.filter(c => courseMatchesField(c, fieldValue)) : [];
     if (!courses.length && selectedSegment) {
       courses = allCourses.filter(c => courseMatchesSegment(c, selectedSegment));
     }
     const coursesToShow = courses.length > 0 ? courses : allCourses;
+
     if (!coursesToShow.length) { toggleUniversity(uni); return; }
+
     setCurrentUniversity(fresh);
     setCurrentUniversityCourses(coursesToShow);
     setFilteredCourses(coursesToShow);
-    setCourseSearchTerm(""); setCourseFilter({level:"",studyMode:"",majorArea:""});
-    const existing=selectedUniversities.find(u=>getUniKey(u)===key);
-    setTempSelectedCourses([...(existing?.selectedCourses||[])]);
-    setShowCourseModal(true); document.body.style.overflow='hidden';
+    setCourseSearchTerm(""); setCourseFilter({ level: "", studyMode: "", majorArea: "" });
+    const existing = selectedUniversities.find(u => getUniKey(u) === key);
+    setTempSelectedCourses([...(existing?.selectedCourses || [])]);
+    setShowCourseModal(true); document.body.style.overflow = 'hidden';
   };
 
   const closeCourseModal = () => {
     setShowCourseModal(false); setCurrentUniversity(null); setTempSelectedCourses([]);
-    setCourseSearchTerm(""); setCourseFilter({level:"",studyMode:"",majorArea:""}); document.body.style.overflow='auto';
+    setCourseSearchTerm(""); setCourseFilter({ level: "", studyMode: "", majorArea: "" });
+    document.body.style.overflow = 'auto';
   };
+
   const toggleTempCourse = (course) => {
     setTempSelectedCourses(prev => {
-      const sel=prev.some(c=>c.id===course.id);
-      if (sel) return prev.filter(c=>c.id!==course.id);
-      if (prev.length<2) return [...prev,course];
-      setError('Max 2 courses per university'); setTimeout(()=>setError(''),2000); return prev;
+      const sel = prev.some(c => c.id === course.id);
+      if (sel) return prev.filter(c => c.id !== course.id);
+      if (prev.length < 2) return [...prev, course];
+      setError('Max 2 courses per university'); setTimeout(() => setError(''), 2000);
+      return prev;
     });
   };
+
   const saveCourseSelection = () => {
     if (!currentUniversity) return;
-    const key=getUniKey(currentUniversity);
-    const uniWithCourses={...currentUniversity,selectedCourses:tempSelectedCourses.map(c=>({
-      id:c.id,title:c.title||c.name||c.program_name||'Course',name:c.name||c.title||c.program_name||'Course',
-      program_name:c.program_name||c.title||c.name||'',level:c.level,studyMode:c.studyMode,duration:c.duration,
-      locations:c.locations,majorArea:c.majorArea,description:c.description,
-    }))};
-    setSelectedUniversities(prev=>prev.some(u=>getUniKey(u)===key)?prev.map(u=>getUniKey(u)===key?uniWithCourses:u):prev.length<5?[...prev,uniWithCourses]:prev);
-    closeCourseModal(); setShowSuccess(true); setTimeout(()=>setShowSuccess(false),1500);
+    const key = getUniKey(currentUniversity);
+    const uniWithCourses = {
+      ...currentUniversity,
+      selectedCourses: tempSelectedCourses.map(c => ({
+        id:           c.id,
+        title:        c.title || c.name || c.program_name || 'Course',
+        name:         c.name  || c.title || c.program_name || 'Course',
+        program_name: c.program_name || c.title || c.name || '',
+        level: c.level, studyMode: c.studyMode, duration: c.duration,
+        locations: c.locations, majorArea: c.majorArea, description: c.description,
+      })),
+    };
+    setSelectedUniversities(prev =>
+      prev.some(u => getUniKey(u) === key)
+        ? prev.map(u => getUniKey(u) === key ? uniWithCourses : u)
+        : prev.length < 5 ? [...prev, uniWithCourses] : prev
+    );
+    closeCourseModal(); setShowSuccess(true); setTimeout(() => setShowSuccess(false), 1500);
   };
+
   const toggleUniversity = (uni) => {
     if (!uni) return;
-    const key=getUniKey(uni);
-    const isSel=selectedUniversities.some(u=>getUniKey(u)===key);
-    if (isSel) { setSelectedUniversities(p=>p.filter(u=>getUniKey(u)!==key)); }
-    else if (selectedUniversities.length<5) {
-      const fresh=universities.find(u=>getUniKey(u)===key)||uni;
-      const courses=universityCourses[key]||buildCourses(fresh);
+    const key   = getUniKey(uni);
+    const isSel = selectedUniversities.some(u => getUniKey(u) === key);
+    if (isSel) {
+      setSelectedUniversities(p => p.filter(u => getUniKey(u) !== key));
+    } else if (selectedUniversities.length < 5) {
+      const fresh   = universities.find(u => getUniKey(u) === key) || uni;
+      const courses = universityCourses[key] || buildCourses(fresh);
       if (!courses.length) {
-        setSelectedUniversities(p=>[...p,{...fresh,selectedCourses:[],isDirectApply:true}]);
-        setShowSuccess(true); setTimeout(()=>setShowSuccess(false),1500);
-      } else { openCourseModal(fresh); }
-    } else { setError("Max 5 universities"); setTimeout(()=>setError(''),2000); }
+        setSelectedUniversities(p => [...p, { ...fresh, selectedCourses: [], isDirectApply: true }]);
+        setShowSuccess(true); setTimeout(() => setShowSuccess(false), 1500);
+      } else {
+        openCourseModal(fresh);
+      }
+    } else {
+      setError("Max 5 universities"); setTimeout(() => setError(''), 2000);
+    }
   };
 
   const validateStep1 = () => {
-    const e={};
-    if (!basicInfo.fullName) e.fullName="Full name is required";
-    if (!basicInfo.mobile) e.mobile="Mobile is required";
-    if (!basicInfo.dob) e.dob="Date of birth is required";
-    if (!basicInfo.gender) e.gender="Gender is required";
-    if (!basicInfo.nationality) e.nationality="Nationality is required";
-    if (!basicInfo.residence) e.residence="Country of residence is required";
-    if (basicInfo.mobile&&!/^[0-9+\-\s()]{10,15}$/.test(basicInfo.mobile)) e.mobile="Enter a valid mobile number";
+    const e = {};
+    if (!basicInfo.fullName)    e.fullName    = "Full name is required";
+    if (!basicInfo.mobile)      e.mobile      = "Mobile is required";
+    if (!basicInfo.dob)         e.dob         = "Date of birth is required";
+    if (!basicInfo.gender)      e.gender      = "Gender is required";
+    if (!basicInfo.nationality) e.nationality = "Nationality is required";
+    if (!basicInfo.residence)   e.residence   = "Country of residence is required";
+    if (basicInfo.mobile && !/^[0-9+\-\s()]{10,15}$/.test(basicInfo.mobile)) e.mobile = "Enter a valid mobile number";
     setValidationErrors(e); return !Object.keys(e).length;
   };
   const validateStep2 = () => {
-    const e={};
-    if (!education.qualification) e.qualification="Qualification is required";
-    if (!education.institution) e.institution="Institution is required";
-    if (!education.field) e.field="Field of study is required";
-    if (!education.year) e.year="Year is required";
-    if (!education.cgpa) e.cgpa="CGPA/Percentage is required";
-    if (education.year&&!/^\d{4}$/.test(education.year)) e.year="Enter a valid year (YYYY)";
+    const e = {};
+    if (!education.qualification) e.qualification = "Qualification is required";
+    if (!education.institution)   e.institution   = "Institution is required";
+    if (!education.field)         e.field         = "Field of study is required";
+    if (!education.year)          e.year          = "Year is required";
+    if (!education.cgpa)          e.cgpa          = "CGPA/Percentage is required";
+    if (education.year && !/^\d{4}$/.test(education.year)) e.year = "Enter a valid year (YYYY)";
     setValidationErrors(e); return !Object.keys(e).length;
   };
   const validateStep3 = () => {
-    if (selectedUniversities.length<3) {
-      setError('Please select at least 3 universities'); setTimeout(()=>setError(''),3000); return false;
+    if (selectedUniversities.length < 3) {
+      setError('Please select at least 3 universities'); setTimeout(() => setError(''), 3000); return false;
     }
     for (const u of selectedUniversities) {
       if (!isDirectApplyUniversity(u) && !(u.selectedCourses?.length)) {
-        setError(`Please select at least one course for ${u.INSTNM||u.name||'this university'}`);
-        setTimeout(()=>setError(''),3000); return false;
+        setError(`Please select at least one course for ${u.INSTNM || u.name || 'this university'}`);
+        setTimeout(() => setError(''), 3000); return false;
       }
     }
     return true;
   };
 
-  const isStep1Valid = () => basicInfo.fullName&&basicInfo.mobile&&basicInfo.dob&&basicInfo.gender&&basicInfo.nationality&&basicInfo.residence;
-  const isStep2Valid = () => education.qualification&&education.institution&&education.field&&education.year&&education.cgpa;
+  const isStep1Valid = () => basicInfo.fullName && basicInfo.mobile && basicInfo.dob && basicInfo.gender && basicInfo.nationality && basicInfo.residence;
+  const isStep2Valid = () => education.qualification && education.institution && education.field && education.year && education.cgpa;
   const isStep3Valid = () => {
-    if (selectedUniversities.length<3) return false;
-    return selectedUniversities.every(u => isDirectApplyUniversity(u) || (u.selectedCourses?.length>0));
+    if (selectedUniversities.length < 3) return false;
+    return selectedUniversities.every(u => isDirectApplyUniversity(u) || (u.selectedCourses?.length > 0));
   };
 
-  const navigateToDashboard = () => navigate(userType==='transfer'?'/transfer/dashboard':'/firstyear/dashboard');
+  const navigateToDashboard = () => navigate(userType === 'transfer' ? '/transfer/dashboard' : '/firstyear/dashboard');
 
   const handleImageUpload = (e) => {
-    const file=e.target.files[0]; if (!file) return;
-    if (file.size>5*1024*1024) { setError("Image must be under 5 MB"); return; }
+    const file = e.target.files[0]; if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { setError("Image must be under 5 MB"); return; }
     if (!file.type.startsWith('image/')) { setError("Please upload an image file"); return; }
     setProfileImage(file);
-    const reader=new FileReader(); reader.onloadend=()=>setImagePreview(reader.result); reader.readAsDataURL(file);
+    const reader = new FileReader(); reader.onloadend = () => setImagePreview(reader.result); reader.readAsDataURL(file);
   };
+
   const uploadProfileImage = async () => {
-    if (!profileImage||!token) return;
-    try { await axios.patch(`${API_URL}/api/user/profile/image`,{profileImage:imagePreview},{headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'}}); } catch (_) {}
+    if (!profileImage || !token) return;
+    try {
+      await axios.patch(
+        `${API_URL}/api/user/profile/image`,
+        { profileImage: imagePreview },
+        { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
+      );
+    } catch (_) {}
   };
 
   const handleSubmitProfile = async () => {
@@ -1141,82 +1350,104 @@ const UserProfile = () => {
     let formattedUniversities = [];
     try {
       if (profileImage) await uploadProfileImage();
+
       formattedUniversities = selectedUniversities.map(u => {
-        const city  = u.CITY   || u.city  || u.location?.city  || '';
-        const state = u.STABBR || u.state || u.location?.state || '';
+        const city    = u.CITY   || u.city  || u.location?.city  || '';
+        const state   = u.STABBR || u.state || u.location?.state || '';
         const isDirect = isDirectApplyUniversity(u);
         return {
-          id:    u.id || u.UNITID?.toString() || u.universityCode || u._id?.toString() || u._normalizedId || '',
+          id:     u.id || u.UNITID?.toString() || u.universityCode || u._id?.toString() || u._normalizedId || '',
           unitid: u.UNITID || null,
-          name:  u.INSTNM  || u.universityName || u.name || 'Unknown University',
-          location: [city,state].filter(Boolean).join(', ') || 'Location not specified',
+          name:   u.INSTNM || u.universityName || u.name || 'Unknown University',
+          location: [city, state].filter(Boolean).join(', ') || 'Location not specified',
           city, state,
-          country: u.location?.country || u.country || u.COUNTRY || 'USA',
+          country:       u.location?.country || u.country || u.COUNTRY || 'USA',
           isKansas:      isDirect,
           isDirectApply: isDirect,
-          selectedCourses: isDirect
-            ? []
-            : (u.selectedCourses||[]).map(c => ({
-                id:           c.id           || `course-${Math.random()}`,
-                title:        c.title        || c.name || c.program_name || 'Program',
-                name:         c.name         || c.title || c.program_name || 'Program',
-                program_name: c.program_name || c.title || c.name || '',
-                level:        c.level        || '',
-                studyMode:    c.studyMode    || '',
-                duration:     c.duration     || '',
-                locations:    Array.isArray(c.locations) ? c.locations : [],
-                majorArea:    c.majorArea    || '',
-                description:  c.description  || '',
-              })),
+          selectedCourses: isDirect ? [] : (u.selectedCourses || []).map(c => ({
+            id:           c.id           || `course-${Math.random()}`,
+            title:        c.title        || c.name || c.program_name || 'Program',
+            name:         c.name         || c.title || c.program_name || 'Program',
+            program_name: c.program_name || c.title || c.name || '',
+            level:        c.level        || '',
+            studyMode:    c.studyMode    || '',
+            duration:     c.duration     || '',
+            locations:    Array.isArray(c.locations) ? c.locations : [],
+            majorArea:    c.majorArea    || '',
+            description:  c.description  || '',
+          })),
         };
       });
+
       const profileData = {
-        profileImage:imagePreview, basicInfo, education, eligibleProgram,
+        profileImage: imagePreview, basicInfo, education, eligibleProgram,
         selectedSegment: selectedSegment ? { id: selectedSegment.id, name: selectedSegment.name } : null,
-        selectedUniversities:formattedUniversities,
-        profileCompleted:true, completedAt:new Date().toISOString(),
+        selectedUniversities: formattedUniversities,
+        profileCompleted: true, completedAt: new Date().toISOString(),
       };
-      if (JSON.stringify(profileData).length>500000) {
+
+      if (JSON.stringify(profileData).length > 500000) {
         setError("Profile data too large. Reduce course selections."); setSaving(false); return;
       }
+
       const res = await axios.post(`${API_URL}/api/user/profile`, profileData, {
-        headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       });
+
       if (res.data.success) {
-        localStorage.setItem('userProfile',JSON.stringify(profileData));
-        localStorage.setItem('profileCompleted','true');
-        showToast("Profile submitted! Redirecting…","success");
-        setTimeout(navigateToDashboard,1500);
+        localStorage.setItem('userProfile', JSON.stringify(profileData));
+        localStorage.setItem('profileCompleted', 'true');
+        showToast("Profile submitted! Redirecting…", "success");
+        setTimeout(navigateToDashboard, 1500);
       } else {
-        setError(res.data.message||"Failed to save profile.");
+        setError(res.data.message || "Failed to save profile.");
       }
     } catch (e) {
       console.error('Profile submit error:', e.response?.data);
-      let msg="Failed to save profile.";
-      if (e.response?.status===401) { msg="Session expired."; setTimeout(()=>navigate('/login'),2000); }
-      else if (e.response?.status===400) msg=e.response.data.errors?.join(', ')||e.response.data.message||msg;
-      else if (e.response?.data?.message) msg=e.response.data.message;
+      let msg = "Failed to save profile.";
+      if (e.response?.status === 401) { msg = "Session expired."; setTimeout(() => navigate('/login'), 2000); }
+      else if (e.response?.status === 400) msg = e.response.data.errors?.join(', ') || e.response.data.message || msg;
+      else if (e.response?.data?.message) msg = e.response.data.message;
       setError(msg);
-      const profileData={basicInfo,education,eligibleProgram,selectedUniversities:formattedUniversities,profileCompleted:true};
-      localStorage.setItem('userProfile',JSON.stringify(profileData));
-      localStorage.setItem('profileCompleted','true');
-      showToast("Saved locally. Redirecting…","warning");
-      setTimeout(navigateToDashboard,1500);
+      const profileData = { basicInfo, education, eligibleProgram, selectedUniversities: formattedUniversities, profileCompleted: true };
+      localStorage.setItem('userProfile', JSON.stringify(profileData));
+      localStorage.setItem('profileCompleted', 'true');
+      showToast("Saved locally. Redirecting…", "warning");
+      setTimeout(navigateToDashboard, 1500);
     } finally { setSaving(false); }
   };
 
   const handleSaveProgress = (next) => {
-    if (step===1&&!validateStep1()) return;
-    if (step===2&&!validateStep2()) return;
-    if (step===3&&next===4&&!validateStep3()) return;
-    setStep(next); window.scrollTo({top:0,behavior:'smooth'});
+    if (step === 1 && !validateStep1()) return;
+    if (step === 2 && !validateStep2()) return;
+    if (step === 3 && next === 4 && !validateStep3()) return;
+    setStep(next); window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const getInitials     = (n="") => n.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase()||"UN";
-  const getUserInitials = () => basicInfo.fullName?basicInfo.fullName.split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase():(userEmail?.[0]?.toUpperCase()||'U');
-  const getLevelColor = (l="") => { const s=l.toLowerCase(); if(s.includes('bachelor')||s.includes('undergraduate')) return '#4CAF50'; if(s.includes('master')||s.includes('graduate')||s.includes('mba')) return '#FF9800'; if(s.includes('phd')||s.includes('doctorate')) return '#F44336'; if(s.includes('diploma')) return '#9C27B0'; if(s.includes('certificate')) return '#00BCD4'; return '#757575'; };
-  const getStudyModeColor = (m="") => { const s=m.toLowerCase(); if(s.includes('online')) return '#2196F3'; if(s.includes('campus')) return '#FFC107'; if(s.includes('hybrid')||s.includes('blended')) return '#9C27B0'; if(s.includes('distance')) return '#00BCD4'; return '#757575'; };
-  const getSourceLabel = (u) => { if(u._source==='bachelors') return "Bachelor's"; if(u._source==='masters') return "Master's"; return null; };
+  const getInitials     = (n = "") => n.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase() || "UN";
+  const getUserInitials = () => basicInfo.fullName ? basicInfo.fullName.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() : (userEmail?.[0]?.toUpperCase() || 'U');
+  const getLevelColor = (l = "") => {
+    const s = l.toLowerCase();
+    if (s.includes('bachelor') || s.includes('undergraduate')) return '#4CAF50';
+    if (s.includes('master') || s.includes('graduate') || s.includes('mba')) return '#FF9800';
+    if (s.includes('phd') || s.includes('doctorate')) return '#F44336';
+    if (s.includes('diploma'))     return '#9C27B0';
+    if (s.includes('certificate')) return '#00BCD4';
+    return '#757575';
+  };
+  const getStudyModeColor = (m = "") => {
+    const s = m.toLowerCase();
+    if (s.includes('online'))  return '#2196F3';
+    if (s.includes('campus'))  return '#FFC107';
+    if (s.includes('hybrid') || s.includes('blended')) return '#9C27B0';
+    if (s.includes('distance')) return '#00BCD4';
+    return '#757575';
+  };
+  const getSourceLabel = (u) => {
+    if (u._source === 'bachelors') return "Bachelor's";
+    if (u._source === 'masters')   return "Master's";
+    return null;
+  };
 
   const availableSegments = SEGMENTS_BY_QUALIFICATION[education.qualification] || [];
 
@@ -1250,7 +1481,7 @@ const UserProfile = () => {
       {toast.show && (
         <div className={`toast-notification toast-${toast.type}`}>
           <span className="toast-icon">
-            {toast.type==='success' ? <Icons.Success /> : toast.type==='warning' ? <Icons.Warning /> : <Icons.Error />}
+            {toast.type === 'success' ? <Icons.Success /> : toast.type === 'warning' ? <Icons.Warning /> : <Icons.Error />}
           </span>
           <span>{toast.message}</span>
         </div>
@@ -1285,11 +1516,11 @@ const UserProfile = () => {
           <div className="error-message">
             <span className="error-icon"><Icons.Warning /></span>
             <span>{error}</span>
-            {error.includes("connect") && (
+            {error.includes("connect") || error.includes("load") ? (
               <button className="retry-btn ripple-effect" onClick={fetchUniversities}>
                 <Icons.Retry /> Retry
               </button>
-            )}
+            ) : null}
           </div>
         )}
 
@@ -1297,10 +1528,10 @@ const UserProfile = () => {
         {resultBanner && (
           <div className={`urp-result-banner urp-banner-${resultBanner.type}`}>
             <span className="urp-banner-icon">
-              {resultBanner.type==='approved' ? <Icons.Success /> : <Icons.Error />}
+              {resultBanner.type === 'approved' ? <Icons.Success /> : <Icons.Error />}
             </span>
             <div className="urp-banner-text">
-              {resultBanner.type==='approved'
+              {resultBanner.type === 'approved'
                 ? <><strong>"{resultBanner.uniName}"</strong> was approved and is now in your list! Search for it below.</>
                 : <><strong>"{resultBanner.uniName}"</strong> request was not approved.{resultBanner.reason ? ` Reason: ${resultBanner.reason}` : ''} Please select from available universities.</>
               }
@@ -1351,16 +1582,19 @@ const UserProfile = () => {
 
             <div className="form-fields">
               {[
-                { label: "Full Name",             key: "fullName",     type: "text", placeholder: "John Doe" },
-                { label: "Mobile Number",         key: "mobile",       type: "tel",  placeholder: "+1 9876543210" },
-                { label: "Date of Birth",         key: "dob",          type: "date", placeholder: "" },
-                { label: "Nationality",           key: "nationality",  type: "text", placeholder: "e.g., Indian, American" },
-                { label: "Country of Residence",  key: "residence",    type: "text", placeholder: "e.g., India, USA, UK" },
+                { label: "Full Name",            key: "fullName",    type: "text", placeholder: "John Doe" },
+                { label: "Mobile Number",        key: "mobile",      type: "tel",  placeholder: "+1 9876543210" },
+                { label: "Date of Birth",        key: "dob",         type: "date", placeholder: "" },
+                { label: "Nationality",          key: "nationality", type: "text", placeholder: "e.g., Indian, American" },
+                { label: "Country of Residence", key: "residence",   type: "text", placeholder: "e.g., India, USA, UK" },
               ].map(({ label, key, type, placeholder }) => (
                 <div className="form-row" key={key}>
                   <label>{label}</label>
                   <input type={type} placeholder={placeholder} value={basicInfo[key]}
-                    onChange={e => { setBasicInfo({ ...basicInfo, [key]: e.target.value }); if (validationErrors[key]) setValidationErrors({ ...validationErrors, [key]: null }); }}
+                    onChange={e => {
+                      setBasicInfo({ ...basicInfo, [key]: e.target.value });
+                      if (validationErrors[key]) setValidationErrors({ ...validationErrors, [key]: null });
+                    }}
                     className={validationErrors[key] ? 'error' : ''} />
                   {validationErrors[key] && <span className="field-error">{validationErrors[key]}</span>}
                 </div>
@@ -1372,7 +1606,12 @@ const UserProfile = () => {
               </div>
               <div className="form-row">
                 <label>Gender</label>
-                <select value={basicInfo.gender} onChange={e => { setBasicInfo({ ...basicInfo, gender: e.target.value }); if (validationErrors.gender) setValidationErrors({ ...validationErrors, gender: null }); }} className={validationErrors.gender ? 'error' : ''}>
+                <select value={basicInfo.gender}
+                  onChange={e => {
+                    setBasicInfo({ ...basicInfo, gender: e.target.value });
+                    if (validationErrors.gender) setValidationErrors({ ...validationErrors, gender: null });
+                  }}
+                  className={validationErrors.gender ? 'error' : ''}>
                   <option value="">Select Gender</option>
                   <option>Male</option><option>Female</option><option>Other</option><option>Prefer not to say</option>
                 </select>
@@ -1409,10 +1648,17 @@ const UserProfile = () => {
                     What field are you interested in?
                     <span style={{ fontWeight: 400, color: '#94a3b8', marginLeft: 6, fontSize: 11 }}>(optional)</span>
                   </label>
-                  <div className={`segment-dropdown-trigger${segmentDropdownOpen ? ' open' : ''}${selectedSegment ? ' has-value' : ''}`} onClick={() => setSegmentDropdownOpen(o => !o)}>
-                    <span className={`segment-trigger-text${selectedSegment ? '' : ' placeholder'}`}>{selectedSegment ? selectedSegment.name : 'Select your field of interest…'}</span>
+                  <div
+                    className={`segment-dropdown-trigger${segmentDropdownOpen ? ' open' : ''}${selectedSegment ? ' has-value' : ''}`}
+                    onClick={() => setSegmentDropdownOpen(o => !o)}
+                  >
+                    <span className={`segment-trigger-text${selectedSegment ? '' : ' placeholder'}`}>
+                      {selectedSegment ? selectedSegment.name : 'Select your field of interest…'}
+                    </span>
                     {selectedSegment && (
-                      <button className="segment-trigger-clear" onClick={e => { e.stopPropagation(); setSelectedSegment(null); setSegmentDropdownOpen(false); }} title="Clear">
+                      <button className="segment-trigger-clear"
+                        onClick={e => { e.stopPropagation(); setSelectedSegment(null); setSegmentDropdownOpen(false); }}
+                        title="Clear">
                         <Icons.Close />
                       </button>
                     )}
@@ -1421,7 +1667,9 @@ const UserProfile = () => {
                   {segmentDropdownOpen && (
                     <div className="segment-dropdown-menu">
                       {availableSegments.map(seg => (
-                        <div key={seg.id} className={`segment-dropdown-item${selectedSegment?.id === seg.id ? ' selected' : ''}`} onClick={() => handleSegmentSelect(seg)}>
+                        <div key={seg.id}
+                          className={`segment-dropdown-item${selectedSegment?.id === seg.id ? ' selected' : ''}`}
+                          onClick={() => handleSegmentSelect(seg)}>
                           <span className="segment-item-name">{seg.name}</span>
                           {selectedSegment?.id === seg.id && <span className="segment-item-check"><Icons.Check /></span>}
                         </div>
@@ -1439,7 +1687,10 @@ const UserProfile = () => {
               <div className="form-row">
                 <label>University / School Name</label>
                 <input type="text" placeholder="Enter institution name" value={education.institution}
-                  onChange={e => { setEducation({ ...education, institution: e.target.value }); if (validationErrors.institution) setValidationErrors({ ...validationErrors, institution: null }); }}
+                  onChange={e => {
+                    setEducation({ ...education, institution: e.target.value });
+                    if (validationErrors.institution) setValidationErrors({ ...validationErrors, institution: null });
+                  }}
                   className={validationErrors.institution ? 'error' : ''} />
                 {validationErrors.institution && <span className="field-error">{validationErrors.institution}</span>}
               </div>
@@ -1448,10 +1699,22 @@ const UserProfile = () => {
                 <label>Field of Study</label>
                 {fieldOptions.length > 0 ? (
                   <div className="fos-dropdown-wrapper" ref={fosDropdownRef}>
-                    <div className={`fos-dropdown-trigger${fosDropdownOpen ? ' open' : ''}${education.field ? ' has-value' : ''}`} onClick={() => setFosDropdownOpen(o => !o)}>
-                      <span className={`fos-trigger-text${education.field ? '' : ' placeholder'}`}>{education.field || 'Select your field of study…'}</span>
+                    <div
+                      className={`fos-dropdown-trigger${fosDropdownOpen ? ' open' : ''}${education.field ? ' has-value' : ''}`}
+                      onClick={() => setFosDropdownOpen(o => !o)}
+                    >
+                      <span className={`fos-trigger-text${education.field ? '' : ' placeholder'}`}>
+                        {education.field || 'Select your field of study…'}
+                      </span>
                       {education.field && (
-                        <button className="fos-trigger-clear" onClick={e => { e.stopPropagation(); setEducation({ ...education, field: '' }); if (validationErrors.field) setValidationErrors({ ...validationErrors, field: null }); setFosDropdownOpen(false); }} title="Clear">
+                        <button className="fos-trigger-clear"
+                          onClick={e => {
+                            e.stopPropagation();
+                            setEducation({ ...education, field: '' });
+                            if (validationErrors.field) setValidationErrors({ ...validationErrors, field: null });
+                            setFosDropdownOpen(false);
+                          }}
+                          title="Clear">
                           <Icons.Close />
                         </button>
                       )}
@@ -1460,7 +1723,13 @@ const UserProfile = () => {
                     {fosDropdownOpen && (
                       <div className="fos-dropdown-menu">
                         {fieldOptions.map((opt, i) => (
-                          <div key={i} className={`fos-dropdown-item${education.field === opt ? ' selected' : ''}`} onClick={() => { setEducation({ ...education, field: opt }); if (validationErrors.field) setValidationErrors({ ...validationErrors, field: null }); setFosDropdownOpen(false); }}>
+                          <div key={i}
+                            className={`fos-dropdown-item${education.field === opt ? ' selected' : ''}`}
+                            onClick={() => {
+                              setEducation({ ...education, field: opt });
+                              if (validationErrors.field) setValidationErrors({ ...validationErrors, field: null });
+                              setFosDropdownOpen(false);
+                            }}>
                             <span className="fos-item-name">{opt}</span>
                             {education.field === opt && <span className="fos-item-check"><Icons.Check /></span>}
                           </div>
@@ -1471,7 +1740,10 @@ const UserProfile = () => {
                   </div>
                 ) : (
                   <input type="text" placeholder="e.g., Computer Science, Business" value={education.field}
-                    onChange={e => { setEducation({ ...education, field: e.target.value }); if (validationErrors.field) setValidationErrors({ ...validationErrors, field: null }); }}
+                    onChange={e => {
+                      setEducation({ ...education, field: e.target.value });
+                      if (validationErrors.field) setValidationErrors({ ...validationErrors, field: null });
+                    }}
                     className={validationErrors.field ? 'error' : ''} />
                 )}
                 {!fieldOptions.length && validationErrors.field && <span className="field-error">{validationErrors.field}</span>}
@@ -1480,7 +1752,10 @@ const UserProfile = () => {
               <div className="form-row">
                 <label>Year of Passing</label>
                 <input type="text" placeholder="e.g., 2023" value={education.year}
-                  onChange={e => { setEducation({ ...education, year: e.target.value }); if (validationErrors.year) setValidationErrors({ ...validationErrors, year: null }); }}
+                  onChange={e => {
+                    setEducation({ ...education, year: e.target.value });
+                    if (validationErrors.year) setValidationErrors({ ...validationErrors, year: null });
+                  }}
                   className={validationErrors.year ? 'error' : ''} />
                 {validationErrors.year && <span className="field-error">{validationErrors.year}</span>}
               </div>
@@ -1488,7 +1763,10 @@ const UserProfile = () => {
               <div className="form-row">
                 <label>Percentage / CGPA</label>
                 <input type="text" placeholder="e.g., 85% or 8.5" value={education.cgpa}
-                  onChange={e => { setEducation({ ...education, cgpa: e.target.value }); if (validationErrors.cgpa) setValidationErrors({ ...validationErrors, cgpa: null }); }}
+                  onChange={e => {
+                    setEducation({ ...education, cgpa: e.target.value });
+                    if (validationErrors.cgpa) setValidationErrors({ ...validationErrors, cgpa: null });
+                  }}
                   className={validationErrors.cgpa ? 'error' : ''} />
                 {validationErrors.cgpa && <span className="field-error">{validationErrors.cgpa}</span>}
               </div>
@@ -1540,7 +1818,10 @@ const UserProfile = () => {
             <div className="university-controls">
               <div className="search-wrapper">
                 <span className="search-icon"><Icons.Search /></span>
-                <input type="text" className="search-input" placeholder="Search universities by name, city…" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                <input type="text" className="search-input"
+                  placeholder="Search universities by name, city…"
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)} />
                 {searchTerm && (
                   <button className="search-clear-btn" onClick={() => { setSearchTerm(""); setApprovedUniName(null); }}>
                     <Icons.Close />
@@ -1564,17 +1845,21 @@ const UserProfile = () => {
               <>
                 <div className="universities-grid">
                   {filteredUniversities.length > 0 ? filteredUniversities.map(uni => {
-                    const key = getUniKey(uni);
-                    const isSel = selectedUniversities.some(u => getUniKey(u) === key);
+                    const key       = getUniKey(uni);
+                    const isSel     = selectedUniversities.some(u => getUniKey(u) === key);
                     const progCount = uni.programs?.length || 0;
-                    const isDirect = progCount === 0;
-                    const selUni = selectedUniversities.find(u => getUniKey(u) === key);
+                    const isDirect  = progCount === 0;
+                    const selUni    = selectedUniversities.find(u => getUniKey(u) === key);
                     const selCourses = selUni?.selectedCourses || [];
-                    const srcLabel = getSourceLabel(uni);
+                    const srcLabel  = getSourceLabel(uni);
                     const isHighlighted = approvedUniName && (uni.INSTNM || '').toLowerCase().includes(approvedUniName.toLowerCase());
+
                     return (
                       <div key={key || Math.random()} className="university-card-wrapper">
-                        <div className={`university-card ${isSel ? 'selected' : ''} ${isDirect ? 'direct-apply' : ''} ${isHighlighted ? 'urp-highlight-card' : ''}`} onClick={() => toggleUniversity(uni)}>
+                        <div
+                          className={`university-card ${isSel ? 'selected' : ''} ${isDirect ? 'direct-apply' : ''} ${isHighlighted ? 'urp-highlight-card' : ''}`}
+                          onClick={() => toggleUniversity(uni)}
+                        >
                           {isHighlighted && (
                             <div className="urp-new-badge"><Icons.Sparkle /> Just Added</div>
                           )}
@@ -1593,19 +1878,24 @@ const UserProfile = () => {
                           </div>
                           {isSel && <span className="check-mark"><Icons.Check /></span>}
                         </div>
+
                         {isSel && !isDirect && selCourses.length > 0 && (
                           <div className="selected-courses-preview">
                             <span className="preview-label">Selected:</span>
                             <div className="preview-courses">
-                              {selCourses.map((c, i) => <span key={i} className="preview-course-tag">{c.title || c.name || c.program_name || 'Course'}</span>)}
+                              {selCourses.map((c, i) => (
+                                <span key={i} className="preview-course-tag">{c.title || c.name || c.program_name || 'Course'}</span>
+                              ))}
                             </div>
-                            <button className="edit-courses-btn ripple-effect" onClick={e => { e.stopPropagation(); openCourseModal(uni); }}>Edit</button>
+                            <button className="edit-courses-btn ripple-effect"
+                              onClick={e => { e.stopPropagation(); openCourseModal(uni); }}>Edit</button>
                           </div>
                         )}
                         {isSel && !isDirect && selCourses.length === 0 && (
                           <div className="selected-courses-preview warning">
                             <span className="preview-label"><Icons.Warning /> No courses selected</span>
-                            <button className="edit-courses-btn ripple-effect" onClick={e => { e.stopPropagation(); openCourseModal(uni); }}>Select</button>
+                            <button className="edit-courses-btn ripple-effect"
+                              onClick={e => { e.stopPropagation(); openCourseModal(uni); }}>Select</button>
                           </div>
                         )}
                       </div>
@@ -1681,7 +1971,7 @@ const UserProfile = () => {
               <h3>Selected Universities ({selectedUniversities.length})</h3>
               <div className="universities-list">
                 {selectedUniversities.length > 0 ? selectedUniversities.map((uni, i) => {
-                  const courses = uni.selectedCourses || [];
+                  const courses  = uni.selectedCourses || [];
                   const isDirect = isDirectApplyUniversity(uni) || (!courses.length && !(uni.programs?.length));
                   const city    = uni.CITY   || uni.city  || uni.location?.city  || '';
                   const state   = uni.STABBR || uni.state || uni.location?.state || '';
@@ -1765,7 +2055,8 @@ const UserProfile = () => {
               <div className="course-search-section">
                 <div className="course-search-wrapper">
                   <span className="search-icon"><Icons.Search /></span>
-                  <input type="text" className="course-search-input" placeholder="Search courses…" value={courseSearchTerm} onChange={e => setCourseSearchTerm(e.target.value)} />
+                  <input type="text" className="course-search-input" placeholder="Search courses…"
+                    value={courseSearchTerm} onChange={e => setCourseSearchTerm(e.target.value)} />
                   {courseSearchTerm && <button className="clear-search-btn" onClick={() => setCourseSearchTerm("")}><Icons.Close /></button>}
                 </div>
               </div>
@@ -1831,14 +2122,20 @@ const UserProfile = () => {
                   <div className="form-row">
                     <label>University Name <span className="required-star">*</span></label>
                     <input type="text" placeholder="e.g., Harvard University" value={requestForm.universityName}
-                      onChange={e => { setRequestForm({ ...requestForm, universityName: e.target.value }); if (requestFormErrors.universityName) setRequestFormErrors({ ...requestFormErrors, universityName: null }); }}
+                      onChange={e => {
+                        setRequestForm({ ...requestForm, universityName: e.target.value });
+                        if (requestFormErrors.universityName) setRequestFormErrors({ ...requestFormErrors, universityName: null });
+                      }}
                       className={requestFormErrors.universityName ? 'error' : ''} />
                     {requestFormErrors.universityName && <span className="field-error">{requestFormErrors.universityName}</span>}
                   </div>
                   <div className="form-row">
                     <label>Country <span className="required-star">*</span></label>
                     <input type="text" placeholder="e.g., United States" value={requestForm.country}
-                      onChange={e => { setRequestForm({ ...requestForm, country: e.target.value }); if (requestFormErrors.country) setRequestFormErrors({ ...requestFormErrors, country: null }); }}
+                      onChange={e => {
+                        setRequestForm({ ...requestForm, country: e.target.value });
+                        if (requestFormErrors.country) setRequestFormErrors({ ...requestFormErrors, country: null });
+                      }}
                       className={requestFormErrors.country ? 'error' : ''} />
                     {requestFormErrors.country && <span className="field-error">{requestFormErrors.country}</span>}
                   </div>
@@ -1854,7 +2151,8 @@ const UserProfile = () => {
                       {reqCourses.length < 5 && (
                         <input ref={reqCourseInputRef} type="text" className="course-tag-input"
                           placeholder={reqCourses.length === 0 ? "Type a course and press Enter…" : "Add another…"}
-                          value={reqCourseInput} onChange={e => setReqCourseInput(e.target.value)}
+                          value={reqCourseInput}
+                          onChange={e => setReqCourseInput(e.target.value)}
                           onKeyDown={handleReqCourseKey}
                           onFocus={() => { if (reqSuggestions.length) setShowReqSuggestions(true); }}
                           onBlur={() => setTimeout(() => setShowReqSuggestions(false), 150)}

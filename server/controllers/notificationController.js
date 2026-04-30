@@ -371,3 +371,22 @@ export const markUserNotificationRead = async (req, res) => {
     return res.status(500).json({ success: false, message: "Failed to mark notification as read" });
   }
 };
+// Add this function alongside createNewUserNotification
+export const createProcessAdminRequestNotification = async (processAdmin) => {
+  try {
+    if (!processAdmin?._id) return false;
+    await Notification.create({
+      type:       "PROCESS_ADMIN_REQUEST",
+      title:      "New Process Admin Request",
+      message:    `${processAdmin.firstName} ${processAdmin.lastName} (${processAdmin.email}) has registered and is awaiting approval.`,
+      userId:     processAdmin._id,
+      targetRole: "admin",
+      isRead:     false,
+    });
+    console.log(`🔔 Process admin request notification created for: ${processAdmin.email}`);
+    return true;
+  } catch (error) {
+    console.error("❌ Process admin notification failed:", error);
+    return false;
+  }
+};

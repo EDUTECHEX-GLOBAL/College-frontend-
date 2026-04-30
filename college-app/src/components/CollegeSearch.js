@@ -7,7 +7,6 @@ import "./CollegeSearch.css";
 const API_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
 // ─── Shared master-level detector (same as Courses.js) ───────────────────────
-// Checks a string for any master/postgrad keyword
 const MASTER_KEYWORDS = [
   'master', 'msc', 'm.sc', 'mba', 'mtech', 'm.tech', 'ms ',
   'postgraduate', 'post-graduate', 'pg diploma', 'pgdiploma',
@@ -20,17 +19,24 @@ const containsMasterKeyword = (str = '') => {
   return MASTER_KEYWORDS.some(kw => lower.includes(kw));
 };
 
+// ─── Resolve university ID from ALL possible field names ─────────────────────
+const resolveUniversityId = (college) =>
+  college.UNITID   ||
+  college.unitid   ||
+  college.UNIT_ID  ||
+  college.unit_id  ||
+  college._id      ||
+  college.id       ||
+  null;
+
 // Detect master university using ALL available signals
 const detectIsMasterUniversity = (college) => {
-  // 1. Explicit flags from backend
   if (college.universityType === 'master') return true;
-  if (college.type === 'master')           return true;
-  if (college.isMaster === true)           return true;
+  if (college.type           === 'master') return true;
+  if (college.isMaster       === true)     return true;
 
-  // 2. University name itself contains master keyword
   if (containsMasterKeyword(college.INSTNM || '')) return true;
 
-  // 3. Any selected course name or level is master-level
   if (college.selectedCourses?.length > 0) {
     const hasMasterCourse = college.selectedCourses.some(c =>
       containsMasterKeyword(c.title        || '') ||
@@ -41,7 +47,6 @@ const detectIsMasterUniversity = (college) => {
     if (hasMasterCourse) return true;
   }
 
-  // 4. Programs array — if ANY program is master-level
   if (college.programs?.length > 0) {
     const hasMasterProgram = college.programs.some(p =>
       containsMasterKeyword(p.title || '') ||
@@ -51,22 +56,21 @@ const detectIsMasterUniversity = (college) => {
     if (hasMasterProgram) return true;
   }
 
-  // 5. metadata tag
   if (containsMasterKeyword(college.metadata?.type || '')) return true;
 
   return false;
 };
 
 const CollegeSearch = ({ onCollegeUpdate }) => {
-  const [query, setQuery] = useState("");
-  const [colleges, setColleges] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [userColleges, setUserColleges] = useState(new Set());
-  const [addingCollege, setAddingCollege] = useState(null);
-  const [removingCollege, setRemovingCollege] = useState(null);
-  const [studentProfile, setStudentProfile] = useState(null);
-  const [profileLoaded, setProfileLoaded] = useState(false);
-  const [profileMessage, setProfileMessage] = useState("");
+  const [query,                setQuery]                = useState("");
+  const [colleges,             setColleges]             = useState([]);
+  const [loading,              setLoading]              = useState(false);
+  const [userColleges,         setUserColleges]         = useState(new Set());
+  const [addingCollege,        setAddingCollege]        = useState(null);
+  const [removingCollege,      setRemovingCollege]      = useState(null);
+  const [studentProfile,       setStudentProfile]       = useState(null);
+  const [profileLoaded,        setProfileLoaded]        = useState(false);
+  const [profileMessage,       setProfileMessage]       = useState("");
   const [selectedCoursesSummary, setSelectedCoursesSummary] = useState([]);
   const navigate = useNavigate();
 
@@ -83,7 +87,6 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
   const isKansasUniversity = (college) =>
     college.INSTNM && college.INSTNM.toLowerCase().includes('kansas');
 
-  // Use the improved detector everywhere
   const isMasterUniversity = (college) => detectIsMasterUniversity(college);
 
   // ─── Fetch colleges ───────────────────────────────────────────────────────
@@ -106,7 +109,21 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
       });
 
       if (response.data.success) {
-        setColleges(response.data.colleges || []);
+        const fetchedColleges = response.data.colleges || [];
+
+        // ── DEBUG: log first college to confirm ID field name ──
+        if (fetchedColleges.length > 0) {
+          const sample = fetchedColleges[0];
+          console.log('🔍 College ID fields:', {
+            UNITID:  sample.UNITID,
+            unitid:  sample.unitid,
+            _id:     sample._id,
+            id:      sample.id,
+            INSTNM:  sample.INSTNM,
+          });
+        }
+
+        setColleges(fetchedColleges);
         if (response.data.selectedCoursesSummary) {
           setSelectedCoursesSummary(response.data.selectedCoursesSummary);
         }
@@ -149,7 +166,7 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.data.success) {
-        const collegeIds = response.data.colleges.map(college => college.collegeId);
+        const collegeIds = response.data.colleges.map(c => c.collegeId);
         setUserColleges(new Set(collegeIds));
       }
     } catch (error) {
@@ -165,7 +182,7 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
   useEffect(() => {
     if (!profileLoaded) return;
     fetchColleges(query);
-  }, [profileLoaded]);
+  }, [profileLoaded]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!profileLoaded) return;
@@ -175,11 +192,21 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
 
   // ─── Add college ──────────────────────────────────────────────────────────
   const handleAddCollege = async (college) => {
+    // ── FIX: resolve ID from all possible field names ──
+    const collegeId = resolveUniversityId(college);
+
+    if (!collegeId) {
+      console.error('❌ Cannot add college — no ID found:', college);
+      alert('This university is missing an ID. Please contact support.');
+      return;
+    }
+
     try {
-      setAddingCollege(college.UNITID);
+      setAddingCollege(collegeId);
       const token = localStorage.getItem('token');
       if (!token) { alert("Please sign in"); return; }
 
+      // Clear existing colleges first
       try {
         const existing = await axios.get(`${API_URL}/api/colleges`, {
           headers: { Authorization: `Bearer ${token}` }
@@ -197,11 +224,15 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
 
       await axios.post(
         `${API_URL}/api/colleges`,
-        { collegeId: college.UNITID, collegeData: college },
+        {
+          collegeId,
+          // Always ensure UNITID is set on the stored college data
+          collegeData: { ...college, UNITID: collegeId }
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      setUserColleges(new Set([college.UNITID]));
+      setUserColleges(new Set([collegeId]));
       triggerCollegeUpdate();
     } catch (error) {
       console.error("Error:", error);
@@ -213,79 +244,96 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
 
   // ─── Remove college ───────────────────────────────────────────────────────
   const handleRemoveCollege = async (college) => {
+    // ── FIX: resolve ID from all possible field names ──
+    const collegeId = resolveUniversityId(college);
+
+    if (!collegeId) {
+      console.error('❌ Cannot remove college — no ID found:', college);
+      alert('This university is missing an ID. Please contact support.');
+      return;
+    }
+
     try {
-      setRemovingCollege(college.UNITID);
+      setRemovingCollege(collegeId);
       const token = localStorage.getItem('token');
       if (!token) { alert("Please sign in to manage your college list"); return; }
 
       setUserColleges(prev => {
         const newSet = new Set(prev);
-        newSet.delete(college.UNITID);
+        newSet.delete(collegeId);
         return newSet;
       });
 
-      await axios.delete(`${API_URL}/api/colleges/${college.UNITID}`, {
+      await axios.delete(`${API_URL}/api/colleges/${collegeId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       triggerCollegeUpdate();
     } catch (error) {
       console.error("Error removing college:", error);
       alert("Failed to remove college from your list");
-      setUserColleges(prev => new Set([...prev, college.UNITID]));
+      setUserColleges(prev => new Set([...prev, collegeId]));
     } finally {
       setRemovingCollege(null);
     }
   };
 
-  // ─── Navigate based on university type ───────────────────────────────────
+  // ─── Navigate to courses page ─────────────────────────────────────────────
   const handleCollegeClick = (college) => {
     const isFirstYear = window.location.pathname.includes('/firstyear/');
-    const basePath = isFirstYear ? '/firstyear/dashboard' : '/transfer/dashboard';
+    const basePath    = isFirstYear ? '/firstyear/dashboard' : '/transfer/dashboard';
 
-    if (isKansasUniversity(college)) {
-      localStorage.setItem('kansasUniversity', JSON.stringify(college));
-      localStorage.setItem('currentUniversity', JSON.stringify(college));
-      navigate(`${basePath}/application/overview`, { state: { university: college } });
+    // ── FIX: resolve ID from all possible field names ──
+    const universityId = resolveUniversityId(college);
+
+    if (!universityId) {
+      console.error('❌ Cannot navigate to courses — university has no ID:', college);
+      alert('This university is missing an ID. Please contact support.');
       return;
     }
 
+    // Kansas — go straight to application overview
+    if (isKansasUniversity(college)) {
+      const kansasCollege = { ...college, UNITID: universityId };
+      localStorage.setItem('kansasUniversity',  JSON.stringify(kansasCollege));
+      localStorage.setItem('currentUniversity', JSON.stringify(kansasCollege));
+      navigate(`${basePath}/application/overview`, {
+        state: { university: kansasCollege }
+      });
+      return;
+    }
+
+    // Build enhanced college object — always with a normalised UNITID
     const enhancedCollege = {
       ...college,
+      UNITID:   universityId,          // ← ensures Courses.js always finds the ID
       programs: college.programs || [],
       fullData: college.fullData || college
     };
-    localStorage.setItem(`university_${college.UNITID}`, JSON.stringify(enhancedCollege));
-    localStorage.setItem('currentUniversity', JSON.stringify(enhancedCollege));
+
+    // Persist to localStorage so Courses.js can load without navigation state
+    localStorage.setItem(`university_${universityId}`, JSON.stringify(enhancedCollege));
+    localStorage.setItem('currentUniversity',          JSON.stringify(enhancedCollege));
 
     if (enhancedCollege.selectedCourses?.length > 0) {
       localStorage.setItem(
-        `university_courses_${college.UNITID}`,
+        `university_courses_${universityId}`,
         JSON.stringify(enhancedCollege.selectedCourses)
       );
     }
 
-    if (isMasterUniversity(college)) {
-      navigate(`${basePath}/courses/${college.UNITID}`, {
-        state: {
-          university: enhancedCollege,
-          selectedCourses: enhancedCollege.selectedCourses || [],
-          isMasterUniversity: true
-        }
-      });
-    } else {
-      navigate(`${basePath}/courses/${college.UNITID}`, {
-        state: {
-          university: enhancedCollege,
-          selectedCourses: enhancedCollege.selectedCourses || [],
-          isMasterUniversity: false
-        }
-      });
-    }
+    // Navigate — both master and non-master use the same navigate call
+    navigate(`${basePath}/courses/${universityId}`, {
+      state: {
+        university:         enhancedCollege,
+        selectedCourses:    enhancedCollege.selectedCourses || [],
+        isMasterUniversity: isMasterUniversity(college)
+      }
+    });
   };
 
-  const handleViewCourses       = (college) => handleCollegeClick(college);
-  const handleDirectAdd         = async (college) => await handleAddCollege(college);
-  const handleAddGusUniversity  = async (college) => {
+  const handleViewCourses      = (college) => handleCollegeClick(college);
+  const handleDirectAdd        = async (college) => await handleAddCollege(college);
+  const handleAddGusUniversity = async (college) => {
     const shouldAdd = window.confirm(
       `Would you like to add ${college.INSTNM} to My Colleges?\n\n` +
       `If you want to select a specific program first, click "View Courses" instead.`
@@ -293,7 +341,7 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
     if (shouldAdd) await handleAddCollege(college);
   };
 
-  // SVG Icon Components
+  // ─── SVG Icons ────────────────────────────────────────────────────────────
   const PlusIcon = () => (
     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
       <path d="M12 5v14M5 12h14" />
@@ -346,16 +394,19 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
       ) : (
         <div className="collegesearch-list">
           {colleges.map((college) => {
-            const isAdded    = userColleges.has(college.UNITID);
-            const isAdding   = addingCollege  === college.UNITID;
-            const isRemoving = removingCollege === college.UNITID;
+            // ── FIX: use resolveUniversityId for all per-card comparisons ──
+            const resolvedId = resolveUniversityId(college);
+
+            const isAdded    = userColleges.has(resolvedId);
+            const isAdding   = addingCollege   === resolvedId;
+            const isRemoving = removingCollege  === resolvedId;
             const isKansas   = isKansasUniversity(college);
             const isMaster   = isMasterUniversity(college);
             const initials   = getInitials(college.INSTNM);
             const programCount = college.programs?.length || college.programCount || 0;
 
             return (
-              <div key={college.UNITID || college._id} className="collegesearch-list-item">
+              <div key={resolvedId || college.INSTNM} className="collegesearch-list-item">
 
                 {/* Info */}
                 <div className="collegesearch-info">
@@ -424,7 +475,7 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
                   </div>
                 </div>
 
-                {/* Action Buttons */}
+                {/* ── Action Buttons ── */}
 
                 {/* Kansas */}
                 {isKansas && (
@@ -443,7 +494,9 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
                         title="Add to My Colleges"
                       >
                         <span className="collegesearch-add-icon">
-                          {isAdding ? <span className="collegesearch-adding-spinner"></span> : <PlusIcon />}
+                          {isAdding
+                            ? <span className="collegesearch-adding-spinner"></span>
+                            : <PlusIcon />}
                         </span>
                         {isAdding ? 'Adding...' : 'Add'}
                       </button>
@@ -455,7 +508,9 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
                         title="Remove from My Colleges"
                       >
                         <span className="collegesearch-remove-icon">
-                          {isRemoving ? <span className="collegesearch-removing-spinner"></span> : <XIcon />}
+                          {isRemoving
+                            ? <span className="collegesearch-removing-spinner"></span>
+                            : <XIcon />}
                         </span>
                       </button>
                     )}
@@ -479,7 +534,9 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
                         title="Remove from My Colleges"
                       >
                         <span className="collegesearch-remove-icon">
-                          {isRemoving ? <span className="collegesearch-removing-spinner"></span> : <XIcon />}
+                          {isRemoving
+                            ? <span className="collegesearch-removing-spinner"></span>
+                            : <XIcon />}
                         </span>
                       </button>
                     </div>
@@ -498,7 +555,9 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
                         title="Add university without selecting program"
                       >
                         <span className="collegesearch-add-icon">
-                          {isAdding ? <span className="collegesearch-adding-spinner"></span> : <PlusIcon />}
+                          {isAdding
+                            ? <span className="collegesearch-adding-spinner"></span>
+                            : <PlusIcon />}
                         </span>
                       </button>
                     </div>
@@ -522,7 +581,9 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
                         title="Remove from My Colleges"
                       >
                         <span className="collegesearch-remove-icon">
-                          {isRemoving ? <span className="collegesearch-removing-spinner"></span> : <XIcon />}
+                          {isRemoving
+                            ? <span className="collegesearch-removing-spinner"></span>
+                            : <XIcon />}
                         </span>
                       </button>
                     </div>
@@ -541,7 +602,9 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
                         title="Add university without selecting program"
                       >
                         <span className="collegesearch-add-icon">
-                          {isAdding ? <span className="collegesearch-adding-spinner"></span> : <PlusIcon />}
+                          {isAdding
+                            ? <span className="collegesearch-adding-spinner"></span>
+                            : <PlusIcon />}
                         </span>
                       </button>
                     </div>

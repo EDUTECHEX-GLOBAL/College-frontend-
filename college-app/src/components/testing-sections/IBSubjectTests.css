@@ -33,8 +33,8 @@
   --ib-radius:           12px;
   --ib-radius-full:      9999px;
 
-  --ib-font:             'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --ib-font-display:     'Sora', 'Plus Jakarta Sans', Georgia, serif;
+  --ib-font:             'Poppins', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --ib-font-display:     'Sora', 'Poppins', Georgia, serif;
   --ib-transition:       150ms ease;
 }
 

@@ -33,8 +33,8 @@
   --ielts-radius:           12px;
   --ielts-radius-full:      9999px;
 
-  --ielts-font:             'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --ielts-font-display:     'Sora', 'Plus Jakarta Sans', Georgia, serif;
+  --ielts-font:             'Poppins', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --ielts-font-display:     'Sora', 'Poppins', Georgia, serif;
   --ielts-transition:       150ms ease;
 }
 

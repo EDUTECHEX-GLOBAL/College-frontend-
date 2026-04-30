@@ -16,7 +16,7 @@
   font-weight: 800;
   color: #0f172a;
   margin: 0 0 10px 0;
-  font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Sora', 'Poppins', sans-serif;
 }
 
 .additional-subtitle {
@@ -78,7 +78,7 @@
   font-weight: 700;
   color: #0f172a;
   margin: 0 0 16px 0;
-  font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Sora', 'Poppins', sans-serif;
 }
 
 .circumstances-list {
@@ -159,7 +159,7 @@
   min-height: 36px;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 .clear-answer-btn:hover { background: #ef4444; color: white; transform: translateY(-1px); }
 
@@ -210,7 +210,7 @@
   font-size: 15px;
   line-height: 1.6;
   resize: vertical;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Poppins', sans-serif;
   background: white;
   box-sizing: border-box;
   min-height: 180px;
@@ -248,7 +248,7 @@
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   color: #334155;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 .toolbar-btn:hover { background: #f0f9ff; border-color: #0891b2; color: #0891b2; }
 
@@ -281,7 +281,7 @@
   min-height: 44px;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 .save-draft-btn:hover { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-1px); }
 
@@ -298,7 +298,7 @@
   min-height: 44px;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Poppins', sans-serif;
   box-shadow: 0 2px 8px rgba(8, 145, 178, 0.2);
 }
 .continue-btn:hover { background: linear-gradient(135deg, #0e7490, #0891b2); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3); }

@@ -4,19 +4,13 @@ import { createUniversityRequestNotification } from './notificationController.js
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SHARED HELPER: fix Map → plain object for selectedCourses at ALL levels
-// Used by every GET handler so the frontend always receives plain arrays/objects.
-// Fixes both:
-//   • top-level selectedCourses (stored as Map in the schema)
-//   • nested selectedCourses inside each selectedUniversities entry
 // ─────────────────────────────────────────────────────────────────────────────
 export const fixCoursesOnProfile = (profileObj) => {
-  // Top-level selectedCourses Map → plain object
   if (profileObj.selectedCourses) {
     try { profileObj.selectedCourses = Object.fromEntries(profileObj.selectedCourses); }
     catch { profileObj.selectedCourses = {}; }
   }
 
-  // Nested selectedCourses inside each university entry
   if (Array.isArray(profileObj.selectedUniversities)) {
     profileObj.selectedUniversities = profileObj.selectedUniversities.map((uni) => {
       if (uni.selectedCourses && !Array.isArray(uni.selectedCourses)) {
@@ -202,6 +196,11 @@ export const createOrUpdateProfile = async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // GET PROFILE  (student — own profile)
 // GET /api/user/profile
+//
+// FIX: Previously returned HTTP 404 when no profile existed yet, which the
+//      frontend treated as an error. Now returns HTTP 200 with
+//      { success: false, exists: false } so new users land on the profile
+//      creation form instead of seeing an error banner.
 // ─────────────────────────────────────────────────────────────────────────────
 export const getProfile = async (req, res) => {
   try {
@@ -210,8 +209,19 @@ export const getProfile = async (req, res) => {
       return res.status(401).json({ success: false, message: 'User ID not found in token' });
 
     const profile = await UserProfile.findOne({ userId });
-    if (!profile)
-      return res.status(404).json({ success: false, message: 'Profile not found' });
+
+    // ── New user: no profile yet — return a clean "not found" at HTTP 200
+    //    so the frontend can simply check res.data.exists === false and show
+    //    the creation form rather than treating it as a network error.
+    if (!profile) {
+      console.log(`ℹ️  No profile found for user: ${userId} (new user)`);
+      return res.status(200).json({
+        success: false,
+        exists:  false,
+        message: 'Profile not found — please complete your profile',
+        data:    null,
+      });
+    }
 
     const profileObj = fixCoursesOnProfile(profile.toObject());
 
@@ -220,7 +230,7 @@ export const getProfile = async (req, res) => {
     console.log(`🎯 Segment: ${profileObj.selectedSegment?.name || 'None'}`);
     console.log(`📖 Field: ${profileObj.education?.field || 'None'}`);
 
-    return res.status(200).json({ success: true, data: profileObj });
+    return res.status(200).json({ success: true, exists: true, data: profileObj });
   } catch (error) {
     console.error('❌ Error in getProfile:', error);
     return res.status(500).json({ success: false, message: 'Failed to fetch profile', error: error.message });
@@ -319,8 +329,6 @@ export const deleteProfile = async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // GET ALL PROFILES  (admin)
 // GET /api/user/admin/profiles
-// FIX: was running find() then countDocuments() sequentially —
-//      now uses Promise.all() so both queries run in parallel.
 // ─────────────────────────────────────────────────────────────────────────────
 export const getAllProfiles = async (req, res) => {
   try {
@@ -336,7 +344,6 @@ export const getAllProfiles = async (req, res) => {
       query.eligibleProgram = req.query.program;
     }
 
-    // FIX: parallel queries instead of sequential
     const [profiles, total] = await Promise.all([
       UserProfile.find(query).skip(skip).limit(limit).sort({ createdAt: -1 }).lean(),
       UserProfile.countDocuments(query),
@@ -402,8 +409,6 @@ export const getProfilesBySegment = async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // GET PROFILE STATS  (admin)
 // GET /api/user/admin/stats
-// FIX: was running 6 aggregations sequentially — now all run in parallel
-//      via Promise.all(), matching the pattern in studentanalyticscontroller.
 // ─────────────────────────────────────────────────────────────────────────────
 export const getProfileStats = async (req, res) => {
   try {
@@ -531,7 +536,6 @@ export const getProfileWithCourses = async (req, res) => {
 
     const profileObj = fixCoursesOnProfile(profile.toObject());
 
-    // Build a convenience map: { universityName: [course, course] }
     const coursesByUniversity = {};
     for (const uni of profileObj.selectedUniversities || []) {
       if (uni.selectedCourses?.length > 0)
@@ -549,12 +553,8 @@ export const getProfileWithCourses = async (req, res) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// GET PROFILE FOR ANALYTICS  (admin — called by studentanalyticscontroller)
+// GET PROFILE FOR ANALYTICS  (admin)
 // GET /api/user/analytics/profile/:userId
-// Returns a single clean profile by userId string for the analytics detail view.
-// The studentanalyticscontroller can call this directly or use its own DB query;
-// this endpoint exists so the admin frontend can also fetch a clean profile
-// without going through the analytics route.
 // ─────────────────────────────────────────────────────────────────────────────
 export const getProfileForAnalytics = async (req, res) => {
   try {
@@ -622,5 +622,5 @@ export default {
   getProfileWithCourses,
   getProfileForAnalytics,
   submitUniversityRequest,
-  fixCoursesOnProfile,      // exported so studentanalyticscontroller can import it
+  fixCoursesOnProfile,
 };

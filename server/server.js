@@ -54,11 +54,13 @@ import masterPreviewRoutes from './routes/masterpreviewroutes.js'; // ← MUST b
 import masterPersonalRoutes from "./routes/masterpersonalroutes.js";
 import masterContactRoutes  from "./routes/mastercontactroutes.js";
 import masterAcademicRoutes from "./routes/masteracademicroutes.js";
-import masterCourseRoutes   from './routes/mastercourseroutes.js ';
+import masterCourseRoutes   from './routes/mastercourseroutes.js';
 import masterTestRoutes     from './routes/mastertestroutes.js';
 import masterDocumentRoutes from "./routes/masterdocumentroutes.js";
 import masterOverviewRoutes from "./routes/masteroverviewroutes.js";
 import masterUniversityRoutes from './routes/masterUniversityRoutes.js';
+import processAdminDashboardRoutes from "./routes/processAdminDashboardRoutes.js";
+import adminDashboardRoutes from "./routes/admindashboardroutes.js";
 dotenv.config();
 
 // =====================================================
@@ -263,9 +265,13 @@ app.get('/api/routes', (req, res) => {
 // =====================================================
 // ADMIN ROUTES
 // =====================================================
+// ✅ PUBLIC / NON-AUTH ROUTES FIRST
+app.use("/api/admin", adminUniversityRoutes);
+app.use("/api/admin/dashboard", adminDashboardRoutes);
+// 🔒 PROTECTED ADMIN ROUTES
 app.use("/api/admin", adminRoutes);
 app.use("/api/admin/users", adminUserRoutes);
-app.use("/api/admin", adminUniversityRoutes);
+
 console.log('✅ Admin routes mounted at /api/admin');
 
 // =====================================================
@@ -278,6 +284,7 @@ console.log('✅ User routes mounted at /api/user');
 // PROCESS ADMIN ROUTES
 // =====================================================
 app.use("/api/process-admin/documents", processAdminDocumentRoutes);
+app.use("/api/process-admin/dashboard", processAdminDashboardRoutes);
 app.use("/api/process-admin", processAdminRoutes);
 console.log('✅ Process admin routes mounted');
 
@@ -454,9 +461,12 @@ app.use((err, req, res, next) => {
 // START SERVER
 // =====================================================
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, async () => {
-  const s3Connected = await checkS3Connection();
-  console.log(`
+
+if (process.env.NODE_ENV !== "test") {
+  app.listen(PORT, async () => {
+    const s3Connected = await checkS3Connection();
+
+    console.log(`
 ╔════════════════════════════════════════════╗
 ║          🚀 EduTechEx API Server           ║
 ╚════════════════════════════════════════════╝
@@ -480,15 +490,17 @@ app.listen(PORT, async () => {
 
 🔧 Debug:
    ✅ GET /api/test
-   ✅ GET /api/routes      ← shows ALL routes
+   ✅ GET /api/routes
    ✅ GET /api/debug/s3
    ✅ GET /api/health
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 `);
-  if (!s3Connected) {
-    console.error(`⚠️  WARNING: S3 NOT connected! File uploads will FAIL. Check your .env.`);
-  }
-});
+
+    if (!s3Connected) {
+      console.error(`⚠️  WARNING: S3 NOT connected! File uploads will FAIL. Check your .env.`);
+    }
+  });
+}
 
 export default app;

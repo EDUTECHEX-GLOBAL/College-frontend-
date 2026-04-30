@@ -34,8 +34,8 @@
   --act-radius:           12px;
   --act-radius-full:      9999px;
 
-  --act-font:             'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --act-font-display:     'Sora', 'Plus Jakarta Sans', Georgia, serif;
+  --act-font:             'Poppins', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --act-font-display:     'Sora', 'Poppins', Georgia, serif;
   --act-transition:       150ms ease;
 }
 

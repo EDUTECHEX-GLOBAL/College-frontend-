@@ -33,8 +33,8 @@
   --pte-radius:           12px;
   --pte-radius-full:      9999px;
 
-  --pte-font:             'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --pte-font-display:     'Sora', 'Plus Jakarta Sans', Georgia, serif;
+  --pte-font:             'Poppins', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --pte-font-display:     'Sora', 'Poppins', Georgia, serif;
   --pte-transition:       150ms ease;
 }
 
