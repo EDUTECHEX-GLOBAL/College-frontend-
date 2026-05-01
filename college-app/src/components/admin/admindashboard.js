@@ -389,37 +389,55 @@ const AdminDashboard = () => {
   );
 
   // ── Registration chart ────────────────────────────────────────────────────
-  const renderRegistrationChart = () => {
-    const data   = trend.data   || [];
-    const labels = trend.labels || [];
-    const maxVal = Math.max(...data, 1);
+  // ── Replace the existing renderRegistrationChart function in admindashboard.jsx ──
 
-    return (
-      <div className="chart-section">
-        <div className="chart-header">
-          <h3>Registrations over time</h3>
-          <span className="chart-sub">last 7 days</span>
-        </div>
-        <div className="chart-container">
-          <div className="chart-bars">
-            {data.length === 0
-              ? <div className="chart-empty">No registration data yet</div>
-              : data.map((value, i) => (
+const renderRegistrationChart = () => {
+  const data   = trend.data   || [];
+  const labels = trend.labels || [];
+
+  // Use a minimum display height so zero bars are still visible
+  // Max value drives proportional heights; fallback to 1 to avoid ÷0
+  const maxVal = Math.max(...data, 1);
+
+  // How tall (%) a bar should be: at least 3% so it's always visible
+  const barHeight = (value) =>
+    value === 0 ? 3 : Math.max(3, Math.round((value / maxVal) * 100));
+
+  return (
+    <div className="chart-section">
+      <div className="chart-header">
+        <h3>Registrations over time</h3>
+        <span className="chart-sub">last 7 days</span>
+      </div>
+
+      <div className="chart-container">
+        <div className="chart-bars">
+          {data.length === 0 ? (
+            <div className="chart-empty">No registration data yet</div>
+          ) : (
+            data.map((value, i) => {
+              const isZero = value === 0;
+              return (
                 <div className="chart-bar-container" key={i}>
                   <div
-                    className="chart-bar"
-                    style={{ height: `${(value / maxVal) * 100}%` }}
+                    className={`chart-bar${isZero ? " bar-zero" : ""}`}
+                    style={{ height: `${barHeight(value)}%` }}
                   >
-                    <div className="bar-value">{value}</div>
+                    {/* Value label always rendered; styled grey for zero */}
+                    <div className={`bar-value${isZero ? " bar-value-zero" : ""}`}>
+                      {value}
+                    </div>
                   </div>
                   <div className="chart-label">{labels[i] || i + 1}</div>
                 </div>
-              ))}
-          </div>
+              );
+            })
+          )}
         </div>
       </div>
-    );
-  };
+    </div>
+  );
+};
 
   // ── Profile funnel ────────────────────────────────────────────────────────
   const renderProfileFunnel = () => {

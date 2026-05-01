@@ -10,6 +10,7 @@ import {
   // Process admin routes
   getOverviewApplications,
   getOverviewApplicationById,
+  upsertSelectedCourse,   // ← add this
   getOverviewStats,
   // Regular admin route
   getDashboardStats,
@@ -73,6 +74,7 @@ router.get(
  * @access  Private/Admin
  */
 router.get('/admin/stats', authMiddleware, getDashboardStats);
+router.post('/upsert-course', authMiddleware, upsertSelectedCourse);
 
 /* ═══════════════════════════════════════════════════════
    STUDENT ROUTES  (all require authMiddleware)

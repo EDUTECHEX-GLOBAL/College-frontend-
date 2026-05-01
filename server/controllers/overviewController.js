@@ -501,3 +501,54 @@ const _updateStepCompletion = (overview, section) => {
     overview.steps[stepIdx].completedAt = Date.now();
   }
 };
+// Add this to overviewController.js
+export const upsertSelectedCourse = async (req, res) => {
+  try {
+    const userId    = req.user.userId;
+    const courseData = req.body;
+
+    if (!courseData.programId || !courseData.programName || !courseData.universityName) {
+      return res.status(400).json({
+        success: false,
+        message: 'programId, programName and universityName are required.',
+      });
+    }
+
+    // Find existing overview for this user (most recent)
+    let overview = await Overview.findOne({ userId }).sort({ createdAt: -1 });
+
+    if (overview) {
+      // ✅ UPDATE existing — don't create a duplicate
+      overview.selectedCourse = { ...courseData, selectedAt: Date.now() };
+      await overview.save();
+
+      return res.status(200).json({
+        success:  true,
+        message:  'Course updated on existing application.',
+        overview,
+      });
+    } else {
+      // ✅ CREATE only if no overview exists at all
+      const newOverview = new Overview({
+        userId,
+        selectedCourse: { ...courseData, selectedAt: Date.now() },
+        applicationStatus: 'not_started',
+        progress: { percentage: 0, currentStep: 'personal' },
+      });
+      await newOverview.save();
+
+      return res.status(201).json({
+        success:  true,
+        message:  'New application created.',
+        overview: newOverview,
+      });
+    }
+  } catch (error) {
+    console.error('❌ Error in upsertSelectedCourse:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to upsert course.',
+      error:   error.message,
+    });
+  }
+};

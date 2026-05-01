@@ -220,26 +220,44 @@ CONVERSATION CONTEXT:
     });
     
     // 🔥 RATE LIMIT FIX: Use Haiku for general (faster), Sonnet for university
-    const modelId = context === 'university' ? 
-      "anthropic.claude-3-5-sonnet-20240620-v1:0" : 
-      "anthropic.claude-3-haiku-20240307-v1:0";
-    
-    console.log(`🤖 Using: ${modelId} [${context}] | History: ${recentHistory.length} messages`);
-    
-    const params = {
-      modelId,
-      contentType: "application/json",
-      accept: "application/json",
-      body: JSON.stringify({
-        anthropic_version: "bedrock-2023-05-31",
-        max_tokens: context === 'university' ? 5000 : 2500,
-        temperature: context === 'university' ? 0.0 : 0.1,
-        top_p: 1.0,
-        system: systemPrompt, // ✅ CORRECT: System prompt goes in system field
-        messages: messages // ✅ CORRECT: Only user/assistant messages here
-      })
-    };
-    
+   // ✅ Use Mistral model
+const modelId = context === 'university'
+  ? "mistral.mixtral-8x7b-instruct-v0:1"
+  : "mistral.mistral-7b-instruct-v0:2";
+
+console.log(`🤖 Using: ${modelId} [${context}] | History: ${recentHistory.length} messages`);
+
+// 🔧 Convert messages → prompt
+const buildPrompt = (systemPrompt, historyMessages, userMessage) => {
+  let prompt = `<s>[INST] ${systemPrompt}\n\n`;
+
+  historyMessages.slice(-5).forEach(msg => {
+    if (msg.role === 'user') {
+      prompt += `User: ${msg.content}\n`;
+    } else {
+      prompt += `Assistant: ${msg.content}\n`;
+    }
+  });
+
+  prompt += `User: ${userMessage} [/INST]`;
+
+  return prompt;
+};
+
+const prompt = buildPrompt(systemPrompt, historyMessages, cleanMessage);
+
+// ✅ Mistral request format
+const params = {
+  modelId,
+  contentType: "application/json",
+  accept: "application/json",
+  body: JSON.stringify({
+    prompt: prompt,
+    max_tokens: context === 'university' ? 3000 : 1500,
+    temperature: context === 'university' ? 0.2 : 0.3,
+    top_p: 0.9
+  })
+};
     console.log('📤 Sending to Bedrock...');
     
     const response = await retryWithBackoff(async () => {
@@ -254,7 +272,7 @@ CONVERSATION CONTEXT:
     const bodyContent = new TextDecoder().decode(response.body);
     const responseBody = JSON.parse(bodyContent);
     
-    let content = responseBody.content?.[0]?.text?.trim();
+   let content = responseBody.outputs?.[0]?.text?.trim();
     
     if (!content) {
       throw new Error('No content in response');

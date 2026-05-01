@@ -3,47 +3,48 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import './Overview.css';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
+// ✅ FIX 1: Added fallback so API_URL is never undefined
+const API_URL =
+  process.env.REACT_APP_API_BASE_URL ||
+  process.env.REACT_APP_API_BASE_URL ||
+  'http://localhost:5000';
 
 /* ═══════════════════════════════════════════
    MAIN COMPONENT
 ═══════════════════════════════════════════ */
 const Overview = ({ formData, selectedCourseData, onStartApplication, onChangeCourse }) => {
-  const navigate  = useNavigate();
-  const location  = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const [overviewData,         setOverviewData]         = useState(null);
-  const [courseDetails,        setCourseDetails]        = useState(null);
-  const [isLoading,            setIsLoading]            = useState(false);
-  const [error,                setError]                = useState('');
-  const [expandedCategories,   setExpandedCategories]   = useState({
+  const [overviewData,        setOverviewData]        = useState(null);
+  const [courseDetails,       setCourseDetails]       = useState(null);
+  const [isLoading,           setIsLoading]           = useState(false);
+  const [error,               setError]               = useState('');
+  const [expandedCategories,  setExpandedCategories]  = useState({
     personalInfo: true, addressInfo: true,
     educationInfo: true, languageInfo: true, additionalDocs: true,
   });
-  const [showDocumentPreview,  setShowDocumentPreview]  = useState(false);
-  const [selectedDocument,     setSelectedDocument]     = useState(null);
-  const [mobileMenuOpen,       setMobileMenuOpen]       = useState(false);
-  const [activeFilter,         setActiveFilter]         = useState('all');
-  const [isMobile,             setIsMobile]             = useState(window.innerWidth <= 768);
+  const [showDocumentPreview, setShowDocumentPreview] = useState(false);
+  const [selectedDocument,    setSelectedDocument]    = useState(null);
+  const [mobileMenuOpen,      setMobileMenuOpen]      = useState(false);
+  const [activeFilter,        setActiveFilter]        = useState('all');
+  const [isMobile,            setIsMobile]            = useState(window.innerWidth <= 768);
+  const [selectedUniversity,  setSelectedUniversity]  = useState(null);
 
-  const [selectedUniversity, setSelectedUniversity] = useState(null);
+  // ─── Load university from navigation state or localStorage ───
+  useEffect(() => {
+    if (location.state?.university) {
+      setSelectedUniversity(location.state.university);
+      localStorage.setItem('currentUniversity', JSON.stringify(location.state.university));
+      return;
+    }
+    const savedUniversity = localStorage.getItem('currentUniversity');
+    if (savedUniversity) {
+      try { setSelectedUniversity(JSON.parse(savedUniversity)); } catch {}
+    }
+  }, [location.state]);
 
-useEffect(() => {
-  // 1. Try from navigation state
-  if (location.state?.university) {
-    setSelectedUniversity(location.state.university);
-    localStorage.setItem('currentUniversity', JSON.stringify(location.state.university));
-    return;
-  }
-
-  // 2. Fallback from localStorage
-  const savedUniversity = localStorage.getItem('currentUniversity');
-  if (savedUniversity) {
-    try {
-      setSelectedUniversity(JSON.parse(savedUniversity));
-    } catch {}
-  }
-}, [location.state]);
+  // ─── Resize handler ───
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -53,10 +54,11 @@ useEffect(() => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // ─── Static data ───
   const documentRequirements = {
     personalInfo: [
-      { id: 'passport',  name: 'Passport Copy',         required: true,  format: 'PDF/JPEG', maxSize: '5MB', description: 'Clear copy of your valid passport' },
-      { id: 'photo',     name: 'Passport-sized Photo',  required: true,  format: 'JPEG/PNG', maxSize: '5MB', description: 'Recent passport-sized photograph' },
+      { id: 'passport',  name: 'Passport Copy',        required: true,  format: 'PDF/JPEG', maxSize: '5MB', description: 'Clear copy of your valid passport' },
+      { id: 'photo',     name: 'Passport-sized Photo', required: true,  format: 'JPEG/PNG', maxSize: '5MB', description: 'Recent passport-sized photograph' },
     ],
     addressInfo: [
       { id: 'proofOfAddress', name: 'Proof of Address', required: false, format: 'PDF/JPEG', maxSize: '5MB', description: 'Utility bill or bank statement (last 3 months)' },
@@ -71,128 +73,165 @@ useEffect(() => {
       { id: 'germanCertificate',  name: 'German Language Certificate',  required: false, format: 'PDF/JPEG', maxSize: '5MB', description: 'Goethe-Zertifikat, TestDaF, or equivalent' },
     ],
     additionalDocs: [
-      { id: 'cv',             name: 'Curriculum Vitae',              required: true,  format: 'PDF/JPEG', maxSize: '5MB', description: 'Signed and dated CV' },
-      { id: 'portfolio',      name: 'Portfolio',                     required: true,  format: 'PDF/JPEG', maxSize: '5MB', description: 'Portfolio if required by program' },
-      { id: 'noc',            name: 'No Objection Certificate',      required: false, format: 'PDF/JPEG', maxSize: '5MB', description: 'If applicable' },
-      { id: 'deRegistration', name: 'De-registration Certificate',   required: false, format: 'PDF/JPEG', maxSize: '5MB', description: 'If previously enrolled' },
-      { id: 'additional',     name: 'Additional Supporting Documents',required: false, format: 'PDF/JPEG', maxSize: '5MB', description: 'Any other relevant documents' },
+      { id: 'cv',             name: 'Curriculum Vitae',               required: true,  format: 'PDF/JPEG', maxSize: '5MB', description: 'Signed and dated CV' },
+      { id: 'portfolio',      name: 'Portfolio',                      required: true,  format: 'PDF/JPEG', maxSize: '5MB', description: 'Portfolio if required by program' },
+      { id: 'noc',            name: 'No Objection Certificate',       required: false, format: 'PDF/JPEG', maxSize: '5MB', description: 'If applicable' },
+      { id: 'deRegistration', name: 'De-registration Certificate',    required: false, format: 'PDF/JPEG', maxSize: '5MB', description: 'If previously enrolled' },
+      { id: 'additional',     name: 'Additional Supporting Documents', required: false, format: 'PDF/JPEG', maxSize: '5MB', description: 'Any other relevant documents' },
     ],
   };
 
   const applicationSections = [
-    { id: 'studyProgramme',        name: 'Study Programme',         route: '/firstyear/dashboard/application/programme',              description: 'Select your desired programme' },
-    { id: 'applicantDetails',      name: 'Applicant Details',       route: '/firstyear/dashboard/application/personal',               description: 'Personal information and contact details' },
-    { id: 'address',               name: 'Address',                 route: '/firstyear/dashboard/application/address',                description: 'Current residential address' },
-    { id: 'entranceQualification', name: 'Entrance Qualification',  route: '/firstyear/dashboard/application/entrance-qualification', description: 'Higher education entrance qualification' },
-    { id: 'higherEducation',       name: 'Higher Education',        route: '/firstyear/dashboard/application/firsteducation',         description: 'Previous higher education details' },
-    { id: 'applicationDocuments',  name: 'Application Documents',   route: '/firstyear/dashboard/application/documents',              description: 'Upload required documents' },
-    { id: 'specialNeeds',          name: 'Special Needs',           route: '/firstyear/dashboard/application/special-needs',          description: 'Students with special needs information' },
-    { id: 'declaration',           name: 'Declaration',             route: '/firstyear/dashboard/application/declaration',            description: 'Declaration and data protection' },
-    { id: 'reviewSubmit',          name: 'Review & Submit',         route: '/firstyear/dashboard/application/review',                 description: 'Review and submit your application' },
+    { id: 'studyProgramme',        name: 'Study Programme',        route: '/firstyear/dashboard/application/programme',              description: 'Select your desired programme' },
+    { id: 'applicantDetails',      name: 'Applicant Details',      route: '/firstyear/dashboard/application/personal',               description: 'Personal information and contact details' },
+    { id: 'address',               name: 'Address',                route: '/firstyear/dashboard/application/address',                description: 'Current residential address' },
+    { id: 'entranceQualification', name: 'Entrance Qualification', route: '/firstyear/dashboard/application/entrance-qualification', description: 'Higher education entrance qualification' },
+    { id: 'higherEducation',       name: 'Higher Education',       route: '/firstyear/dashboard/application/firsteducation',         description: 'Previous higher education details' },
+    { id: 'applicationDocuments',  name: 'Application Documents',  route: '/firstyear/dashboard/application/documents',              description: 'Upload required documents' },
+    { id: 'specialNeeds',          name: 'Special Needs',          route: '/firstyear/dashboard/application/special-needs',          description: 'Students with special needs information' },
+    { id: 'declaration',           name: 'Declaration',            route: '/firstyear/dashboard/application/declaration',            description: 'Declaration and data protection' },
+    { id: 'reviewSubmit',          name: 'Review & Submit',        route: '/firstyear/dashboard/application/review',                 description: 'Review and submit your application' },
   ];
 
   const getAuthToken = () => localStorage.getItem('token');
 
-  const fetchOverviewData = useCallback(async () => {
+  // ─────────────────────────────────────────────────────────────
+  // ✅ FIX 2: saveCourseToBackend now calls the CORRECT route
+  //    POST /api/overview  →  createOverview controller
+  //    Required fields: programId, programName, universityName
+  // ─────────────────────────────────────────────────────────────
+ const saveCourseToBackend = useCallback(async (courseData, token) => {
   try {
-    setIsLoading(true);
-    setError('');
+    const payload = {
+      programId:      courseData.programId      || `direct-${Date.now()}`,
+      programName:    courseData.programName    || 'Direct University Application',
+      universityId:   courseData.universityId   || 'direct',
+      universityName: courseData.universityName || 'Unknown University',
+      universityLogo: courseData.universityLogo || '',
+      campus:         courseData.campus         || '',
+      country:        courseData.country        || '',
+      intakeMonth:    courseData.intakeMonth     || 'September',
+      intakeYear:     courseData.intakeYear      || new Date().getFullYear(),
+      selectedAt:     Date.now(),
+    };
 
-    const token = getAuthToken();
-    if (!token) {
-      setIsLoading(false);
-      return;
-    }
-
-    const response = await axios.get(`${API_URL}/api/overview`, {
+    // ✅ Use upsert route — never creates duplicates
+    await axios.post(`${API_URL}/api/overview/upsert-course`, payload, {
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
     });
 
-    if (response.data.success && response.data.overview) {
-      setOverviewData(response.data.overview);
+    console.log('✅ Course upserted:', payload.universityName, '—', payload.programName);
+  } catch (err) {
+    console.error('⚠️ Failed to upsert course:', err?.response?.data || err.message);
+  }
+}, []);;
 
-      /* ======================================================
-         ✅ PRIORITY FIX (VERY IMPORTANT)
-         ====================================================== */
+  // ─────────────────────────────────────────────────────────────
+  // ✅ FIX 3: fetchOverviewData — selectedUniversity case now
+  //    SAVES to backend before returning so admin sees the name
+  // ─────────────────────────────────────────────────────────────
+  const fetchOverviewData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError('');
 
-      // 🥇 1. If university selected (Kansas case) → ALWAYS USE THIS
+      const token = getAuthToken();
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
+
+      const response = await axios.get(`${API_URL}/api/overview`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.data.success && response.data.overview) {
+        setOverviewData(response.data.overview);
+
+        // ── Priority 1: Direct university selection (e.g. Kansas) ──
+        if (selectedUniversity) {
+          const universityDetails = {
+            programId:      `direct-${selectedUniversity.UNITID || Date.now()}`,
+            programName:    'Direct University Application',
+            universityId:   String(selectedUniversity.UNITID   || 'direct'),
+            universityName: selectedUniversity.INSTNM           || 'Unknown University',
+          };
+          setCourseDetails(universityDetails);
+
+          // ✅ KEY FIX: Save so admin dashboard shows the university name
+          // Only save if the backend doesn't already have this university stored
+          const backendCourse = response.data.overview.selectedCourse;
+          const alreadySaved  =
+            backendCourse?.universityName === universityDetails.universityName &&
+            backendCourse?.programName    === universityDetails.programName;
+
+          if (!alreadySaved) {
+            await saveCourseToBackend(universityDetails, token);
+          }
+          return;
+        }
+
+        // ── Priority 2: Backend already has a saved course ──
+        if (response.data.overview.selectedCourse) {
+          setCourseDetails(response.data.overview.selectedCourse);
+          return;
+        }
+
+        // ── Priority 3: Course passed as a prop ──
+        if (selectedCourseData) {
+          setCourseDetails(selectedCourseData);
+          await saveCourseToBackend(selectedCourseData, token);
+          return;
+        }
+
+        // ── Priority 4: localStorage fallback ──
+        const saved = localStorage.getItem('currentSelectedCourse');
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            setCourseDetails(parsed);
+            await saveCourseToBackend(parsed, token);
+          } catch (err) {
+            console.error('Error parsing saved course:', err);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('❌ fetchOverviewData error:', err);
+      setError('Failed to load overview data');
+
+      // ── Error fallbacks (same priority, no backend save) ──
       if (selectedUniversity) {
         setCourseDetails({
-          programName: 'Direct University Application',
-          universityName: selectedUniversity.INSTNM,
+          programId:      `direct-${selectedUniversity.UNITID || Date.now()}`,
+          programName:    'Direct University Application',
+          universityId:   String(selectedUniversity.UNITID   || 'direct'),
+          universityName: selectedUniversity.INSTNM           || 'Unknown University',
         });
         return;
       }
-
-      // 🥈 2. Backend saved course
-      if (response.data.overview.selectedCourse) {
-        setCourseDetails(response.data.overview.selectedCourse);
-        return;
-      }
-
-      // 🥉 3. From selectedCourseData (props)
       if (selectedCourseData) {
         setCourseDetails(selectedCourseData);
-        await saveCourseToBackend(selectedCourseData, token);
         return;
       }
-
-      // 🏁 4. LocalStorage fallback
       const saved = localStorage.getItem('currentSelectedCourse');
       if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          setCourseDetails(parsed);
-          await saveCourseToBackend(parsed, token);
-        } catch (err) {
-          console.error('Error parsing saved course:', err);
-        }
+        try { setCourseDetails(JSON.parse(saved)); } catch {}
       }
+    } finally {
+      setIsLoading(false);
     }
-  } catch (err) {
-    setError('Failed to load overview data');
-
-    /* ======================================================
-       ✅ ERROR FALLBACK (same priority)
-       ====================================================== */
-
-    if (selectedUniversity) {
-      setCourseDetails({
-        programName: 'Direct University Application',
-        universityName: selectedUniversity.INSTNM,
-      });
-      return;
-    }
-
-    if (selectedCourseData) {
-      setCourseDetails(selectedCourseData);
-      return;
-    }
-
-    const saved = localStorage.getItem('currentSelectedCourse');
-    if (saved) {
-      try {
-        setCourseDetails(JSON.parse(saved));
-      } catch {}
-    }
-  } finally {
-    setIsLoading(false);
-  }
-}, [selectedCourseData, selectedUniversity]); // ✅ IMPORTANT
-
-  const saveCourseToBackend = async (courseData, token) => {
-    try {
-      await axios.post(`${API_URL}/api/overview/course`, courseData, {
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      });
-    } catch {}
-  };
+  }, [selectedCourseData, selectedUniversity, saveCourseToBackend]);
 
   useEffect(() => { fetchOverviewData(); }, [fetchOverviewData]);
 
+  // ─── Computed state ───
   const getCompletedSections = useCallback(() => ({
     studyProgramme:        !!courseDetails,
     applicantDetails:      !!(formData?.firstName && formData?.lastName && formData?.email && formData?.dateOfBirth && formData?.nationality),
@@ -206,8 +245,8 @@ useEffect(() => {
   }), [formData, courseDetails]);
 
   const calculateProgress = useCallback(() => {
-    const completed   = getCompletedSections();
-    const total       = applicationSections.length;
+    const completed      = getCompletedSections();
+    const total          = applicationSections.length;
     const completedCount = Object.values(completed).filter(Boolean).length;
     return {
       percentage: Math.round((completedCount / total) * 100),
@@ -215,15 +254,16 @@ useEffect(() => {
     };
   }, [getCompletedSections, applicationSections.length]);
 
-  const handleSectionClick    = (route) => { navigate(route); if (isMobile) setMobileMenuOpen(false); };
-  const handleStartApplication = () => { onStartApplication ? onStartApplication() : navigate('/firstyear/dashboard/application/programme'); };
-  const handleChangeCourse    = () => {
+  // ─── Handlers ───
+  const handleSectionClick      = (route) => { navigate(route); if (isMobile) setMobileMenuOpen(false); };
+  const handleStartApplication  = () => { onStartApplication ? onStartApplication() : navigate('/firstyear/dashboard/application/programme'); };
+  const handleChangeCourse      = () => {
     if (onChangeCourse) { onChangeCourse(); }
     else if (window.confirm('Do you want to select a different course?')) navigate('/firstyear/dashboard/college-search');
   };
   const handleContinueApplication = () => {
-    const completed   = getCompletedSections();
-    const next        = applicationSections.find(s => !completed[s.id]);
+    const completed = getCompletedSections();
+    const next      = applicationSections.find(s => !completed[s.id]);
     navigate(next ? next.route : '/firstyear/dashboard/application/review');
   };
 
@@ -231,9 +271,13 @@ useEffect(() => {
 
   const handleDocumentPreview = (docId) => {
     if (formData?.documents?.[docId]) {
-      const allDocs = Object.values(documentRequirements).flat();
-      const docMeta = allDocs.find(d => d.id === docId);
-      setSelectedDocument({ id: docId, name: docMeta?.name || docId, url: formData.documents[docId].url || URL.createObjectURL(formData.documents[docId]) });
+      const allDocs  = Object.values(documentRequirements).flat();
+      const docMeta  = allDocs.find(d => d.id === docId);
+      setSelectedDocument({
+        id:   docId,
+        name: docMeta?.name || docId,
+        url:  formData.documents[docId].url || URL.createObjectURL(formData.documents[docId]),
+      });
       setShowDocumentPreview(true);
     }
   };
@@ -241,9 +285,9 @@ useEffect(() => {
 
   const getDocumentStatus = (sectionId) => {
     if (!formData?.documents) return { uploaded: 0, total: 0, documents: [] };
-    const docs = documentRequirements[sectionId] || [];
-    let uploaded = 0;
-    const list = docs.map(doc => {
+    const docs     = documentRequirements[sectionId] || [];
+    let   uploaded = 0;
+    const list     = docs.map(doc => {
       if (formData.documents[doc.id]) { uploaded++; return { ...doc, uploaded: true, file: formData.documents[doc.id] }; }
       return { ...doc, uploaded: false };
     });
@@ -251,7 +295,7 @@ useEffect(() => {
   };
 
   const formatFileSize = (bytes) => {
-    if (!bytes) return '';
+    if (!bytes)              return '';
     if (bytes < 1024)        return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
@@ -304,22 +348,9 @@ useEffect(() => {
   const completedSections = getCompletedSections();
   const filteredSections  = getFilteredSections();
   const allDocuments      = Object.values(documentRequirements).flat();
-  const uploadedDocumentCount = allDocuments.filter(doc => formData?.documents?.[doc.id]).length;
-  const requiredDocumentCount = allDocuments.filter(doc => doc.required).length;
+  const uploadedDocumentCount         = allDocuments.filter(doc => formData?.documents?.[doc.id]).length;
+  const requiredDocumentCount         = allDocuments.filter(doc => doc.required).length;
   const uploadedRequiredDocumentCount = allDocuments.filter(doc => doc.required && formData?.documents?.[doc.id]).length;
-  const nextSection = applicationSections.find(section => !completedSections[section.id]);
-  const filterOptions = [
-    { id: 'all', label: 'All' },
-    { id: 'pending', label: 'Pending' },
-    { id: 'completed', label: 'Completed' },
-  ];
-  const heroStats = [
-    { label: 'Sections complete', value: `${progress.completed}/${progress.total}`, tone: 'mint' },
-    { label: 'Required docs ready', value: `${uploadedRequiredDocumentCount}/${requiredDocumentCount}`, tone: 'sky' },
-    { label: 'Files uploaded', value: `${uploadedDocumentCount}/${allDocuments.length}`, tone: 'peach' },
-  ];
-  const courseProgramName = courseDetails.programName || 'your selected programme';
-  const courseUniversityName = courseDetails.universityName || 'your chosen university';
 
   /* ── Document category block ── */
   const DocCategory = ({ id, title }) => {
@@ -424,31 +455,19 @@ useEffect(() => {
           <div className="overview-sections-list">
             {filteredSections.map(section => {
               const isCompleted = completedSections[section.id];
-
-              const progressValue = isCompleted
-                ? 100
-                : (() => {
-                    switch (section.id) {
-                      case 'studyProgramme':
-                        return courseDetails ? 100 : 20;
-                      case 'applicantDetails':
-                        return formData?.firstName ? 40 : 10;
-                      case 'address':
-                        return formData?.city ? 50 : 10;
-                      case 'entranceQualification':
-                        return formData?.eqheType ? 60 : 10;
-                      case 'higherEducation':
-                        return formData?.hasHigherEducation ? 70 : 10;
-                      case 'applicationDocuments':
-                        return formData?.documents ? 50 : 10;
-                      case 'specialNeeds':
-                        return formData?.hasSpecialNeeds !== undefined ? 80 : 10;
-                      case 'declaration':
-                        return formData?.privacyConsent ? 90 : 10;
-                      default:
-                        return 15;
-                    }
-                  })();
+              const progressValue = isCompleted ? 100 : (() => {
+                switch (section.id) {
+                  case 'studyProgramme':        return courseDetails ? 100 : 20;
+                  case 'applicantDetails':      return formData?.firstName ? 40 : 10;
+                  case 'address':               return formData?.city ? 50 : 10;
+                  case 'entranceQualification': return formData?.eqheType ? 60 : 10;
+                  case 'higherEducation':       return formData?.hasHigherEducation ? 70 : 10;
+                  case 'applicationDocuments':  return formData?.documents ? 50 : 10;
+                  case 'specialNeeds':          return formData?.hasSpecialNeeds !== undefined ? 80 : 10;
+                  case 'declaration':           return formData?.privacyConsent ? 90 : 10;
+                  default:                      return 15;
+                }
+              })();
 
               return (
                 <div
@@ -459,28 +478,19 @@ useEffect(() => {
                   <div className="overview-section-content">
                     <div className="overview-section-name">{section.name}</div>
                     <div className="overview-section-description">{section.description}</div>
-
                     {!isCompleted && (
                       <div className="overview-section-progress">
                         <div className="overview-progress-bar-small">
-                          <div
-                            className="overview-progress-fill-small"
-                            style={{ width: `${progressValue}%` }}
-                          />
+                          <div className="overview-progress-fill-small" style={{ width: `${progressValue}%` }} />
                         </div>
                       </div>
                     )}
                   </div>
-
                   <div className="overview-section-status">
                     {isCompleted ? (
-                      <span className="overview-status-badge completed">
-                        Completed
-                      </span>
+                      <span className="overview-status-badge completed">Completed</span>
                     ) : (
-                      <span className="overview-status-badge pending">
-                        {progressValue}% In Progress
-                      </span>
+                      <span className="overview-status-badge pending">{progressValue}% In Progress</span>
                     )}
                   </div>
                 </div>
@@ -528,29 +538,26 @@ useEffect(() => {
           {/* Course Card */}
           <div className="overview-course-card">
             <div className="overview-card-header">
-              <h3 className="overview-card-title">
-                Selected Programme
-              </h3>
+              <h3 className="overview-card-title">Selected Programme</h3>
               <button className="overview-change-course-link" onClick={handleChangeCourse}>Change Course</button>
             </div>
             <div className="overview-course-info">
               <div className="overview-program-header">
-              <h4 className="overview-program-name">
-  {courseDetails?.programName || 'Direct University Application'}
-</h4>
-
-<div className="overview-university-badge">
-  {selectedUniversity?.INSTNM || courseDetails?.universityName || 'Selected University'}
-</div>
+                <h4 className="overview-program-name">
+                  {courseDetails?.programName || 'Direct University Application'}
+                </h4>
+                <div className="overview-university-badge">
+                  {selectedUniversity?.INSTNM || courseDetails?.universityName || 'Selected University'}
+                </div>
               </div>
               <div className="overview-program-details-grid">
                 {[
-                  ['Programme type', courseDetails.programType   || 'Undergraduate'],
-                  ['Language',       courseDetails.language      || 'English'],
-                  ['Campus',         courseDetails.campus        || 'Berlin'],
-                  ['Duration',       courseDetails.duration      || '3 years'],
-                  ['Study start',    `${courseDetails.intakeMonth || 'September'} ${courseDetails.intakeYear || '2024'}`],
-                  ['Application fee',courseDetails.applicationFee || '€75'],
+                  ['Programme type', courseDetails?.programType    || 'Undergraduate'],
+                  ['Language',       courseDetails?.language       || 'English'],
+                  ['Campus',         courseDetails?.campus         || 'Berlin'],
+                  ['Duration',       courseDetails?.duration       || '3 years'],
+                  ['Study start',    `${courseDetails?.intakeMonth || 'September'} ${courseDetails?.intakeYear || '2024'}`],
+                  ['Application fee',courseDetails?.applicationFee || '€75'],
                 ].map(([label, value]) => (
                   <div key={label} className="overview-detail-item">
                     <span className="overview-detail-label">{label}</span>
@@ -558,7 +565,7 @@ useEffect(() => {
                   </div>
                 ))}
               </div>
-              {courseDetails.requirements && (
+              {courseDetails?.requirements && (
                 <div className="overview-program-requirements">
                   <h5 className="overview-requirements-title">Programme Requirements</h5>
                   <ul className="overview-requirements-list">
@@ -572,9 +579,7 @@ useEffect(() => {
           {/* Documents Card */}
           <div className="overview-documents-card">
             <div className="overview-card-header">
-              <h3 className="overview-card-title">
-                Required Documents
-              </h3>
+              <h3 className="overview-card-title">Required Documents</h3>
               <button className="overview-upload-more-btn" onClick={() => navigate('/firstyear/dashboard/application/documents')}>
                 Upload More
               </button>
@@ -587,7 +592,7 @@ useEffect(() => {
             </div>
             <div className="overview-documents-note">
               <strong>Important Note</strong>
-              All documents not in English or German must be professionally translated.
+              {' '}All documents not in English or German must be professionally translated.
               Certified translations must be submitted along with a copy of the original document.
             </div>
           </div>
@@ -616,9 +621,7 @@ useEffect(() => {
 
           {/* Tips Card */}
           <div className="overview-tips-card">
-            <h3 className="overview-card-title">
-              Application Tips
-            </h3>
+            <h3 className="overview-card-title">Application Tips</h3>
             <ul className="overview-tips-list">
               {[
                 'Ensure all documents are clear and legible',
@@ -626,11 +629,7 @@ useEffect(() => {
                 'Maximum file size per document is 5MB',
                 'All required fields must be completed',
                 'Review your application before submission',
-              ].map((tip, i) => (
-                <li key={i}>
-                  {tip}
-                </li>
-              ))}
+              ].map((tip, i) => <li key={i}>{tip}</li>)}
             </ul>
           </div>
 

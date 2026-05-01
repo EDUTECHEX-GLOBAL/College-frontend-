@@ -7,7 +7,7 @@ import "./processAdminDashboard.css";
 import GusUniversity    from "./gusuniversity";
 import MasterUniversity from "./MasterUniversity";
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 /* ─── Helpers ─── */
 const getProcessAdminToken = () => {
@@ -251,8 +251,8 @@ const ProcessAdminDashboard = () => {
       const headers = { Authorization: `Bearer ${token}` };
 
       const [statsRes, recentRes] = await Promise.all([
-        axios.get(`${API_BASE_URL}/process-admin/dashboard/stats`,               { headers }),
-        axios.get(`${API_BASE_URL}/process-admin/dashboard/recent-applications`, { headers }),
+        axios.get(`${API_BASE_URL}/api/process-admin/dashboard/stats`,               { headers }),
+        axios.get(`${API_BASE_URL}/api/process-admin/dashboard/recent-applications`, { headers }),
       ]);
 
       if (statsRes.data?.success)  setStats(statsRes.data.stats);

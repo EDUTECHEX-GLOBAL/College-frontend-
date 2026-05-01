@@ -638,8 +638,7 @@ const Dashboard = () => {
               </div>
             </div>
             <div className="dashboard-header__actions">
-              <button className="header-notif-btn" aria-label="Notifications"><span className="notif-bell"></span><span className="notif-badge"></span></button>
-              <button className="header-user-chip">
+                          <button className="header-user-chip">
                 <span className="header-user-chip__avatar">{userData?.firstName?.[0]}{userData?.lastName?.[0]}</span>
                 <span className="header-user-chip__name">{userData?.firstName} {userData?.lastName}</span>
                 <span className="header-user-chip__caret">▾</span>

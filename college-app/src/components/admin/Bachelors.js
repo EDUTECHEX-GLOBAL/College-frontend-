@@ -55,7 +55,7 @@ const UniversityAdminTemplate = () => {
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState(null);
   
-  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api';
   
   const getAvailableIntakes = () => {
     const currentYear = new Date().getFullYear();
