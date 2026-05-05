@@ -1240,3 +1240,197 @@
     font-size: 8px;
   }
 }
+/* ── Email button on doc card ── */
+.gus-doc-card-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.gus-doc-email-btn {
+  flex: 1;
+  padding: 6px 10px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.gus-doc-email-btn:hover {
+  background: #dbeafe;
+  border-color: #93c5fd;
+}
+
+/* ── Email modal ── */
+.gus-email-modal {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 480px;
+  padding: 0;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+  overflow: hidden;
+}
+
+.gus-email-modal-hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+.gus-email-modal-title {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+.gus-email-modal-sub {
+  color: rgba(255,255,255,0.85);
+  font-size: 12px;
+  margin: 0;
+}
+.gus-email-modal-hdr .gus-modal-x {
+  color: #fff;
+  opacity: 0.8;
+  font-size: 20px;
+}
+.gus-email-modal-hdr .gus-modal-x:hover { opacity: 1; }
+
+.gus-email-modal-body { padding: 20px 24px; }
+
+.gus-email-field { margin-bottom: 16px; }
+.gus-email-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  margin-bottom: 6px;
+}
+.gus-email-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+}
+.gus-email-doc-badge {
+  display: inline-block;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.gus-email-select {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #1e293b;
+  background: #f8fafc;
+  outline: none;
+  cursor: pointer;
+}
+.gus-email-select:focus { border-color: #6366f1; background: #fff; }
+
+.gus-email-textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #1e293b;
+  background: #f8fafc;
+  resize: vertical;
+  outline: none;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+.gus-email-textarea:focus { border-color: #6366f1; background: #fff; }
+
+.gus-email-preview {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+}
+.gus-email-preview-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  display: block;
+  margin-bottom: 6px;
+}
+.gus-email-preview-text { font-size: 13px; color: #475569; margin: 0; line-height: 1.5; }
+
+.gus-email-modal-ftr {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+.gus-email-cancel-btn {
+  padding: 9px 20px;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.gus-email-cancel-btn:hover { background: #e2e8f0; }
+
+.gus-email-send-btn {
+  padding: 9px 22px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: opacity 0.15s;
+}
+.gus-email-send-btn:hover:not(:disabled) { opacity: 0.9; }
+.gus-email-send-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── Success state ── */
+.gus-email-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  text-align: center;
+  gap: 12px;
+}
+.gus-email-success-icon {
+  width: 52px;
+  height: 52px;
+  background: #dcfce7;
+  color: #16a34a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+}
+.gus-email-success p { font-size: 14px; font-weight: 600; color: #15803d; margin: 0; }

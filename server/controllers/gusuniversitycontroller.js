@@ -9,6 +9,7 @@ import ApplicationEducation   from '../models/applicationEducationModel.js';
 import ApplicationScore       from '../models/ApplicationScore.js';
 import ApplicationSpecialNeed from '../models/ApplicationSpecialNeed.js';
 import Overview               from '../models/overviewModel.js';   // ✅ NEW
+import { sendEmailEnhanced, emailTemplates } from '../utils/sendEmail.js';
 
 /* =====================================================
    FOLDER MAP
@@ -640,6 +641,58 @@ export const getGusUniversityStats = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Failed to fetch stats.',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+    });
+  }
+};
+/* =====================================================
+   SEND DOCUMENT RE-UPLOAD EMAIL
+===================================================== */
+export const sendDocumentReuploadEmail = async (req, res) => {
+  try {
+    const { studentId, studentName, studentEmail, documentLabel, reason, adminNotes } = req.body;
+
+    if (!studentEmail || !documentLabel) {
+      return res.status(400).json({
+        success: false,
+        message: 'studentEmail and documentLabel are required.',
+      });
+    }
+
+    const template = emailTemplates.documentCorrection({
+      studentName:   studentName   || 'Student',
+      documentName:  documentLabel,
+      documentType:  documentLabel,
+      reason:        reason        || 'other',
+      adminNotes:    adminNotes    || '',
+      deadlineDays:  7,
+    });
+
+    const result = await sendEmailEnhanced({
+      to:      studentEmail,
+      subject: template.subject,
+      html:    template.html,
+    });
+
+    if (!result.success) {
+      console.error('❌ Email send failed:', result.error);
+      return res.status(500).json({
+        success: false,
+        message: `Failed to send email: ${result.error}`,
+      });
+    }
+
+    return res.status(200).json({
+      success:   true,
+      message:   `Email sent successfully to ${studentEmail}`,
+      messageId: result.messageId,
+    });
+
+  } catch (error) {
+    console.error('❌ sendDocumentReuploadEmail Error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error sending email.',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   }

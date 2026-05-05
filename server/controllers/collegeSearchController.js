@@ -151,7 +151,12 @@ const normaliseDoc = (rawDoc, source) => {
     UNITID:         u.UNITID         || null,
     universityCode: u.universityCode || null,
     _id:            u._id?.toString() || '',
-    INSTNM:  u.INSTNM  || u.universityName || 'Unknown University',
+   INSTNM:
+  u.INSTNM ||
+  u.universityName ||
+  u.university ||   // ✅ THIS FIXES YOUR ISSUE
+  u.name ||         // extra safety
+  'Unknown University',
     IALIAS:  u.IALIAS  || '',
     CITY:    u.CITY    || u.city    || u.location?.city  || '',
     STABBR:  u.STABBR  || u.state   || u.location?.state || '',
@@ -536,7 +541,11 @@ export const getRecommendedUniversities = async (req, res) => {
         } else if (profileUni?.name) {
           normUni = {
             UNITID: null, universityCode: idStr, _id: '',
-            INSTNM: profileUni.name, IALIAS: '',
+           INSTNM:
+  profileUni.name ||
+  profileUni.university ||
+  profileUni.universityName ||
+  'Unknown University',
             CITY: profileUni.city || '', STABBR: profileUni.state || '',
             COUNTRY: profileUni.country || 'USA', WEBADDR: '',
             logo: getUniversityLogo(profileUni.name),

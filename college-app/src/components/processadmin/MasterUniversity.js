@@ -53,6 +53,17 @@ const fetchApplicationDetail = async (id) => {
   return res.json();
 };
 
+/* NEW: Send document email API call */
+const sendDocumentEmail = async (payload) => {
+  const res = await fetch(`${API_BASE}/process-admin/send-document-email`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`Email send failed: ${res.status}`);
+  return res.json();
+};
+
 /* ─────────────────────────────────────────────────────────────────────────────
    HELPERS
 ───────────────────────────────────────────────────────────────────────────── */
@@ -87,7 +98,6 @@ const formatDate = (d) => {
   } catch { return "—"; }
 };
 
-/* short date for mobile (e.g. "Apr 28") */
 const formatDateShort = (d) => {
   if (!d) return "—";
   try {
@@ -98,13 +108,188 @@ const formatDateShort = (d) => {
 };
 
 /* ─────────────────────────────────────────────────────────────────────────────
+   EMAIL MODAL — shown when admin clicks 📧 on a document row
+───────────────────────────────────────────────────────────────────────────── */
+const ISSUE_REASONS = [
+  { value: "incorrect_format",    label: "Incorrect Format" },
+  { value: "fake_document",       label: "Fake / Suspicious Document" },
+  { value: "blurry",              label: "Blurry / Unreadable" },
+  { value: "incomplete",          label: "Incomplete / Missing Pages" },
+  { value: "wrong_document",      label: "Wrong Document Uploaded" },
+  { value: "not_uploaded",        label: "Document Not Uploaded" },
+  { value: "other",               label: "Other Issue" },
+];
+
+const DocumentEmailModal = ({ doc, studentEmail, studentName, studentId, onClose }) => {
+  const [reason,     setReason]     = useState("not_uploaded");
+  const [adminNotes, setAdminNotes] = useState("");
+  const [deadline,   setDeadline]   = useState(7);
+  const [sending,    setSending]    = useState(false);
+  const [sent,       setSent]       = useState(false);
+  const [error,      setError]      = useState("");
+
+  /* Close on Escape */
+  useEffect(() => {
+    const handler = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  const handleSend = async () => {
+    setError("");
+    setSending(true);
+    try {
+      const res = await sendDocumentEmail({
+        studentId,
+        studentEmail,
+        studentName,
+        documentKey:  doc.key,
+        documentName: doc.label,
+        reason,
+        adminNotes: adminNotes.trim(),
+        deadlineDays: deadline,
+      });
+      if (res.success) {
+        setSent(true);
+      } else {
+        setError(res.message || "Failed to send email. Please try again.");
+      }
+    } catch (e) {
+      setError(e.message || "Network error. Please try again.");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="email-modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="email-modal-box">
+        {/* Header */}
+        <div className="email-modal-header">
+          <div className="email-modal-header-icon">✉</div>
+          <div className="email-modal-header-text">
+            <div className="email-modal-title">Send Document Request</div>
+            <div className="email-modal-subtitle">Notify student to re-upload document</div>
+          </div>
+          <button className="email-modal-close" onClick={onClose} aria-label="Close">×</button>
+        </div>
+
+        {sent ? (
+          /* ── Success state ── */
+          <div className="email-modal-success">
+            <div className="email-success-icon">✓</div>
+            <div className="email-success-title">Email Sent Successfully!</div>
+            <div className="email-success-msg">
+              A notification has been sent to <strong>{studentEmail}</strong> requesting
+              them to re-upload the <strong>{doc.label}</strong>.
+            </div>
+            <button className="email-modal-btn-primary" onClick={onClose}>Done</button>
+          </div>
+        ) : (
+          /* ── Form state ── */
+          <div className="email-modal-body">
+            {/* Info strip */}
+            <div className="email-info-strip">
+              <div className="email-info-row">
+                <span className="email-info-label">To</span>
+                <span className="email-info-value">{studentName} &lt;{studentEmail}&gt;</span>
+              </div>
+              <div className="email-info-row">
+                <span className="email-info-label">Document</span>
+                <span className="email-info-value email-doc-name">{doc.label}</span>
+              </div>
+              <div className="email-info-row">
+                <span className="email-info-label">Status</span>
+                <span className={`email-doc-status-pill ${doc.uploaded ? "pill-uploaded" : "pill-missing"}`}>
+                  {doc.uploaded ? "Uploaded" : "Not Uploaded"}
+                </span>
+              </div>
+            </div>
+
+            {/* Issue reason */}
+            <div className="email-field">
+              <label className="email-field-label">Issue / Reason *</label>
+              <select
+                className="email-select"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+              >
+                {ISSUE_REASONS.map((r) => (
+                  <option key={r.value} value={r.value}>{r.label}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Admin notes */}
+            <div className="email-field">
+              <label className="email-field-label">
+                Additional Notes <span className="email-optional">(optional)</span>
+              </label>
+              <textarea
+                className="email-textarea"
+                placeholder="e.g. The uploaded certificate seems to have altered dates. Please re-upload the original document."
+                value={adminNotes}
+                onChange={(e) => setAdminNotes(e.target.value)}
+                rows={3}
+              />
+            </div>
+
+            {/* Deadline */}
+            <div className="email-field">
+              <label className="email-field-label">Deadline for Student</label>
+              <div className="email-deadline-row">
+                {[3, 5, 7, 14].map((d) => (
+                  <button
+                    key={d}
+                    className={`email-deadline-chip ${deadline === d ? "deadline-chip-active" : ""}`}
+                    onClick={() => setDeadline(d)}
+                  >
+                    {d} days
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Error */}
+            {error && <div className="email-error-box">⚠ {error}</div>}
+
+            {/* Actions */}
+            <div className="email-modal-actions">
+              <button className="email-modal-btn-cancel" onClick={onClose} disabled={sending}>
+                Cancel
+              </button>
+              <button
+                className="email-modal-btn-primary"
+                onClick={handleSend}
+                disabled={sending}
+              >
+                {sending ? (
+                  <span className="email-sending-spinner">
+                    <span className="spinner-dot" />
+                    Sending…
+                  </span>
+                ) : (
+                  "✉ Send Email"
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+/* ─────────────────────────────────────────────────────────────────────────────
    DETAIL MODAL
 ───────────────────────────────────────────────────────────────────────────── */
 const DetailModal = ({ studentId, onClose }) => {
-  const [detail,    setDetail]    = useState(null);
-  const [loading,   setLoading]   = useState(true);
-  const [error,     setError]     = useState("");
-  const [activeTab, setActiveTab] = useState("personal");
+  const [detail,        setDetail]        = useState(null);
+  const [loading,       setLoading]       = useState(true);
+  const [error,         setError]         = useState("");
+  const [activeTab,     setActiveTab]     = useState("personal");
+  /* Track which doc the admin wants to email */
+  const [emailDoc,      setEmailDoc]      = useState(null); // { key, label, uploaded }
 
   useEffect(() => {
     let cancelled = false;
@@ -116,12 +301,13 @@ const DetailModal = ({ studentId, onClose }) => {
     return () => { cancelled = true; };
   }, [studentId]);
 
-  /* close on Escape */
+  /* Close on Escape — only when email modal isn't open */
   useEffect(() => {
+    if (emailDoc) return; // let EmailModal handle Escape
     const handler = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [onClose]);
+  }, [onClose, emailDoc]);
 
   const TABS = ["personal", "contact", "course", "academics", "tests", "documents"];
 
@@ -214,20 +400,34 @@ const DetailModal = ({ studentId, onClose }) => {
     ));
   };
 
+  /* ── Documents tab — now has 📧 Email button per row ── */
   const renderDocuments = (d) => {
     const fields = d.documents?.fields || {};
     const entries = Object.entries(fields);
     if (!entries.length)
       return <p className="modal-empty-msg">No document information available.</p>;
 
-    return entries.map(([key, doc]) => (
-      <div key={key} className="modal-doc-row">
-        <div className="modal-doc-label">{doc.label}</div>
-        <div className="modal-doc-status">
-          {doc.uploaded ? (
-            <>
-              <span className="modal-doc-uploaded">Uploaded</span>
-              {doc.fileUrl ? (
+    const studentEmail = d.contact?.emailAddress || d.email || "";
+    const studentName  = d.fullName || d.studentName || "Student";
+
+    return (
+      <div className="doc-list">
+        {entries.map(([key, doc]) => (
+          <div key={key} className="modal-doc-row">
+            {/* Label */}
+            <div className="modal-doc-label">{doc.label}</div>
+
+            {/* Status + View + Email */}
+            <div className="modal-doc-actions">
+              {/* Upload status */}
+              {doc.uploaded ? (
+                <span className="modal-doc-uploaded">Uploaded</span>
+              ) : (
+                <span className="modal-doc-missing">Not uploaded</span>
+              )}
+
+              {/* View link — only if uploaded */}
+              {doc.uploaded && doc.fileUrl && (
                 <a
                   href={doc.fileUrl}
                   target="_blank"
@@ -236,20 +436,39 @@ const DetailModal = ({ studentId, onClose }) => {
                 >
                   View
                 </a>
-              ) : (
-                doc.fileKey && (
-                  <span style={{ fontSize: 11, color: "var(--text-lt)" }}>
-                    (URL unavailable)
-                  </span>
-                )
               )}
-            </>
-          ) : (
-            <span className="modal-doc-missing">Not uploaded</span>
-          )}
-        </div>
+              {doc.uploaded && !doc.fileUrl && doc.fileKey && (
+                <span style={{ fontSize: 11, color: "var(--text-lt)" }}>
+                  (URL unavailable)
+                </span>
+              )}
+
+              {/* ── Email button — always visible ── */}
+              <button
+                className="doc-email-btn"
+                title={`Send email about ${doc.label}`}
+                onClick={() =>
+                  setEmailDoc({ key, label: doc.label, uploaded: doc.uploaded })
+                }
+              >
+                ✉ Email
+              </button>
+            </div>
+          </div>
+        ))}
+
+        {/* Email modal — rendered inside DetailModal so it sits on top */}
+        {emailDoc && (
+          <DocumentEmailModal
+            doc={emailDoc}
+            studentEmail={studentEmail}
+            studentName={studentName}
+            studentId={studentId}
+            onClose={() => setEmailDoc(null)}
+          />
+        )}
       </div>
-    ));
+    );
   };
 
   const tabContent = (d) => ({
@@ -350,7 +569,7 @@ const DetailModal = ({ studentId, onClose }) => {
 };
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   MAIN COMPONENT
+   MAIN COMPONENT  (unchanged from your original)
 ───────────────────────────────────────────────────────────────────────────── */
 export default function MasterUniversity() {
   const [stats,              setStats]              = useState({ total: 0, submitted: 0, draft: 0, underReview: 0 });
@@ -428,7 +647,6 @@ export default function MasterUniversity() {
   useEffect(() => { loadStats(); },        [loadStats]);
   useEffect(() => { loadApplications(); }, [loadApplications]);
 
-  /* close sidebar on resize back to desktop */
   useEffect(() => {
     const handler = () => {
       if (window.innerWidth > 900) setMobileMenuOpen(false);
@@ -473,12 +691,7 @@ export default function MasterUniversity() {
 
   return (
     <div className="mu-wrapper">
-      {/* ── Mobile Menu Toggle ── */}
-      
-
-      {/* ── SIDEBAR ── */}
       <aside className={`mu-sidebar ${mobileMenuOpen ? "mobile-open" : ""}`}>
-        {/* Mobile header inside sidebar */}
         <div className="mu-sidebar-header">
           <span style={{ fontWeight: 800, fontSize: 14, color: "var(--primary)" }}>EDU TECH</span>
           <button
@@ -490,7 +703,6 @@ export default function MasterUniversity() {
           </button>
         </div>
 
-        {/* Desktop logo */}
         <div className="mu-sidebar-logo">EDU TECH</div>
 
         <nav className="mu-nav">
@@ -537,7 +749,6 @@ export default function MasterUniversity() {
         <div className="mu-sidebar-logout">Logout</div>
       </aside>
 
-      {/* ── Mobile overlay ── */}
       {mobileMenuOpen && (
         <div
           className="mobile-overlay"
@@ -545,10 +756,7 @@ export default function MasterUniversity() {
         />
       )}
 
-      {/* ── MAIN ── */}
       <main className="mu-main">
-
-        {/* Topbar */}
         <header className="mu-topbar">
           <div className="mu-topbar-title">
             <span className="mu-topbar-label">Process</span>
@@ -572,7 +780,6 @@ export default function MasterUniversity() {
           </button>
         </header>
 
-        {/* Banner */}
         <div className="mu-banner">
           <div className="mu-banner-left">
             <h2 className="mu-banner-title">Applications</h2>
@@ -583,7 +790,6 @@ export default function MasterUniversity() {
             )}
           </div>
           <div className="mu-banner-right">
-            {/* Desktop */}
             <button
               className="btn-outline"
               onClick={() => {
@@ -596,8 +802,6 @@ export default function MasterUniversity() {
               All Universities
             </button>
             <button className="btn-primary" onClick={handleRefresh}>↻ Refresh</button>
-
-            {/* Mobile */}
             <button
               className="btn-outline-mobile"
               onClick={() => {
@@ -613,7 +817,6 @@ export default function MasterUniversity() {
           </div>
         </div>
 
-        {/* Stat Cards */}
         <div className="stats-row">
           <div className="stat-card stat-card-total">
             <div className="stat-card-text">
@@ -641,11 +844,8 @@ export default function MasterUniversity() {
           </div>
         </div>
 
-        {/* Filter Row */}
         <div className="filter-section">
-          {/* Search bar replacing university tabs */}
           <div className="filter-search-bar">
-            
             <input
               type="text"
               className="filter-search-input"
@@ -677,10 +877,9 @@ export default function MasterUniversity() {
           </div>
         </div>
 
-        {/* Error */}
         {error && <div className="error-box">⚠ {error}</div>}
 
-        {/* ── Mobile Cards ── */}
+        {/* Mobile Cards */}
         <div className="mobile-cards">
           {loading ? (
             <div className="loading-cards">Loading applications…</div>
@@ -698,7 +897,6 @@ export default function MasterUniversity() {
                   </div>
 
                   <div className="mobile-card-body">
-                    {/* Student row */}
                     <div className="mobile-student-row">
                       <div className="avatar-small">
                         {getInitials(app.fullName || app.studentName)}
@@ -717,7 +915,6 @@ export default function MasterUniversity() {
                     </div>
 
                     <div className="mobile-meta-grid">
-                      {/* University + course */}
                       <div className="mobile-meta-item full-width">
                         <span className="mobile-meta-label">University</span>
                         <span className="mobile-meta-value">
@@ -762,12 +959,10 @@ export default function MasterUniversity() {
                     >
                       View Details
                     </button>
-                  
                   </div>
                 </div>
               ))}
 
-              {/* Showing X of X */}
               <div className="mobile-showing-label">
                 Showing {filteredApps.length} of {pagination.total} applications
               </div>
@@ -775,7 +970,7 @@ export default function MasterUniversity() {
           )}
         </div>
 
-        {/* ── Desktop Table ── */}
+        {/* Desktop Table */}
         <div className="desktop-table-view">
           <div className="table-wrap">
             {loading ? (
@@ -803,7 +998,6 @@ export default function MasterUniversity() {
                   ) : (
                     filteredApps.map((app) => (
                       <tr key={app._id} className="table-row">
-                        {/* APP ID */}
                         <td>
                           <div className="app-id">{app.applicationId}</div>
                           <div className="app-subid">
@@ -811,7 +1005,6 @@ export default function MasterUniversity() {
                           </div>
                         </td>
 
-                        {/* UNIVERSITY + course */}
                         <td>
                           <div className="uni-name-main">
                             {app.course?.universityName || "—"}
@@ -823,7 +1016,6 @@ export default function MasterUniversity() {
                           )}
                         </td>
 
-                        {/* STUDENT — avatar + name + email + phone */}
                         <td>
                           <div className="student-cell">
                             <div className="avatar">
@@ -845,19 +1037,16 @@ export default function MasterUniversity() {
                           </div>
                         </td>
 
-                        {/* STATUS */}
                         <td>
                           <span className={`status-badge ${getStatusClass(app.applicationStatus)}`}>
                             {getStatusLabel(app.applicationStatus)}
                           </span>
                         </td>
 
-                        {/* SUBMITTED DATE */}
                         <td className="submitted-date">
                           {formatDate(app.submittedAt)}
                         </td>
 
-                        {/* PROGRESS */}
                         <td>
                           <div className="progress-wrap">
                             <div className="progress-bar">
@@ -872,7 +1061,6 @@ export default function MasterUniversity() {
                           </div>
                         </td>
 
-                        {/* ACTION — View + PDF */}
                         <td>
                           <div className="action-btns">
                             <button
@@ -881,7 +1069,6 @@ export default function MasterUniversity() {
                             >
                               View
                             </button>
-                           
                           </div>
                         </td>
                       </tr>
@@ -892,7 +1079,6 @@ export default function MasterUniversity() {
             )}
           </div>
 
-          {/* Footer — "Showing X of X applications" + pagination */}
           <div className="table-footer">
             {pagination.pages > 1 ? (
               <div className="table-footer-inner">
@@ -928,7 +1114,6 @@ export default function MasterUniversity() {
         </div>
       </main>
 
-      {/* ── DETAIL MODAL ── */}
       {selectedId && (
         <DetailModal
           studentId={selectedId}

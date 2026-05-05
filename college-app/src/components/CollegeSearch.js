@@ -93,6 +93,7 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
   const fetchColleges = useCallback(async (searchQuery = "") => {
     setLoading(true);
     setProfileMessage("");
+
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -100,35 +101,78 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
         setLoading(false);
         return;
       }
-      const params = new URLSearchParams();
-      if (searchQuery) params.append('query', searchQuery);
 
-      const response = await axios.get(`${API_URL}/api/college-search`, {
-        params,
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+     const params = new URLSearchParams();
+if (searchQuery) params.append('query', searchQuery);
 
-      if (response.data.success) {
-        const fetchedColleges = response.data.colleges || [];
+const response = await axios.get(`${API_URL}/api/college-search`, {
+  params,
+  headers: { Authorization: `Bearer ${token}` }
+});
 
-        // ── DEBUG: log first college to confirm ID field name ──
-        if (fetchedColleges.length > 0) {
-          const sample = fetchedColleges[0];
-          console.log('🔍 College ID fields:', {
-            UNITID:  sample.UNITID,
-            unitid:  sample.unitid,
-            _id:     sample._id,
-            id:      sample.id,
-            INSTNM:  sample.INSTNM,
-          });
-        }
+if (response.data.success) {
 
-        setColleges(fetchedColleges);
-        if (response.data.selectedCoursesSummary) {
-          setSelectedCoursesSummary(response.data.selectedCoursesSummary);
-        }
-        if (response.data.message) setProfileMessage(response.data.message);
-      }
+  // ✅ FIX: support both API structures
+  const sourceData =
+    (response.data.colleges && response.data.colleges.length > 0)
+      ? response.data.colleges
+      : (response.data.selectedUniversities || []);
+
+  const fetchedColleges = sourceData.map((college) => {
+    const resolvedId =
+      college.UNITID ||
+      college.unitid ||
+      college.UNIT_ID ||
+      college.unit_id ||
+      college._id ||
+      college.id;
+
+    return {
+      ...college,
+
+      // ✅ Ensure ID is always present
+      UNITID: resolvedId,
+
+      // ✅ FIX: correct name mapping (this was your main bug)
+  INSTNM:
+  college.INSTNM ||
+  college.name ||
+  college.universityName ||
+  college.university ||   // ✅ ADD THIS
+  "Unknown University",
+
+      // ✅ Better country fallback
+      COUNTRY:
+        college.COUNTRY ||
+        college.country ||
+        "Unknown",
+
+      // ✅ Optional: normalize city/state (prevents UI issues)
+      CITY: college.CITY || college.city || "",
+      STABBR: college.STABBR || college.state || "",
+    };
+  });
+
+  console.log(
+    "🔍 Normalized Colleges:",
+    fetchedColleges.map(c => ({
+      name: c.INSTNM,
+      UNITID: c.UNITID,
+      original_id: c._id
+    }))
+  );
+
+  setColleges(fetchedColleges);
+
+  if (response.data.selectedCoursesSummary) {
+    setSelectedCoursesSummary(response.data.selectedCoursesSummary);
+  }
+
+  if (response.data.message) {
+    setProfileMessage(response.data.message);
+  }
+}
+
     } catch (error) {
       console.error("Error fetching colleges:", error);
       setProfileMessage("Failed to load universities. Please try again.");
@@ -182,13 +226,16 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
   useEffect(() => {
     if (!profileLoaded) return;
     fetchColleges(query);
-  }, [profileLoaded]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [profileLoaded, fetchColleges, query]);
 
-  useEffect(() => {
-    if (!profileLoaded) return;
-    const delay = setTimeout(() => { fetchColleges(query); }, 400);
-    return () => clearTimeout(delay);
-  }, [query, profileLoaded, fetchColleges]);
+ useEffect(() => {
+  if (!profileLoaded) return;
+  const delay = setTimeout(() => { 
+    fetchColleges(query); 
+  }, 400);
+
+  return () => clearTimeout(delay);
+}, [query, profileLoaded, fetchColleges]);
 
   // ─── Add college ──────────────────────────────────────────────────────────
   const handleAddCollege = async (college) => {

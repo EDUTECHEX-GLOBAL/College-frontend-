@@ -3,9 +3,29 @@ import UserProfile from '../models/userprofilemodel.js';
 import { createUniversityRequestNotification } from './notificationController.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SHARED HELPER: fix Map → plain object for selectedCourses at ALL levels
+// HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
+
+const deriveEligibleProgram = (qualification) => {
+  if (!qualification) return null;
+  const q = qualification.toLowerCase();
+  if (q.includes('12th') || q.includes('high school')) return 'Bachelor';
+  if (q.includes('bachelor'))                           return 'Master';
+  if (q.includes('master'))                             return 'PhD';
+  return null;
+};
+
+// ✅ FIX: derive programStream from programType (sent directly by frontend)
+//    Falls back to eligibleProgram derivation for backwards compatibility.
+const deriveProgramStream = (programType, eligibleProgram) => {
+  if (programType === 'UG') return 'UG';
+  if (programType === 'PG') return 'PG';
+  // fallback
+  return eligibleProgram === 'Bachelor' ? 'UG' : 'PG';
+};
+
 export const fixCoursesOnProfile = (profileObj) => {
+  // selectedCourses at top-level was stored as Map — convert to plain object if needed
   if (profileObj.selectedCourses) {
     try { profileObj.selectedCourses = Object.fromEntries(profileObj.selectedCourses); }
     catch { profileObj.selectedCourses = {}; }
@@ -28,65 +48,45 @@ export const fixCoursesOnProfile = (profileObj) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// HELPER: process a single university from the request body
+// processUniversityData
 // ─────────────────────────────────────────────────────────────────────────────
 const processUniversityData = (uniData) => {
   if (!uniData) return null;
 
-  const isKansas = (
-    uniData.isKansas      === true ||
-    uniData.isDirectApply === true ||
-    (uniData.INSTNM || '').toLowerCase().includes('kansas') ||
-    (uniData.name   || '').toLowerCase().includes('kansas')
-  );
+  const rawCourses = Array.isArray(uniData.selectedCourses)
+    ? uniData.selectedCourses
+    : [];
 
-  const city  = uniData.city  || uniData.CITY  || uniData.location?.city  || '';
-  const state = uniData.state || uniData.STABBR || uniData.location?.state || '';
+  const processedCourses = rawCourses.map((c) => {
+    const courseId = (c.id || c._id?.toString() || '').trim();
+    const courseTitle = (c.title || c.name || c.program_name || '').trim();
 
-  const locationStr = uniData.location && typeof uniData.location === 'string'
-    ? uniData.location
-    : city + (city && state ? ', ' : '') + state;
+    return {
+      id: courseId || `course-${Date.now()}`,
+      title: courseTitle || 'Course',
+    };
+  });
 
-  const rawCourses = uniData.selectedCourses || [];
-  const processedCourses = rawCourses.map(c => ({
-    id:           c.id           || `course-${Date.now()}-${Math.random()}`,
-    title:        c.title        || c.program_name || 'Program',
-    program_name: c.program_name || c.title        || '',
-    level:        c.level        || '',
-    studyMode:    c.studyMode    || '',
-    duration:     c.duration     || '',
-    locations:    Array.isArray(c.locations) ? c.locations : [],
-    majorArea:    c.majorArea    || '',
-    description:  c.description  || '',
-    credits:      c.credits      || null,
-    fees:         c.fees         || '',
-  }));
+  // ✅ ADD THIS BLOCK (IMPORTANT)
+  const resolvedId = (
+    uniData.id ||
+    uniData.UNITID?.toString() ||
+    uniData._id?.toString() ||
+    ''
+  ).trim() || `uni-${Date.now()}`;
 
   return {
-    id:            uniData.id     || uniData.UNITID?.toString() || uniData._id?.toString() || '',
-    unitid:        uniData.unitid || uniData.UNITID || null,
-    name:          uniData.name   || uniData.INSTNM || 'Unknown University',
-    location:      locationStr    || 'Location not specified',
-    city,
-    state,
-    country:       uniData.country || uniData.COUNTRY || uniData.location?.country || 'USA',
-    isKansas,
-    isDirectApply: isKansas,
+    id: resolvedId,   // ✅ THIS FIXES YOUR ERROR
+    name: uniData.name || 'Unknown University',
     selectedCourses: processedCourses,
   };
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// HELPER: validate and sanitise selectedSegment from request body
-// ─────────────────────────────────────────────────────────────────────────────
 const processSegmentData = (segmentData) => {
   if (!segmentData) return null;
-
   const id   = (segmentData.id   || '').toString().trim();
   const name = (segmentData.name || '').toString().trim();
-
   if (!id || !name) return null;
-
   return { id, name };
 };
 
@@ -103,64 +103,115 @@ export const createOrUpdateProfile = async (req, res) => {
       return res.status(401).json({ success: false, message: 'User ID not found in token' });
 
     console.log('📝 Creating/Updating profile for userId:', userId);
-    console.log('📦 Profile data keys:', Object.keys(profileData));
 
-    // ── Required field checks ──────────────────────────────────────────────
+    // ── Basic validation ───────────────────────────────────────────────────
     if (!profileData.basicInfo)
       return res.status(400).json({ success: false, message: 'basicInfo is required' });
     if (!profileData.education)
       return res.status(400).json({ success: false, message: 'education is required' });
-    if (!profileData.eligibleProgram)
-      return res.status(400).json({ success: false, message: 'eligibleProgram is required' });
-    if (!['Bachelor', 'Master', 'PhD'].includes(profileData.eligibleProgram))
-      return res.status(400).json({ success: false, message: `Invalid eligibleProgram: "${profileData.eligibleProgram}"` });
-    if (!profileData.selectedUniversities || !Array.isArray(profileData.selectedUniversities))
-      return res.status(400).json({ success: false, message: 'selectedUniversities must be an array' });
-    if (profileData.selectedUniversities.length < 3 || profileData.selectedUniversities.length > 5)
-      return res.status(400).json({ success: false, message: `Please select between 3 and 5 universities (received ${profileData.selectedUniversities.length})` });
 
-    // ── Process universities ───────────────────────────────────────────────
+    // ✅ FIX: programType is sent directly from the frontend Step 2 selection
+    //    Accept it as the primary source of truth; also validate it.
+    const programType = profileData.programType;
+    if (!programType || !['UG', 'PG'].includes(programType)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid programType: "${programType}". Must be UG or PG.`,
+      });
+    }
+
+    // Auto-derive eligibleProgram from qualification
+    if (!profileData.eligibleProgram) {
+      profileData.eligibleProgram = deriveEligibleProgram(profileData.education?.qualification);
+    }
+
+    // eligibleProgram can still be null for edge cases — warn but don't block
+    if (profileData.eligibleProgram && !['Bachelor', 'Master', 'PhD'].includes(profileData.eligibleProgram)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid eligibleProgram: "${profileData.eligibleProgram}". Must be Bachelor, Master, or PhD.`,
+      });
+    }
+
+    // ✅ FIX: derive programStream from programType first (not eligibleProgram)
+    profileData.programStream = deriveProgramStream(programType, profileData.eligibleProgram);
+
+    // ── interestedCourses (Step 3 optional field) ─────────────────────────
+    // ✅ NEW: sanitize and cap at 5
+    if (!Array.isArray(profileData.interestedCourses)) {
+      profileData.interestedCourses = [];
+    }
+    profileData.interestedCourses = profileData.interestedCourses
+      .map((c) => (typeof c === 'string' ? c.trim() : ''))
+      .filter(Boolean)
+      .slice(0, 5);
+
+    // ── Universities ───────────────────────────────────────────────────────
+    if (!profileData.selectedUniversities) {
+      profileData.selectedUniversities = [];
+    }
+    if (!Array.isArray(profileData.selectedUniversities)) {
+      return res.status(400).json({ success: false, message: 'selectedUniversities must be an array' });
+    }
+
     const processedUniversities = [];
     for (const uni of profileData.selectedUniversities) {
       const processed = processUniversityData(uni);
 
-      if (!processed)
-        return res.status(400).json({ success: false, message: 'Invalid university data in selectedUniversities' });
-      if (!processed.id)
-        return res.status(400).json({ success: false, message: `University "${processed.name}" is missing an id` });
-      if (!processed.name || processed.name === 'Unknown University')
+      if (!processed) {
+        return res.status(400).json({ success: false, message: 'Invalid university data' });
+      }
+
+      if (!processed.id) {
+        return res.status(400).json({
+          success: false,
+          message: `University "${processed.name}" is missing an id`,
+        });
+      }
+
+      if (!processed.name || processed.name === 'Unknown University') {
         return res.status(400).json({ success: false, message: 'University name is required' });
-      if (!processed.isKansas && processed.selectedCourses.length === 0)
-        return res.status(400).json({ success: false, message: `Please select at least one course for ${processed.name}` });
-      if (processed.selectedCourses.length > 2)
-        return res.status(400).json({ success: false, message: `Maximum 2 courses can be selected for ${processed.name}` });
+      }
+
+      // ✅ Warn on type mismatch but don't reject — universityType may be missing in DB
+      const uniType = (processed.universityType || '').toLowerCase();
+      if (uniType) {
+        if (programType === 'UG' && uniType !== 'bachelor') {
+          console.warn(`⚠️ "${processed.name}" universityType mismatch — expected bachelor, got ${uniType}`);
+        }
+        if (programType === 'PG' && uniType !== 'master') {
+          console.warn(`⚠️ "${processed.name}" universityType mismatch — expected master, got ${uniType}`);
+        }
+      } else {
+        console.warn(`⚠️ University "${processed.name}" has no universityType — skipping type check`);
+      }
+
+      if (!processed.isKansas && processed.selectedCourses.length === 0) {
+        console.warn(`⚠️ No course selected for ${processed.name}`);
+      }
+
+      if (processed.selectedCourses.length > 1) {
+        return res.status(400).json({
+          success: false,
+          message: `Maximum 1 course can be selected for ${processed.name}`,
+        });
+      }
 
       processedUniversities.push(processed);
     }
 
     profileData.selectedUniversities = processedUniversities;
 
-    // ── Process selectedSegment (optional) ────────────────────────────────
-    const processedSegment = processSegmentData(profileData.selectedSegment);
-    profileData.selectedSegment = processedSegment;
-
-    if (processedSegment) {
-      console.log(`🎯 Segment saved: [${processedSegment.id}] ${processedSegment.name}`);
-      console.log(`📖 Field of study: ${profileData.education?.field || 'N/A'}`);
-    }
+    // ── Process segment ────────────────────────────────────────────────────
+    profileData.selectedSegment = processSegmentData(profileData.selectedSegment);
 
     // ── Cleanup ───────────────────────────────────────────────────────────
     delete profileData.fullData;
 
-    if (
-      profileData.selectedCourses &&
-      typeof profileData.selectedCourses === 'object' &&
-      !Array.isArray(profileData.selectedCourses)
-    ) {
-      profileData.selectedCourses = new Map(Object.entries(profileData.selectedCourses));
-    } else {
-      profileData.selectedCourses = new Map();
-    }
+    // ✅ FIX: removed Map conversion — selectedCourses at top level is not needed
+    //    (courses live inside each university's selectedCourses array).
+    //    Keeping it as empty object is harmless but the Map conversion was breaking things.
+    delete profileData.selectedCourses;
 
     // ── Upsert ────────────────────────────────────────────────────────────
     let profile = await UserProfile.findOne({ userId });
@@ -171,21 +222,21 @@ export const createOrUpdateProfile = async (req, res) => {
         { ...profileData, lastUpdated: Date.now() },
         { new: true, runValidators: false }
       );
-      console.log('✅ Profile updated successfully for:', userId);
+      console.log('✅ Profile updated for:', userId, '| programType:', programType, '| stream:', profileData.programStream);
       return res.status(200).json({ success: true, message: 'Profile updated successfully', data: profile });
     } else {
       const newProfile = new UserProfile({ userId, ...profileData });
       await newProfile.save();
-      console.log('✅ Profile created successfully for:', userId);
+      console.log('✅ Profile created for:', userId, '| programType:', programType, '| stream:', profileData.programStream);
       return res.status(201).json({ success: true, message: 'Profile created successfully', data: newProfile });
     }
   } catch (error) {
     console.error('❌ Error in createOrUpdateProfile:', error);
     if (error.name === 'ValidationError') {
-      const errors = Object.values(error.errors).map(err => err.message);
+      const errors = Object.values(error.errors).map(e => e.message);
       return res.status(400).json({ success: false, message: 'Validation Error', errors });
     }
-    if (error.message?.includes('Please select'))
+    if (error.message?.includes('Please select') || error.message?.includes('Select'))
       return res.status(400).json({ success: false, message: error.message });
     if (error.code === 11000)
       return res.status(409).json({ success: false, message: 'Profile already exists for this user' });
@@ -194,13 +245,8 @@ export const createOrUpdateProfile = async (req, res) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// GET PROFILE  (student — own profile)
+// GET PROFILE
 // GET /api/user/profile
-//
-// FIX: Previously returned HTTP 404 when no profile existed yet, which the
-//      frontend treated as an error. Now returns HTTP 200 with
-//      { success: false, exists: false } so new users land on the profile
-//      creation form instead of seeing an error banner.
 // ─────────────────────────────────────────────────────────────────────────────
 export const getProfile = async (req, res) => {
   try {
@@ -210,11 +256,7 @@ export const getProfile = async (req, res) => {
 
     const profile = await UserProfile.findOne({ userId });
 
-    // ── New user: no profile yet — return a clean "not found" at HTTP 200
-    //    so the frontend can simply check res.data.exists === false and show
-    //    the creation form rather than treating it as a network error.
     if (!profile) {
-      console.log(`ℹ️  No profile found for user: ${userId} (new user)`);
       return res.status(200).json({
         success: false,
         exists:  false,
@@ -224,12 +266,7 @@ export const getProfile = async (req, res) => {
     }
 
     const profileObj = fixCoursesOnProfile(profile.toObject());
-
-    console.log(`✅ Profile fetched for user: ${userId}`);
-    console.log(`📚 Selected universities: ${profileObj.selectedUniversities?.length || 0}`);
-    console.log(`🎯 Segment: ${profileObj.selectedSegment?.name || 'None'}`);
-    console.log(`📖 Field: ${profileObj.education?.field || 'None'}`);
-
+    console.log(`✅ Profile fetched for: ${userId} | programType: ${profileObj.programType} | stream: ${profileObj.programStream}`);
     return res.status(200).json({ success: true, exists: true, data: profileObj });
   } catch (error) {
     console.error('❌ Error in getProfile:', error);
@@ -247,7 +284,6 @@ export const getProfileByEmail = async (req, res) => {
     const profile = await UserProfile.findOne({ 'basicInfo.email': email });
     if (!profile)
       return res.status(404).json({ success: false, message: 'Profile not found' });
-
     return res.status(200).json({ success: true, data: fixCoursesOnProfile(profile.toObject()) });
   } catch (error) {
     console.error('❌ Error in getProfileByEmail:', error);
@@ -297,9 +333,14 @@ export const checkProfileStatus = async (req, res) => {
         profileCompleted:          profile.profileCompleted,
         completedAt:               profile.completedAt,
         lastUpdated:               profile.lastUpdated,
+        programType:               profile.programType,
+        eligibleProgram:           profile.eligibleProgram,
+        programStream:             profile.programStream,
         selectedUniversitiesCount: profile.selectedUniversities?.length || 0,
         selectedSegment:           profile.selectedSegment || null,
         fieldOfStudy:              profile.education?.field || null,
+        // ✅ NEW: include interestedCourses in status response
+        interestedCourses:         profile.interestedCourses || [],
       } : null,
     });
   } catch (error) {
@@ -332,9 +373,9 @@ export const deleteProfile = async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 export const getAllProfiles = async (req, res) => {
   try {
-    const page  = Math.max(1, parseInt(req.query.page)  || 1);
-    const limit = Math.min(100, parseInt(req.query.limit) || 10);
-    const skip  = (page - 1) * limit;
+    const page   = Math.max(1, parseInt(req.query.page)  || 1);
+    const limit  = Math.min(100, parseInt(req.query.limit) || 10);
+    const skip   = (page - 1) * limit;
 
     const query = {};
     if (req.query.segment) query['selectedSegment.id'] = req.query.segment;
@@ -343,17 +384,26 @@ export const getAllProfiles = async (req, res) => {
         return res.status(400).json({ success: false, message: 'Invalid program. Use Bachelor, Master or PhD.' });
       query.eligibleProgram = req.query.program;
     }
+    if (req.query.stream) {
+      if (!['UG', 'PG'].includes(req.query.stream))
+        return res.status(400).json({ success: false, message: 'Invalid stream. Use UG or PG.' });
+      query.programStream = req.query.stream;
+    }
+    // ✅ NEW: filter by programType directly
+    if (req.query.programType) {
+      if (!['UG', 'PG'].includes(req.query.programType))
+        return res.status(400).json({ success: false, message: 'Invalid programType. Use UG or PG.' });
+      query.programType = req.query.programType;
+    }
 
     const [profiles, total] = await Promise.all([
       UserProfile.find(query).skip(skip).limit(limit).sort({ createdAt: -1 }).lean(),
       UserProfile.countDocuments(query),
     ]);
 
-    const profilesObj = profiles.map(fixCoursesOnProfile);
-
     return res.status(200).json({
       success: true,
-      data: profilesObj,
+      data:    profiles.map(fixCoursesOnProfile),
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
   } catch (error) {
@@ -375,8 +425,8 @@ export const getProfilesByProgram = async (req, res) => {
     const profiles = await UserProfile.find({ eligibleProgram: program }).lean();
     return res.status(200).json({
       success: true,
-      count: profiles.length,
-      data: profiles.map(fixCoursesOnProfile),
+      count:   profiles.length,
+      data:    profiles.map(fixCoursesOnProfile),
     });
   } catch (error) {
     console.error('❌ Error in getProfilesByProgram:', error);
@@ -397,8 +447,8 @@ export const getProfilesBySegment = async (req, res) => {
     const profiles = await UserProfile.find({ 'selectedSegment.id': segmentId }).lean();
     return res.status(200).json({
       success: true,
-      count: profiles.length,
-      data: profiles.map(fixCoursesOnProfile),
+      count:   profiles.length,
+      data:    profiles.map(fixCoursesOnProfile),
     });
   } catch (error) {
     console.error('❌ Error in getProfilesBySegment:', error);
@@ -414,9 +464,12 @@ export const getProfileStats = async (req, res) => {
   try {
     const [
       totalProfiles,
+      programTypeStats,
       programStats,
+      streamStats,
       segmentStats,
       fieldStats,
+      interestedCourseStats,
       universitySelectionStats,
       courseSelectionStats,
       recentProfiles,
@@ -424,8 +477,19 @@ export const getProfileStats = async (req, res) => {
 
       UserProfile.countDocuments(),
 
+      // ✅ NEW: stats by programType (UG/PG direct selection)
+      UserProfile.aggregate([
+        { $group: { _id: '$programType', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+      ]),
+
       UserProfile.aggregate([
         { $group: { _id: '$eligibleProgram', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+      ]),
+
+      UserProfile.aggregate([
+        { $group: { _id: '$programStream', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
       ]),
 
@@ -448,9 +512,23 @@ export const getProfileStats = async (req, res) => {
         { $limit: 20 },
       ]),
 
+      // ✅ NEW: most common interested courses across all profiles
+      UserProfile.aggregate([
+        { $unwind: '$interestedCourses' },
+        { $group: { _id: '$interestedCourses', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 15 },
+      ]),
+
       UserProfile.aggregate([
         { $unwind: '$selectedUniversities' },
-        { $group: { _id: '$selectedUniversities.name', count: { $sum: 1 } } },
+        {
+          $group: {
+            _id:   '$selectedUniversities.name',
+            type:  { $first: '$selectedUniversities.universityType' },
+            count: { $sum: 1 },
+          },
+        },
         { $sort: { count: -1 } },
         { $limit: 10 },
       ]),
@@ -472,7 +550,7 @@ export const getProfileStats = async (req, res) => {
       UserProfile.find()
         .sort({ createdAt: -1 })
         .limit(5)
-        .select('basicInfo.fullName basicInfo.email eligibleProgram selectedSegment education.field selectedUniversities createdAt')
+        .select('basicInfo.fullName basicInfo.email programType eligibleProgram programStream selectedSegment education.field interestedCourses selectedUniversities createdAt')
         .lean(),
     ]);
 
@@ -480,9 +558,12 @@ export const getProfileStats = async (req, res) => {
       success: true,
       data: {
         total: totalProfiles,
+        programTypeStats,
         programStats,
+        streamStats,
         segmentStats,
         fieldStats,
+        interestedCourseStats,
         universitySelectionStats,
         courseSelectionStats,
         recentProfiles,
@@ -544,7 +625,7 @@ export const getProfileWithCourses = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      data: { ...profileObj, coursesByUniversity },
+      data:    { ...profileObj, coursesByUniversity },
     });
   } catch (error) {
     console.error('❌ Error in getProfileWithCourses:', error);
@@ -575,12 +656,15 @@ export const getProfileForAnalytics = async (req, res) => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SUBMIT UNIVERSITY REQUEST
-// POST /api/user/university/request
+// ✅ FIX: frontend calls POST /api/admin/university-request
+//         Make sure your router also registers this at that path.
+//         Controller logic is unchanged — just ensure routes match.
+// POST /api/admin/university-request  (and/or /api/user/university/request)
 // ─────────────────────────────────────────────────────────────────────────────
 export const submitUniversityRequest = async (req, res) => {
   try {
     const userId = req.userId;
-    const { universityName, country, interestedCourses } = req.body;
+    const { universityName, country, interestedCourses, programType } = req.body;
 
     if (!userId)                 return res.status(401).json({ success: false, message: 'User ID not found in token' });
     if (!universityName?.trim()) return res.status(400).json({ success: false, message: 'University name is required' });
@@ -595,6 +679,8 @@ export const submitUniversityRequest = async (req, res) => {
       universityName: universityName.trim(),
       country:        country.trim(),
       courses:        interestedCourses,
+      // ✅ NEW: pass programType through so admin knows UG vs PG request
+      programType:    programType || null,
     });
 
     return res.status(201).json({

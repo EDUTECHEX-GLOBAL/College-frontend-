@@ -133,7 +133,7 @@
   background: #f0f0f0;
 }
 
-.filter-btn.active {
+.phd-filter-btn.active {
   background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
   color: white;
   border-color: transparent;

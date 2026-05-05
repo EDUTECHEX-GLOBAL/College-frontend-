@@ -11,6 +11,7 @@ import MasterPreview from '../models/masterpreviewmodel.js';
 import Account       from '../models/accountModel.js';
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { sendEmailEnhanced, emailTemplates } from '../utils/sendEmail.js';
 
 /* ─────────────────────────────────────────────────────────────────────────────
    HELPERS
@@ -493,5 +494,49 @@ export const getMasterUniversityStats = async (req, res) => {
       message: 'Failed to fetch stats.',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
+  }
+};
+/* ═════════════════════════════════════════════════════════════════════════════
+   SEND DOCUMENT EMAIL
+   POST /api/master-university/process-admin/send-document-email
+═════════════════════════════════════════════════════════════════════════════ */
+export const sendDocumentEmailToStudent = async (req, res) => {
+  try {
+    const {
+      studentEmail,
+      studentName,
+      documentName,
+      reason       = "other",
+      adminNotes   = "",
+      deadlineDays = 7,
+    } = req.body;
+
+    if (!studentEmail) {
+      return res.status(400).json({ success: false, message: "studentEmail is required." });
+    }
+    if (!documentName) {
+      return res.status(400).json({ success: false, message: "documentName is required." });
+    }
+
+    const { subject, html } = emailTemplates.documentCorrection({
+      studentName:  studentName  || "Student",
+      documentName: documentName,
+      documentType: documentName,
+      reason,
+      adminNotes:   adminNotes || "",
+      deadlineDays: Number(deadlineDays) || 7,
+    });
+
+    const result = await sendEmailEnhanced({ to: studentEmail, subject, html });
+
+    if (!result.success) {
+      return res.status(500).json({ success: false, message: "Failed to send email.", error: result.error });
+    }
+
+    return res.status(200).json({ success: true, message: `Email sent to ${studentEmail}`, messageId: result.messageId });
+
+  } catch (error) {
+    console.error("❌ sendDocumentEmailToStudent Error:", error);
+    return res.status(500).json({ success: false, message: "Internal server error." });
   }
 };

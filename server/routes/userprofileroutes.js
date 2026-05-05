@@ -23,21 +23,18 @@ import {
   markUserNotificationRead,
 } from '../controllers/notificationController.js';
 
-// ── University models imported directly so students can fetch them
-//    without hitting admin-only routes (which always 401 for student tokens).
-import GUSUniversity from '../models/GUSUniversity.js';
 import BachelorsUniversity from '../models/bachelorsUniversityModel.js';
-import MastersUniversity from '../models/mastersUniversityModel.js';
+import MastersUniversity   from '../models/mastersUniversityModel.js';
 
 const router = express.Router();
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PUBLIC TEST ROUTE
+// PUBLIC TEST
 // ─────────────────────────────────────────────────────────────────────────────
-router.get('/test', (req, res) => {
+router.get('/test', (_req, res) => {
   res.json({
-    success: true,
-    message: '✅ User profile routes are working',
+    success:   true,
+    message:   '✅ User profile routes are working',
     timestamp: new Date().toISOString(),
   });
 });
@@ -50,91 +47,132 @@ router.get('/debug-auth', authenticateToken, (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// STUDENT-SAFE UNIVERSITIES ENDPOINT
-// GET /api/user/universities
+// UNIVERSITIES  —  student-safe endpoint
 //
-// WHY THIS EXISTS:
-//   The frontend was calling GET /api/admin/universities with a student token.
-//   That route has admin-only auth middleware → always returns 401 for students.
-//   This endpoint queries the same models directly and is protected only by
-//   the regular authenticateToken middleware (student token is fine).
+// GET /api/user/universities?stream=UG|PG
 //
-// WHAT IT RETURNS:
-//   { data: { admin: [...], bachelors: [...], masters: [...] }, counts: {...} }
-//   Matches the shape the fixed fetchUniversities() in UserProfile.js expects.
+// stream=UG  → BachelorsUniversity only  (student chose UG / eligibleProgram=Bachelor)
+// stream=PG  → MastersUniversity only    (student chose PG / eligibleProgram=Master|PhD)
+// (no param) → both collections          (fallback / admin use)
+//
+// We intentionally removed GUSUniversity from here.
+// Only Bachelor and Master university data is shown to students.
 // ─────────────────────────────────────────────────────────────────────────────
 router.get('/universities', authenticateToken, async (req, res) => {
   try {
-    const page  = Math.max(1, parseInt(req.query.page)  || 1);
-    const limit = Math.min(200, parseInt(req.query.limit) || 100);
-    const skip  = (page - 1) * limit;
+    const stream = (req.query.stream || '').toUpperCase(); // 'PG' | 'UG' | ''
+    const limit  = Math.min(500, parseInt(req.query.limit) || 200);
 
-    // Run all queries in parallel — if one collection fails the others still return
-    const [adminResult, bachResult, mastResult] = await Promise.allSettled([
+    // Decide which collection(s) to query
+    const fetchBachelors = !stream || stream === 'UG';
+    const fetchMasters   = !stream || stream === 'PG';
 
-      // GUSUniversity = the collection behind /api/admin/universities
-      GUSUniversity
-        .find({ GUS_DATA: { $exists: true } })
-        .skip(skip)
-        .limit(limit)
-        .lean(),
+    const [bachResult, mastResult] = await Promise.allSettled([
+      fetchBachelors
+        ? BachelorsUniversity.find({ isActive: true }).limit(limit).lean()
+        : Promise.resolve([]),
 
-      // BachelorsUniversity = the collection behind /api/bachelors/universities
-      BachelorsUniversity
-        .find({ isActive: true })
-        .limit(500)
-        .lean(),
-
-      // Masters universities
-      MastersUniversity
-        .find({ isActive: true })
-        .limit(500)
-        .lean(),
+      fetchMasters
+        ? MastersUniversity.find({ isActive: true }).limit(limit).lean()
+        : Promise.resolve([]),
     ]);
 
-    const adminUnis = adminResult.status === 'fulfilled' ? adminResult.value : [];
-    const bachUnis  = bachResult.status  === 'fulfilled' ? bachResult.value  : [];
-    const mastUnis  = mastResult.status  === 'fulfilled' ? mastResult.value  : [];
+    const bachUnis = bachResult.status === 'fulfilled' ? bachResult.value : [];
+    const mastUnis = mastResult.status === 'fulfilled' ? mastResult.value : [];
 
-    // Warn in console if any query failed — server keeps running
-    if (adminResult.status === 'rejected')
-      console.warn('⚠️  GUSUniversity query failed:', adminResult.reason?.message);
     if (bachResult.status === 'rejected')
       console.warn('⚠️  BachelorsUniversity query failed:', bachResult.reason?.message);
     if (mastResult.status === 'rejected')
       console.warn('⚠️  MastersUniversity query failed:', mastResult.reason?.message);
 
+    // Tag each record so the frontend knows which type it is
+    const taggedBach = bachUnis.map(u => ({ ...u, universityType: 'Bachelor', _source: 'bachelors' }));
+    const taggedMast = mastUnis.map(u => ({ ...u, universityType: 'Master',   _source: 'masters'   }));
+
+    // Combined list — UG first, then PG
+    const all = [...taggedBach, ...taggedMast];
+
     console.log(
-      `✅ /api/user/universities — admin: ${adminUnis.length}, bachelors: ${bachUnis.length}, masters: ${mastUnis.length}`
+      `✅ /api/admin/universities[stream=${stream || 'ALL'}]` +
+      ` — bachelors: ${bachUnis.length}, masters: ${mastUnis.length}, total: ${all.length}`
     );
 
     return res.status(200).json({
       success: true,
+      stream:  stream || 'ALL',
       data: {
-        admin:     adminUnis,
-        bachelors: bachUnis,
-        masters:   mastUnis,
+        bachelors: taggedBach,
+        masters:   taggedMast,
+        all,            // convenience: single flat array
       },
       counts: {
-        admin:     adminUnis.length,
         bachelors: bachUnis.length,
         masters:   mastUnis.length,
-        total:     adminUnis.length + bachUnis.length + mastUnis.length,
+        total:     all.length,
       },
     });
   } catch (error) {
-    console.error('❌ Error in GET /api/user/universities:', error);
+    console.error('❌ Error in GET /api/admin/universities:', error);
     return res.status(500).json({
       success: false,
       message: 'Failed to fetch universities',
-      error: error.message,
+      error:   error.message,
     });
   }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// STUDENT PROFILE ROUTES
-// Static sub-paths must come BEFORE bare /profile to avoid Express misrouting.
+// COURSES for a specific university
+// GET /api/user/universities/:universityId/courses?type=Bachelor|Master
+// ─────────────────────────────────────────────────────────────────────────────
+router.get('/universities/:universityId/courses', authenticateToken, async (req, res) => {
+  try {
+    const { universityId } = req.params;
+    const type = req.query.type; // 'Bachelor' | 'Master'
+
+    if (!universityId)
+      return res.status(400).json({ success: false, message: 'universityId is required' });
+
+    let university = null;
+
+    // Search based on type hint, or try both
+    if (!type || type === 'Bachelor') {
+      university =
+        await BachelorsUniversity.findById(universityId).lean().catch(() => null) ||
+        await BachelorsUniversity.findOne({ UNITID: universityId }).lean().catch(() => null);
+    }
+
+    if (!university && (!type || type === 'Master')) {
+      university =
+        await MastersUniversity.findById(universityId).lean().catch(() => null) ||
+        await MastersUniversity.findOne({ UNITID: universityId }).lean().catch(() => null);
+    }
+
+    if (!university)
+      return res.status(404).json({ success: false, message: 'University not found' });
+
+    const courses = university.programs || university.courses || [];
+
+    return res.status(200).json({
+      success:        true,
+      universityId,
+      universityName: university.INSTNM || university.name || '',
+      universityType: type || (university._source === 'masters' ? 'Master' : 'Bachelor'),
+      totalCourses:   courses.length,
+      data:           courses,
+    });
+  } catch (error) {
+    console.error('❌ Error fetching university courses:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch courses',
+      error:   error.message,
+    });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PROFILE ROUTES
 // ─────────────────────────────────────────────────────────────────────────────
 router.post  ('/profile',              authenticateToken, createOrUpdateProfile);
 router.get   ('/profile',              authenticateToken, getProfile);
@@ -145,7 +183,7 @@ router.delete('/profile',              authenticateToken, deleteProfile);
 router.get   ('/profile/email/:email', authenticateToken, getProfileByEmail);
 
 // ─────────────────────────────────────────────────────────────────────────────
-// NOTIFICATION ROUTES
+// NOTIFICATIONS
 // ─────────────────────────────────────────────────────────────────────────────
 router.get  ('/notifications',          authenticateToken, getUserNotifications);
 router.patch('/notifications/:id/read', authenticateToken, markUserNotificationRead);

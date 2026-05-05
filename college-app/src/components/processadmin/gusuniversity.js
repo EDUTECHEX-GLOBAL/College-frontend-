@@ -25,6 +25,11 @@ const GusUniversity = () => {
     const [stats, setStats]               = useState({ total: 0, completed: 0, incomplete: 0, underReview: 0 });
     const [docViewer, setDocViewer]       = useState(null);
     const [downloadingDoc, setDownloadingDoc] = useState(false);
+    const [emailModal, setEmailModal]     = useState(null); // { app, docLabel }
+    const [emailSending, setEmailSending] = useState(false);
+    const [emailNote, setEmailNote]       = useState('');
+    const [emailReason, setEmailReason]   = useState('incorrect_format');
+    const [emailSuccess, setEmailSuccess] = useState(null);
 
     const apiRef = useRef(null);
     if (!apiRef.current) {
@@ -50,6 +55,8 @@ const GusUniversity = () => {
         apiRef.current = instance;
     }
     const api = apiRef.current;
+
+    const API_BASE_URL_VIEW = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
     /* ── Formatters ── */
     const formatDate = (d) => {
@@ -86,7 +93,7 @@ const GusUniversity = () => {
         } catch { return ym; }
     };
 
-    /* ── Status helpers — now use applicationStatus from overview ── */
+    /* ── Status helpers ── */
     const getStatusLabel = (app) => {
         if (app.overviewStatus === 'completed'  || app.completionPercentage === 100) return 'COMPLETED';
         if (app.overviewStatus === 'in_progress' || (app.completionPercentage > 0 && app.completionPercentage < 100)) return 'IN PROGRESS';
@@ -105,14 +112,10 @@ const GusUniversity = () => {
     const getAvatarColor = (name) => avatarColors[(name?.charCodeAt(0) || 0) % avatarColors.length];
 
     const getUniversityName = (app) =>
-        app.selectedCourse?.universityName ||
-        app.universityName                 ||
-        '—';
+        app.selectedCourse?.universityName || app.universityName || '—';
 
     const getProgramName = (app) =>
-        app.selectedCourse?.programName ||
-        app.programName                 ||
-        '—';
+        app.selectedCourse?.programName || app.programName || '—';
 
     const eqheTitleMap = {
         'senior_secondary_india':  'Senior Secondary School Certificate (India)',
@@ -195,8 +198,6 @@ const GusUniversity = () => {
     const openModal  = (app) => setSelectedApp({ ...app });
     const closeModal = ()    => setSelectedApp(null);
 
-    const API_BASE_URL_VIEW = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
-
     const DOC_FOLDER_MAP_VIEW = {
         'CV':'documents/cv','Photo':'documents/photo','Passport':'documents/personal',
         'Transcript':'documents/academic','Diploma':'documents/academic',
@@ -256,6 +257,52 @@ const GusUniversity = () => {
             alert('Download failed. Try "Open in New Tab" and save from there.');
         } finally {
             setDownloadingDoc(false);
+        }
+    };
+
+    /* ── Send Document Re-upload Email ── */
+    const handleSendDocEmail = async () => {
+        if (!emailModal) return;
+        setEmailSending(true);
+        try {
+            const token =
+                localStorage.getItem('processAdminToken') ||
+                localStorage.getItem('token')             ||
+                localStorage.getItem('adminToken');
+            const response = await fetch(
+                `${API_BASE_URL_VIEW}/api/application/process-admin/gus-university/send-doc-email`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                    },
+                    body: JSON.stringify({
+                        studentId:     emailModal.app.studentId,
+                        studentName:   emailModal.app.studentName,
+                        studentEmail:  emailModal.app.email,
+                        documentLabel: emailModal.docLabel,
+                        reason:        emailReason,
+                        adminNotes:    emailNote,
+                    }),
+                }
+            );
+            const data = await response.json();
+            if (data.success) {
+                setEmailSuccess(`Email sent successfully to ${emailModal.app.email}`);
+                setTimeout(() => {
+                    setEmailModal(null);
+                    setEmailSuccess(null);
+                    setEmailNote('');
+                    setEmailReason('incorrect_format');
+                }, 2500);
+            } else {
+                alert(`Failed to send email: ${data.message}`);
+            }
+        } catch (err) {
+            alert('Error sending email. Please try again.');
+        } finally {
+            setEmailSending(false);
         }
     };
 
@@ -344,10 +391,10 @@ const GusUniversity = () => {
     ];
 
     const renderDocCard = ({ lbl, required, up, st, meta, exp }) => {
-        const hasExpected = !up && !!exp;
-        const statusLabel = up ? (st==='approved'?'Approved':st==='rejected'?'Rejected':'Pending') : hasExpected?'Expected':'Not Uploaded';
-        const statusClass = up ? (st==='approved'?'doc-status-approved':st==='rejected'?'doc-status-rejected':'doc-status-pending') : hasExpected?'doc-status-expected':'doc-status-missing';
-        const cardClass   = up ? 'doc-card-uploaded' : hasExpected ? 'doc-card-expected' : 'doc-card-missing';
+        const hasExpected  = !up && !!exp;
+        const statusLabel  = up ? (st==='approved'?'Approved':st==='rejected'?'Rejected':'Pending') : hasExpected?'Expected':'Not Uploaded';
+        const statusClass  = up ? (st==='approved'?'doc-status-approved':st==='rejected'?'doc-status-rejected':'doc-status-pending') : hasExpected?'doc-status-expected':'doc-status-missing';
+        const cardClass    = up ? 'doc-card-uploaded' : hasExpected ? 'doc-card-expected' : 'doc-card-missing';
         const fileTypeText = up ? getFileTypeText(meta?.fileType) : (hasExpected ? 'Expected' : 'Missing');
         return (
             <div key={lbl} className={`gus-doc-card ${cardClass}`}>
@@ -369,8 +416,36 @@ const GusUniversity = () => {
                                     Uploaded {new Date(meta.uploadedAt).toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'})}
                                 </span>
                             )}
-                            <button className="gus-doc-view-btn" onClick={() => openDocViewer(meta, lbl)}>
-                                View Document
+                            <div className="gus-doc-card-actions">
+                                <button className="gus-doc-view-btn" onClick={() => openDocViewer(meta, lbl)}>
+                                    View Document
+                                </button>
+                                <button
+                                    className="gus-doc-email-btn"
+                                    title={`Request re-upload of ${lbl}`}
+                                    onClick={() => {
+                                        setEmailNote('');
+                                        setEmailReason('incorrect_format');
+                                        setEmailModal({ app: selectedApp, docLabel: lbl });
+                                    }}
+                                >
+                                    ✉ Email Student
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                    {!up && (
+                        <div className="gus-doc-card-actions" style={{marginTop:'8px'}}>
+                            <button
+                                className="gus-doc-email-btn"
+                                title={`Request upload of ${lbl}`}
+                                onClick={() => {
+                                    setEmailNote('');
+                                    setEmailReason('wrong_document');
+                                    setEmailModal({ app: selectedApp, docLabel: lbl });
+                                }}
+                            >
+                                ✉ Email Student
                             </button>
                         </div>
                     )}
@@ -405,6 +480,7 @@ const GusUniversity = () => {
     return (
         <div className="gus-wrap">
 
+            {/* ── Page Header ── */}
             <div className="gus-page-header">
                 <div className="gus-page-header-accent" />
                 <div className="gus-page-header-left">
@@ -416,12 +492,11 @@ const GusUniversity = () => {
                         <div className="gus-hero-badge-num">{stats.total}</div>
                         <div className="gus-hero-badge-lbl">Applications</div>
                     </div>
-                    <button className="gus-refresh-btn" onClick={fetchApplications}>
-                        Refresh
-                    </button>
+                    <button className="gus-refresh-btn" onClick={fetchApplications}>Refresh</button>
                 </div>
             </div>
 
+            {/* ── Stats ── */}
             <div className="gus-stats-row">
                 {[
                     { cls:'gus-stat-total',      label:'TOTAL APPLICATIONS', val:stats.total },
@@ -438,6 +513,7 @@ const GusUniversity = () => {
                 ))}
             </div>
 
+            {/* ── Controls ── */}
             <div className="gus-controls">
                 <div className="gus-search-box">
                     <input
@@ -464,6 +540,7 @@ const GusUniversity = () => {
                 </div>
             </div>
 
+            {/* ── Desktop Table ── */}
             <div className="gus-table-card gus-desktop-table">
                 <div className="gus-table-wrap-scroll">
                     <table className="gus-table">
@@ -528,9 +605,7 @@ const GusUniversity = () => {
                                         </td>
                                         <td>
                                             <div className="gus-action-group">
-                                                <button className="gus-btn-view" onClick={() => openModal({...app})}>
-                                                    View
-                                                </button>
+                                                <button className="gus-btn-view" onClick={() => openModal({...app})}>View</button>
                                                 <button className="gus-btn-dl" onClick={() => handleDownloadPDF(app)} disabled={pdfLoading===app.studentId} title="Download PDF">
                                                     {pdfLoading===app.studentId ? <span className="gus-btn-spinner"/> : 'PDF'}
                                                 </button>
@@ -547,6 +622,7 @@ const GusUniversity = () => {
                 </div>
             </div>
 
+            {/* ── Mobile Cards ── */}
             <div className="gus-mobile-cards">
                 {filtered.length === 0 ? (
                     <div className="gus-empty-state" style={{background:'#fff',borderRadius:14,padding:'2rem'}}>
@@ -612,6 +688,7 @@ const GusUniversity = () => {
                 )}
             </div>
 
+            {/* ── Application Detail Modal ── */}
             {selectedApp && (
                 <div className="gus-overlay" onClick={closeModal}>
                     <div className="gus-modal" onClick={e => e.stopPropagation()}>
@@ -633,14 +710,13 @@ const GusUniversity = () => {
                         </div>
 
                         <div className="gus-modal-body">
+
                             <div className="gus-modal-sec">
                                 <div className="gus-modal-sec-title"><span className="gus-sec-dot gus-dot-green"/>University & Programme</div>
                                 <div className="gus-modal-grid">
                                     <div className="gus-modal-field gus-field-full">
                                         <span className="gus-field-lbl">University</span>
-                                        <span className="gus-field-val" style={{fontWeight:700,color:'#1d4ed8'}}>
-                                            {getUniversityName(selectedApp)}
-                                        </span>
+                                        <span className="gus-field-val" style={{fontWeight:700,color:'#1d4ed8'}}>{getUniversityName(selectedApp)}</span>
                                     </div>
                                     <div className="gus-modal-field gus-field-full">
                                         <span className="gus-field-lbl">Programme</span>
@@ -648,9 +724,7 @@ const GusUniversity = () => {
                                     </div>
                                     <div className="gus-modal-field">
                                         <span className="gus-field-lbl">Intake</span>
-                                        <span className="gus-field-val">
-                                            {selectedApp.selectedCourse?.intakeMonth || '—'} {selectedApp.selectedCourse?.intakeYear || ''}
-                                        </span>
+                                        <span className="gus-field-val">{selectedApp.selectedCourse?.intakeMonth || '—'} {selectedApp.selectedCourse?.intakeYear || ''}</span>
                                     </div>
                                     <div className="gus-modal-field">
                                         <span className="gus-field-lbl">Campus</span>
@@ -662,11 +736,7 @@ const GusUniversity = () => {
                                     </div>
                                     <div className="gus-modal-field">
                                         <span className="gus-field-lbl">Application Fee</span>
-                                        <span className="gus-field-val">
-                                            {selectedApp.selectedCourse?.applicationFee != null
-                                                ? `€${selectedApp.selectedCourse.applicationFee}`
-                                                : '—'}
-                                        </span>
+                                        <span className="gus-field-val">{selectedApp.selectedCourse?.applicationFee != null ? `€${selectedApp.selectedCourse.applicationFee}` : '—'}</span>
                                     </div>
                                 </div>
                             </div>
@@ -822,6 +892,7 @@ const GusUniversity = () => {
                                     <span className="gus-modal-prog-lbl">{selectedApp.completionPercentage||0}% Complete</span>
                                 </div>
                             </div>
+
                         </div>
 
                         <div className="gus-modal-ftr">
@@ -830,10 +901,12 @@ const GusUniversity = () => {
                             </button>
                             <button className="gus-modal-close-btn" onClick={closeModal}>Close</button>
                         </div>
+
                     </div>
                 </div>
             )}
 
+            {/* ── Document Viewer ── */}
             {docViewer && (
                 <div className="gus-docviewer-overlay" onClick={closeDocViewer}>
                     <div className="gus-docviewer-box" onClick={e => e.stopPropagation()}>
@@ -883,6 +956,103 @@ const GusUniversity = () => {
                                 </div>
                             )}
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Email Modal — CORRECTLY outside docViewer ── */}
+            {emailModal && (
+                <div className="gus-overlay" onClick={() => { setEmailModal(null); setEmailSuccess(null); }}>
+                    <div className="gus-email-modal" onClick={e => e.stopPropagation()}>
+
+                        <div className="gus-email-modal-hdr">
+                            <div>
+                                <h3 className="gus-email-modal-title">Request Document Re-upload</h3>
+                                <p className="gus-email-modal-sub">
+                                    Sending to: <strong>{emailModal.app.email}</strong>
+                                </p>
+                            </div>
+                            <button className="gus-modal-x" onClick={() => { setEmailModal(null); setEmailSuccess(null); }}>×</button>
+                        </div>
+
+                        {emailSuccess ? (
+                            <div className="gus-email-success">
+                                <div className="gus-email-success-icon">✓</div>
+                                <p>{emailSuccess}</p>
+                            </div>
+                        ) : (
+                            <div className="gus-email-modal-body">
+                                <div className="gus-email-field">
+                                    <label className="gus-email-label">Student</label>
+                                    <div className="gus-email-value">{emailModal.app.studentName}</div>
+                                </div>
+
+                                <div className="gus-email-field">
+                                    <label className="gus-email-label">Document</label>
+                                    <div className="gus-email-doc-badge">{emailModal.docLabel}</div>
+                                </div>
+
+                                <div className="gus-email-field">
+                                    <label className="gus-email-label">Reason for Re-upload</label>
+                                    <select
+                                        className="gus-email-select"
+                                        value={emailReason}
+                                        onChange={e => setEmailReason(e.target.value)}
+                                    >
+                                        <option value="incorrect_format">Incorrect Format</option>
+                                        <option value="fake_document">Suspicious / Fake Document</option>
+                                        <option value="blurry">Blurry / Unreadable</option>
+                                        <option value="incomplete">Incomplete / Missing Pages</option>
+                                        <option value="wrong_document">Wrong Document Uploaded</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+
+                                <div className="gus-email-field">
+                                    <label className="gus-email-label">
+                                        Additional Notes <span style={{color:'#94a3b8',fontWeight:400}}>(optional)</span>
+                                    </label>
+                                    <textarea
+                                        className="gus-email-textarea"
+                                        rows={3}
+                                        placeholder="e.g. Please ensure the document is in PDF format and all pages are included..."
+                                        value={emailNote}
+                                        onChange={e => setEmailNote(e.target.value)}
+                                    />
+                                </div>
+
+                                <div className="gus-email-preview">
+                                    <span className="gus-email-preview-label">📧 Email Preview</span>
+                                    <p className="gus-email-preview-text">
+                                        An email will be sent to <strong>{emailModal.app.studentName}</strong> asking them
+                                        to re-upload their <strong>{emailModal.docLabel}</strong>.
+                                        {emailNote && <> Admin note: "<em>{emailNote}</em>"</>}
+                                    </p>
+                                </div>
+
+                                <div className="gus-email-modal-ftr">
+                                    <button
+                                        className="gus-email-cancel-btn"
+                                        onClick={() => { setEmailModal(null); setEmailSuccess(null); }}
+                                        disabled={emailSending}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        className="gus-email-send-btn"
+                                        onClick={handleSendDocEmail}
+                                        disabled={emailSending}
+                                    >
+                                        {emailSending ? (
+                                            <><span className="gus-btn-spinner"/> Sending...</>
+                                        ) : (
+                                            '✉ Send Email'
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
                     </div>
                 </div>
             )}

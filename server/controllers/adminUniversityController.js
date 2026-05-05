@@ -1,4 +1,4 @@
-// controllers/adminuniversitycontroller.js
+// controllers/adminUniversityController.js
 import University from "../models/University.js";
 import College from "../models/College.js";
 import {
@@ -7,14 +7,173 @@ import {
 } from "../services/adminUniversityService.js";
 
 /* ================================
+   HELPER: Normalize university doc
+   Handles BOTH old schema (INSTNM/UNITID)
+   AND new schema (university/location/degree)
+================================ */
+const normalizeUniversity = (doc) => {
+  const obj = doc.toObject ? doc.toObject() : { ...doc };
+
+  // ── Name ──────────────────────────────────────────
+  const universityName =
+    obj.universityName ||
+    obj.university ||
+    obj.INSTNM ||
+    obj.name ||
+    "Unknown University";
+
+  // ── Code ──────────────────────────────────────────
+  const universityCode =
+    obj.universityCode ||
+    (obj.UNITID ? String(obj.UNITID) : null) ||
+    obj._id?.toString() ||
+    "";
+
+  // ── Location ──────────────────────────────────────
+  let city    = obj.city    || obj.CITY    || obj.location?.city    || "";
+  let state   = obj.state   || obj.STABBR  || obj.location?.state   || "";
+  let country = obj.country || obj.location?.country || obj.GUS_DATA?.country || "USA";
+
+  // new schema stores location as a string like "Singapore" or "United Kingdom"
+  if (!city && !state && typeof obj.location === "string") {
+    country = obj.location;
+  }
+
+  // ── Degree / Level ────────────────────────────────
+  const degree         = obj.degree || "";
+  const educationLevel = obj.educationLevel || "";
+
+  // Infer source/level from new schema
+  let source = obj.source || "admin";
+  if (!obj.source) {
+    const d = degree.toLowerCase();
+    const e = educationLevel.toLowerCase();
+    if (d === "bachelor" || e === "undergraduate") source = "bachelors";
+    else if (d === "master" || e === "postgraduate") source = "masters";
+    else if (d === "phd" || e === "doctorate") source = "phd";
+  }
+
+  // ── Programs ──────────────────────────────────────
+  let programs = obj.programs || [];
+
+  // New schema: programs_data at top level or inside GUS_DATA
+  if (!programs.length && Array.isArray(obj.programs_data)) {
+    programs = obj.programs_data;
+  }
+  if (!programs.length && Array.isArray(obj.GUS_DATA?.programs_data)) {
+    programs = obj.GUS_DATA.programs_data;
+  }
+  // New schema: major_areas → flatten to programs list
+  const majorAreasSource = obj.major_areas || obj.GUS_DATA?.major_areas || [];
+  if (!programs.length && Array.isArray(majorAreasSource) && majorAreasSource.length) {
+    majorAreasSource.forEach((area) => {
+      (area.specific_programs || []).forEach((prog) => {
+        programs.push({
+          id: `${area.major_area}-${prog.program_name}`.replace(/\s+/g, "-"),
+          name: prog.program_name,
+          title: prog.program_name,
+          program_name: prog.program_name,
+          majorArea: area.major_area,
+          level:
+            degree === "bachelor"
+              ? "Bachelor"
+              : degree === "master"
+              ? "Master"
+              : educationLevel || obj.GUS_DATA?.level || "Undergraduate",
+          studyMode: "On Campus",
+          duration: degree === "master" ? "2 years" : "4 years",
+        });
+      });
+    });
+  }
+
+  // ── Website ───────────────────────────────────────
+  const website =
+    obj.website ||
+    obj.WEBADDR ||
+    obj.contact?.website ||
+    "";
+
+  // ── Logo ──────────────────────────────────────────
+  const logo = obj.universityLogo || obj.logo || null;
+
+  // ── Stats ─────────────────────────────────────────
+  const stats = obj.stats || obj.GUS_DATA?.stats || null;
+
+  return {
+    ...obj,
+    // Normalised fields that the frontend expects
+    universityName,
+    universityCode,
+    INSTNM: universityName,   // keep old field so frontend works
+    UNITID: obj.UNITID || universityCode,
+    city,
+    state,
+    country,
+    location: { city, state, country },
+    degree,
+    educationLevel,
+    source,
+    programs,
+    programCount: programs.length,
+    website,
+    logo,
+    stats,
+    importedByAdmin: true,
+    lastUpdated: obj.updatedAt || obj.createdAt,
+  };
+};
+
+/* ================================
+   HELPER: Extract programs from doc
+================================ */
+const extractPrograms = (university) => {
+  // Already normalised
+  if (university.programs?.length) return university.programs;
+
+  // Raw doc
+  const obj = university.toObject ? university.toObject() : university;
+  let programs = [];
+
+  if (Array.isArray(obj.programs_data)) programs = [...obj.programs_data];
+  if (!programs.length && Array.isArray(obj.GUS_DATA?.programs_data))
+    programs = [...obj.GUS_DATA.programs_data];
+
+  const majorAreas = obj.major_areas || obj.GUS_DATA?.major_areas || [];
+  if (Array.isArray(majorAreas)) {
+    majorAreas.forEach((area) => {
+      (area.specific_programs || []).forEach((prog) => {
+        const exists = programs.some(
+          (p) =>
+            (p.title || "").toLowerCase() === prog.program_name.toLowerCase() ||
+            (p.program_name || "").toLowerCase() === prog.program_name.toLowerCase()
+        );
+        if (!exists) {
+          programs.push({
+            id: `area-${area.major_area}-${prog.program_name}`.replace(/\s+/g, "-"),
+            title: prog.program_name,
+            program_name: prog.program_name,
+            majorArea: area.major_area,
+            level: obj.GUS_DATA?.level || obj.educationLevel || "Undergraduate",
+            studyMode: "On Campus",
+            description: `${prog.program_name} – ${area.major_area} at ${obj.university || obj.INSTNM}`,
+          });
+        }
+      });
+    });
+  }
+
+  return programs;
+};
+
+/* ================================
    GET IMPORT STATS
 ================================ */
 export const getImportStats = async (req, res) => {
   try {
     const universitiesCount = await University.countDocuments();
-    const collegesCount = await College.countDocuments();
-
-    const fileStats = getDataStats();
+    const collegesCount     = await College.countDocuments();
+    const fileStats         = getDataStats();
 
     res.json({
       success: true,
@@ -28,10 +187,7 @@ export const getImportStats = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -43,9 +199,9 @@ export const importUniversities = async (req, res) => {
     const { colleges, gusUniversities } = loadUniversityData();
 
     let importedUniversities = 0;
-    let updatedUniversities = 0;
-    let importedColleges = 0;
-    let updatedColleges = 0;
+    let updatedUniversities  = 0;
+    let importedColleges     = 0;
+    let updatedColleges      = 0;
 
     // -------- Universities --------
     for (const uni of gusUniversities) {
@@ -53,67 +209,65 @@ export const importUniversities = async (req, res) => {
         UNITID: uni.UNITID,
         INSTNM: uni.INSTNM,
         IALIAS: uni.IALIAS || "",
-        ADDR: uni.ADDR || "",
-        CITY: uni.CITY || "",
+        ADDR:   uni.ADDR   || "",
+        CITY:   uni.CITY   || "",
         STABBR: uni.STABBR || "",
-        ZIP: uni.ZIP || "",
-        FIPS: uni.FIPS,
-        OBEREG: uni.OBEREG,
-        CHFNM: uni.CHFNM || "",
-        CHFTITLE: uni.CHFTITLE || "",
-        GENTELE: uni.GENTELE || "",
-        WEBADDR: uni.WEBADDR || "",
-        ADMINURL: uni.ADMINURL || "",
-        FAIDURL: uni.FAIDURL || "",
-        APPLURL: uni.APPLURL || "",
-        SECTOR: uni.SECTOR,
-        ICLEVEL: uni.ICLEVEL,
-        CONTROL: uni.CONTROL,
-        HLOFFER: uni.HLOFFER,
-        UGOFFER: uni.UGOFFER,
-        GROFFER: uni.GROFFER,
-        DEGGRANT: uni.DEGGRANT,
-        HBCU: uni.HBCU,
-        LOCALE: uni.LOCALE,
-        OPENPUBL: uni.OPENPUBL,
-        CYACTIVE: uni.CYACTIVE,
-        POSTSEC: uni.POSTSEC,
-        INSTCAT: uni.INSTCAT,
-        LANDGRNT: uni.LANDGRNT,
-        INSTSIZE: uni.INSTSIZE,
-        LONGITUD: uni.LONGITUD,
-        LATITUDE: uni.LATITUDE,
-        isVisible: true,
+        ZIP:    uni.ZIP    || "",
+        FIPS:      uni.FIPS,
+        OBEREG:    uni.OBEREG,
+        CHFNM:     uni.CHFNM     || "",
+        CHFTITLE:  uni.CHFTITLE  || "",
+        GENTELE:   uni.GENTELE   || "",
+        WEBADDR:   uni.WEBADDR   || "",
+        ADMINURL:  uni.ADMINURL  || "",
+        FAIDURL:   uni.FAIDURL   || "",
+        APPLURL:   uni.APPLURL   || "",
+        SECTOR:    uni.SECTOR,
+        ICLEVEL:   uni.ICLEVEL,
+        CONTROL:   uni.CONTROL,
+        HLOFFER:   uni.HLOFFER,
+        UGOFFER:   uni.UGOFFER,
+        GROFFER:   uni.GROFFER,
+        DEGGRANT:  uni.DEGGRANT,
+        HBCU:      uni.HBCU,
+        LOCALE:    uni.LOCALE,
+        OPENPUBL:  uni.OPENPUBL,
+        CYACTIVE:  uni.CYACTIVE,
+        POSTSEC:   uni.POSTSEC,
+        INSTCAT:   uni.INSTCAT,
+        LANDGRNT:  uni.LANDGRNT,
+        INSTSIZE:  uni.INSTSIZE,
+        LONGITUD:  uni.LONGITUD,
+        LATITUDE:  uni.LATITUDE,
+        isVisible:      true,
         importedByAdmin: true,
         location: {
-          address: uni.ADDR || "",
-          city: uni.CITY || "",
-          state: uni.STABBR || "",
-          zip: uni.ZIP || "",
-          latitude: uni.LATITUDE,
+          address:   uni.ADDR   || "",
+          city:      uni.CITY   || "",
+          state:     uni.STABBR || "",
+          zip:       uni.ZIP    || "",
+          latitude:  uni.LATITUDE,
           longitude: uni.LONGITUD,
         },
         contact: {
-          phone: uni.GENTELE || "",
-          website: uni.WEBADDR || "",
+          phone:    uni.GENTELE  || "",
+          website:  uni.WEBADDR  || "",
           adminUrl: uni.ADMINURL || "",
-          faidUrl: uni.FAIDURL || "",
-          applUrl: uni.APPLURL || "",
+          faidUrl:  uni.FAIDURL  || "",
+          applUrl:  uni.APPLURL  || "",
         },
         metadata: {
-          chancellor: uni.CHFNM || "",
+          chancellor:      uni.CHFNM    || "",
           chancellorTitle: uni.CHFTITLE || "",
-          opeid: uni.OPEID,
-          sector: uni.SECTOR,
+          opeid:   uni.OPEID,
+          sector:  uni.SECTOR,
           iclevel: uni.ICLEVEL,
           control: uni.CONTROL,
         },
-        // Store GUS_DATA if available
         GUS_DATA: uni.GUS_DATA || {},
       };
 
       const existing = await University.findOne({ UNITID: uni.UNITID });
-
       if (existing) {
         await University.updateOne({ UNITID: uni.UNITID }, data);
         updatedUniversities++;
@@ -126,69 +280,57 @@ export const importUniversities = async (req, res) => {
     // -------- Colleges --------
     for (const col of colleges) {
       try {
-        // Get the parent university to get universityCode and universityName
-      const parentUniversity = await University.findOne({ UNITID: col.UNITID });
-      
-      // Map the college data to match the College model schema
-      const data = {
-        // Map to the expected fields in College model
-        collegeName: col.INSTNM || col.collegeName || "",
-        collegeCode: col.IALIAS || col.collegeCode || `COL-${col.UNITID || Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
-        universityCode: col.UNITID ? col.UNITID.toString() : (parentUniversity?.UNITID?.toString() || ""),
-        universityName: parentUniversity?.INSTNM || col.universityName || "",
-        description: col.description || "",
-        establishedYear: col.establishedYear || "",
-        website: col.WEBADDR || col.website || "",
-        address: col.ADDR || col.address || "",
-        city: col.CITY || col.city || "",
-        state: col.STABBR || col.state || "",
-        country: col.country || "USA",
-        contactEmail: col.contactEmail || col.adminEmail || "",
-        contactPhone: col.GENTELE || col.contactPhone || "",
-        programs: col.programs || [],
-        
-        // Also keep the original fields for backward compatibility
-        UNITID: col.UNITID,
-        INSTNM: col.INSTNM,
-        IALIAS: col.IALIAS || "",
-        ADDR: col.ADDR || "",
-        CITY: col.CITY || "",
-        STABBR: col.STABBR || "",
-        ZIP: col.ZIP || "",
-        isVisible: true,
-        importedByAdmin: true,
-        location: {
-          address: col.ADDR || "",
-          city: col.CITY || "",
-          state: col.STABBR || "",
-          zip: col.ZIP || "",
-          latitude: col.LATITUDE,
-          longitude: col.LONGITUD,
-        },
-        contact: {
-          phone: col.GENTELE || "",
-          website: col.WEBADDR || "",
-        },
-      };
+        const parentUniversity = await University.findOne({ UNITID: col.UNITID });
+        const data = {
+          collegeName:    col.INSTNM || col.collegeName || "",
+          collegeCode:    col.IALIAS || col.collegeCode || `COL-${col.UNITID || Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+          universityCode: col.UNITID ? col.UNITID.toString() : (parentUniversity?.UNITID?.toString() || ""),
+          universityName: parentUniversity?.INSTNM || col.universityName || "",
+          description:    col.description || "",
+          establishedYear: col.establishedYear || "",
+          website:        col.WEBADDR || col.website || "",
+          address:        col.ADDR    || col.address  || "",
+          city:           col.CITY    || col.city     || "",
+          state:          col.STABBR  || col.state    || "",
+          country:        col.country || "USA",
+          contactEmail:   col.contactEmail || col.adminEmail || "",
+          contactPhone:   col.GENTELE || col.contactPhone   || "",
+          programs:       col.programs || [],
+          UNITID: col.UNITID,
+          INSTNM: col.INSTNM,
+          IALIAS: col.IALIAS || "",
+          ADDR:   col.ADDR   || "",
+          CITY:   col.CITY   || "",
+          STABBR: col.STABBR || "",
+          ZIP:    col.ZIP    || "",
+          isVisible:       true,
+          importedByAdmin: true,
+          location: {
+            address:   col.ADDR   || "",
+            city:      col.CITY   || "",
+            state:     col.STABBR || "",
+            zip:       col.ZIP    || "",
+            latitude:  col.LATITUDE,
+            longitude: col.LONGITUD,
+          },
+          contact: {
+            phone:   col.GENTELE || "",
+            website: col.WEBADDR || "",
+          },
+        };
 
-      // Check if college already exists by UNITID or collegeCode
-      const existing = await College.findOne({ 
-        $or: [
-          { UNITID: col.UNITID },
-          { collegeCode: data.collegeCode }
-        ]
-      });
-
-      if (existing) {
-        await College.updateOne({ _id: existing._id }, data);
-        updatedColleges++;
-      } else {
-        await College.create(data);
-        importedColleges++;
-      }
-    } catch (colError) {
-        console.error(`Error processing college: ${col.INSTNM || 'Unknown'}`, colError.message);
-        // Continue with next college even if this one fails
+        const existing = await College.findOne({
+          $or: [{ UNITID: col.UNITID }, { collegeCode: data.collegeCode }],
+        });
+        if (existing) {
+          await College.updateOne({ _id: existing._id }, data);
+          updatedColleges++;
+        } else {
+          await College.create(data);
+          importedColleges++;
+        }
+      } catch (colError) {
+        console.error(`Error processing college: ${col.INSTNM || "Unknown"}`, colError.message);
         continue;
       }
     }
@@ -196,35 +338,55 @@ export const importUniversities = async (req, res) => {
     res.json({
       success: true,
       message: "Import completed",
-      data: {
-        importedUniversities,
-        updatedUniversities,
-        importedColleges,
-        updatedColleges,
-      },
+      data: { importedUniversities, updatedUniversities, importedColleges, updatedColleges },
     });
   } catch (error) {
     console.error("Import error:", error);
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
 /* ================================
    GET ALL UNIVERSITIES
+   Supports new schema (university/location/degree)
+   AND old schema (INSTNM/UNITID)
 ================================ */
 export const getAllUniversities = async (req, res) => {
   try {
     const page  = Math.max(1, parseInt(req.query.page)  || 1);
-    const limit = Math.min(500, parseInt(req.query.limit) || 100);
+ const limit = Math.min(5000, parseInt(req.query.limit) || 100);
     const skip  = (page - 1) * limit;
 
-    const [universities, total] = await Promise.all([
-      University.find().sort({ INSTNM: 1 }).skip(skip).limit(limit).lean(),
-      University.countDocuments(),
+    // Optional: filter by degree level from query param
+    const levelFilter = {};
+    if (req.query.level) {
+      const l = req.query.level.toLowerCase();
+      if (l === "bachelor" || l === "bachelors" || l === "ug") {
+        levelFilter.$or = [
+          { degree: { $in: ["bachelor", "Bachelor", "bachelors"] } },
+          { educationLevel: { $in: ["Undergraduate", "undergraduate"] } },
+          { UGOFFER: 1 },
+        ];
+      } else if (l === "master" || l === "masters" || l === "pg") {
+        levelFilter.$or = [
+          { degree: { $in: ["master", "Master", "masters"] } },
+          { educationLevel: { $in: ["Postgraduate", "postgraduate", "Graduate", "graduate"] } },
+          { GROFFER: 1 },
+        ];
+      }
+    }
+
+    const [rawUniversities, total] = await Promise.all([
+      University.find(levelFilter)
+        .sort({ university: 1, INSTNM: 1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      University.countDocuments(levelFilter),
     ]);
+
+    // Normalise every document
+    const universities = rawUniversities.map(normalizeUniversity);
 
     res.json({
       success: true,
@@ -244,37 +406,42 @@ export const getAllColleges = async (req, res) => {
     const colleges = await College.find().sort({ INSTNM: 1 });
     res.json({ success: true, data: colleges });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
 /* ================================
    SEARCH UNIVERSITIES
+   Handles both old and new field names
 ================================ */
 export const searchUniversities = async (req, res) => {
   const { q } = req.query;
   if (!q) return getAllUniversities(req, res);
 
   try {
-    const universities = await University.find({
+    const rawUniversities = await University.find({
       $or: [
-        { INSTNM: { $regex: q, $options: "i" } },
-        { IALIAS: { $regex: q, $options: "i" } },
-        { "location.city": { $regex: q, $options: "i" } },
-        { "GUS_DATA.programs_data.title": { $regex: q, $options: "i" } },
-        { "GUS_DATA.major_areas.major_area": { $regex: q, $options: "i" } },
+        // New schema fields
+        { university:   { $regex: q, $options: "i" } },
+        { location:     { $regex: q, $options: "i" } },
+        { degree:       { $regex: q, $options: "i" } },
+        // Old schema fields
+        { INSTNM:       { $regex: q, $options: "i" } },
+        { IALIAS:       { $regex: q, $options: "i" } },
+        { "location.city":  { $regex: q, $options: "i" } },
+        // Programs
+        { "programs_data.title":                       { $regex: q, $options: "i" } },
+        { "major_areas.major_area":                    { $regex: q, $options: "i" } },
+        { "GUS_DATA.programs_data.title":              { $regex: q, $options: "i" } },
+        { "GUS_DATA.major_areas.major_area":           { $regex: q, $options: "i" } },
+        { "major_areas.specific_programs.program_name": { $regex: q, $options: "i" } },
       ],
-    });
+    }).lean();
 
+    const universities = rawUniversities.map(normalizeUniversity);
     res.json({ success: true, data: universities });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -288,159 +455,87 @@ export const searchColleges = async (req, res) => {
   try {
     const colleges = await College.find({
       $or: [
-        { INSTNM: { $regex: q, $options: "i" } },
-        { IALIAS: { $regex: q, $options: "i" } },
+        { INSTNM:         { $regex: q, $options: "i" } },
+        { IALIAS:         { $regex: q, $options: "i" } },
         { "location.city": { $regex: q, $options: "i" } },
+        { collegeName:    { $regex: q, $options: "i" } },
       ],
     });
-
     res.json({ success: true, data: colleges });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
 /* ================================
-   GET UNIVERSITY BY ID - FIXED VERSION
+   GET UNIVERSITY BY ID
+   Works with _id, UNITID (number), 
+   and new schema documents
 ================================ */
 export const getUniversityById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    console.log(`🔍 Fetching university with ID: ${id}`);
-
-    // Try to find by UNITID (number) or _id (string)
     let university;
-    
-    // Check if id is a number
+
+    // 1. Try UNITID as number
     if (!isNaN(id)) {
-      console.log(`   - Searching by UNITID: ${Number(id)}`);
       university = await University.findOne({ UNITID: Number(id) });
     }
-    
-    // If not found by UNITID, try by _id
+    // 2. Try _id
     if (!university) {
-      console.log(`   - Searching by _id: ${id}`);
-      university = await University.findById(id);
+      university = await University.findById(id).catch(() => null);
     }
-
-    // If still not found, try with string conversion
+    // 3. Fallback
     if (!university) {
-      console.log(`   - Not found, trying alternative search`);
       university = await University.findOne({
-        $or: [
-          { UNITID: id }, // Try as string
-          { UNITID: Number(id) }, // Try as number again
-          { _id: id }
-        ]
+        $or: [{ UNITID: id }, { UNITID: Number(id) }],
       });
     }
 
     if (!university) {
-      console.log(`❌ University not found with ID: ${id}`);
-      return res.status(404).json({ 
-        success: false, 
-        message: "University not found" 
-      });
+      return res.status(404).json({ success: false, message: "University not found" });
     }
 
-    console.log(`✅ University found: ${university.INSTNM}`);
+    const programs = extractPrograms(university);
 
-    // Convert to object
-    const universityObj = university.toObject();
-    
-    // Extract programs from GUS_DATA
-    let programs = [];
-    let programsByMajorArea = {};
-    
-    // 1. Get programs from GUS_DATA.programs_data
-    if (university.GUS_DATA?.programs_data && Array.isArray(university.GUS_DATA.programs_data)) {
-      console.log(`📚 Found ${university.GUS_DATA.programs_data.length} programs in GUS_DATA.programs_data`);
-      programs = [...university.GUS_DATA.programs_data];
-    }
-    
-    // 2. Also get programs from major_areas and add them if not duplicates
-    if (university.GUS_DATA?.major_areas && Array.isArray(university.GUS_DATA.major_areas)) {
-      console.log(`📚 Found ${university.GUS_DATA.major_areas.length} major areas`);
-      
-      university.GUS_DATA.major_areas.forEach(area => {
-        if (area.specific_programs && Array.isArray(area.specific_programs)) {
-          area.specific_programs.forEach(prog => {
-            // Check if this program already exists in programs array
-            const exists = programs.some(p => 
-              (p.title && p.title.toLowerCase().includes(prog.program_name.toLowerCase())) ||
-              (p.program_name && p.program_name.toLowerCase().includes(prog.program_name.toLowerCase()))
-            );
-            
-            if (!exists) {
-              programs.push({
-                id: `area-${area.major_area}-${prog.program_name.replace(/\s+/g, '-')}`,
-                title: prog.program_name,
-                program_name: prog.program_name,
-                majorArea: area.major_area,
-                level: university.GUS_DATA?.level || 'Undergraduate',
-                studyMode: 'On Campus',
-                locations: [`${university.CITY || ''}, ${university.STABBR || ''}`].filter(Boolean),
-                description: `${prog.program_name} program in ${area.major_area} at ${university.INSTNM}`,
-              });
-            }
-          });
-        }
-      });
-    }
-    
-    // 3. Group programs by major area
-    programs.forEach(prog => {
-      const area = prog.majorArea || prog.major_area || 'Other';
-      if (!programsByMajorArea[area]) {
-        programsByMajorArea[area] = [];
-      }
+    // Group by major area
+    const programsByMajorArea = {};
+    programs.forEach((prog) => {
+      const area = prog.majorArea || prog.major_area || "Other";
+      if (!programsByMajorArea[area]) programsByMajorArea[area] = [];
       programsByMajorArea[area].push(prog);
     });
 
-    // Calculate statistics
     const programStats = {
-      totalPrograms: programs.length,
-      totalMajorAreas: Object.keys(programsByMajorArea).length,
-      programsByLevel: {},
+      totalPrograms:    programs.length,
+      totalMajorAreas:  Object.keys(programsByMajorArea).length,
+      programsByLevel:  {},
       programsByStudyMode: {},
     };
-    
-    programs.forEach(prog => {
-      // Count by level
-      const level = prog.level || 'Unknown';
-      programStats.programsByLevel[level] = (programStats.programsByLevel[level] || 0) + 1;
-      
-      // Count by study mode
-      const mode = prog.studyMode || 'Unknown';
-      programStats.programsByStudyMode[mode] = (programStats.programsByStudyMode[mode] || 0) + 1;
+    programs.forEach((prog) => {
+      const level = prog.level || "Unknown";
+      const mode  = prog.studyMode || "Unknown";
+      programStats.programsByLevel[level]     = (programStats.programsByLevel[level]     || 0) + 1;
+      programStats.programsByStudyMode[mode]  = (programStats.programsByStudyMode[mode]  || 0) + 1;
     });
 
-    // Add program data to the response
-    universityObj.programs = programs;
-    universityObj.programsByMajorArea = programsByMajorArea;
-    universityObj.programStats = programStats;
-    universityObj.programCount = programs.length;
+    const normalized = normalizeUniversity(university);
+    const universityObj = {
+      ...normalized,
+      programs,
+      programsByMajorArea,
+      programStats,
+      programCount: programs.length,
+    };
 
-    console.log(`✅ Returning university data with ${programs.length} programs`);
-
-    res.json({ 
-      success: true, 
-      data: universityObj 
-    });
-    
+    res.json({ success: true, data: universityObj });
   } catch (error) {
-    console.error("❌ Error in getUniversityById:", error);
-    console.error("   - Error message:", error.message);
-    console.error("   - Error stack:", error.stack);
-    
+    console.error("Error in getUniversityById:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch university details",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -460,70 +555,35 @@ export const getUniversityPrograms = async (req, res) => {
       return res.status(404).json({ success: false, message: "University not found" });
     }
 
-    // Extract programs from GUS_DATA
-    let programs = [];
-    
-    if (university.GUS_DATA?.programs_data) {
-      programs = university.GUS_DATA.programs_data;
-    }
-    
-    // Also get from major_areas
-    if (university.GUS_DATA?.major_areas) {
-      university.GUS_DATA.major_areas.forEach(area => {
-        if (area.specific_programs) {
-          area.specific_programs.forEach(prog => {
-            const exists = programs.some(p => 
-              p.title?.includes(prog.program_name) || 
-              p.program_name?.includes(prog.program_name)
-            );
-            
-            if (!exists) {
-              programs.push({
-                id: `area-${area.major_area}-${prog.program_name.replace(/\s+/g, '-')}`,
-                title: prog.program_name,
-                program_name: prog.program_name,
-                majorArea: area.major_area,
-                level: university.GUS_DATA?.level || 'Undergraduate',
-                studyMode: 'On Campus',
-                locations: [`${university.CITY || ''}, ${university.STABBR || ''}`].filter(Boolean),
-              });
-            }
-          });
-        }
-      });
-    }
+    const programs = extractPrograms(university);
 
-    // Get programs by major area
     const programsByMajorArea = {};
-    programs.forEach(prog => {
-      const area = prog.majorArea || 'Other';
-      if (!programsByMajorArea[area]) {
-        programsByMajorArea[area] = [];
-      }
+    programs.forEach((prog) => {
+      const area = prog.majorArea || "Other";
+      if (!programsByMajorArea[area]) programsByMajorArea[area] = [];
       programsByMajorArea[area].push(prog);
     });
 
-    // Get statistics
     const stats = {
-      totalPrograms: programs.length,
+      totalPrograms:   programs.length,
       totalMajorAreas: Object.keys(programsByMajorArea).length,
       programsByLevel: {},
       programsByStudyMode: {},
     };
-
-    programs.forEach(prog => {
-      const level = prog.level || 'Unknown';
-      stats.programsByLevel[level] = (stats.programsByLevel[level] || 0) + 1;
-
-      const mode = prog.studyMode || 'Unknown';
+    programs.forEach((prog) => {
+      const level = prog.level || "Unknown";
+      const mode  = prog.studyMode || "Unknown";
+      stats.programsByLevel[level]    = (stats.programsByLevel[level]    || 0) + 1;
       stats.programsByStudyMode[mode] = (stats.programsByStudyMode[mode] || 0) + 1;
     });
+
+    const normalized = normalizeUniversity(university);
 
     res.json({
       success: true,
       data: {
-        universityId: university.UNITID || university._id,
-        universityName: university.INSTNM,
+        universityId:   university.UNITID || university._id,
+        universityName: normalized.universityName,
         programs,
         programsByMajorArea,
         stats,
@@ -531,10 +591,7 @@ export const getUniversityPrograms = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching programs:", error);
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -543,11 +600,8 @@ export const getUniversityPrograms = async (req, res) => {
 ================================ */
 export const searchUniversityPrograms = async (req, res) => {
   const { id } = req.params;
-  const { q } = req.query;
-
-  if (!q) {
-    return getUniversityPrograms(req, res);
-  }
+  const { q }  = req.query;
+  if (!q) return getUniversityPrograms(req, res);
 
   try {
     const university = await University.findOne({
@@ -558,51 +612,22 @@ export const searchUniversityPrograms = async (req, res) => {
       return res.status(404).json({ success: false, message: "University not found" });
     }
 
-    // Get all programs first
-    let allPrograms = [];
-    
-    if (university.GUS_DATA?.programs_data) {
-      allPrograms = university.GUS_DATA.programs_data;
-    }
-    
-    if (university.GUS_DATA?.major_areas) {
-      university.GUS_DATA.major_areas.forEach(area => {
-        if (area.specific_programs) {
-          area.specific_programs.forEach(prog => {
-            const exists = allPrograms.some(p => 
-              p.title?.includes(prog.program_name) || 
-              p.program_name?.includes(prog.program_name)
-            );
-            
-            if (!exists) {
-              allPrograms.push({
-                id: `area-${area.major_area}-${prog.program_name.replace(/\s+/g, '-')}`,
-                title: prog.program_name,
-                program_name: prog.program_name,
-                majorArea: area.major_area,
-                level: university.GUS_DATA?.level || 'Undergraduate',
-                studyMode: 'On Campus',
-                locations: [`${university.CITY || ''}, ${university.STABBR || ''}`].filter(Boolean),
-              });
-            }
-          });
-        }
-      });
-    }
-
-    // Search programs
-    const searchTerm = q.toLowerCase();
-    const programs = allPrograms.filter(prog => 
-      (prog.title && prog.title.toLowerCase().includes(searchTerm)) ||
-      (prog.program_name && prog.program_name.toLowerCase().includes(searchTerm)) ||
-      (prog.majorArea && prog.majorArea.toLowerCase().includes(searchTerm))
+    const allPrograms  = extractPrograms(university);
+    const term         = q.toLowerCase();
+    const programs     = allPrograms.filter(
+      (prog) =>
+        (prog.title        && prog.title.toLowerCase().includes(term))        ||
+        (prog.program_name && prog.program_name.toLowerCase().includes(term)) ||
+        (prog.majorArea    && prog.majorArea.toLowerCase().includes(term))
     );
+
+    const normalized = normalizeUniversity(university);
 
     res.json({
       success: true,
       data: {
-        universityId: university.UNITID || university._id,
-        universityName: university.INSTNM,
+        universityId:   university.UNITID || university._id,
+        universityName: normalized.universityName,
         searchTerm: q,
         programs,
         count: programs.length,
@@ -610,10 +635,7 @@ export const searchUniversityPrograms = async (req, res) => {
     });
   } catch (error) {
     console.error("Error searching programs:", error);
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -632,55 +654,30 @@ export const getProgramById = async (req, res) => {
       return res.status(404).json({ success: false, message: "University not found" });
     }
 
-    // Find program in GUS_DATA.programs_data
-    let program = null;
-    if (university.GUS_DATA?.programs_data) {
-      program = university.GUS_DATA.programs_data.find(p => p.id === programId);
-    }
-
-    // If not found, check in major_areas
-    if (!program && university.GUS_DATA?.major_areas) {
-      for (const area of university.GUS_DATA.major_areas) {
-        if (area.specific_programs) {
-          const found = area.specific_programs.find(p => 
-            p.program_name.replace(/\s+/g, '-') === programId || 
-            `${area.major_area}-${p.program_name.replace(/\s+/g, '-')}` === programId
-          );
-          if (found) {
-            program = {
-              id: programId,
-              title: found.program_name,
-              program_name: found.program_name,
-              majorArea: area.major_area,
-              level: university.GUS_DATA?.level || 'Undergraduate',
-              studyMode: 'On Campus',
-              locations: [`${university.CITY || ''}, ${university.STABBR || ''}`].filter(Boolean),
-              description: `${found.program_name} program in ${area.major_area} at ${university.INSTNM}`,
-            };
-            break;
-          }
-        }
-      }
-    }
+    const allPrograms = extractPrograms(university);
+    const program     = allPrograms.find(
+      (p) =>
+        p.id === programId ||
+        (p.program_name || "").replace(/\s+/g, "-") === programId
+    );
 
     if (!program) {
       return res.status(404).json({ success: false, message: "Program not found" });
     }
 
+    const normalized = normalizeUniversity(university);
+
     res.json({
       success: true,
       data: {
-        universityId: university.UNITID || university._id,
-        universityName: university.INSTNM,
+        universityId:   university.UNITID || university._id,
+        universityName: normalized.universityName,
         program,
       },
     });
   } catch (error) {
     console.error("Error fetching program:", error);
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -701,10 +698,7 @@ export const getCollegeById = async (req, res) => {
 
     res.json({ success: true, data: college });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -716,58 +710,49 @@ export const refreshData = async (req, res) => {
     const stats = getDataStats();
     res.json({ success: true, data: stats });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
 /* ================================
-   TEST ENDPOINT - HELPER FOR DEBUGGING
+   TEST ENDPOINT
 ================================ */
 export const testUniversityData = async (req, res) => {
   const { id } = req.params;
-  
+
   try {
-    console.log(`🔍 Testing university data for ID: ${id}`);
-    
     let university;
-    
     if (!isNaN(id)) {
       university = await University.findOne({ UNITID: Number(id) });
     } else {
       university = await University.findById(id);
     }
-    
+
     if (!university) {
-      return res.status(404).json({
-        success: false,
-        message: "University not found"
-      });
+      return res.status(404).json({ success: false, message: "University not found" });
     }
-    
-    // Return diagnostic information
+
+    const programs  = extractPrograms(university);
+    const normalized = normalizeUniversity(university);
+
     res.json({
       success: true,
       data: {
-        id: university.UNITID || university._id,
-        name: university.INSTNM,
-        hasGUS_DATA: !!university.GUS_DATA,
-        gusDataKeys: university.GUS_DATA ? Object.keys(university.GUS_DATA) : [],
-        hasProgramsData: !!(university.GUS_DATA?.programs_data),
-        programsCount: university.GUS_DATA?.programs_data?.length || 0,
-        hasMajorAreas: !!(university.GUS_DATA?.major_areas),
-        majorAreasCount: university.GUS_DATA?.major_areas?.length || 0,
-        sampleProgram: university.GUS_DATA?.programs_data?.[0] || null,
-      }
+        id:              university.UNITID || university._id,
+        rawFields:       Object.keys(university.toObject()),
+        normalizedName:  normalized.universityName,
+        source:          normalized.source,
+        degree:          normalized.degree,
+        educationLevel:  normalized.educationLevel,
+        location:        normalized.location,
+        hasPrograms:     programs.length > 0,
+        programsCount:   programs.length,
+        sampleProgram:   programs[0] || null,
+        hasMajorAreas:   !!(university.major_areas?.length || university.GUS_DATA?.major_areas?.length),
+      },
     });
-    
   } catch (error) {
     console.error("Error in test endpoint:", error);
-    res.status(500).json({
-      success: false,
-      message: error.message
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };

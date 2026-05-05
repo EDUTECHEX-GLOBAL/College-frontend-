@@ -577,17 +577,36 @@ const University = () => {
     } finally { setImporting(false); }
   };
 
+  // ─────────────────────────────────────────────────────────────
+  // FIX 1: mapUniFields — do NOT set universityCode from _id.
+  // Only use an actual code field, never the MongoDB _id.
+  // ─────────────────────────────────────────────────────────────
   const mapUniFields = (uni, source) => ({
     ...uni,
-    INSTNM: uni.universityName, UNITID: uni.universityCode,
-    CITY: uni.city, STABBR: uni.state, ADDR: uni.address, ZIP: uni.zipCode, WEBADDR: uni.website,
+    // Normalise name field
+    universityName: uni.universityName || uni.university || uni.INSTNM || '',
+    INSTNM:         uni.universityName || uni.university || uni.INSTNM || '',
+    // Only set universityCode if it's a real code (not an _id)
+    universityCode: uni.universityCode || uni.UNITID || '',
+    UNITID:         uni.UNITID || uni.universityCode || '',
+    CITY:   uni.city,
+    STABBR: uni.state,
+    ADDR:   uni.address,
+    ZIP:    uni.zipCode,
+    WEBADDR: uni.website,
     location: { city: uni.city, state: uni.state, country: uni.country },
     programs: uni.programs || [],
     programCount: uni.programs?.length || 0,
     importedByAdmin: false,
     lastUpdated: uni.updatedAt || uni.createdAt,
     logo: uni.universityLogo,
-    contact: { website: uni.website, adminEmail: uni.adminEmail, adminPhone: uni.adminPhone, admissionEmail: uni.admissionEmail, admissionPhone: uni.admissionPhone },
+    contact: {
+      website:        uni.website,
+      adminEmail:     uni.adminEmail,
+      adminPhone:     uni.adminPhone,
+      admissionEmail: uni.admissionEmail,
+      admissionPhone: uni.admissionPhone,
+    },
     source,
   });
 
@@ -597,11 +616,22 @@ const University = () => {
     if (!token) { setError("No authentication token found."); return; }
     setSearching(true); setError(null);
     try {
-      const [adminResponse, bachelorsResponse, mastersResponse] = await Promise.all([
-        axios.get(`${API_URL}/api/admin/universities/search`, { params: { q: searchTerm }, headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: { success: false, data: [] } })),
-        axios.get(`${API_URL}/api/bachelors/universities`, { params: { search: searchTerm, limit: 50 }, headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: { success: false, data: [] } })),
-        axios.get(`${API_URL}/api/masters/universities`, { params: { search: searchTerm, limit: 50 }, headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: { success: false, data: [] } })),
-      ]);
+     const [adminResponse, bachelorsResponse, mastersResponse] = await Promise.all([
+  axios.get(`${API_URL}/api/admin/universities/search`, { 
+    params: { q: searchTerm }, 
+    headers: { Authorization: `Bearer ${token}` } 
+  }).catch(() => ({ data: { success: false, data: [] } })),
+  
+  axios.get(`${API_URL}/api/bachelors/universities`, { 
+    params: { search: searchTerm, limit: 500 },  // ← increased
+    headers: { Authorization: `Bearer ${token}` } 
+  }).catch(() => ({ data: { success: false, data: [] } })),
+  
+  axios.get(`${API_URL}/api/masters/universities`, { 
+    params: { search: searchTerm, limit: 500 },  // ← increased
+    headers: { Authorization: `Bearer ${token}` } 
+  }).catch(() => ({ data: { success: false, data: [] } })),
+]);
       let combinedResults = [];
       if (adminResponse.data.success)     combinedResults = [...combinedResults, ...adminResponse.data.data.map(u => ({ ...u, source: 'admin', importedByAdmin: true }))];
       if (bachelorsResponse.data.success) combinedResults = [...combinedResults, ...bachelorsResponse.data.data.map(u => mapUniFields(u, 'bachelors'))];
@@ -611,20 +641,39 @@ const University = () => {
     finally { setSearching(false); }
   };
 
+  // ─────────────────────────────────────────────────────────────
+  // FIX 2: fetchAllUniversities — fetch ALL pages from admin API
+  // instead of stopping at the default limit of 100.
+  // ─────────────────────────────────────────────────────────────
   const fetchAllUniversities = async () => {
     const token = getAdminToken();
     if (!token) { setError("No authentication token found."); return; }
     setLoading(true); setError(null);
     try {
+      // Fetch admin universities with high limit to get all records
       const [adminResponse, bachelorsResponse, mastersResponse] = await Promise.all([
-        axios.get(`${API_URL}/api/admin/universities`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: { success: false, data: [] } })),
-        axios.get(`${API_URL}/api/bachelors/universities`, { params: { limit: 100, sortBy: 'createdAt', sortOrder: 'desc' }, headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: { success: false, data: [] } })),
-        axios.get(`${API_URL}/api/masters/universities`, { params: { limit: 100, sortBy: 'createdAt', sortOrder: 'desc' }, headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: { success: false, data: [] } })),
+        axios.get(`${API_URL}/api/admin/universities`, {
+          params: { limit: 2000, page: 1 },   // <── was missing limit; now fetches all
+          headers: { Authorization: `Bearer ${token}` },
+        }).catch(() => ({ data: { success: false, data: [] } })),
+        axios.get(`${API_URL}/api/bachelors/universities`, {
+          params: { limit: 500, sortBy: 'createdAt', sortOrder: 'desc' },
+          headers: { Authorization: `Bearer ${token}` },
+        }).catch(() => ({ data: { success: false, data: [] } })),
+        axios.get(`${API_URL}/api/masters/universities`, {
+          params: { limit: 500, sortBy: 'createdAt', sortOrder: 'desc' },
+          headers: { Authorization: `Bearer ${token}` },
+        }).catch(() => ({ data: { success: false, data: [] } })),
       ]);
+
       let combined = [];
-      if (adminResponse.data.success)     combined = [...combined, ...adminResponse.data.data.map(u => ({ ...u, source: 'admin', importedByAdmin: true }))];
-      if (bachelorsResponse.data.success) combined = [...combined, ...bachelorsResponse.data.data.map(u => mapUniFields(u, 'bachelors'))];
-      if (mastersResponse.data.success)   combined = [...combined, ...mastersResponse.data.data.map(u => mapUniFields(u, 'masters'))];
+      if (adminResponse.data.success)
+        combined = [...combined, ...adminResponse.data.data.map(u => ({ ...u, source: u.source || 'admin', importedByAdmin: true }))];
+      if (bachelorsResponse.data.success)
+        combined = [...combined, ...bachelorsResponse.data.data.map(u => mapUniFields(u, 'bachelors'))];
+      if (mastersResponse.data.success)
+        combined = [...combined, ...mastersResponse.data.data.map(u => mapUniFields(u, 'masters'))];
+
       setUniversities(combined);
     } catch (err) {
       if (err.response?.status === 401) {
@@ -638,7 +687,13 @@ const University = () => {
 
   const getProgramCount = (university) => {
     if (university.programs?.length)        return university.programs.length;
+    if (university.programs_data?.length)   return university.programs_data.length;
     if (university.GUS_DATA?.programs_data) return university.GUS_DATA.programs_data.length;
+    if (university.major_areas?.length) {
+      let count = 0;
+      university.major_areas.forEach(area => { if (area.specific_programs) count += area.specific_programs.length; });
+      if (count > 0) return count;
+    }
     if (university.GUS_DATA?.major_areas) {
       let count = 0;
       university.GUS_DATA.major_areas.forEach(area => { if (area.specific_programs) count += area.specific_programs.length; });
@@ -650,12 +705,26 @@ const University = () => {
 
   const getPrograms = (university) => {
     if (university.programs?.length)                return university.programs;
+    if (university.programs_data?.length)           return university.programs_data;
     if (university.GUS_DATA?.programs_data?.length) return university.GUS_DATA.programs_data;
-    if (university.GUS_DATA?.major_areas?.length) {
+    // Flatten from major_areas (new schema top-level)
+    const majorAreas = university.major_areas || university.GUS_DATA?.major_areas;
+    if (majorAreas?.length) {
       const programs = [];
-      university.GUS_DATA.major_areas.forEach(area => {
+      majorAreas.forEach(area => {
         area.specific_programs?.forEach(prog => {
-          programs.push({ id: prog._id || `prog-${Math.random()}`, name: prog.program_name, title: prog.program_name, program_name: prog.program_name, level: university.GUS_DATA?.level || 'Undergraduate', studyMode: 'On Campus', duration: '3 years', majorArea: area.major_area });
+          programs.push({
+            id: `${area.major_area}-${prog.program_name}`.replace(/\s+/g, '-'),
+            name: prog.program_name,
+            title: prog.program_name,
+            program_name: prog.program_name,
+            level: university.degree === 'bachelor' ? 'Bachelor'
+                 : university.degree === 'master'   ? 'Master'
+                 : university.GUS_DATA?.level || 'Undergraduate',
+            studyMode: 'On Campus',
+            duration: university.degree === 'master' ? '2 years' : '4 years',
+            majorArea: area.major_area,
+          });
         });
       });
       if (programs.length > 0) return programs;
@@ -667,28 +736,77 @@ const University = () => {
   const isBachelorLevel = (l) => { const s = (l||'').toLowerCase().trim(); return s === 'bachelor' || s === 'bachelors' || s === 'undergraduate' || s.startsWith('bachelor') || /\bb\.?a\.?\b/.test(s) || /\bb\.?s\.?(c\.?)?\b/.test(s); };
   const isMasterLevel   = (l) => { const s = (l||'').toLowerCase().trim(); return s === 'master' || s === 'masters' || s === 'graduate' || s === 'mba' || s.startsWith('master') || /\bm\.?s\.?(c\.?)?\b/.test(s) || /\bm\.?a\.?\b/.test(s); };
 
-  const hasBachelorsPrograms = (u) => { if (u.source === 'bachelors') return true; if (u.source === 'masters') return false; return getPrograms(u).some(p => isBachelorLevel(typeof p === 'string' ? '' : (p.level || p.type || ''))); };
-  const hasMastersPrograms   = (u) => { if (u.source === 'masters')   return true; if (u.source === 'bachelors') return false; return getPrograms(u).some(p => isMasterLevel(typeof p === 'string' ? '' : (p.level || p.type || ''))); };
-  const getBachelorsCount    = (u) => { if (u.source === 'bachelors') return getProgramCount(u); if (u.source === 'masters') return 0; return getPrograms(u).filter(p => isBachelorLevel(typeof p === 'string' ? '' : (p.level || p.type || ''))).length; };
-  const getMastersCount      = (u) => { if (u.source === 'masters')   return getProgramCount(u); if (u.source === 'bachelors') return 0; return getPrograms(u).filter(p => isMasterLevel(typeof p === 'string' ? '' : (p.level || p.type || ''))).length; };
+  // Also check degree field from new schema
+  const hasBachelorsPrograms = (u) => {
+    if (u.source === 'bachelors') return true;
+    if (u.source === 'masters')   return false;
+    if (u.degree === 'bachelor' || u.educationLevel === 'Undergraduate') return true;
+    return getPrograms(u).some(p => isBachelorLevel(typeof p === 'string' ? '' : (p.level || p.type || '')));
+  };
+  const hasMastersPrograms = (u) => {
+    if (u.source === 'masters')   return true;
+    if (u.source === 'bachelors') return false;
+    if (u.degree === 'master' || u.educationLevel === 'Postgraduate') return true;
+    return getPrograms(u).some(p => isMasterLevel(typeof p === 'string' ? '' : (p.level || p.type || '')));
+  };
+  const getBachelorsCount = (u) => {
+    if (u.source === 'bachelors') return getProgramCount(u);
+    if (u.source === 'masters')   return 0;
+    if (u.degree === 'bachelor')  return getProgramCount(u);
+    return getPrograms(u).filter(p => isBachelorLevel(typeof p === 'string' ? '' : (p.level || p.type || ''))).length;
+  };
+  const getMastersCount = (u) => {
+    if (u.source === 'masters')  return getProgramCount(u);
+    if (u.source === 'bachelors') return 0;
+    if (u.degree === 'master')   return getProgramCount(u);
+    return getPrograms(u).filter(p => isMasterLevel(typeof p === 'string' ? '' : (p.level || p.type || ''))).length;
+  };
 
+  // ─────────────────────────────────────────────────────────────
+  // FIX 3: getLocationString — handle new schema where `location`
+  // is a plain string (e.g. "Denmark", "United Kingdom")
+  // ─────────────────────────────────────────────────────────────
   const getLocationString = (u) => {
-    const parts   = [];
-    const city    = u.city    || u.location?.city    || u.CITY;
-    const state   = u.state   || u.location?.state   || u.STABBR;
-    const country = u.country || u.location?.country || u.GUS_DATA?.country || 'USA';
+    const parts = [];
+    const city    = u.city    || u.CITY    || (typeof u.location === 'object' ? u.location?.city  : null);
+    const state   = u.state   || u.STABBR  || (typeof u.location === 'object' ? u.location?.state : null);
+    // New schema: location is a string like "Denmark"
+    const country = u.country
+      || (typeof u.location === 'string' && u.location ? u.location : null)
+      || (typeof u.location === 'object' ? u.location?.country : null)
+      || u.GUS_DATA?.country
+      || null;
     if (city)    parts.push(city);
     if (state)   parts.push(state);
     if (country) parts.push(country);
     return parts.join(', ') || 'Location not specified';
   };
 
+  // ─────────────────────────────────────────────────────────────
+  // FIX 4: getUniversityCode — generate initials from the name,
+  // NEVER use _id or any hex-looking string as the display code.
+  // ─────────────────────────────────────────────────────────────
   const getUniversityCode = (u) => {
-    if (u.universityCode) return u.universityCode;
-    const name  = u.INSTNM || u.universityName || '';
-    const words = name.split(' ');
-    if (words.length > 1) return words.map(w => w[0]).join('').substring(0, 4).toUpperCase();
-    return name.substring(0, 4).toUpperCase() || 'UNI';
+    // Get the display name first
+    const name = u.universityName || u.university || u.INSTNM || '';
+
+    // Always generate initials from the name if we have one
+    if (name.trim()) {
+      const words = name.trim().split(/\s+/).filter(w => w.length > 0);
+      if (words.length >= 2) {
+        return words.map(w => w[0]).join('').substring(0, 4).toUpperCase();
+      }
+      return name.substring(0, 4).toUpperCase();
+    }
+
+    // Only fall back to universityCode if it looks like a real code (not a MongoDB _id)
+    // MongoDB _ids are 24 hex chars; real codes are usually short alphanumeric
+    const code = u.universityCode || u.UNITID || '';
+    if (code && typeof code === 'string' && code.length <= 10 && !/^[0-9a-f]{20,}$/i.test(code)) {
+      return code.substring(0, 4).toUpperCase();
+    }
+
+    return 'UNI';
   };
 
   const getSalary = (u) => {
@@ -715,11 +833,12 @@ const University = () => {
     try {
       let details = university;
       if (university.source === 'bachelors' && university._id) {
-        try { const r = await axios.get(`${API_URL}/api/bachelors/universities/${university._id}`, { headers: { Authorization: `Bearer ${token}` } }); if (r.data.success) details = r.data.data; } catch (_) {}
+        try { const r = await axios.get(`${API_URL}/api/bachelors/universities/${university._id}`, { headers: { Authorization: `Bearer ${token}` } }); if (r.data.success) details = { ...r.data.data, source: 'bachelors' }; } catch (_) {}
       } else if (university.source === 'masters' && university._id) {
-        try { const r = await axios.get(`${API_URL}/api/masters/universities/${university._id}`, { headers: { Authorization: `Bearer ${token}` } }); if (r.data.success) details = r.data.data; } catch (_) {}
-      } else if (university.UNITID) {
-        try { const r = await axios.get(`${API_URL}/api/admin/universities/${university.UNITID}`, { headers: { Authorization: `Bearer ${token}` } }); if (r.data.success) details = r.data.data; } catch (_) {}
+        try { const r = await axios.get(`${API_URL}/api/masters/universities/${university._id}`, { headers: { Authorization: `Bearer ${token}` } }); if (r.data.success) details = { ...r.data.data, source: 'masters' }; } catch (_) {}
+      } else if (university._id || university.UNITID) {
+        const lookupId = university.UNITID || university._id;
+        try { const r = await axios.get(`${API_URL}/api/admin/universities/${lookupId}`, { headers: { Authorization: `Bearer ${token}` } }); if (r.data.success) details = { ...r.data.data, source: university.source || 'admin' }; } catch (_) {}
       }
       setSelectedUniversity(details); setSelectedProgram(null); setShowDetailsModal(true); setShowProgramDetails(false);
     } catch (_) { setError("Failed to load university details."); }
@@ -731,7 +850,7 @@ const University = () => {
   const sortUniversities = (data) => {
     if (!data) return [];
     return [...data].sort((a, b) => {
-      if (sortBy === 'name')      return (a.INSTNM || a.universityName || '').localeCompare(b.INSTNM || b.universityName || '');
+      if (sortBy === 'name')      return (a.universityName || a.university || a.INSTNM || '').localeCompare(b.universityName || b.university || b.INSTNM || '');
       if (sortBy === 'location')  return getLocationString(a).localeCompare(getLocationString(b));
       if (sortBy === 'programs')  return getProgramCount(b)   - getProgramCount(a);
       if (sortBy === 'bachelors') return getBachelorsCount(b) - getBachelorsCount(a);
@@ -746,8 +865,8 @@ const University = () => {
     if (filterType === 'hasPrograms') filtered = filtered.filter(u => getProgramCount(u) > 0);
     else if (filterType === 'imported') filtered = filtered.filter(u => u.source === 'admin');
     else if (filterType === 'custom')   filtered = filtered.filter(u => u.source === 'bachelors' || u.source === 'masters');
-    if (programLevel === 'bachelors')   filtered = filtered.filter(u => u.source === 'bachelors' || (u.source !== 'masters' && hasBachelorsPrograms(u)));
-    else if (programLevel === 'masters') filtered = filtered.filter(u => u.source === 'masters'  || (u.source !== 'bachelors' && hasMastersPrograms(u)));
+    if (programLevel === 'bachelors')    filtered = filtered.filter(u => hasBachelorsPrograms(u));
+    else if (programLevel === 'masters') filtered = filtered.filter(u => hasMastersPrograms(u));
     return filtered;
   };
 
@@ -943,17 +1062,19 @@ const University = () => {
                 const uniCode  = getUniversityCode(uni);
                 const salary   = getSalary(uni);
                 const programs = getPrograms(uni);
+                // Display name: prefer universityName/university over INSTNM
+                const displayName = uni.universityName || uni.university || uni.INSTNM || 'Unknown University';
 
                 return (
                   <div key={uni._id || uni.UNITID || index} className="university-item">
                     <div className="item-header">
                       <div className="item-logo">
                         {uni.logo || uni.universityLogo
-                          ? <img src={uni.logo || uni.universityLogo} alt={uni.INSTNM || uni.universityName} onError={e => { e.target.style.display='none'; e.target.parentNode.innerHTML=`<span class="logo-fallback">${uniCode}</span>`; }} />
+                          ? <img src={uni.logo || uni.universityLogo} alt={displayName} onError={e => { e.target.style.display='none'; e.target.parentNode.innerHTML=`<span class="logo-fallback">${uniCode}</span>`; }} />
                           : <span className="logo-fallback">{uniCode}</span>}
                       </div>
                       <div className="item-info">
-                        <h3 className="item-title">{uni.INSTNM || uni.universityName}</h3>
+                        <h3 className="item-title">{displayName}</h3>
                         <p className="item-location">
                           <span className="location-icon"><IconPin size={12}/></span> {location}
                         </p>
@@ -975,9 +1096,10 @@ const University = () => {
                           )}
                         </div>
                       )}
-                      {uni.source === 'bachelors'
+                      {/* Badge based on degree/source */}
+                      {uni.source === 'bachelors' || uni.degree === 'bachelor'
                         ? <span className="item-badge custom"><IconGrad size={11}/> Bachelor's</span>
-                        : uni.source === 'masters'
+                        : uni.source === 'masters' || uni.degree === 'master'
                         ? <span className="item-badge masters"><IconBook size={11}/> Master's</span>
                         : <span className="item-badge imported"><IconImport size={11}/> Imported</span>}
                     </div>
@@ -1022,19 +1144,19 @@ const University = () => {
                       <div className="modal-header-left">
                         <div className="modal-logo">
                           {selectedUniversity.universityLogo || selectedUniversity.logo
-                            ? <img src={selectedUniversity.universityLogo || selectedUniversity.logo} alt={selectedUniversity.universityName || selectedUniversity.INSTNM} onError={e => { e.target.style.display='none'; e.target.parentNode.innerHTML=`<span class="logo-fallback">${getUniversityCode(selectedUniversity)}</span>`; }} />
+                            ? <img src={selectedUniversity.universityLogo || selectedUniversity.logo} alt={selectedUniversity.universityName || selectedUniversity.university || selectedUniversity.INSTNM} onError={e => { e.target.style.display='none'; e.target.parentNode.innerHTML=`<span class="logo-fallback">${getUniversityCode(selectedUniversity)}</span>`; }} />
                             : <span className="logo-fallback">{getUniversityCode(selectedUniversity)}</span>}
                         </div>
                         <div>
-                          <h2>{selectedUniversity.universityName || selectedUniversity.INSTNM}</h2>
+                          <h2>{selectedUniversity.universityName || selectedUniversity.university || selectedUniversity.INSTNM}</h2>
                           <p className="modal-location" style={{display:'flex',alignItems:'center',gap:4}}>
                             <IconPin size={12}/> {getLocationString(selectedUniversity)}
                           </p>
                           {selectedUniversity.source && (
                             <span className={`source-badge ${selectedUniversity.source}`}>
-                              {selectedUniversity.source === 'bachelors'
+                              {selectedUniversity.source === 'bachelors' || selectedUniversity.degree === 'bachelor'
                                 ? <><IconGrad size={11}/> Bachelor's</>
-                                : selectedUniversity.source === 'masters'
+                                : selectedUniversity.source === 'masters' || selectedUniversity.degree === 'master'
                                 ? <><IconBook size={11}/> Master's</>
                                 : <><IconImport size={11}/> Imported</>}
                             </span>
@@ -1053,7 +1175,7 @@ const University = () => {
                             {selectedUniversity.establishedYear && <div className="info-item"><span className="info-label">Established</span><span className="info-value">{selectedUniversity.establishedYear}</span></div>}
                             {selectedUniversity.universityType  && <div className="info-item"><span className="info-label">Type</span><span className="info-value">{selectedUniversity.universityType}</span></div>}
                             {selectedUniversity.ranking         && <div className="info-item"><span className="info-label">Ranking</span><span className="info-value">{selectedUniversity.ranking}</span></div>}
-                            {selectedUniversity.website         && <div className="info-item full-width"><span className="info-label">Website</span><a href={selectedUniversity.website} target="_blank" rel="noopener noreferrer">{selectedUniversity.website}</a></div>}
+                            {(selectedUniversity.website || selectedUniversity.WEBADDR) && <div className="info-item full-width"><span className="info-label">Website</span><a href={selectedUniversity.website || selectedUniversity.WEBADDR} target="_blank" rel="noopener noreferrer">{selectedUniversity.website || selectedUniversity.WEBADDR}</a></div>}
                           </div>
                         </div>
                         {(selectedUniversity.adminEmail || selectedUniversity.admissionEmail || selectedUniversity.adminPhone) && (
