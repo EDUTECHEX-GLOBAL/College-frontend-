@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './mastercourse.css';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
+
 
 // ─── Reusable Custom Dropdown ─────────────────────────────────────────────────
 const CustomDropdown = ({
@@ -125,14 +125,15 @@ const MasterCourse = ({ data, updateData }) => {
       if (!token) return;
 
       try {
-        const res = await fetch(`${API_URL}/api/master-course`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          signal: controller.signal
-        });
+        const baseURL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const res = await fetch(`${baseURL}/api/master-course`, {
+  method: 'GET',
+  headers: {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  },
+  signal: controller.signal
+});
 
         if (res.status === 404) return;
         if (!res.ok) throw new Error(`Server error: ${res.status}`);
@@ -201,19 +202,20 @@ const MasterCourse = ({ data, updateData }) => {
       isSavingRef.current = true;
       const token = getToken();
 
-      const res = await fetch(`${API_URL}/api/master-course`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          preferredCourse: currentFormData.preferredCourse,
-          specialization:  currentFormData.specialization,
-          intake:          currentFormData.intake,
-          modeOfStudy:     currentFormData.modeOfStudy
-        })
-      });
+     const baseURL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const res = await fetch(`${baseURL}/api/master-course`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  },
+  body: JSON.stringify({
+    preferredCourse: currentFormData.preferredCourse,
+    specialization:  currentFormData.specialization,
+    intake:          currentFormData.intake,
+    modeOfStudy:     currentFormData.modeOfStudy
+  })
+});
 
       const result = await res.json();
       if (result.success) {

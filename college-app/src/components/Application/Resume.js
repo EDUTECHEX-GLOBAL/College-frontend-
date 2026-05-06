@@ -1,10 +1,9 @@
 // src/components/Resume.js
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance'; // ✅ Rule 1
 import './Resume.css';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
-const DOC_API_URL = `${API_URL}/api/application/documents`;
+// ✅ Rule 2: API_URL and DOC_API_URL removed entirely
 
 /* ─────────────────────────────────────────────────
    LABEL MAPS
@@ -142,12 +141,12 @@ const Resume = ({ onDownload, onPrev }) => {
   useEffect(() => {
     const fetchResume = async () => {
       try {
+        // ✅ Rule 4: token used only for null check
         const token = localStorage.getItem('token');
         if (!token) { setError('No authentication token. Please sign in.'); setLoading(false); return; }
 
-        const res = await axios.get(`${API_URL}/api/application/resume`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        // ✅ Rule 3: axiosInstance with clean path, no manual headers
+        const res = await axiosInstance.get('/api/application/resume');
 
         if (res.data?.success) {
           const r = res.data.resume;
@@ -191,12 +190,12 @@ const Resume = ({ onDownload, onPrev }) => {
   }, []);
 
   /* ── Helpers ───────────────────────────────────── */
-  const update          = useCallback((field) => (value) => setCv(prev => ({ ...prev, [field]: value })), []);
-  const handleSave      = () => { setIsEditing(false); setIsSaved(true); setTimeout(() => setIsSaved(false), 3000); };
+  const update           = useCallback((field) => (value) => setCv(prev => ({ ...prev, [field]: value })), []);
+  const handleSave       = () => { setIsEditing(false); setIsSaved(true); setTimeout(() => setIsSaved(false), 3000); };
   const handleCloseError = (e) => { e.preventDefault(); e.stopPropagation(); setError(null); };
-  const handleRetry     = (e) => { e.preventDefault(); e.stopPropagation(); setError(null); setLoading(true); window.location.reload(); };
-  const handleExitEdit  = (e) => { e.preventDefault(); e.stopPropagation(); if (isEditing) setIsEditing(false); else if (onPrev) onPrev(); };
-  const handleClose     = (e) => { e.preventDefault(); e.stopPropagation(); setIsEditing(false); if (onPrev) onPrev(); };
+  const handleRetry      = (e) => { e.preventDefault(); e.stopPropagation(); setError(null); setLoading(true); window.location.reload(); };
+  const handleExitEdit   = (e) => { e.preventDefault(); e.stopPropagation(); if (isEditing) setIsEditing(false); else if (onPrev) onPrev(); };
+  const handleClose      = (e) => { e.preventDefault(); e.stopPropagation(); setIsEditing(false); if (onPrev) onPrev(); };
 
   /* ── Download & Upload ──────────────────────────── */
   const handleDownloadAndUpload = async () => {
@@ -264,17 +263,17 @@ const Resume = ({ onDownload, onPrev }) => {
       setUploadStatus('uploading');
       setUploadMsg('Uploading CV to your application…');
 
+      // ✅ Rule 4: token used only for null check
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No auth token');
 
       const formData = new FormData();
       formData.append('file', new File([pdfBlob], fileName, { type: 'application/pdf' }));
 
-      const res = await axios.post(`${DOC_API_URL}/upload/cv`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
+      // ✅ Rule 3: axiosInstance with clean path
+      // ✅ Content-Type kept because this is multipart/form-data, not JSON
+      const res = await axiosInstance.post('/api/application/documents/upload/cv', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
 
       if (!res.data?.success) throw new Error(res.data?.message || 'Upload failed');
@@ -412,9 +411,9 @@ const Resume = ({ onDownload, onPrev }) => {
         </div>
         {isEditing ? (
           <div className="addr-row">
-            <input className="ei mini" value={cv.city}       onChange={(e) => update('city')(e.target.value)}       placeholder="City"     />
-            <input className="ei mini" value={cv.state}      onChange={(e) => update('state')(e.target.value)}      placeholder="State"    />
-            <input className="ei mini" value={cv.postalCode} onChange={(e) => update('postalCode')(e.target.value)} placeholder="Post"     />
+            <input className="ei mini" value={cv.city}       onChange={(e) => update('city')(e.target.value)}       placeholder="City"  />
+            <input className="ei mini" value={cv.state}      onChange={(e) => update('state')(e.target.value)}      placeholder="State" />
+            <input className="ei mini" value={cv.postalCode} onChange={(e) => update('postalCode')(e.target.value)} placeholder="Post"  />
           </div>
         ) : (
           <div className="sb-text">{[cv.city, cv.state, cv.postalCode].filter(Boolean).join(', ') || ''}</div>
@@ -677,9 +676,9 @@ const Resume = ({ onDownload, onPrev }) => {
           <div className="sec-title">Standardised Test Scores</div>
           <div className="score-test-grid" style={{ marginBottom: 14 }}>
             {activeTests.map(([key, label]) => {
-              const val      = scoreData[key];
-              const max      = TEST_MAX[key];
-              const pct      = max ? Math.round((parseFloat(val) / max) * 100) : null;
+              const val       = scoreData[key];
+              const max       = TEST_MAX[key];
+              const pct       = max ? Math.round((parseFloat(val) / max) * 100) : null;
               const subScores = key === 'satTotal'
                 ? [scoreData.satMath ? `Math: ${scoreData.satMath}` : null, scoreData.satReading ? `R&W: ${scoreData.satReading}` : null].filter(Boolean)
                 : [];

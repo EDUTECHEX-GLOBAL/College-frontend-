@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import './ResponsibilitiesSection.css';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
 
 const ResponsibilitiesSection = () => {
   const navigate = useNavigate();
@@ -53,12 +52,7 @@ const ResponsibilitiesSection = () => {
           return;
         }
 
-        const response = await axios.get(`${API_URL}/api/students/responsibilities`, {
-          headers: { 
-            'Authorization': `Bearer ${token}`, 
-            'Content-Type': 'application/json' 
-          }
-        });
+       const response = await axiosInstance.get('/api/students/responsibilities');
 
         if (response.data.success) {
           setResponsibilitiesData(response.data.responsibilitiesData || {
@@ -125,22 +119,16 @@ const ResponsibilitiesSection = () => {
         return;
       }
 
-      const response = await axios.post(
-        `${API_URL}/api/students/responsibilities`,
-        { responsibilitiesData },
-        { 
-          headers: { 
-            'Authorization': `Bearer ${token}`, 
-            'Content-Type': 'application/json' 
-          } 
-        }
-      );
+     const response = await axiosInstance.post('/api/students/responsibilities', {
+  responsibilitiesData,
+});
 
       if (response.data.success) {
         // Update local storage with progress
-        const storedUserData = localStorage.getItem('userData');
-        if (storedUserData) {
-          const userData = JSON.parse(storedUserData);
+       // REPLACE WITH:
+const storedUserData = localStorage.getItem('userData');
+if (storedUserData && storedUserData !== 'undefined') {
+  const userData = JSON.parse(storedUserData);
           localStorage.setItem('userData', JSON.stringify({
             ...userData,
             applicationProgress: { 

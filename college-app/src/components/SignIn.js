@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axiosInstance from "../api/axiosInstance";
+import axiosInstance, { clearAllUserData } from "../api/axiosInstance";
 import LoginImage from "../assets/LoginImage.png";
 import EdutechLogo from "../assets/Edutech-logo.svg";
 import "./SignIn.css";
@@ -14,40 +14,35 @@ const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showTransferPassword, setShowTransferPassword] = useState(false);
 
-  const handleResetState = () => {
-    setShowStudentOptions(false);
-    setStudentType(null);
-    setError("");
-    setShowPassword(false);
-    setShowTransferPassword(false);
-  };
-
+const handleResetState = () => {
+  setShowStudentOptions(false);
+  setStudentType(null);
+  setError("");
+  setShowPassword(false);
+  setShowTransferPassword(false);
+  navigate("/home");  // ← ADD THIS
+};
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
   const toggleTransferPasswordVisibility = () => setShowTransferPassword(!showTransferPassword);
 
-  useEffect(() => {
-    console.log("Current localStorage on SignIn page:");
-    console.log("profileCompleted:", localStorage.getItem("profileCompleted"));
-    console.log("userProfile:", localStorage.getItem("userProfile"));
-    console.log("token:", localStorage.getItem("token") ? "Present" : "Missing");
-  }, []);
+ // ✅ Fix - clear old data when SignIn page loads
+// ✅ Fix - clears ALL keys when sign-in page loads
+useEffect(() => {
+  clearAllUserData(); // ✅ clears everything
+}, []);
 
-  const isProfileComplete = (backendUser) => {
-    if (backendUser?.profileCompleted === true) return true;
-    if (
-      localStorage.getItem("profileCompleted") === "true" &&
-      localStorage.getItem("userProfile")
-    )
-      return true;
-    return false;
-  };
+ // ✅ Fix - only trust backend response, never localStorage
+const isProfileComplete = (backendUser) => {
+  return backendUser?.profileCompleted === true;
+};
 
-  const storeAuthData = (token, user, type, identifier) => {
-    localStorage.setItem("token", token);
-    localStorage.setItem("userData", JSON.stringify(user));
-    localStorage.setItem("studentType", type);
-    localStorage.setItem("userEmail", identifier);
-  };
+const storeAuthData = (token, user, type, identifier) => {
+  clearAllUserData(); // ✅ one function clears everything
+  localStorage.setItem("token", token);
+  localStorage.setItem("userData", JSON.stringify(user));
+  localStorage.setItem("studentType", type);
+  localStorage.setItem("userEmail", identifier);
+};
 
   const markProfileCompleted = (user) => {
     localStorage.setItem("profileCompleted", "true");
@@ -185,7 +180,7 @@ const SignIn = () => {
         {/* Close button */}
         <button
           className="signin-close-btn"
-          onClick={() => { navigate("/"); handleResetState(); }}
+          onClick={() => { navigate("/home"); handleResetState(); }}
           title="Close Sign In Modal"
           aria-label="Close"
         >
@@ -239,15 +234,10 @@ const SignIn = () => {
                 </span>
               </p>
 
-              <div className="signin-divider"><span>Other logins</span></div>
+              
 
               <div className="signin-extra-login">
-                <button className="signin-outline-btn" type="button" onClick={() => navigate("/recommender-login")}>
-                  Recommender login &#8594;
-                </button>
-                <button className="signin-outline-btn" type="button" onClick={() => navigate("/member-college-login")}>
-                  Member college login &#8594;
-                </button>
+                
               </div>
             </div>
             <RightPanel />

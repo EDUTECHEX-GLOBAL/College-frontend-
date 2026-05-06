@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import Select from 'react-select';
 import './Parent2Form.css';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
+
 
 const Parent2Form = () => {
   const navigate = useNavigate();
@@ -64,10 +64,7 @@ const Parent2Form = () => {
 
   const fetchParent2Data = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/students/family-dashb`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+     const response = await axiosInstance.get('/api/students/family-dashb');
 
       if (response.data.success && response.data.familyData.parent2) {
         setFormData({
@@ -105,10 +102,7 @@ const Parent2Form = () => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
-      await axios.post(`${API_URL}/api/students/family-dashb/parent2`, formData, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+    await axiosInstance.post('/api/students/family-dashb/parent2', formData);
 
       navigate('/firstyear/dashboard/family/sibling');
     } catch (error) {

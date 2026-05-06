@@ -1,10 +1,10 @@
 // src/components/ApplicationPersonal.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import './ApplicationPersonal.css';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+
 
 const COUNTRIES = [
   'Afghanistan','Albania','Algeria','Argentina','Armenia','Australia','Austria',
@@ -87,9 +87,7 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
     return Math.round(((completedText + fileCount) / (textFields.length + 2)) * 100);
   };
 
-  useEffect(() => {
-    setCompletionPercentage(calculateCompletion(formData));
-  }, [formData, isEUCitizen, needVisa]);
+
 
   // LOAD DATA
   useEffect(() => {
@@ -98,11 +96,7 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
         setIsLoading(true);
         const token = getAuthToken();
         if (!token) { setIsLoading(false); return; }
-
-        const response = await axios.get(`${API_URL}/api/application/personal`, {
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
-        });
-
+const response = await axiosInstance.get('/api/application/personal');
         if (response.data.success && response.data.personalInfo) {
           const d = response.data.personalInfo;
 
@@ -167,16 +161,16 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
       const token = getAuthToken();
       if (!token) { alert('Please login again.'); return; }
 
-      const uploadUrl = field === 'passport'
-        ? `${API_URL}/api/application/personal/upload/passport`
-        : `${API_URL}/api/application/personal/upload/photograph`;
+    const uploadUrl = field === 'passport'
+  ? '/api/application/personal/upload/passport'
+  : '/api/application/personal/upload/photograph';
 
       const uploadData = new FormData();
       uploadData.append('file', file);
 
-      const response = await axios.post(uploadUrl, uploadData, {
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
-      });
+      const response = await axiosInstance.post(uploadUrl, uploadData, {
+  headers: { 'Content-Type': 'multipart/form-data' }
+});
 
       if (response.data.success) {
         onFileUpload(field, file);
@@ -208,10 +202,7 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
 
       if (formData[`${field}FileName`]) {
         try {
-          await axios.delete(
-            `${API_URL}/api/application/personal/files/${field}`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
+         await axiosInstance.delete(`/api/application/personal/files/${field}`);
         } catch { console.log(`API error removing ${field}, continuing locally`); }
       }
 
@@ -306,10 +297,7 @@ const ApplicationPersonal = ({ formData, onInputChange, onFileUpload, basePath }
         photographOriginalName: formData.photographOriginalName  || ''
       };
 
-      const response = await axios.post(`${API_URL}/api/application/personal`, saveData, {
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
-      });
-
+     const response = await axiosInstance.post('/api/application/personal', saveData);
       if (response.data.success) {
         const resumeMap = { title, firstName: formData.firstName, lastName: formData.lastName,
           email: formData.email, mobile: formData.mobile, dateOfBirth: formData.dateOfBirth,

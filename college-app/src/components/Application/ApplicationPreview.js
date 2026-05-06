@@ -1,10 +1,10 @@
 // src/components/ApplicationPreview.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import './ApplicationPreview.css';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const API_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'; // ✅ kept ONLY for image URL construction in formatValue
 
 const COMPLETION_LABELS = {
   personalDone:    'Personal Info',
@@ -90,12 +90,12 @@ const ResendEmailModal = ({ applicationId, loginEmail, personalEmail, onClose })
     setIsSending(true);
     setSendError('');
     try {
+      // ✅ Rule 4: token used only for null check
       const token = localStorage.getItem('token');
-      const { data } = await axios.post(
-        `${API_URL}/api/application/preview/resend-email`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      if (!token) return;
+
+      // ✅ Rule 3: axiosInstance with clean path, no manual headers
+      const { data } = await axiosInstance.post('/api/application/preview/resend-email', {});
       if (data.success) {
         setSent(true);
       } else {
@@ -202,11 +202,9 @@ const ApplicationPreview = ({ onInputChange }) => {
   const [showResendModal,   setShowResendModal]   = useState(false);
   const [submittedAppId,    setSubmittedAppId]    = useState('');
 
-  const getAuthToken = () => localStorage.getItem('token');
-
   const getLoginEmailFromToken = () => {
     try {
-      const token = getAuthToken();
+      const token = localStorage.getItem('token');
       if (!token) return '';
       const payload = JSON.parse(atob(token.split('.')[1]));
       return payload.email || '';
@@ -217,15 +215,16 @@ const ApplicationPreview = ({ onInputChange }) => {
     try {
       setIsLoading(true);
       setError('');
-      const token = getAuthToken();
+
+      // ✅ Rule 4: token used only for null check
+      const token = localStorage.getItem('token');
       if (!token) { setIsLoading(false); return; }
 
       const jwtEmail = getLoginEmailFromToken();
       if (jwtEmail) setLoginEmail(jwtEmail);
 
-      const { data } = await axios.get(`${API_URL}/api/application/preview`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // ✅ Rule 3: axiosInstance with clean path, no manual headers
+      const { data } = await axiosInstance.get('/api/application/preview');
 
       if (data.success) {
         const { sections, applicationId, previewDate, agreedToTerms, completionStatus, applicationStatus } = data.preview;
@@ -268,13 +267,13 @@ const ApplicationPreview = ({ onInputChange }) => {
     if (onInputChange) onInputChange('agreedToTerms', checked);
     try {
       setIsSavingTerms(true);
-      const token = getAuthToken();
+
+      // ✅ Rule 4: token used only for null check
+      const token = localStorage.getItem('token');
       if (!token) return;
-      await axios.patch(
-        `${API_URL}/api/application/preview/terms`,
-        { agreed: checked },
-        { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
-      );
+
+      // ✅ Rule 3: axiosInstance with clean path, no manual headers
+      await axiosInstance.patch('/api/application/preview/terms', { agreed: checked });
     } catch (err) {
       console.error('saveTerms error:', err);
       setAgreedToTerms(!checked);
@@ -293,14 +292,12 @@ const ApplicationPreview = ({ onInputChange }) => {
     setError('');
 
     try {
-      const token = getAuthToken();
+      // ✅ Rule 4: token used only for null check
+      const token = localStorage.getItem('token');
       if (!token) { alert('Please login to submit.'); return; }
 
-      const { data } = await axios.post(
-        `${API_URL}/api/application/preview/submit`,
-        { agreedToTerms: true },
-        { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
-      );
+      // ✅ Rule 3: axiosInstance with clean path, no manual headers
+      const { data } = await axiosInstance.post('/api/application/preview/submit', { agreedToTerms: true });
 
       if (data.success) {
         setSubmittedAppId(data.applicationId);
@@ -335,6 +332,7 @@ const ApplicationPreview = ({ onInputChange }) => {
     navigate(back);
   };
 
+  // ✅ API_URL kept here only — used for building image src, NOT for API calls
   const formatValue = (value) => {
     if (!value || value === 'Not provided' || value === 'Not uploaded') return 'Not provided';
     if (typeof value === 'string' && (value.match(/\.(jpg|jpeg|png|gif|svg)$/i) || value.includes('/uploads/'))) {

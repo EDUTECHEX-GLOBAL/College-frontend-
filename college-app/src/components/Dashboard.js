@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Routes, Route, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../api/axiosInstance';
 import './Dashboard.css';
 import DashboardLayout from './DashboardLayout';
 import ProfileForm from './ProfileForm';
@@ -19,7 +19,6 @@ import Overview from './Application/Overview';
 import Master from './master-university/master';
 import ApplicationProgressPage from './ApplicationProgressPage';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
 
 /* ══════════════════════════════════════════════════════════
    LOCK UTILITY
@@ -171,13 +170,11 @@ const Dashboard = () => {
     return Math.round((completedSections / totalSections) * 100);
   };
 
-  const refreshUserData = useCallback(async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-      const response = await axios.get(`${API_URL}/api/students/profile/detailed`, {
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
-      });
+const refreshUserData = useCallback(async () => {
+  try {
+  const token = localStorage.getItem('token'); // ✅ keep for null check
+if (!token) { navigate('/sign-in'); return; }
+const response = await axiosInstance.get('/api/students/profile/detailed');
       if (response.data.success && response.data.account) {
         const user = response.data.account;
         const gusApplicationData = localStorage.getItem('gusApplicationData');
@@ -220,12 +217,10 @@ const Dashboard = () => {
   }, []);
 
   const fetchUserColleges = useCallback(async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-      const response = await axios.get(`${API_URL}/api/colleges`, {
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
-      });
+  try {
+    const token = localStorage.getItem('token'); // ✅ keep for null check
+if (!token) return;
+const response = await axiosInstance.get('/api/colleges');
       if (response.data.success) setUserColleges(response.data.colleges);
     } catch (error) {
       console.error('Error fetching user colleges:', error);
@@ -316,11 +311,9 @@ const Dashboard = () => {
     const fetchUserProfile = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem('token');
-        if (!token) { navigate('/sign-in'); return; }
-        const response = await axios.get(`${API_URL}/api/students/profile/detailed`, {
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
-        });
+       const token = localStorage.getItem('token');
+if (!token) { navigate('/sign-in'); return; }
+const response = await axiosInstance.get('/api/students/profile/detailed');
         if (response.data.success && response.data.account) {
           const user = response.data.account;
           const storedFamilyComplete = localStorage.getItem('familySectionComplete') === 'true';
@@ -518,11 +511,7 @@ const Dashboard = () => {
       if (s.progress > 0) return 'ap-pill--prog';
       return 'ap-pill--zero';
     };
-    const getPillLabel = (s) => {
-      if (s.locked) return `🔒 ${s.name}`;
-      if (s.progress >= 100) return `✓ ${s.name}`;
-      return `${s.name} ${s.progress}%`;
-    };
+ 
 
     return (
       <>
@@ -785,12 +774,13 @@ const Dashboard = () => {
     );
   }
 
-  const ApplicationWrapper = () => (
+ const ApplicationWrapper = () => (
     <Application
-      onCourseSelect={handleCourseSelection}
-      selectedCourseData={selectedCourseData}
+        onCourseSelect={handleCourseSelection}
+        selectedCourseData={selectedCourseData}
+        studentId={userData?._id || ''}  // ✅ ADD THIS LINE
     />
-  );
+);
 
   const OverviewWrapper = () => (
     <Overview
@@ -882,11 +872,9 @@ const CollegesSection = () => {
   useEffect(() => {
     const fetchColleges = async () => {
       try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/colleges`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+      const token = localStorage.getItem('token');
+if (!token) return;
+const response = await axiosInstance.get('/api/colleges');
         if (response.data.success) setUserColleges(response.data.colleges);
       } catch (error) {
         console.error('Error fetching colleges:', error);

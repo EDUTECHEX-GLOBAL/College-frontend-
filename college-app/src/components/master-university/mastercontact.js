@@ -90,9 +90,10 @@ const MasterContact = ({ data, updateData }) => {
         const token = localStorage.getItem('token');
         if (!token) { setFetchState('ready-empty'); return; }
 
-        const res    = await fetch('http://localhost:5000/api/master-contact/me', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+       const baseURL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const res = await fetch(`${baseURL}/api/master-contact/me`, {
+  headers: { Authorization: `Bearer ${token}` }
+});
         const result = await res.json();
 
         if (result.success && result.data) {
@@ -202,11 +203,12 @@ const MasterContact = ({ data, updateData }) => {
     isSavingRef.current = true;
     try {
       const token = localStorage.getItem('token');
-      const res   = await fetch('http://localhost:5000/api/master-contact', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body:    JSON.stringify(snapshot)
-      });
+     const baseURL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const res = await fetch(`${baseURL}/api/master-contact`, {
+  method:  'POST',
+  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+  body:    JSON.stringify(snapshot)
+});
       const result = await res.json();
       if (result.success) {
         lastSavedRef.current = snapshot;

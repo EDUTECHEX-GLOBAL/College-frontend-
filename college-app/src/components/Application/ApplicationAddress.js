@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from '../../api/axiosInstance';
 import { useNavigate, useLocation } from "react-router-dom";
 import "./ApplicationAddress.css";
 
 // =====================================================
 // API BASE URL
 // =====================================================
-const API_URL = process.env.REACT_APP_API_BASE_URL 
-  ? `${process.env.REACT_APP_API_BASE_URL}/api/application/address`
-  : "http://localhost:5000/api/application/address";
+
 
 // =====================================================
 // PROPS:
@@ -18,7 +16,7 @@ const API_URL = process.env.REACT_APP_API_BASE_URL
 //   All other logic is completely unchanged.
 // =====================================================
 const ApplicationAddress = ({ onAddressChange }) => {
-  const token = localStorage.getItem("token");
+ 
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -75,24 +73,20 @@ const ApplicationAddress = ({ onAddressChange }) => {
   // =====================================================
   // FETCH ADDRESS DATA ON LOAD
   // =====================================================
-  useEffect(() => {
-    if (token) {
-      fetchAddress();
-    } else {
-      setError("No authentication token found");
-      setIsLoading(false);
-    }
-  }, [token]);
+ useEffect(() => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    fetchAddress();
+  } else {
+    setError("No authentication token found");
+    setIsLoading(false);
+  }
+}, []);
 
   const fetchAddress = async () => {
     try {
       setIsLoading(true);
-      const res = await axios.get(API_URL, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
+     const res = await axiosInstance.get('/api/application/address');
       if (res.data?.addressInfo) {
         const addr = res.data.addressInfo;
         const loadedData = {
@@ -342,12 +336,7 @@ const ApplicationAddress = ({ onAddressChange }) => {
         correspondencePostcode: formData.correspondencePostcode,
       };
 
-      await axios.post(API_URL, requestData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+     await axiosInstance.post('/api/application/address', requestData);
 
       // ── Push saved address to Resume ──────────────────
       pushAddressToResume(formData);
@@ -412,12 +401,9 @@ const ApplicationAddress = ({ onAddressChange }) => {
     setUploading(true);
 
     try {
-      const res = await axios.post(`${API_URL}/upload/nationalId`, data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
+    const res = await axiosInstance.post('/api/application/address/upload/nationalId', data, {
+  headers: { "Content-Type": "multipart/form-data" },
+});
 
       const toast = document.createElement('div');
       toast.className = 'success-toast';
@@ -453,11 +439,7 @@ const ApplicationAddress = ({ onAddressChange }) => {
   // =====================================================
   const removeNationalId = async () => {
     try {
-      await axios.delete(`${API_URL}/files/nationalId`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+     await axiosInstance.delete('/api/application/address/files/nationalId');
 
       const toast = document.createElement('div');
       toast.className = 'success-toast';

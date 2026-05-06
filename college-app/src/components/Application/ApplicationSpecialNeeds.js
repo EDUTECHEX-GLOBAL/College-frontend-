@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import "./ApplicationSpecialNeeds.css";
-import axios from "axios";
+import axiosInstance from "../../api/axiosInstance";  // ✅
 
-const API_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
+
 
 // SVG Icon Components
 const Icon = {
@@ -62,7 +62,7 @@ const Icon = {
 };
 
 const ApplicationSpecialNeeds = ({ formData, onInputChange, onNext, onPrev }) => {
-    const token = localStorage.getItem("token");
+  
 
     const [hasSpecialNeeds, setHasSpecialNeeds] = useState(
         formData.hasSpecialNeeds || "no"
@@ -124,54 +124,53 @@ const ApplicationSpecialNeeds = ({ formData, onInputChange, onNext, onPrev }) =>
         onInputChange("otherNeedsDescription", hasSpecialNeedsVal === "yes" ? otherDescVal : "");
     };
 
-    useEffect(() => {
-        if (!token) return;
+   useEffect(() => {
+    const token = localStorage.getItem('token'); // ✅ local read
+    if (!token) return;
 
-        const loadSpecialNeedsData = async () => {
-            try {
-                setFetchLoading(true);
-                const res = await axios.get(`${API_URL}/api/application/special-needs`, {
-                    headers: { Authorization: `Bearer ${token}` },
+    const loadSpecialNeedsData = async () => {
+        try {
+            setFetchLoading(true);
+            const res = await axiosInstance.get('/api/application/special-needs');
+
+            if (res.data?.data) {
+                const data = res.data.data;
+
+                const loadedHasNeeds  = data.hasSpecialNeeds        || "no";
+                const loadedDesc      = data.specialNeedsDescription || "";
+                const loadedNeeds     = data.specialNeeds            || [];
+                const loadedArrange   = data.requiredArrangements    || [];
+                const loadedOtherDesc = data.otherNeedsDescription   || "";
+
+                setHasSpecialNeeds(loadedHasNeeds);
+                setDescription(loadedDesc);
+                setNeeds(loadedNeeds);
+                setSelectedArrangements(loadedArrange);
+                setOtherDescription(loadedOtherDesc);
+
+                onInputChange("hasSpecialNeeds",         loadedHasNeeds);
+                onInputChange("specialNeedsDescription", loadedDesc);
+                onInputChange("specialNeeds",            loadedNeeds);
+                onInputChange("requiredArrangements",    loadedArrange);
+                onInputChange("otherNeedsDescription",   loadedOtherDesc);
+
+                mapToResumeFields({
+                    hasSpecialNeedsVal: loadedHasNeeds,
+                    descriptionVal:     loadedDesc,
+                    arrangementsVal:    loadedArrange,
+                    needsVal:           loadedNeeds,
+                    otherDescVal:       loadedOtherDesc,
                 });
-
-                if (res.data?.data) {
-                    const data = res.data.data;
-
-                    const loadedHasNeeds   = data.hasSpecialNeeds        || "no";
-                    const loadedDesc       = data.specialNeedsDescription || "";
-                    const loadedNeeds      = data.specialNeeds            || [];
-                    const loadedArrange    = data.requiredArrangements    || [];
-                    const loadedOtherDesc  = data.otherNeedsDescription   || "";
-
-                    setHasSpecialNeeds(loadedHasNeeds);
-                    setDescription(loadedDesc);
-                    setNeeds(loadedNeeds);
-                    setSelectedArrangements(loadedArrange);
-                    setOtherDescription(loadedOtherDesc);
-
-                    onInputChange("hasSpecialNeeds",          loadedHasNeeds);
-                    onInputChange("specialNeedsDescription",  loadedDesc);
-                    onInputChange("specialNeeds",             loadedNeeds);
-                    onInputChange("requiredArrangements",     loadedArrange);
-                    onInputChange("otherNeedsDescription",    loadedOtherDesc);
-
-                    mapToResumeFields({
-                        hasSpecialNeedsVal: loadedHasNeeds,
-                        descriptionVal:     loadedDesc,
-                        arrangementsVal:    loadedArrange,
-                        needsVal:           loadedNeeds,
-                        otherDescVal:       loadedOtherDesc,
-                    });
-                }
-            } catch (err) {
-                console.error("Failed to load special needs data", err);
-            } finally {
-                setFetchLoading(false);
             }
-        };
+        } catch (err) {
+            console.error("Failed to load special needs data", err);
+        } finally {
+            setFetchLoading(false);
+        }
+    };
 
-        loadSpecialNeedsData();
-    }, [token]);
+    loadSpecialNeedsData();
+}, []); // ✅ empty array — token read locally, no dependency needed
 
     const handleHasSpecialNeedsChange = (value) => {
         setHasSpecialNeeds(value);
@@ -257,12 +256,12 @@ const ApplicationSpecialNeeds = ({ formData, onInputChange, onNext, onPrev }) =>
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
-
-    const saveSpecialNeeds = async () => {
-        if (!token) {
-            alert("Student session expired. Please login again.");
-            return false;
-        }
+const saveSpecialNeeds = async () => {
+    const token = localStorage.getItem('token'); // ✅ local read
+    if (!token) {
+        alert("Student session expired. Please login again.");
+        return false;
+    }
 
         setLoading(true);
 
@@ -275,16 +274,7 @@ const ApplicationSpecialNeeds = ({ formData, onInputChange, onNext, onPrev }) =>
         };
 
         try {
-            const response = await axios.post(
-                `${API_URL}/api/application/special-needs`,
-                payload,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type": "application/json",
-                    },
-                }
-            );
+            const response = await axiosInstance.post('/api/application/special-needs', payload);
 
             if (response.data.success) {
                 setLoading(false);

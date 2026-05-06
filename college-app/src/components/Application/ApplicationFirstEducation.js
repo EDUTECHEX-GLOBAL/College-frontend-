@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useCallback } from "react";
-import axios from "axios";
+import axiosInstance from '../../api/axiosInstance';
 import { useNavigate, useLocation } from "react-router-dom";
 import "./ApplicationFirstEducation.css";
 
-const BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
+
 
 const ApplicationFirstEducation = ({ onInputChange }) => {
   const navigate   = useNavigate();
   const location   = useLocation();
-  const token      = localStorage.getItem("token");
+
 
   const [isLoading,            setIsLoading]            = useState(true);
   const [isSubmitting,         setIsSubmitting]         = useState(false);
@@ -68,20 +68,19 @@ const ApplicationFirstEducation = ({ onInputChange }) => {
   // FETCH education data on mount
   // ─────────────────────────────────────────────────────────────
   useEffect(() => {
-    if (token) {
-      fetchEducationData();
-    } else {
-      setError("No authentication token found");
-      setIsLoading(false);
-    }
-  }, []);
+  const token = localStorage.getItem("token");
+  if (token) {
+    fetchEducationData();
+  } else {
+    setError("No authentication token found");
+    setIsLoading(false);
+  }
+}, []);
 
   const fetchEducationData = async () => {
     try {
       setIsLoading(true);
-      const res = await axios.get(`${BASE_URL}/api/application/education`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+    const res = await axiosInstance.get('/api/application/education');
 
       if (res.data.success && res.data.educationInfo) {
         const data = res.data.educationInfo;
@@ -217,16 +216,7 @@ const ApplicationFirstEducation = ({ onInputChange }) => {
         educationEntries: wasEnrolled ? entriesToSave : [],
       };
 
-      const res = await axios.post(
-        `${BASE_URL}/api/application/education`,
-        payload,
-        {
-          headers: {
-            Authorization:  `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const res = await axiosInstance.post('/api/application/education', payload);
 
       if (res.data.success) {
         setCompletionPercentage(75);

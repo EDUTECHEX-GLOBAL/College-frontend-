@@ -1,11 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './masterdocuments.css';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL
-  ? `${process.env.REACT_APP_API_BASE_URL}/api/master-documents`
-  : 'http://localhost:5000/api/master-documents';
-
 const BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const API_URL  = `${BASE_URL}/api/master-documents`;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const resolveFileUrl = (fileUrl) => {

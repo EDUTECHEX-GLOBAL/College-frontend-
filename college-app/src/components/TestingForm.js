@@ -1,7 +1,7 @@
 // src/components/TestingForm.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../api/axiosInstance';
 import './TestingForm.css';
 
 // Import testing section components
@@ -138,22 +138,12 @@ const TestingForm = () => {
   const fetchTestingData = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-
-      if (!token) {
-        navigate('/sign-in');
-        return;
-      }
-
-      const response = await axios.get(
-        `${API_URL}/api/students/testing/detailed`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+    const token = localStorage.getItem('token');
+if (!token) {
+  navigate('/sign-in');
+  return;
+}
+const response = await axiosInstance.get('/api/students/testing/detailed');
 
       if (response.data.success && response.data.testing) {
         const testingData = response.data.testing;
@@ -195,7 +185,10 @@ const TestingForm = () => {
 
   // Update localStorage with testing data
   const updateLocalStorageWithTestingData = (testingData, testingProgress) => {
-    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    const rawUserData = localStorage.getItem('userData');
+const userData = rawUserData && rawUserData !== 'undefined' 
+  ? JSON.parse(rawUserData) 
+  : {};
     const updatedUserData = {
       ...userData,
       testingProgress: testingProgress,
@@ -335,24 +328,12 @@ const TestingForm = () => {
   const saveTesting = async () => {
     try {
       setSaving(true);
-      const token = localStorage.getItem('token');
-
-      if (!token) {
-        navigate('/sign-in');
-        return;
-      }
-
-      const response = await axios.put(
-        `${API_URL}/api/students/testing`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
+   const token = localStorage.getItem('token');
+if (!token) {
+  navigate('/sign-in');
+  return;
+}
+const response = await axiosInstance.put('/api/students/testing', formData);
       if (response.data.success) {
         const newTestingProgress = response.data.testingProgress || 0;
 

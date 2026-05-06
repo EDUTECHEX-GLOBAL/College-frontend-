@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import Select from 'react-select';
 import './HouseholdForm.css';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
+
 
 const HouseholdForm = () => {
   const navigate = useNavigate();
@@ -40,10 +40,7 @@ const HouseholdForm = () => {
 
   const fetchHouseholdData = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/students/family-dashb`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+     const response = await axiosInstance.get('/api/students/family-dashb');
 
       if (response.data.success && response.data.familyData.household) {
         const householdData = response.data.familyData.household;
@@ -78,11 +75,7 @@ const HouseholdForm = () => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
-      await axios.post(`${API_URL}/api/students/family-dashb/household`, formData, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
+     await axiosInstance.post('/api/students/family-dashb/household', formData);
       navigate('/firstyear/dashboard/family/parent1');
     } catch (error) {
       console.error('Error saving household data:', error);

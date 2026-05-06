@@ -1,7 +1,7 @@
 // src/components/EducationForm.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../api/axiosInstance';
 import './EducationForm.css';
 
 // Import all education section components
@@ -15,8 +15,6 @@ import CommunityOrganizationsSection from './education-sections/CommunityOrganiz
 import FuturePlansSection from './education-sections/FuturePlansSection';
 import DocumentsUploadSection from './education-sections/DocumentsUploadSection';
 import EducationPreview from './EducationPreview';
-
-const API_URL = process.env.REACT_APP_API_BASE_URL;
 
 // Section name mapping - URL names to database field names
 const SECTION_NAME_MAP = {
@@ -160,18 +158,12 @@ const EducationForm = () => {
     const fetchEducationData = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem('token');
-        if (!token) {
-          navigate('/sign-in');
-          return;
-        }
-
-        const response = await axios.get(`${API_URL}/api/education`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
+       const token = localStorage.getItem('token');
+if (!token) {
+  navigate('/sign-in');
+  return false;
+}
+       const response = await axiosInstance.get('/api/education');
 
         if (response.data.success && response.data.education) {
           setEducationData(prev => ({
@@ -207,16 +199,10 @@ const EducationForm = () => {
         return false;
       }
 
-      const response = await axios.put(
-        `${API_URL}/api/education/update`,
-        { section: sectionName, data: sectionData },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
+     const response = await axiosInstance.put('/api/education/update', {
+  section: sectionName,
+  data: sectionData,
+});
 
       if (response.data.success) {
         setProgress(response.data.education?.overallProgress ?? 0);
@@ -452,8 +438,11 @@ const EducationForm = () => {
     setMessage({ type: '', text: '' });
 
     try {
-      const token = localStorage.getItem('token');
-      if (!token) { navigate('/sign-in'); return; }
+  const token = localStorage.getItem('token');
+if (!token) {
+  navigate('/sign-in');
+  return;
+}
 
       const allCompleted = educationData.educationCompletion &&
         Object.values(educationData.educationCompletion).every(Boolean);

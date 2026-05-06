@@ -1,9 +1,8 @@
 // src/components/education-sections/DocumentsUploadSection.js
 import React, { useRef, useState } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import './DocumentsUploadSection.css';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
 
 const DocumentsUploadSection = ({ educationData, handleInputChange }) => {
   const { documents } = educationData;
@@ -31,16 +30,11 @@ const DocumentsUploadSection = ({ educationData, handleInputChange }) => {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await axios.post(
-        `${API_URL}/api/education/documents/upload?field=${documentType}`,
-        formData,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
-          }
-        }
-      );
+      const response = await axiosInstance.post(
+  `/api/education/documents/upload?field=${documentType}`,
+  formData,
+  { headers: { 'Content-Type': 'multipart/form-data' } }
+);
 
       if (response.data.success) {
         setUploadMessage({ type: 'success', text: 'File uploaded successfully' });
@@ -79,14 +73,9 @@ const DocumentsUploadSection = ({ educationData, handleInputChange }) => {
         throw new Error('Authentication required');
       }
 
-      const response = await axios.delete(
-        `${API_URL}/api/education/documents?field=${documentType}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
+     const response = await axiosInstance.delete(
+  `/api/education/documents?field=${documentType}`
+);
 
       if (response.data.success) {
         setUploadMessage({ type: 'success', text: 'File removed successfully' });

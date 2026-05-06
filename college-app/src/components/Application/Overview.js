@@ -1,13 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance'; 
 import './Overview.css';
 
 // ✅ FIX 1: Added fallback so API_URL is never undefined
-const API_URL =
-  process.env.REACT_APP_API_BASE_URL ||
-  process.env.REACT_APP_API_BASE_URL ||
-  'http://localhost:5000';
+
 
 /* ═══════════════════════════════════════════
    MAIN COMPONENT
@@ -100,7 +97,7 @@ const Overview = ({ formData, selectedCourseData, onStartApplication, onChangeCo
   //    POST /api/overview  →  createOverview controller
   //    Required fields: programId, programName, universityName
   // ─────────────────────────────────────────────────────────────
- const saveCourseToBackend = useCallback(async (courseData, token) => {
+ const saveCourseToBackend = useCallback(async (courseData) => {
   try {
     const payload = {
       programId:      courseData.programId      || `direct-${Date.now()}`,
@@ -116,12 +113,7 @@ const Overview = ({ formData, selectedCourseData, onStartApplication, onChangeCo
     };
 
     // ✅ Use upsert route — never creates duplicates
-    await axios.post(`${API_URL}/api/overview/upsert-course`, payload, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
+    await axiosInstance.post('/api/overview/upsert-course', payload);
 
     console.log('✅ Course upserted:', payload.universityName, '—', payload.programName);
   } catch (err) {
@@ -144,12 +136,7 @@ const Overview = ({ formData, selectedCourseData, onStartApplication, onChangeCo
         return;
       }
 
-      const response = await axios.get(`${API_URL}/api/overview`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+     const response = await axiosInstance.get('/api/overview');
 
       if (response.data.success && response.data.overview) {
         setOverviewData(response.data.overview);
@@ -172,7 +159,7 @@ const Overview = ({ formData, selectedCourseData, onStartApplication, onChangeCo
             backendCourse?.programName    === universityDetails.programName;
 
           if (!alreadySaved) {
-            await saveCourseToBackend(universityDetails, token);
+            await saveCourseToBackend(universityDetails);
           }
           return;
         }
@@ -186,7 +173,7 @@ const Overview = ({ formData, selectedCourseData, onStartApplication, onChangeCo
         // ── Priority 3: Course passed as a prop ──
         if (selectedCourseData) {
           setCourseDetails(selectedCourseData);
-          await saveCourseToBackend(selectedCourseData, token);
+          await saveCourseToBackend(selectedCourseData);
           return;
         }
 
@@ -196,7 +183,7 @@ const Overview = ({ formData, selectedCourseData, onStartApplication, onChangeCo
           try {
             const parsed = JSON.parse(saved);
             setCourseDetails(parsed);
-            await saveCourseToBackend(parsed, token);
+          await saveCourseToBackend(parsed);
           } catch (err) {
             console.error('Error parsing saved course:', err);
           }

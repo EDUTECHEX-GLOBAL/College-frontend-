@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import './AdditionalInformation.css';
 
 const AdditionalInformation = () => {
@@ -14,15 +14,9 @@ const AdditionalInformation = () => {
   const [loading, setLoading]     = useState(false);
   const [saveStatus, setSaveStatus] = useState('');
 
-  const API_URL = process.env.REACT_APP_API_BASE_URL;
 
-  const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
-    return {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    };
-  };
+
+
 
   const circumstancesList = [
     "Access to a safe and quiet study space",
@@ -54,9 +48,7 @@ const AdditionalInformation = () => {
 
   const loadAdditionalInfoData = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/writing`, {
-        headers: getAuthHeaders()
-      });
+     const response = await axiosInstance.get('/api/writing');
       if (response.data.success && response.data.writing.additionalInformation) {
         const { additionalInformation } = response.data.writing;
         setShareCircumstances(additionalInformation.shareCircumstances);
@@ -83,11 +75,7 @@ const AdditionalInformation = () => {
     setLoading(true);
     setSaveStatus('Saving...');
     try {
-      const response = await axios.put(
-        `${API_URL}/api/writing/additional-information`,
-        buildPayload(),
-        { headers: getAuthHeaders() }
-      );
+    const response = await axiosInstance.put('/api/writing/additional-information', buildPayload());
       if (response.data.success) {
         setSaveStatus('Draft saved successfully!');
         setTimeout(() => setSaveStatus(''), 3000);
@@ -119,11 +107,7 @@ const AdditionalInformation = () => {
     setLoading(true);
     setSaveStatus('Saving and completing...');
     try {
-      const response = await axios.put(
-        `${API_URL}/api/writing/additional-information`,
-        buildPayload(),
-        { headers: getAuthHeaders() }
-      );
+    const response = await axiosInstance.put('/api/writing/additional-information', buildPayload());
       if (response.data.success) {
         setSaveStatus('Additional information saved successfully! Redirecting...');
         setTimeout(() => navigate('/firstyear/dashboard/'), 1500);

@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import Select from 'react-select';
 import './ActivitiesSection.css';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
+
 
 const VALID_CV_TYPES = [
   'application/pdf',
@@ -95,9 +95,7 @@ const ActivitiesSection = () => {
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const response = await axios.get(`${API_URL}/api/students/activities`, {
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        });
+      const response = await axiosInstance.get('/api/students/activities');
 
         if (response.data.success) {
           const { hasActivities: has, activities: acts } = response.data.activitiesData;
@@ -135,15 +133,13 @@ const ActivitiesSection = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) { navigate('/sign-in'); return; }
-      const response = await axios.post(
-        `${API_URL}/api/students/activities/has-activities`,
-        { hasActivities: answer },
-        { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } },
-      );
+     const response = await axiosInstance.post('/api/students/activities/has-activities', {
+  hasActivities: answer,
+});
       if (response.data.success) {
-        const stored = localStorage.getItem('userData');
-        if (stored) {
-          const userData = JSON.parse(stored);
+       const stored = localStorage.getItem('userData');
+if (stored && stored !== 'undefined') {
+  const userData = JSON.parse(stored);
           localStorage.setItem('userData', JSON.stringify({
             ...userData,
             applicationProgress: {
@@ -171,9 +167,7 @@ const ActivitiesSection = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      await axios.delete(`${API_URL}/api/students/activities/has-activities`, {
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      });
+     await axiosInstance.delete('/api/students/activities/has-activities');
       const stored = localStorage.getItem('userData');
       if (stored) {
         const userData = JSON.parse(stored);
@@ -261,7 +255,8 @@ const ActivitiesSection = () => {
         return;
       }
 
-      const response = await fetch(`${API_URL}/api/students/activities/parse-cv`, {
+     const baseURL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const response = await fetch(`${baseURL}/api/students/activities/parse-cv`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -372,17 +367,14 @@ const ActivitiesSection = () => {
         return;
       }
 
-      const response = await axios.post(
-        `${API_URL}/api/students/activities/details`,
-        { activities: activitiesForBackend },
-        { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } },
-      );
-
+     const response = await axiosInstance.post('/api/students/activities/details', {
+  activities: activitiesForBackend,
+});
       if (response.data.success) {
         // Update local storage
-        const stored = localStorage.getItem('userData');
-        if (stored) {
-          const userData = JSON.parse(stored);
+       const stored = localStorage.getItem('userData');
+if (stored && stored !== 'undefined') {
+  const userData = JSON.parse(stored);
           localStorage.setItem('userData', JSON.stringify({
             ...userData,
             applicationProgress: {

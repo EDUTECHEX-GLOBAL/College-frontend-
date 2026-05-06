@@ -15,6 +15,8 @@ const DashboardLayout = ({
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+
+  // ✅ STEP 1 FIX: Added family and education to initial state
   const [expandedSections, setExpandedSections] = useState({
     testing: false,
     colleges: false,
@@ -24,8 +26,11 @@ const DashboardLayout = ({
     application: false,
     masterApplication: false,
     profileInApp: false,
+    family: false,      // ← ADDED
+    education: false,   // ← ADDED
     expandedColleges: {}
   });
+
   const [forceUpdate, setForceUpdate] = useState(0);
   const [masterAppProgress, setMasterAppProgress] = useState(0);
 
@@ -141,6 +146,7 @@ const DashboardLayout = ({
     };
   }, []);
 
+  // ✅ STEP 2 FIX: Added family and education to path-based auto-expand
   useEffect(() => {
     const path = location.pathname;
     if (path.includes('/testing')) setExpandedSections(prev => ({ ...prev, testing: true }));
@@ -151,6 +157,8 @@ const DashboardLayout = ({
     if (path.includes('/application')) setExpandedSections(prev => ({ ...prev, application: true }));
     if (path.includes('/master-application')) setExpandedSections(prev => ({ ...prev, masterApplication: true }));
     if (path.includes('/profile')) setExpandedSections(prev => ({ ...prev, profileInApp: true }));
+    if (path.includes('/family')) setExpandedSections(prev => ({ ...prev, family: true }));     // ← ADDED
+    if (path.includes('/education')) setExpandedSections(prev => ({ ...prev, education: true })); // ← ADDED
   }, [location.pathname]);
 
   useEffect(() => {
@@ -649,7 +657,7 @@ const DashboardLayout = ({
       );
     }
 
-    // Default sidebar - Main Dashboard Menu with Profile inside Application section
+    // Default sidebar - Main Dashboard Menu
     return (
       <>
         <div className="nav-section">
@@ -667,7 +675,8 @@ const DashboardLayout = ({
         <div className="nav-section">
           <h4 className="nav-section-title">APPLICATION</h4>
           <ul className="nav-menu">
-            {/* Profile Section inside Application */}
+
+            {/* Profile Section */}
             <ExpandableNav 
               label="Profile" 
               isExpanded={expandedSections.profileInApp}
@@ -743,20 +752,55 @@ const DashboardLayout = ({
               ))}
             </ExpandableNav>
 
-            <NavItem 
-              label="Family" 
-              isActive={activeMainSection === 'family'}
-              onClick={() => onSectionChange('family')}
-              badge={userData?.applicationProgress?.family >= 100 ? '✓' : userData?.applicationProgress?.family > 0 ? `${userData.applicationProgress.family}%` : 'Start'} 
-            />
+            {/* ✅ STEP 3 FIX: Family as ExpandableNav with sub-items */}
+            <ExpandableNav
+              label="Family"
+              isExpanded={expandedSections.family}
+              onToggle={() => toggleSection('family')}
+              badge={userData?.applicationProgress?.family >= 100 ? '✓' : userData?.applicationProgress?.family > 0 ? `${userData.applicationProgress.family}%` : 'Start'}
+            >
+              {[
+                ['household', 'Household'],
+                ['parent1', 'Parent 1'],
+                ['parent2', 'Parent 2'],
+                ['sibling', 'Sibling'],
+              ].map(([key, label]) => (
+                <SubItem
+                  key={key}
+                  label={label}
+                  isActive={location.pathname.includes(`/${key}`)}
+                  onClick={() => navigate(`${basePath}/family/${key}`)}
+                />
+              ))}
+            </ExpandableNav>
 
-            <NavItem 
-              label="Education" 
-              isActive={activeMainSection === 'education'}
-              onClick={() => onSectionChange('education')}
-              badge={userData?.applicationProgress?.education >= 100 ? '✓' : userData?.applicationProgress?.education > 0 ? `${userData.applicationProgress.education}%` : 'Start'} 
-            />
+            {/* ✅ STEP 3 FIX: Education as ExpandableNav with sub-items */}
+            <ExpandableNav
+              label="Education"
+              isExpanded={expandedSections.education}
+              onToggle={() => toggleSection('education')}
+              badge={userData?.applicationProgress?.education >= 100 ? '✓' : userData?.applicationProgress?.education > 0 ? `${userData.applicationProgress.education}%` : 'Start'}
+            >
+              {[
+                ['current-school', 'Current or Most Recent Secondary/High School'],
+                ['other-schools', 'Other Secondary/High Schools'],
+                ['grades', 'Grades'],
+                ['current-courses', 'Current or Most Recent Year Courses'],
+                ['honors', 'Honors'],
+                ['community-organizations', 'Community-Based Organizations'],
+                ['future-plans', 'Future Plans'],
+                ['documents', 'Documents Upload'],
+              ].map(([key, label]) => (
+                <SubItem
+                  key={key}
+                  label={label}
+                  isActive={location.pathname.includes(`/${key}`)}
+                  onClick={() => navigate(`${basePath}/education/${key}`)}
+                />
+              ))}
+            </ExpandableNav>
 
+            {/* Testing */}
             <ExpandableNav 
               label="Testing" 
               isExpanded={expandedSections.testing}
@@ -776,10 +820,16 @@ const DashboardLayout = ({
                   onClick={() => navigate(t.route)} 
                 />
               )) : (
-                <li className="nav-subitem"><div className="nav-content"><span className="nav-dot"></span><span className="nav-text nav-text--muted">No tests selected</span></div></li>
+                <li className="nav-subitem">
+                  <div className="nav-content">
+                    <span className="nav-dot"></span>
+                    <span className="nav-text nav-text--muted">No tests selected</span>
+                  </div>
+                </li>
               )}
             </ExpandableNav>
 
+            {/* Activities */}
             <ExpandableNav 
               label="Activities" 
               isExpanded={expandedSections.activities}
@@ -798,6 +848,7 @@ const DashboardLayout = ({
               />
             </ExpandableNav>
 
+            {/* Writing */}
             <ExpandableNav 
               label="Writing" 
               isExpanded={expandedSections.writing}
@@ -815,6 +866,7 @@ const DashboardLayout = ({
                 onClick={() => navigate(`${basePath}/writing/additional-information`)} 
               />
             </ExpandableNav>
+
           </ul>
         </div>
 

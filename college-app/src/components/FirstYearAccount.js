@@ -1,10 +1,8 @@
 import React, { useState } from "react";
-import axios from "axios";
+import axiosInstance, { clearAllUserData } from "../api/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import "./FirstYearAccount.css";
 import OtpVerification from "./OtpVerification";
-
-const API_URL = process.env.REACT_APP_API_BASE_URL;
 
 /* ── Eye icons ── */
 const IcoEye = () => (
@@ -159,9 +157,7 @@ const FirstYearAccount = () => {
         if (formData.addressLine2.trim()) payload.addressLine2 = formData.addressLine2.trim();
       }
 
-      const response = await axios.post(`${API_URL}/api/students/register`, payload, {
-        headers: { "Content-Type": "application/json" },
-      });
+    const response = await axiosInstance.post("/api/students/register", payload);
 
       if (response.data.requireOtpVerification) {
         setRegisteredEmail(formData.email);
@@ -170,14 +166,16 @@ const FirstYearAccount = () => {
         return;
       }
 
-      if (response.data.success && response.data.token) {
-        localStorage.setItem("token", response.data.token);
-        const userData = response.data.user || response.data.account || {
-          name: `${formData.firstName} ${formData.lastName}`,
-          email: formData.email, firstName: formData.firstName, lastName: formData.lastName,
-          studentId: `CAID ${Math.floor(10000000 + Math.random() * 90000000)}`,
-        };
-        localStorage.setItem("userData", JSON.stringify(userData));
+   if (response.data.success && response.data.token) {
+  clearAllUserData(); 
+
+  localStorage.setItem("token", response.data.token);
+  const userData = response.data.user || response.data.account || {
+    name: `${formData.firstName} ${formData.lastName}`,
+    email: formData.email, firstName: formData.firstName, lastName: formData.lastName,
+    studentId: `CAID ${Math.floor(10000000 + Math.random() * 90000000)}`,
+  };
+  localStorage.setItem("userData", JSON.stringify(userData));
         setMessage({ type: "success", text: "Account created! Redirecting to dashboard…" });
         setTimeout(() => navigate("/dashboard"), 2000);
       } else {
@@ -259,10 +257,10 @@ const FirstYearAccount = () => {
 
       {/* ── Brand Header ── */}
       <div className="fy-brand-header">
-        <a href="/" className="fy-logo" aria-label="EduTechEX Home">
+       <a href="/home" className="fy-logo" aria-label="EduTechEX Home">
           <EduTechLogo />
         </a>
-        <button className="fy-back-btn" onClick={() => window.location.href = "/"}>
+       <button className="fy-back-btn" onClick={() => window.location.href = "/home"}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="19" y1="12" x2="5" y2="12"/>
             <polyline points="12 19 5 12 12 5"/>

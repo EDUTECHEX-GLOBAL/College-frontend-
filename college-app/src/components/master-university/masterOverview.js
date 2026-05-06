@@ -1,32 +1,28 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from '../../api/axiosInstance';
 import "./masteroverview.css";
 
-const API_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
+
 
 const MasterOverview = ({ data = {}, onNext }) => {
   const [course, setCourse] = useState({});
   const [loading, setLoading] = useState(true);
 
-  const token = localStorage.getItem("token");
+ 
 
   /* =========================================
      FETCH FROM BACKEND
   ========================================= */
   useEffect(() => {
-    const fetchOverview = async () => {
-      try {
-        if (!token) {
-          setCourse(data.course || {});
-          setLoading(false);
-          return;
-        }
-
-        const res = await axios.get(`${API_URL}/api/master-overview`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+  const fetchOverview = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setCourse(data.course || {});
+        setLoading(false);
+        return;
+      }
+       const res = await axiosInstance.get('/api/master-overview');
 
         if (res.data.success && res.data.data) {
           setCourse(res.data.data.course);
@@ -74,11 +70,7 @@ const MasterOverview = ({ data = {}, onNext }) => {
 
       console.log("Sending payload:", payload);
 
-      await axios.post(`${API_URL}/api/master-overview/save`, payload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+     await axiosInstance.post('/api/master-overview/save', payload);
 
       console.log("Saved to DB ✅");
     } catch (err) {

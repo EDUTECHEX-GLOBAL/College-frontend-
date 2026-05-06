@@ -1,11 +1,11 @@
 // src/components/UserProfile.js
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from '../api/axiosInstance';
 import "./UserProfile.css";
 import EdutechLogo from "./../assets/Edutech-logo.svg";
 
-const API_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+
 
 const URP_POLL_MS = 12000;
 const URP_WAIT_MS = 10 * 60 * 1000;
@@ -251,9 +251,7 @@ const UniversityRequestPopup = ({ token, pendingRequest, onApproved, onRejected,
   const urpPoll = React.useCallback(async () => {
     if (resolvedRef.current || !token) return;
     try {
-      const res = await axios.get(`${API_URL}/api/user/notifications`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axiosInstance.get('/api/user/notifications');
       const all = res.data?.notifications || res.data?.data || [];
       const uniLower = (pendingRequest?.universityName || "").toLowerCase();
       const matches = (n) =>
@@ -286,7 +284,7 @@ const UniversityRequestPopup = ({ token, pendingRequest, onApproved, onRejected,
 
   const urpMarkRead = async (id) => {
     try {
-      await axios.patch(`${API_URL}/api/user/notifications/${id}/read`, {}, { headers: { Authorization: `Bearer ${token}` } });
+   await axiosInstance.patch(`/api/user/notifications/${id}/read`, {});
     } catch (_) {}
   };
 
@@ -452,9 +450,7 @@ const UserProfile = () => {
     const load = async () => {
       if (!token) { setFetchingProfile(false); return; }
       try {
-        const res = await axios.get(`${API_URL}/api/user/profile`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+       const res = await axiosInstance.get('/api/user/profile');
         if (res.data.success && res.data.data) {
           const p = res.data.data;
           setBasicInfo(p.basicInfo || { fullName: '', email: userEmail, mobile: '', dob: '', gender: '', nationality: '', residence: '' });
@@ -554,10 +550,9 @@ const UserProfile = () => {
     if (!token || !programType) return;
     setLoading(true); setError('');
     try {
-      const res = await axios.get(`${API_URL}/api/admin/universities`, {
-        params: { stream: programType, limit: 300 },
-        headers: { Authorization: `Bearer ${token}` },
-      });
+     const res = await axiosInstance.get('/api/admin/universities', {
+  params: { stream: programType, limit: 300 },
+});
 
       if (!res?.data?.success) { setError('Failed to load universities. Please try again.'); return; }
 
@@ -681,7 +676,7 @@ const UserProfile = () => {
     const poll = async () => {
       if (bgResolved.current || !token) return;
       try {
-        const res = await axios.get(`${API_URL}/api/user/notifications`, { headers: { Authorization: `Bearer ${token}` } });
+        const res = await axiosInstance.get('/api/user/notifications');
         const all = res.data?.notifications || res.data?.data || [];
         const matches = (n) => !bgSeenIds.current.has(n._id) && (!bgPendingName.current || n.message?.toLowerCase().includes(bgPendingName.current));
         const approved = all.find(n => n.type === 'UNIVERSITY_APPROVED' && matches(n));
@@ -701,7 +696,7 @@ const UserProfile = () => {
             setResultBanner({ type: 'rejected', uniName: name, reason });
             showToast(`Your request for "${name}" was not approved.`, 'warning');
           }
-          try { await axios.patch(`${API_URL}/api/user/notifications/${n._id}/read`, {}, { headers: { Authorization: `Bearer ${token}` } }); } catch (_) {}
+          try { await axiosInstance.patch(`/api/user/notifications/${n._id}/read`, {}); } catch (_) {}
         }
       } catch (_) {}
     };
@@ -768,11 +763,12 @@ const UserProfile = () => {
     if (!validateRequestForm()) return;
     setSubmittingRequest(true);
     try {
-      const res = await axios.post(
-        `${API_URL}/api/admin/university-request`,
-        { universityName: requestForm.universityName.trim(), country: requestForm.country.trim(), interestedCourses: reqCourses, programType },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await axiosInstance.post('/api/admin/university-request', {
+  universityName: requestForm.universityName.trim(),
+  country: requestForm.country.trim(),
+  interestedCourses: reqCourses,
+  programType,
+});
       if (res?.data?.success) {
         const pending = { universityName: requestForm.universityName.trim(), country: requestForm.country.trim(), courses: [...reqCourses] };
         setRequestSuccess(true);
@@ -933,11 +929,7 @@ const validateStep3 = () => {
   const uploadProfileImage = async () => {
     if (!profileImage || !token) return;
     try {
-      await axios.patch(
-        `${API_URL}/api/user/profile/image`,
-        { profileImage: imagePreview },
-        { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
-      );
+      await axiosInstance.patch('/api/user/profile/image', { profileImage: imagePreview });
     } catch (_) {}
   };
 
@@ -1021,9 +1013,7 @@ const validateStep3 = () => {
         setError('Profile data too large. Reduce course selections.'); setSaving(false); return;
       }
 
-      const res = await axios.post(`${API_URL}/api/user/profile`, profileData, {
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      });
+      const res = await axiosInstance.post('/api/user/profile', profileData);
 
       if (res.data.success) {
         localStorage.setItem('userProfile', JSON.stringify(profileData));

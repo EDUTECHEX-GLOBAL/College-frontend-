@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './master.css';
 
@@ -129,11 +129,6 @@ const Master = ({ onUpdate }) => {
         }
     }, []);
 
-    // ── NOTE: Individual section fetches removed ──────────────────────────────
-    // MasterPreview already fetches all data from /api/master-preview
-    // Each step component (MasterCourse, MasterContact, etc.) fetches its own data
-    // No need to fetch everything here in master.js
-
     // ── Redirect bare path → overview ─────────────────────────────────────────
     useEffect(() => {
         const step = stepFromPath(location.pathname);
@@ -196,10 +191,11 @@ const Master = ({ onUpdate }) => {
         return Math.round((count / 8) * 100);
     }, [isStepCompleted]);
 
+    // ✅ Single declaration — duplicate removed, undefined guard added
     const saveToLocalStorage = useCallback(() => {
         localStorage.setItem('masterApplicationData', JSON.stringify(formData));
         const userDataStr = localStorage.getItem('userData');
-        if (userDataStr) {
+        if (userDataStr && userDataStr !== 'undefined') {  // ✅ guard: prevents JSON.parse("undefined") crash
             try {
                 const userData = JSON.parse(userDataStr);
                 const progress = calculateProgress();

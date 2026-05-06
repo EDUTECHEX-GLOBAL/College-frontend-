@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from '../api/axiosInstance';
 import { useNavigate } from "react-router-dom";
 import "./MyColleges.css";
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
+
 
 const MyColleges = () => {
   const [colleges, setColleges] = useState([]);
@@ -11,8 +11,9 @@ const MyColleges = () => {
 
   useEffect(() => {
     const fetchMyColleges = async () => {
-      const userId = localStorage.getItem("userId");
-      const res = await axios.get(`${API_URL}/api/colleges/mine/${userId}`);
+    const token = localStorage.getItem('token');
+if (!token) return;
+const res = await axiosInstance.get('/api/colleges/mine');
       setColleges(res.data.colleges || []);
     };
     fetchMyColleges();

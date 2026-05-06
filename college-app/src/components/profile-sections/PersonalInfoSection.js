@@ -36,12 +36,12 @@ const DocumentUploadBanner = ({
       const formData = new FormData();
       formData.append(fieldName, file);
 
-      const res = await fetch(`http://localhost:5000${endpoint}`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        body: formData,
-      });
-
+    const baseURL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const res = await fetch(`${baseURL}${endpoint}`, {
+  method: 'POST',
+  headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+  body: formData,
+});
       const result = await res.json();
       console.log(`${fieldName} API result:`, result);
 
@@ -295,14 +295,15 @@ const PersonalInfoSection = ({ formData, handleInputChange }) => {
     // Step 3: persist to DB
     try {
       setSaveStatus('saving');
-      const res = await fetch('http://localhost:5000/api/students/profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({ ...formData, ...payload }),
-      });
+     const baseURL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const res = await fetch(`${baseURL}/api/students/profile`, {
+  method: 'PUT',
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${localStorage.getItem('token')}`,
+  },
+  body: JSON.stringify({ ...formData, ...payload }),
+});
       const result = await res.json();
       if (!result.success) throw new Error(result.message || 'Save failed');
       setSaveStatus('saved');

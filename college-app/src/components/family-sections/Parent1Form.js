@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import Select from 'react-select';
 import './Parent1Form.css';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
+
 
 const Parent1Form = () => {
   const navigate = useNavigate();
@@ -61,20 +61,30 @@ const Parent1Form = () => {
     fetchParent1Data();
   }, []);
 
-  const fetchParent1Data = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/students/family-dashb`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      if (response.data.success && response.data.familyData.parent1) {
-        setFormData(response.data.familyData.parent1);
-      }
-    } catch (error) {
-      console.error('Error fetching parent 1 data:', error);
+ const fetchParent1Data = async () => {
+  try {
+    const response = await axiosInstance.get('/api/students/family-dashb');
+    if (response.data.success && response.data.familyData.parent1) {
+      const data = response.data.familyData.parent1;
+      setFormData(prev => ({
+        ...prev,                              // keep all defaults first
+        ...data,                              // overlay API data on top
+        parentType: data.parentType || '',
+        isLiving: data.isLiving || '',
+        prefix: data.prefix || '',
+        firstName: data.firstName || '',
+        middleInitial: data.middleInitial || '',
+        lastName: data.lastName || '',
+        formerLastName: data.formerLastName || '',
+        suffix: data.suffix || '',
+        occupation: data.occupation || '',
+        educationLevel: data.educationLevel || ''
+      }));
     }
-  };
+  } catch (error) {
+    console.error('Error fetching parent 1 data:', error);
+  }
+};
 
   const handleSelectChange = (field, selectedOption) => {
     setFormData(prev => ({
@@ -95,11 +105,7 @@ const Parent1Form = () => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
-      await axios.post(`${API_URL}/api/students/family-dashb/parent1`, formData, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
+     await axiosInstance.post('/api/students/family-dashb/parent1', formData);
       navigate('/firstyear/dashboard/family/parent2');
     } catch (error) {
       console.error('Error saving parent 1 data:', error);

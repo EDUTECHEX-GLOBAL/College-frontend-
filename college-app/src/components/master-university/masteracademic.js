@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './masteracademic.css';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
+
 
 const MasterAcademic = ({ data, updateData }) => {
   const [academicEntries, setAcademicEntries] = useState([
@@ -119,8 +119,9 @@ const MasterAcademic = ({ data, updateData }) => {
       if (!userId) return;
 
       try {
-        const token    = localStorage.getItem('token');
-     const response = await fetch(`${API_URL}/api/master-academic`, {
+     const token    = localStorage.getItem('token');
+const baseURL  = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const response = await fetch(`${baseURL}/api/master-academic`, {
   method:  'GET',
   headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
   signal:  controller.signal
@@ -241,11 +242,12 @@ const MasterAcademic = ({ data, updateData }) => {
       const token        = localStorage.getItem('token');
       const cleanEntries = entries.map(({ id, ...rest }) => rest);
 
-      const response = await fetch(`${API_URL}/api/master-academic`, {
-        method:  'POST',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ userId, academics: cleanEntries })
-      });
+     const baseURL  = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const response = await fetch(`${baseURL}/api/master-academic`, {
+  method:  'POST',
+  headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+  body:    JSON.stringify({ userId, academics: cleanEntries })
+});
 
       const result = await response.json();
 

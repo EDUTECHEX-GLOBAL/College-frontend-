@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './ApplicationLanguage.css';
-import axios from 'axios';
-
-const API_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
+import axiosInstance from '../../api/axiosInstance';
 
 const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId, onNext }) => {
     const [showAnotherEQHE, setShowAnotherEQHE] = useState(false);
@@ -13,7 +11,6 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
     const [uploadProgress, setUploadProgress] = useState(0);
     const [showUploadProgress, setShowUploadProgress] = useState(false);
     const [validationErrors, setValidationErrors] = useState({});
-    const [fetchedData, setFetchedData] = useState(null);
 
     // ─────────────────────────────────────────────────────────────
     // DEBUG: Confirm studentId is arriving (remove after testing)
@@ -24,7 +21,6 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
 
     // ─────────────────────────────────────────────────────────────
     // HELPER: Map EQHE fields → Resume field names
-    // ✅ FIX: useCallback gives stable reference for useEffect deps
     // ─────────────────────────────────────────────────────────────
     const mapToResumeFields = useCallback((data) => {
         onInputChange('englishTestType', data.eqheOriginalTitle || '');
@@ -42,12 +38,9 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
 
     // ─────────────────────────────────────────────────────────────
     // LOAD existing data on mount
-    // ✅ FIX: Guard against undefined/invalid studentId
-    // ✅ FIX: dep array is always the same size
     // ─────────────────────────────────────────────────────────────
     useEffect(() => {
         const fetchExistingData = async () => {
-            // Guard: don't call API if studentId is missing or invalid
             if (!studentId || studentId === 'undefined') {
                 console.warn('⚠️ Skipping EQHE fetch — studentId not ready:', studentId);
                 return;
@@ -55,18 +48,12 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
 
             setIsLoading(true);
             try {
-                const response = await axios.get(
-                    `${API_URL}/api/application/language/student/${studentId}/eqhe`,
-                    {
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
-                        }
-                    }
+                const response = await axiosInstance.get(
+                    `/api/application/language/student/${studentId}/eqhe`
                 );
 
                 if (response.data.success && response.data.data) {
                     const data = response.data.data;
-                    setFetchedData(data);
 
                     if (data.eqheDate)          onInputChange('eqheDate',          data.eqheDate);
                     if (data.eqheCity)          onInputChange('eqheCity',          data.eqheCity);
@@ -86,7 +73,6 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                     mapToResumeFields(data);
                 }
             } catch (error) {
-                // 404 = no saved data yet — perfectly normal, not an error
                 if (error.response?.status !== 404) {
                     console.error('Error fetching EQHE data:', error);
                 }
@@ -165,7 +151,6 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
 
     // ─────────────────────────────────────────────────────────────
     // SAVE (without navigate)
-    // ✅ FIX: Guard against missing studentId
     // ─────────────────────────────────────────────────────────────
     const handleSave = async () => {
         if (!studentId || studentId === 'undefined') {
@@ -193,15 +178,9 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                 anotherEqheOriginalTitle: formData.anotherEqheOriginalTitle || ''
             };
 
-            const response = await axios.post(
-                `${API_URL}/api/application/language/student/${studentId}/eqhe`,
-                dataToSave,
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                }
+            const response = await axiosInstance.post(
+                `/api/application/language/student/${studentId}/eqhe`,
+                dataToSave
             );
 
             if (response.data.success) {
@@ -229,7 +208,6 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
 
     // ─────────────────────────────────────────────────────────────
     // SAVE & CONTINUE
-    // ✅ FIX: Guard against missing studentId
     // ─────────────────────────────────────────────────────────────
     const handleSaveAndContinue = async () => {
         if (!studentId || studentId === 'undefined') {
@@ -257,15 +235,9 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                 anotherEqheOriginalTitle: formData.anotherEqheOriginalTitle || ''
             };
 
-            const response = await axios.post(
-                `${API_URL}/api/application/language/student/${studentId}/eqhe`,
-                dataToSave,
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                }
+            const response = await axiosInstance.post(
+                `/api/application/language/student/${studentId}/eqhe`,
+                dataToSave
             );
 
             if (response.data.success) {
@@ -306,14 +278,11 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
         setUploadProgress(0);
 
         try {
-            const response = await axios.post(
-                `${API_URL}/api/application/language/student/${studentId}/eqhe/certificate`,
+            const response = await axiosInstance.post(
+                `/api/application/language/student/${studentId}/eqhe/certificate`,
                 uploadFormData,
                 {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
+                    headers: { 'Content-Type': 'multipart/form-data' },
                     onUploadProgress: (progressEvent) => {
                         const percentCompleted = Math.round(
                             (progressEvent.loaded * 100) / progressEvent.total
@@ -434,7 +403,6 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                     </div>
                 </div>
 
-                
                 {/* Main Form Card */}
                 <div className="applicationlanguage-form-card">
 
@@ -770,19 +738,11 @@ const ApplicationLanguage = ({ formData, onInputChange, onFileUpload, studentId,
                 {/* Action Buttons */}
                 <div className="applicationlanguage-form-actions">
                     <button className="applicationlanguage-btn-secondary" onClick={handleSave} disabled={isSaving}>
-                        {isSaving ? (
-                            <>Saving...</>
-                        ) : (
-                            <>Save</>
-                        )}
+                        {isSaving ? <>Saving...</> : <>Save</>}
                     </button>
 
                     <button className="applicationlanguage-btn-primary" onClick={handleSaveAndContinue} disabled={isSaving}>
-                        {isSaving ? (
-                            <>Saving...</>
-                        ) : (
-                            <>Save & Continue</>
-                        )}
+                        {isSaving ? <>Saving...</> : <>Save & Continue</>}
                     </button>
                 </div>
 

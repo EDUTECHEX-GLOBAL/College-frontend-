@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import './PersonalEssay.css';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
 
 const essayPrompts = [
   { id: 1, text: "Some students have a background, identity, interest, or talent that is so meaningful they believe their application would be incomplete without it. If this sounds like you, then please share your story." },
@@ -33,10 +32,6 @@ const PersonalEssay = () => {
   const collegesRequiringEssay    = userColleges.filter(c => c.requiresEssay);
   const collegesNotRequiringEssay = userColleges.filter(c => !c.requiresEssay);
 
-  const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
-    return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
-  };
 
   // Word count
   useEffect(() => {
@@ -47,7 +42,7 @@ const PersonalEssay = () => {
   useEffect(() => {
     const loadEssayData = async () => {
       try {
-        const response = await axios.get(`${API_URL}/api/writing`, { headers: getAuthHeaders() });
+       const response = await axiosInstance.get('/api/writing');
         if (response.data.success && response.data.writing.personalEssay) {
           const { personalEssay } = response.data.writing;
           if (personalEssay.selectedPrompt) {
@@ -79,7 +74,7 @@ const PersonalEssay = () => {
     setLoading(true);
     setSaveStatus('Saving...');
     try {
-      const response = await axios.put(`${API_URL}/api/writing/personal-essay`, buildPayload(), { headers: getAuthHeaders() });
+    const response = await axiosInstance.put('/api/writing/personal-essay', buildPayload());
       if (response.data.success) {
         setSaveStatus('Draft saved successfully!');
         setTimeout(() => setSaveStatus(''), 3000);
@@ -102,7 +97,7 @@ const PersonalEssay = () => {
     setLoading(true);
     setSaveStatus('Saving and continuing...');
     try {
-      const response = await axios.put(`${API_URL}/api/writing/personal-essay`, buildPayload(), { headers: getAuthHeaders() });
+     const response = await axiosInstance.put('/api/writing/personal-essay', buildPayload());
       if (response.data.success) {
         setSaveStatus('Saved successfully! Redirecting...');
         setTimeout(() => navigate('/firstyear/dashboard/writing/additional-information'), 1000);

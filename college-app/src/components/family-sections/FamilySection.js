@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import './FamilySection.css';
 import HouseholdForm from './HouseholdForm';
 import Parent1Form from './Parent1Form';
 import Parent2Form from './Parent2Form';
 import SiblingForm from './SiblingForm';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
+
 
 const FamilySection = ({ onComplete }) => {
   const navigate = useNavigate();
@@ -21,12 +21,7 @@ const FamilySection = ({ onComplete }) => {
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const response = await axios.get(`${API_URL}/api/students/family-dashb`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
+      const response = await axiosInstance.get('/api/students/family-dashb');
 
         if (response.data.success) {
           const data = response.data.familyData;

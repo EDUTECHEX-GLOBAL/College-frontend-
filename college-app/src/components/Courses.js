@@ -1,10 +1,10 @@
 // src/components/Courses.js
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from "../api/axiosInstance"; // ✅ replaced axios
 import "./Courses.css";
 
-const API_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+// ✅ Removed API_URL - axiosInstance already has baseURL
 
 const MASTER_KEYWORDS = [
   'master', 'msc', 'm.sc', 'mba', 'mtech', 'm.tech', 'ms ',
@@ -18,7 +18,6 @@ const containsMasterKeyword = (str = '') => {
   return MASTER_KEYWORDS.some(kw => lower.includes(kw));
 };
 
-// Checks processed program object — level field is already normalised by processPrograms
 const isMasterLevel = (program = {}, uniHint = false) => {
   if (uniHint) return true;
   if ((program.level || '').toLowerCase() === 'master') return true;
@@ -35,12 +34,8 @@ const Courses = ({ onCourseSelect }) => {
 
   const studentType = location.pathname.includes('/transfer/') ? 'transfer' : 'firstyear';
 
-  // ─── Resolve isMasterUniversity from ALL available sources ───────────────
   const resolveIsMasterUniversity = () => {
-    // 1. Navigation state flag
     if (location.state?.isMasterUniversity === true) return true;
-
-    // 2. University object in navigation state
     const stateUni = location.state?.university;
     if (stateUni) {
       if (stateUni.universityType === 'master')         return true;
@@ -52,8 +47,6 @@ const Courses = ({ onCourseSelect }) => {
         containsMasterKeyword(p.level || '')
       )) return true;
     }
-
-    // 3. localStorage
     try {
       const keys = [`university_${universityId}`, 'currentUniversity'];
       for (const key of keys) {
@@ -70,7 +63,6 @@ const Courses = ({ onCourseSelect }) => {
         )) return true;
       }
     } catch (e) {}
-
     return false;
   };
 
@@ -160,13 +152,11 @@ const Courses = ({ onCourseSelect }) => {
     }
   };
 
+  // ✅ Fixed - using axiosInstance, no manual token/headers needed
   const fetchUniversityFromAPI = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-      const response = await axios.get(
-        `${API_URL}/api/college-search/university/${universityId}`,
-        { headers }
+      const response = await axiosInstance.get(
+        `/api/college-search/university/${universityId}`
       );
       if (response.data.success) {
         const uniData = response.data.data;
@@ -308,7 +298,6 @@ const Courses = ({ onCourseSelect }) => {
     setActiveTab('selected');
   };
 
-  // ─── Build course data payload ─────────────────────────────────────────────
   const buildCourseData = (program) => ({
     universityId:   university?.UNITID || university?._id || university?.id || '',
     universityName: university?.INSTNM || '',
@@ -328,58 +317,81 @@ const Courses = ({ onCourseSelect }) => {
     selectedAt: new Date().toISOString()
   });
 
-  // ─── APPLY NOW ─────────────────────────────────────────────────────────────
-  const handleApplyNow = (program) => {
-    if (!university || !program) { alert("Please select a program first"); return; }
+const handleApplyNow = async (program) => {
+  if (!university || !program) { alert("Please select a program first"); return; }
 
-    setSavingToBackend(true);
-    try {
-      const courseData = buildCourseData(program);
-      const isMaster   = isMasterLevel(program, uniIsMasterHint);
+  setSavingToBackend(true);
+  try {
+    const courseData = buildCourseData(program);
+    const isMaster   = isMasterLevel(program, uniIsMasterHint);
 
-      // ── Route ────────────────────────────────────────────────────────────
-      const applicationPath = isMaster
-        ? `/${studentType}/dashboard/master-application/overview`
-        : `/${studentType}/dashboard/application/overview`;
-
-      // ── CRITICAL: Keep master and bachelor localStorage keys SEPARATE ──
-      // Master application reads 'selectedMasterCourseForApplication'
-      // Bachelor Overview reads 'selectedCourseForApplication'
-      // NEVER write 'selectedCourseForApplication' for a master application —
-      // that is what was causing Overview.js to open instead of MasterOverview.
-      if (isMaster) {
-        localStorage.setItem('selectedMasterCourseForApplication', JSON.stringify(courseData));
-        localStorage.removeItem('masterCourseConfirmed');
-        // ✅ Remove bachelor key so Overview.js cannot accidentally load this course
-        localStorage.removeItem('selectedCourseForApplication');
-        localStorage.removeItem('currentSelectedCourse');
-      } else {
-        // Bachelor path — write only the bachelor keys
-        localStorage.setItem('selectedCourseForApplication', JSON.stringify(courseData));
-        localStorage.setItem('currentSelectedCourse', JSON.stringify(courseData));
-        // ✅ Remove master key so MasterOverview cannot accidentally load this course
-        localStorage.removeItem('selectedMasterCourseForApplication');
-        localStorage.removeItem('masterCourseConfirmed');
+    // ✅ NEW: Save selected course to backend
+    const uniId = university?.UNITID || university?._id || university?.id;
+    if (uniId) {
+      try {
+        await axiosInstance.put(`/api/colleges/${uniId}/courses`, {
+          selectedCourses: [{
+            id:           program.id,
+            title:        program.title,
+            name:         program.title,
+            program_name: program.title,
+            level:        program.level,
+            studyMode:    program.studyMode,
+            duration:     program.duration,
+            locations:    program.locations,
+            majorArea:    program.majorArea,
+            description:  program.description,
+          }],
+          collegeData: {
+            UNITID:  String(uniId),
+            INSTNM:  university.INSTNM  || '',
+            CITY:    university.CITY    || university.location?.city    || '',
+            STABBR:  university.STABBR  || university.location?.state   || '',
+            COUNTRY: university.COUNTRY || university.location?.country || 'USA',
+          }
+        });
+        console.log('✅ Course saved to backend');
+      } catch (saveErr) {
+        console.error('⚠️ Course save failed (non-fatal):', saveErr.message);
+        // Non-fatal — continues to navigate even if save fails
       }
-
-      setSelectedProgram(program);
-
-      navigate(applicationPath, {
-        state: {
-          fromCoursesPage:     true,
-          courseData,
-          isMasterApplication: isMaster
-        }
-      });
-
-      if (onCourseSelect) onCourseSelect(courseData);
-    } catch (err) {
-      console.error("Error saving course:", err);
-      alert("An error occurred while saving your course selection.");
-    } finally {
-      setSavingToBackend(false);
     }
-  };
+
+    // ✅ Existing code below — unchanged
+    const applicationPath = isMaster
+      ? `/${studentType}/dashboard/master-application/overview`
+      : `/${studentType}/dashboard/application/overview`;
+
+    if (isMaster) {
+      localStorage.setItem('selectedMasterCourseForApplication', JSON.stringify(courseData));
+      localStorage.removeItem('masterCourseConfirmed');
+      localStorage.removeItem('selectedCourseForApplication');
+      localStorage.removeItem('currentSelectedCourse');
+    } else {
+      localStorage.setItem('selectedCourseForApplication', JSON.stringify(courseData));
+      localStorage.setItem('currentSelectedCourse', JSON.stringify(courseData));
+      localStorage.removeItem('selectedMasterCourseForApplication');
+      localStorage.removeItem('masterCourseConfirmed');
+    }
+
+    setSelectedProgram(program);
+
+    navigate(applicationPath, {
+      state: {
+        fromCoursesPage:     true,
+        courseData,
+        isMasterApplication: isMaster
+      }
+    });
+
+    if (onCourseSelect) onCourseSelect(courseData);
+  } catch (err) {
+    console.error("Error saving course:", err);
+    alert("An error occurred while saving your course selection.");
+  } finally {
+    setSavingToBackend(false);
+  }
+};
 
   const navigateToApplicationOverview = () => {
     if (!university || !selectedProgram) { alert("Please select a program first"); return; }
@@ -415,7 +427,6 @@ const Courses = ({ onCourseSelect }) => {
     }).format(amount);
   };
 
-  // ─── Guards ────────────────────────────────────────────────────────────────
   if (loading) return (
     <div className="course-loading">
       <div className="course-loading-spinner"></div>
@@ -445,7 +456,6 @@ const Courses = ({ onCourseSelect }) => {
   return (
     <div className="course-container">
 
-      {/* ── Header ── */}
       <div className="course-header">
         <div className="course-header-top">
           <button onClick={handleBackToSearch} className="course-header-back-button">Back to Search</button>
@@ -516,9 +526,7 @@ const Courses = ({ onCourseSelect }) => {
         </div>
       )}
 
-      {/* ── Main Content ── */}
       <div className="course-content">
-
         {programs.length > 0 && showFilters && (
           <div className="course-sidebar">
             <div className="course-sidebar-card">
@@ -633,7 +641,6 @@ const Courses = ({ onCourseSelect }) => {
                           {favorites.includes(program.id) ? '★' : '☆'}
                         </button>
                       </div>
-
                       <div className="course-program-card-body">
                         <div className="course-program-meta-tags">
                           <span className="course-study-mode-badge">{program.studyMode}</span>
@@ -644,11 +651,9 @@ const Courses = ({ onCourseSelect }) => {
                             {isMaster ? '→ Master Application' : '→ Bachelor Application'}
                           </span>
                         </div>
-
                         <div className="course-program-locations">
                           <span className="course-locations-text">{program.locations.join(' • ')}</span>
                         </div>
-
                         <div className="course-program-details-grid">
                           {program.duration && (
                             <div className="course-program-detail-item">
@@ -683,13 +688,11 @@ const Courses = ({ onCourseSelect }) => {
                             </div>
                           )}
                         </div>
-
                         {program.majorArea && program.majorArea !== 'General' && (
                           <div className="course-program-major-area">
                             <span className="course-major-area-tag">{program.majorArea}</span>
                           </div>
                         )}
-
                         {program.description && (
                           <p className="course-program-description">
                             {program.description.length > 120
@@ -697,7 +700,6 @@ const Courses = ({ onCourseSelect }) => {
                               : program.description}
                           </p>
                         )}
-
                         {program.requirements?.length > 0 && (
                           <div className="course-program-requirements">
                             <span className="course-requirements-label">Requirements:</span>
@@ -708,7 +710,6 @@ const Courses = ({ onCourseSelect }) => {
                           </div>
                         )}
                       </div>
-
                       <div className="course-program-card-footer">
                         <button
                           className="course-select-program-btn"
@@ -748,7 +749,6 @@ const Courses = ({ onCourseSelect }) => {
         </div>
       </div>
 
-      {/* ── Selected Program Side Panel ── */}
       {selectedProgram && activeTab === 'selected' && (() => {
         const panelIsMaster = isMasterLevel(selectedProgram, uniIsMasterHint);
         return (
@@ -762,7 +762,6 @@ const Courses = ({ onCourseSelect }) => {
               </div>
               <button className="course-close-panel-btn" onClick={() => setActiveTab('programs')}>×</button>
             </div>
-
             <div className="course-panel-content">
               <div className="course-selected-program-header">
                 <h4>{selectedProgram.title}</h4>
@@ -773,7 +772,6 @@ const Courses = ({ onCourseSelect }) => {
                   {favorites.includes(selectedProgram.id) ? '★' : '☆'}
                 </button>
               </div>
-
               <div className="course-panel-details">
                 <div className="course-detail-row">
                   <span className="course-detail-row-label">Level:</span>
@@ -832,7 +830,6 @@ const Courses = ({ onCourseSelect }) => {
                   </div>
                 )}
               </div>
-
               <div className="course-panel-actions">
                 <button
                   className="course-apply-button"

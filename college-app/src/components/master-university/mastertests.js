@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './mastertests.css';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
+
 
 // ─── Test Definitions ────────────────────────────────────────────────────────
 
@@ -506,10 +506,11 @@ const MasterTests = ({ data, updateData }) => {
       const token = getToken();
       if (!token) return;
       try {
-        const res = await fetch(`${API_URL}/api/master-test`, {
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          signal: controller.signal,
-        });
+       const baseURL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const res = await fetch(`${baseURL}/api/master-test`, {
+  headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+  signal: controller.signal,
+});
         if (!res.ok) throw new Error(`Server error: ${res.status}`);
         const result = await res.json();
 
@@ -585,11 +586,12 @@ const MasterTests = ({ data, updateData }) => {
 
     try {
       const token = getToken();
-      const res = await fetch(`${API_URL}/api/master-test`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(payload),
-      });
+      const baseURL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const res = await fetch(`${baseURL}/api/master-test`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+  body: JSON.stringify(payload),
+});
       const result = await res.json();
       if (result.success) {
         lastSavedRef.current = payload;

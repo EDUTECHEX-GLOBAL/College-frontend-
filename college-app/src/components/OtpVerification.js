@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import axios from "axios";
+import axiosInstance from '../api/axiosInstance';
 import "./OtpVerification.css";
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
+
 
 const OtpVerification = ({ email, onVerified, onClose }) => {
   const [otp, setOtp] = useState("");
@@ -19,10 +19,10 @@ const OtpVerification = ({ email, onVerified, onClose }) => {
 
     try {
       setLoading(true);
-      const response = await axios.post(`${API_URL}/api/students/verify-otp`, {
-        email,
-        otp,
-      });
+    const response = await axiosInstance.post('/api/students/verify-otp', {
+  email,
+  otp,
+});
 
       setLoading(false);
       setMessage({ type: "success", text: response.data.message });

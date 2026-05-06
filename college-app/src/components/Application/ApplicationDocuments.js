@@ -1,14 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import Resume from './Resume';
 import './ApplicationDocuments.css';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL 
-  ? `${process.env.REACT_APP_API_BASE_URL}/api/application/documents`
-  : "http://localhost:5000/api/application/documents";
 
-const BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
 
 // Helper component for document type icons - removed
 const DocIcon = ({ type, className = "" }) => {
@@ -16,21 +12,19 @@ const DocIcon = ({ type, className = "" }) => {
 };
 
 // Helper for category icons - removed
-const CategoryIcon = ({ category }) => {
-  return <span></span>;
-};
+
 
 const resolveFileUrl = (fileUrl) => {
   if (!fileUrl) return null;
   if (fileUrl.startsWith('https://') || fileUrl.startsWith('http://')) return fileUrl;
-  if (fileUrl.startsWith('/uploads/')) return `${BASE_URL}${fileUrl}`;
+  if (fileUrl.startsWith('/uploads/')) return `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'}${fileUrl}`
   return fileUrl;
 };
 
 const ApplicationDocuments = ({ formData, onFileUpload }) => {
   const navigate  = useNavigate();
   const location  = useLocation();
-  const token     = localStorage.getItem("token");
+ 
 
   const [isLoading,            setIsLoading]            = useState(true);
   const [isSubmitting,         setIsSubmitting]         = useState(false);
@@ -200,19 +194,18 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
     : documentCategories;
 
   // Fetch documents
-  useEffect(() => {
-    let isMounted = true;
-    if (token) fetchDocuments(isMounted);
-    else { setError("No authentication token found"); setIsLoading(false); }
-    return () => { isMounted = false; };
-  }, [token]);
+useEffect(() => {
+  const token = localStorage.getItem("token");
+  let isMounted = true;
+  if (token) fetchDocuments(isMounted);
+  else { setError("No authentication token found"); setIsLoading(false); }
+  return () => { isMounted = false; };
+}, []);
 
   const fetchDocuments = async (isMounted) => {
     try {
       setIsLoading(true);
-      const res = await axios.get(API_URL, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+     const res = await axiosInstance.get('/api/application/documents');
       if (isMounted && res.data.success) {
         if (res.data.documents) {
           setLocalFormData(res.data.documents);
@@ -281,11 +274,7 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
     setLocalFormData(prev => ({ ...prev, [`${field}_expectedDate`]: combined }));
     if (year && month) {
       try {
-        await axios.post(
-          `${API_URL}/cert-expected-date`,
-          { field, expectedDate: combined },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+       await axiosInstance.post('/api/application/documents/cert-expected-date', { field, expectedDate: combined });
       } catch (err) {
         console.error('Failed to save cert expected date:', err.response?.data || err.message);
       }
@@ -299,27 +288,19 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
     setLocalFormData(prev => ({ ...prev, [`${field}_expectedDate`]: combined }));
     if (year && month) {
       try {
-        await axios.post(
-          `${API_URL}/cert-expected-date`,
-          { field, expectedDate: combined },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await axiosInstance.post('/api/application/documents/cert-expected-date', { field, expectedDate: combined });
       } catch (err) {
         console.error('Failed to save cert expected date:', err.response?.data || err.message);
       }
     }
   };
-
   const handleCertAvailReset = async (field) => {
     setCertAvailability(prev  => ({ ...prev, [field]: null }));
     setCertExpectedMonth(prev => ({ ...prev, [field]: '' }));
     setCertExpectedYear(prev  => ({ ...prev, [field]: '' }));
     setLocalFormData(prev => ({ ...prev, [`${field}_expectedDate`]: '' }));
     try {
-      await axios.delete(
-        `${API_URL}/cert-expected-date/${field}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await axiosInstance.delete(`/api/application/documents/cert-expected-date/${field}`);
     } catch (err) {
       console.error('Failed to clear cert expected date:', err.response?.data || err.message);
     }
@@ -372,9 +353,9 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
     try {
       const uploadData = new FormData();
       uploadData.append("file", file);
-      const res = await axios.post(`${API_URL}/upload/${field}`, uploadData, {
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
-      });
+     const res = await axiosInstance.post(`/api/application/documents/upload/${field}`, uploadData, {
+  headers: { "Content-Type": "multipart/form-data" },
+});
       if (res.data.success) {
         const rawUrl = res.data.fileData?.fileUrl || res.data.fileUrl || null;
         const updatedFile = {
@@ -432,9 +413,7 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
         return;
       }
       try {
-        const res = await axios.delete(`${API_URL}/files/${field}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+       const res = await axiosInstance.delete(`/api/application/documents/files/${field}`);
         if (res.data.success) {
           setLocalFormData(prev => ({ ...prev, [field]: null, [`${field}Preview`]: null }));
           if (res.data.completionPercentage !== undefined) setCompletionPercentage(res.data.completionPercentage);
@@ -536,11 +515,7 @@ const ApplicationDocuments = ({ formData, onFileUpload }) => {
     setIsSubmitting(true);
     try {
       try {
-        await axios.post(
-          `${API_URL}/status`,
-          { documents: localFormData, completed: true },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+       await axiosInstance.post('/api/application/documents/status', { documents: localFormData, completed: true });
       } catch (statusError) {
         console.log("Status endpoint not available, continuing anyway");
       }

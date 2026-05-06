@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from '../../api/axiosInstance';
 import "./CollegeDetails.css";
 
-const API_URL = process.env.REACT_APP_API_BASE_URL
-;
+
+
 
 const CollegeDetails = () => {
   const { collegeId } = useParams();
@@ -18,13 +18,9 @@ const CollegeDetails = () => {
 
   const fetchCollegeDetails = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/colleges/${collegeId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+    const token = localStorage.getItem('token');
+if (!token) return;
+const response = await axiosInstance.get(`/api/colleges/${collegeId}`);
 
       if (response.data.success) {
         setCollege(response.data.college);
@@ -39,13 +35,9 @@ const CollegeDetails = () => {
   const handleRemoveCollege = async () => {
     if (window.confirm(`Remove ${college?.basicInfo?.name} from your list?`)) {
       try {
-        const token = localStorage.getItem('token');
-        await axios.delete(`${API_URL}/api/colleges/${collegeId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
+    const token = localStorage.getItem('token');
+if (!token) return;
+await axiosInstance.delete(`/api/colleges/${collegeId}`);
         navigate('/firstyear/dashboard/college-search');
       } catch (error) {
         console.error("Error removing college:", error);

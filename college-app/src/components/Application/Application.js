@@ -11,7 +11,7 @@ import ApplicationDocuments from './ApplicationDocuments';
 import ApplicationPreview from './ApplicationPreview';
 import Overview from './Overview';
 
-const Application = () => {
+const Application = ({ studentId: studentIdProp }) => {
     const { step } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
@@ -20,29 +20,34 @@ const Application = () => {
     // ✅ FIX 1: Load real MongoDB _id from localStorage
     // This is what gets saved as studentId in the database
     // ─────────────────────────────────────────────────────────────
-    const [studentId, setStudentId] = useState('');
+   const [studentId, setStudentId] = useState('');
 
-    useEffect(() => {
-        const userDataStr = localStorage.getItem('userData');
-        if (userDataStr && userDataStr !== 'undefined') {
-            try {
-                const parsed = JSON.parse(userDataStr);
-                // _id is the real MongoDB ObjectId — use this for ALL API calls
-                const realId = parsed._id || parsed.realStudentId;
-                if (realId) {
-                    setStudentId(realId);
-                    console.log('✅ Real studentId loaded:', realId);
-                } else {
-                    console.warn('⚠️ No _id found in userData. Available keys:', Object.keys(parsed));
-                }
-            } catch (e) {
-                console.error('❌ Error parsing userData:', e);
+useEffect(() => {
+    // ✅ Use prop passed from Dashboard first
+    if (studentIdProp) {
+        setStudentId(studentIdProp);
+        console.log('✅ studentId from prop:', studentIdProp);
+        return;
+    }
+    // Fallback to localStorage if prop not available
+    const userDataStr = localStorage.getItem('userData');
+    if (userDataStr && userDataStr !== 'undefined') {
+        try {
+            const parsed = JSON.parse(userDataStr);
+            const realId = parsed._id || parsed.realStudentId;
+            if (realId) {
+                setStudentId(realId);
+                console.log('✅ Real studentId from localStorage:', realId);
+            } else {
+                console.warn('⚠️ No _id found in userData. Keys:', Object.keys(parsed));
             }
-        } else {
-            console.warn('⚠️ No userData in localStorage — is user logged in?');
+        } catch (e) {
+            console.error('❌ Error parsing userData:', e);
         }
-    }, []);
-
+    } else {
+        console.warn('⚠️ No userData in localStorage — is user logged in?');
+    }
+}, [studentIdProp]);
     // ─────────────────────────────────────────────────────────────
     // Current step — initialized from URL
     // ─────────────────────────────────────────────────────────────

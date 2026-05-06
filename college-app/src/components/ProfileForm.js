@@ -1,7 +1,7 @@
 // src/components/ProfileForm.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../api/axiosInstance';
 import './ProfileForm.css';
 
 // Import all section components
@@ -16,7 +16,7 @@ import ProfilePreview from './ProfilePreview';
 // Import EDUTECH Logo (adjust path as needed)
 import EdutechLogo from './../assets/Edutech-logo.svg';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
+
 
 const ProfileForm = () => {
   const navigate = useNavigate();
@@ -129,10 +129,7 @@ const ProfileForm = () => {
       setUserName(storedUserName);
       setUserId(storedUserId);
 
-      const response = await axios.get(`${API_URL}/api/students/profile/detailed`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
+     const response = await axiosInstance.get('/api/students/profile/detailed');
       if (response.data.success && response.data.account) {
         const p = response.data.account;
 
@@ -329,12 +326,10 @@ const ProfileForm = () => {
         updatedCompletion.geography = !!formData.citizenshipStatus;
       }
 
-      const token = localStorage.getItem('token');
-      const response = await axios.put(
-        `${API_URL}/api/students/profile`,
-        { ...formData, profileCompletion: updatedCompletion },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await axiosInstance.put(
+  '/api/students/profile',
+  { ...formData, profileCompletion: updatedCompletion }
+);
 
       if (response.data.success) {
         setProgress(response.data.profileProgress || 0);
@@ -389,13 +384,10 @@ const ProfileForm = () => {
         geography: true
       };
 
-      const token = localStorage.getItem('token');
-      const response = await axios.put(
-        `${API_URL}/api/students/profile`,
-        { ...formData, profileCompletion: finalCompletion },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
+  const response = await axiosInstance.put(
+  '/api/students/profile',
+  { ...formData, profileCompletion: finalCompletion }
+);
       if (response.data.success) {
         setProgress(100);
         setMessage({

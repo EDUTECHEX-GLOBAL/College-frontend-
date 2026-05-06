@@ -67,15 +67,15 @@ const TestsTakenSection = ({
 
   const getFileIcon = (name = '') => {
     const ext = name.split('.').pop()?.toLowerCase();
-    if (ext === 'pdf')               return '📄';
+    if (ext === 'pdf')                   return '📄';
     if (ext === 'doc' || ext === 'docx') return '📝';
-    if (ext === 'txt')               return '📃';
+    if (ext === 'txt')                   return '📃';
     return '📎';
   };
 
   const validateFile = (file) => {
     if (!VALID_TYPES.includes(file.type)) return 'Please upload a PDF, DOC, DOCX, or TXT file.';
-    if (file.size > 5 * 1024 * 1024)    return 'File size must be less than 5 MB.';
+    if (file.size > 5 * 1024 * 1024)     return 'File size must be less than 5 MB.';
     return null;
   };
 
@@ -93,14 +93,13 @@ const TestsTakenSection = ({
   const mapExtractedDataToFormData = (extractedData) => {
     const updates = {};
 
-   if (extractedData.testsDetected?.length > 0) {
-  updates.selfReportScores = 'yes';
+    if (extractedData.testsDetected?.length > 0) {
+      updates.selfReportScores = 'yes';
 
-  // ✅ Remove duplicates + ensure valid array
-  const uniqueTests = [...new Set(extractedData.testsDetected)];
-
-  updates.testsToReport = uniqueTests;
-}
+      // ✅ Remove duplicates + ensure valid array
+      const uniqueTests = [...new Set(extractedData.testsDetected)];
+      updates.testsToReport = uniqueTests;
+    }
 
     // ACT - New attempt-based structure
     if (extractedData.actAttempts?.length > 0) {
@@ -124,9 +123,9 @@ const TestsTakenSection = ({
     if (extractedData.apTests?.length > 0) {
       updates.apSubjectTests = extractedData.apTests.map((t) => ({
         subject: t.subject || '',
-        score: t.score || '',
-        month: t.month || '',
-        year: t.year || '',
+        score:   t.score   || '',
+        month:   t.month   || '',
+        year:    t.year    || '',
       }));
       updates.numberOfAPTests = String(updates.apSubjectTests.length);
     }
@@ -135,9 +134,9 @@ const TestsTakenSection = ({
     if (extractedData.ibTests?.length > 0) {
       updates.ibSubjectTests = extractedData.ibTests.map((t) => ({
         subject: t.subject || '',
-        level: t.level === 'HL' ? 'HL' : 'SL',
-        score: t.score || '',
-        year: t.year || '',
+        level:   t.level === 'HL' ? 'HL' : 'SL',
+        score:   t.score  || '',
+        year:    t.year   || '',
       }));
       updates.numberOfIBTests = String(updates.ibSubjectTests.length);
     }
@@ -150,46 +149,46 @@ const TestsTakenSection = ({
 
     // IELTS - Simplified structure
     if (extractedData.ielts) {
-      updates.ieltsPastTests = extractedData.ielts.ieltsPastTests || '1';
-      updates.ieltsTestDate = extractedData.ielts.ieltsTestDate || '';
+      updates.ieltsPastTests        = extractedData.ielts.ieltsPastTests        || '1';
+      updates.ieltsTestDate         = extractedData.ielts.ieltsTestDate         || '';
       updates.ieltsOverallBandScore = extractedData.ielts.ieltsOverallBandScore || '';
-      updates.ieltsListeningScore = extractedData.ielts.ieltsListeningScore || '';
-      updates.ieltsReadingScore = extractedData.ielts.ieltsReadingScore || '';
-      updates.ieltsWritingScore = extractedData.ielts.ieltsWritingScore || '';
-      updates.ieltsSpeakingScore = extractedData.ielts.ieltsSpeakingScore || '';
+      updates.ieltsListeningScore   = extractedData.ielts.ieltsListeningScore   || '';
+      updates.ieltsReadingScore     = extractedData.ielts.ieltsReadingScore     || '';
+      updates.ieltsWritingScore     = extractedData.ielts.ieltsWritingScore     || '';
+      updates.ieltsSpeakingScore    = extractedData.ielts.ieltsSpeakingScore    || '';
     }
 
     // TOEFL - Simplified structure
     if (extractedData.toefl) {
-      updates.toeflPastTests = extractedData.toefl.toeflPastTests || '1';
-      updates.toeflTestDate = extractedData.toefl.toeflTestDate || '';
-      updates.toeflTotalScore = extractedData.toefl.toeflTotalScore || '';
-      updates.toeflReadingScore = extractedData.toefl.toeflReadingScore || '';
+      updates.toeflPastTests      = extractedData.toefl.toeflPastTests      || '1';
+      updates.toeflTestDate       = extractedData.toefl.toeflTestDate       || '';
+      updates.toeflTotalScore     = extractedData.toefl.toeflTotalScore     || '';
+      updates.toeflReadingScore   = extractedData.toefl.toeflReadingScore   || '';
       updates.toeflListeningScore = extractedData.toefl.toeflListeningScore || '';
-      updates.toeflSpeakingScore = extractedData.toefl.toeflSpeakingScore || '';
-      updates.toeflWritingScore = extractedData.toefl.toeflWritingScore || '';
+      updates.toeflSpeakingScore  = extractedData.toefl.toeflSpeakingScore  || '';
+      updates.toeflWritingScore   = extractedData.toefl.toeflWritingScore   || '';
     }
 
     // Duolingo - Simplified structure
     if (extractedData.duolingo) {
-      updates.duolingoPastTests = extractedData.duolingo.duolingoPastTests || '1';
-      updates.duolingoTestDate = extractedData.duolingo.duolingoTestDate || '';
-      updates.duolingoTotalScore = extractedData.duolingo.duolingoTotalScore || '';
-      updates.duolingoLiteracyScore = extractedData.duolingo.duolingoLiteracyScore || '';
+      updates.duolingoPastTests          = extractedData.duolingo.duolingoPastTests          || '1';
+      updates.duolingoTestDate           = extractedData.duolingo.duolingoTestDate           || '';
+      updates.duolingoTotalScore         = extractedData.duolingo.duolingoTotalScore         || '';
+      updates.duolingoLiteracyScore      = extractedData.duolingo.duolingoLiteracyScore      || '';
       updates.duolingoComprehensionScore = extractedData.duolingo.duolingoComprehensionScore || '';
-      updates.duolingoConversationScore = extractedData.duolingo.duolingoConversationScore || '';
-      updates.duolingoProductionScore = extractedData.duolingo.duolingoProductionScore || '';
+      updates.duolingoConversationScore  = extractedData.duolingo.duolingoConversationScore  || '';
+      updates.duolingoProductionScore    = extractedData.duolingo.duolingoProductionScore    || '';
     }
 
     // PTE - Simplified structure
     if (extractedData.pte) {
-      updates.ptePastTests = extractedData.pte.ptePastTests || '1';
-      updates.pteTestDate = extractedData.pte.pteTestDate || '';
-      updates.pteListeningScore = extractedData.pte.pteListeningScore || '';
-      updates.pteReadingScore = extractedData.pte.pteReadingScore || '';
-      updates.pteSpeakingScore = extractedData.pte.pteSpeakingScore || '';
-      updates.pteWritingScore = extractedData.pte.pteWritingScore || '';
-      updates.pteGrammarScore = extractedData.pte.pteGrammarScore || '';
+      updates.ptePastTests       = extractedData.pte.ptePastTests       || '1';
+      updates.pteTestDate        = extractedData.pte.pteTestDate        || '';
+      updates.pteListeningScore  = extractedData.pte.pteListeningScore  || '';
+      updates.pteReadingScore    = extractedData.pte.pteReadingScore    || '';
+      updates.pteSpeakingScore   = extractedData.pte.pteSpeakingScore   || '';
+      updates.pteWritingScore    = extractedData.pte.pteWritingScore    || '';
+      updates.pteGrammarScore    = extractedData.pte.pteGrammarScore    || '';
       updates.pteVocabularyScore = extractedData.pte.pteVocabularyScore || '';
     }
 
@@ -218,9 +217,9 @@ const TestsTakenSection = ({
       formDataObj.append('cv', file);
 
       const token   = localStorage.getItem('token');
-      const API_URL = process.env.REACT_APP_API_BASE_URL || '';
+      const baseURL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
-      const response = await fetch(`${API_URL}/api/students/testing/parse-cv`, {
+      const response = await fetch(`${baseURL}/api/students/testing/parse-cv`, {
         method:  'POST',
         headers: { Authorization: `Bearer ${token}` },
         body:    formDataObj,
@@ -233,16 +232,16 @@ const TestsTakenSection = ({
 
       if (response.ok && data.success) {
         const mappedUpdates = mapExtractedDataToFormData(data.extractedData);
-        
+
         // Log what was extracted for debugging
         console.log('✅ CV Parsed successfully. Extracted fields:', Object.keys(mappedUpdates));
-        
+
         if (onCVDataExtracted) {
           onCVDataExtracted(mappedUpdates);
         } else {
           console.warn('⚠️ onCVDataExtracted prop is not provided');
         }
-        
+
         setCvProcessed(true);
         setError(null);
       } else {
@@ -302,10 +301,11 @@ const TestsTakenSection = ({
       formDataObj.append('file', file);
       formDataObj.append('testType', selectedTestType);
 
+      // ✅ Single token declaration (duplicate removed)
       const token   = localStorage.getItem('token');
-      const API_URL = process.env.REACT_APP_API_BASE_URL || '';
+      const baseURL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
-      const response = await fetch(`${API_URL}/api/students/testing/parse-score-doc`, {
+      const response = await fetch(`${baseURL}/api/students/testing/parse-score-doc`, {
         method:  'POST',
         headers: { Authorization: `Bearer ${token}` },
         body:    formDataObj,
@@ -318,22 +318,22 @@ const TestsTakenSection = ({
 
       if (response.ok && data.success) {
         console.log(`✅ Score document parsed for ${selectedTestType}. Extracted fields:`, Object.keys(data.extractedFields || {}));
-        
-      if (onScoreDocExtracted) {
-  onScoreDocExtracted(data.extractedFields, selectedTestType);
-} else {
-  console.warn('⚠️ onScoreDocExtracted prop is not provided');
-}
 
-// ✅ ADD THESE 2 LINES (IMPORTANT)
-if (!formData.testsToReport?.includes(selectedTestType)) {
-  handleArrayChange('testsToReport', selectedTestType);
-}
+        if (onScoreDocExtracted) {
+          onScoreDocExtracted(data.extractedFields, selectedTestType);
+        } else {
+          console.warn('⚠️ onScoreDocExtracted prop is not provided');
+        }
 
-handleInputChange({
-  target: { name: 'selfReportScores', value: 'yes' }
-});
-        
+        // ✅ Auto-select the test type and mark self-report yes
+        if (!formData.testsToReport?.includes(selectedTestType)) {
+          handleArrayChange('testsToReport', selectedTestType);
+        }
+
+        handleInputChange({
+          target: { name: 'selfReportScores', value: 'yes' },
+        });
+
         setDocProcessed(true);
         setDocError(null);
       } else {

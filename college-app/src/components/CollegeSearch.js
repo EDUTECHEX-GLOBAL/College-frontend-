@@ -1,10 +1,10 @@
 // src/components/CollegeSearch.js
 import React, { useEffect, useState, useCallback } from "react";
-import axios from "axios";
+import axiosInstance from '../api/axiosInstance';
 import { useNavigate } from "react-router-dom";
 import "./CollegeSearch.css";
 
-const API_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+
 
 // ─── Shared master-level detector (same as Courses.js) ───────────────────────
 const MASTER_KEYWORDS = [
@@ -71,7 +71,7 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
   const [studentProfile,       setStudentProfile]       = useState(null);
   const [profileLoaded,        setProfileLoaded]        = useState(false);
   const [profileMessage,       setProfileMessage]       = useState("");
-  const [selectedCoursesSummary, setSelectedCoursesSummary] = useState([]);
+ 
   const navigate = useNavigate();
 
   const triggerCollegeUpdate = () => {
@@ -105,11 +105,7 @@ const CollegeSearch = ({ onCollegeUpdate }) => {
      const params = new URLSearchParams();
 if (searchQuery) params.append('query', searchQuery);
 
-const response = await axios.get(`${API_URL}/api/college-search`, {
-  params,
-  headers: { Authorization: `Bearer ${token}` }
-});
-
+const response = await axiosInstance.get('/api/college-search', { params });
 if (response.data.success) {
 
   // ✅ FIX: support both API structures
@@ -164,9 +160,7 @@ if (response.data.success) {
 
   setColleges(fetchedColleges);
 
-  if (response.data.selectedCoursesSummary) {
-    setSelectedCoursesSummary(response.data.selectedCoursesSummary);
-  }
+
 
   if (response.data.message) {
     setProfileMessage(response.data.message);
@@ -186,9 +180,7 @@ if (response.data.success) {
     try {
       const token = localStorage.getItem('token');
       if (!token) { setProfileLoaded(true); return; }
-      const response = await axios.get(`${API_URL}/api/user/profile`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+    const response = await axiosInstance.get('/api/user/profile');
       if (response.data.success && response.data.data) {
         setStudentProfile(response.data.data);
       }
@@ -206,9 +198,7 @@ if (response.data.success) {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const response = await axios.get(`${API_URL}/api/colleges`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+     const response = await axiosInstance.get('/api/colleges');
       if (response.data.success) {
         const collegeIds = response.data.colleges.map(c => c.collegeId);
         setUserColleges(new Set(collegeIds));
@@ -255,29 +245,28 @@ if (response.data.success) {
 
       // Clear existing colleges first
       try {
-        const existing = await axios.get(`${API_URL}/api/colleges`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+       const existing = await axiosInstance.get('/api/colleges');
         if (existing.data?.colleges?.length > 0) {
           for (const c of existing.data.colleges) {
-            await axios.delete(`${API_URL}/api/colleges/${c.collegeId}`, {
-              headers: { Authorization: `Bearer ${token}` }
-            });
+         await axiosInstance.delete(`/api/colleges/${c.collegeId}`);
           }
         }
       } catch (err) {
         console.log("Failed to clear old colleges (continuing)");
       }
-
-      await axios.post(
-        `${API_URL}/api/colleges`,
-        {
-          collegeId,
-          // Always ensure UNITID is set on the stored college data
-          collegeData: { ...college, UNITID: collegeId }
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+await axiosInstance.post('/api/colleges', {
+  collegeId,
+  collegeData: {
+    ...college,
+    UNITID:  String(collegeId),
+    INSTNM:  college.INSTNM || college.universityName || college.name || 'Unknown University',
+    CITY:    college.CITY   || college.city   || '',
+    STABBR:  college.STABBR || college.state  || '',
+    COUNTRY: college.COUNTRY|| college.country|| 'USA',
+    WEBADDR: college.WEBADDR|| college.website|| '',
+  },
+  selectedCourses: college.selectedCourses || [],
+});
 
       setUserColleges(new Set([collegeId]));
       triggerCollegeUpdate();
@@ -311,9 +300,7 @@ if (response.data.success) {
         return newSet;
       });
 
-      await axios.delete(`${API_URL}/api/colleges/${collegeId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+    await axiosInstance.delete(`/api/colleges/${collegeId}`);
       triggerCollegeUpdate();
     } catch (error) {
       console.error("Error removing college:", error);
