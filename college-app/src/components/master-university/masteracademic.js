@@ -1,56 +1,125 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './masteracademic.css';
 
+const API_URL = process.env.REACT_APP_API_BASE_URL;
 
+// ─── Cross-tab save lock key ──────────────────────────────────────────────────
+// Prevents two tabs from saving at the exact same time (race condition).
+const SAVE_LOCK_KEY   = 'masteracademic_saving';
+const SAVE_LOCK_TTL   = 5000; // 5 seconds max lock duration
+
+const acquireSaveLock = () => {
+  try {
+    const existing = localStorage.getItem(SAVE_LOCK_KEY);
+    if (existing) {
+      const { ts } = JSON.parse(existing);
+      // If lock is older than TTL, consider it stale and take over
+      if (Date.now() - ts < SAVE_LOCK_TTL) return false;
+    }
+    localStorage.setItem(SAVE_LOCK_KEY, JSON.stringify({ ts: Date.now() }));
+    return true;
+  } catch {
+    return true; // If localStorage fails, allow save
+  }
+};
+
+const releaseSaveLock = () => {
+  try { localStorage.removeItem(SAVE_LOCK_KEY); } catch {}
+};
 
 const MasterAcademic = ({ data, updateData }) => {
   const [academicEntries, setAcademicEntries] = useState([
     { degree: '', university: '', country: '', fieldOfStudy: '', startDate: '', endDate: '', gpa: '', id: Date.now() }
   ]);
 
-  const [errors, setErrors]         = useState({});
-  const [isSaving, setIsSaving]     = useState(false);
-  const [saveStatus, setSaveStatus] = useState('');
-
+  const [errors, setErrors]             = useState({});
+  const [isSaving, setIsSaving]         = useState(false);
+  const [saveStatus, setSaveStatus]     = useState('');
   const [openDropdown, setOpenDropdown] = useState(null);
+  // Tells the user if another tab is currently saving
+  const [otherTabSaving, setOtherTabSaving] = useState(false);
 
-  const touchedRef     = useRef({});
-  const lastUpdatedRef = useRef(null);
-  const hasFetched     = useRef(false);
-  const dropdownRef    = useRef(null);
+  const touchedRef      = useRef({});
+  const lastUpdatedRef  = useRef(null);
+  const hasFetched      = useRef(false);
+  const dropdownWrapRef = useRef(null);
+  // BroadcastChannel: lets tabs communicate with each other
+  const channelRef      = useRef(null);
 
   const degrees   = ["Bachelor's Degree", "Master's Degree", 'PhD/Doctorate', 'Diploma', 'Associate Degree', 'High School'];
   const countries = ['United States', 'United Kingdom', 'Canada', 'Australia', 'India', 'Germany', 'France', 'Other'];
 
-  // ─── Close dropdown on outside click ─────────────────────
+  // ─── BroadcastChannel setup ───────────────────────────────────────────────────
+  // When Tab A saves successfully it broadcasts to Tab B so Tab B can reload
+  // the latest data without saving again (preventing the double-save race).
+  useEffect(() => {
+    if (!window.BroadcastChannel) return;
+
+    const channel = new BroadcastChannel('masteracademic_sync');
+    channelRef.current = channel;
+
+    channel.onmessage = (event) => {
+      const { type } = event.data || {};
+
+      if (type === 'SAVING_STARTED') {
+        setOtherTabSaving(true);
+      }
+
+      if (type === 'SAVING_DONE') {
+        setOtherTabSaving(false);
+        // Another tab saved — re-fetch so this tab shows the latest data
+        refetchData();
+      }
+
+      if (type === 'SAVING_FAILED') {
+        setOtherTabSaving(false);
+      }
+    };
+
+    return () => {
+      channel.close();
+      channelRef.current = null;
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ─── Close dropdown on outside click ─────────────────────────────────────────
   useEffect(() => {
     const handleOutsideClick = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+      if (dropdownWrapRef.current && !dropdownWrapRef.current.contains(e.target)) {
         setOpenDropdown(null);
       }
     };
     document.addEventListener('mousedown', handleOutsideClick);
-    document.addEventListener('touchstart', handleOutsideClick);
+    document.addEventListener('touchstart', handleOutsideClick, { passive: true });
     return () => {
       document.removeEventListener('mousedown', handleOutsideClick);
       document.removeEventListener('touchstart', handleOutsideClick);
     };
   }, []);
 
-  // ─── Get userId ───────────────────────────────────────────
-  const getUserId = () => {
-    try {
-      const userDataStr = localStorage.getItem('userData');
-      if (!userDataStr || userDataStr === 'undefined') return null;
-      const parsed = JSON.parse(userDataStr);
-      return parsed._id || parsed.realStudentId || null;
-    } catch (e) {
-      console.error('Error reading userId:', e);
-      return null;
+  // ─── Get token ────────────────────────────────────────────────────────────────
+  const getToken = () => localStorage.getItem('token');
+
+  // ─── GPA validation ───────────────────────────────────────────────────────────
+  const isValidGpa = (gpaStr) => {
+    if (!gpaStr?.trim()) return true;
+    const cleaned = gpaStr.trim();
+    if (cleaned.endsWith('%')) {
+      const num = parseFloat(cleaned);
+      return !isNaN(num) && num >= 0 && num <= 100;
     }
+    if (cleaned.includes('/')) {
+      const parts = cleaned.split('/');
+      if (parts.length !== 2) return false;
+      const num = parseFloat(parts[0]);
+      const den = parseFloat(parts[1]);
+      return !isNaN(num) && !isNaN(den) && den > 0 && den <= 100 && num >= 0 && num <= den;
+    }
+    const num = parseFloat(cleaned);
+    return !isNaN(num) && num >= 0 && num <= 10;
   };
 
-  // ─── Validate single entry ────────────────────────────────
+  // ─── Validate single entry ────────────────────────────────────────────────────
   const validateEntry = useCallback((entry, entryId, showAll = false) => {
     const touched   = touchedRef.current[entryId] || {};
     const newErrors = {};
@@ -76,117 +145,201 @@ const MasterAcademic = ({ data, updateData }) => {
       newErrors.endDate = 'End date must be after start date';
     }
 
-    // ✅ FIX: Accept both GPA (0–4.0) and percentage (0–100), and formats like "3.5/4.0" or "85%"
-    if ((showAll || touched.gpa) && entry.gpa?.trim()) {
-      const raw    = entry.gpa.trim().replace('%', '').split('/')[0];
-      const gpaNum = parseFloat(raw);
-      if (isNaN(gpaNum) || gpaNum < 0 || gpaNum > 100) {
-        newErrors.gpa = 'Enter a valid GPA (e.g. 3.5 or 3.5/4.0) or percentage (e.g. 85%)';
-      }
+    if ((showAll || touched.gpa) && entry.gpa?.trim() && !isValidGpa(entry.gpa)) {
+      newErrors.gpa = 'Enter a valid GPA up to 10 (e.g. 8.5 or 8.5/10) or percentage (e.g. 85%)';
     }
 
     setErrors(prev => ({ ...prev, [entryId]: newErrors }));
     return Object.keys(newErrors).length === 0;
   }, []);
 
-  // ─── Check overall validity ───────────────────────────────
+  // ─── Check overall validity ───────────────────────────────────────────────────
   const checkIsValid = useCallback((entries) => {
-    const allFieldsFilled = entries.every(e =>
+    const allFilled = entries.every(e =>
       e.degree?.trim() &&
       e.university?.trim() &&
       e.country?.trim() &&
       e.fieldOfStudy?.trim() &&
       e.startDate &&
       e.endDate &&
-      new Date(e.startDate) <= new Date(e.endDate)
+      new Date(e.startDate) <= new Date(e.endDate) &&
+      isValidGpa(e.gpa)
     );
-
-    // At least one Bachelor's Degree required
     const hasBachelor = entries.some(e => e.degree === "Bachelor's Degree");
-
-    return allFieldsFilled && hasBachelor;
+    return allFilled && hasBachelor;
   }, []);
 
-  // ─── Fetch on mount ───────────────────────────────────────
+  // ─── Fetch helper (reusable) ──────────────────────────────────────────────────
+  const fetchAndPopulate = useCallback(async (signal) => {
+    const token = getToken();
+    if (!token) return;
+
+    const response = await fetch(`${API_URL}/api/master-academic`, {
+      method:  'GET',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      signal,
+    });
+
+    if (response.status === 404) return; // No data yet — keep blank form
+    if (!response.ok) {
+      console.error('❌ Fetch failed:', response.status);
+      return;
+    }
+
+    const result = await response.json();
+
+    if (
+      result?.success &&
+      Array.isArray(result?.data?.academics) &&
+      result.data.academics.length > 0
+    ) {
+      const entriesWithIds = result.data.academics.map((entry, index) => ({
+        degree:       entry.degree       || '',
+        university:   entry.university   || '',
+        country:      entry.country      || '',
+        fieldOfStudy: entry.fieldOfStudy || '',
+        startDate:    entry.startDate    || '',
+        endDate:      entry.endDate      || '',
+        gpa:          entry.gpa          || '',
+        id: Date.now() + index,
+      }));
+
+      const touched = {};
+      entriesWithIds.forEach(e => {
+        touched[e.id] = {
+          degree: true, university: true, country: true,
+          fieldOfStudy: true, startDate: true, endDate: true, gpa: true,
+        };
+      });
+      touchedRef.current = touched;
+
+      const isValid         = checkIsValid(entriesWithIds);
+      const entriesToParent = entriesWithIds.map(({ id, ...rest }) => rest);
+      const payload         = { academics: entriesToParent, _isValid: isValid };
+
+      lastUpdatedRef.current = JSON.stringify(payload);
+      setAcademicEntries(entriesWithIds);
+      updateData(payload);
+    }
+  }, [checkIsValid, updateData]);
+
+  // ─── Re-fetch when another tab saves ─────────────────────────────────────────
+  const refetchData = useCallback(() => {
+    const controller = new AbortController();
+    fetchAndPopulate(controller.signal).catch(err => {
+      if (err.name !== 'AbortError') console.error('❌ Refetch error:', err);
+    });
+  }, [fetchAndPopulate]);
+
+  // ─── Fetch on mount ───────────────────────────────────────────────────────────
   useEffect(() => {
     if (hasFetched.current) return;
     hasFetched.current = true;
 
     const controller = new AbortController();
 
-    const fetchAcademicData = async () => {
-      const userId = getUserId();
-      if (!userId) return;
+    fetchAndPopulate(controller.signal).catch(err => {
+      if (err.name !== 'AbortError') console.error('❌ Fetch error:', err);
+    });
 
-      try {
-     const token    = localStorage.getItem('token');
-const baseURL  = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
-const response = await fetch(`${baseURL}/api/master-academic`, {
-  method:  'GET',
-  headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-  signal:  controller.signal
-});
+    return () => controller.abort();
+  }, [fetchAndPopulate]);
 
-        if (response.status === 404) return;
-        if (!response.ok) throw new Error(`Server error: ${response.status}`);
+  // ─── Save to backend ──────────────────────────────────────────────────────────
+  const saveToBackend = useCallback(async (entries) => {
+    const token = getToken();
+    if (!token) { setSaveStatus('error'); return; }
 
-        const result = await response.json();
+    // Try to acquire cross-tab lock
+    if (!acquireSaveLock()) {
+      console.warn('⚠️ Another tab is saving — skipping this save');
+      return;
+    }
 
-        if (
-          result?.success &&
-          Array.isArray(result?.data?.academics) &&
-          result.data.academics.length > 0
-        ) {
-          const entriesWithIds = result.data.academics.map((entry, index) => ({
-            degree:       entry.degree       || '',
-            university:   entry.university   || '',
-            country:      entry.country      || '',
-            fieldOfStudy: entry.fieldOfStudy || '',
-            startDate:    entry.startDate    || '',
-            endDate:      entry.endDate      || '',
-            gpa:          entry.gpa          || '',
-            id: Date.now() + index
-          }));
+    // Notify other tabs that saving has started
+    channelRef.current?.postMessage({ type: 'SAVING_STARTED' });
 
-          // Mark all fields as touched so validation shows on load
-          const touched = {};
-          entriesWithIds.forEach(e => {
-            touched[e.id] = {
-              degree: true, university: true, country: true,
-              fieldOfStudy: true, startDate: true, endDate: true, gpa: true
-            };
-          });
-          touchedRef.current = touched;
+    setIsSaving(true);
+    setSaveStatus('');
 
-          const isValid        = checkIsValid(entriesWithIds);
-          const entriesToParent = entriesWithIds.map(({ id, ...rest }) => rest);
+    try {
+      const cleanEntries = entries.map(({ id, ...rest }) => rest);
 
-          // ✅ FIX: always send object shape { academics, _isValid }
-          const payload = { academics: entriesToParent, _isValid: isValid };
-          lastUpdatedRef.current = JSON.stringify(payload);
+      const response = await fetch(`${API_URL}/api/master-academic`, {
+        method:  'POST',
+        headers: {
+          Authorization:  `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ academics: cleanEntries }),
+      });
 
-          setAcademicEntries(entriesWithIds);
-          updateData(payload);
-        }
-      } catch (error) {
-        if (error.name === 'AbortError') return;
-        console.error('Error fetching academic data:', error);
+      const result = await response.json();
+      console.log('📥 Save response:', response.status, result);
+
+      if (result.success) {
+        setSaveStatus('saved');
+        setTimeout(() => setSaveStatus(''), 3000);
+        // Notify other tabs: save done, please re-fetch
+        channelRef.current?.postMessage({ type: 'SAVING_DONE' });
+      } else {
+        setSaveStatus('error');
+        console.error('❌ Save failed:', result.message);
+        channelRef.current?.postMessage({ type: 'SAVING_FAILED' });
       }
-    };
+    } catch (error) {
+      setSaveStatus('error');
+      console.error('❌ Save error:', error);
+      channelRef.current?.postMessage({ type: 'SAVING_FAILED' });
+    } finally {
+      setIsSaving(false);
+      releaseSaveLock();
+    }
+  }, []);
 
-    fetchAcademicData();
+  // ─── Manual save button ───────────────────────────────────────────────────────
+  const handleManualSave = useCallback(() => {
+    let allValid = true;
+    academicEntries.forEach(entry => {
+      const valid = validateEntry(entry, entry.id, true);
+      if (!valid) allValid = false;
+    });
 
-    return () => {
-      controller.abort();
-      hasFetched.current = false;
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!allValid) {
+      setSaveStatus('error');
+      setTimeout(() => setSaveStatus(''), 3000);
+      return;
+    }
 
-  // ─── Field change ─────────────────────────────────────────
+    const hasBachelor = academicEntries.some(e => e.degree === "Bachelor's Degree");
+    if (!hasBachelor) {
+      setSaveStatus('error');
+      setTimeout(() => setSaveStatus(''), 3000);
+      return;
+    }
+
+    saveToBackend(academicEntries);
+  }, [academicEntries, validateEntry, saveToBackend]);
+
+  // ─── Notify parent + auto-save on valid ──────────────────────────────────────
+  useEffect(() => {
+    const isValid       = checkIsValid(academicEntries);
+    const entriesToSave = academicEntries.map(({ id, ...rest }) => rest);
+    const payload       = { academics: entriesToSave, _isValid: isValid };
+    const nextUpdate    = JSON.stringify(payload);
+
+    if (lastUpdatedRef.current === nextUpdate) return;
+    lastUpdatedRef.current = nextUpdate;
+
+    updateData(payload);
+    if (isValid) saveToBackend(academicEntries);
+  }, [academicEntries, checkIsValid, updateData, saveToBackend]);
+
+  // ─── Field handlers ───────────────────────────────────────────────────────────
   const handleEntryChange = useCallback((id, field, value) => {
     touchedRef.current = {
       ...touchedRef.current,
-      [id]: { ...(touchedRef.current[id] || {}), [field]: true }
+      [id]: { ...(touchedRef.current[id] || {}), [field]: true },
     };
     setAcademicEntries(prev => {
       const updated = prev.map(entry => entry.id === id ? { ...entry, [field]: value } : entry);
@@ -196,11 +349,10 @@ const response = await fetch(`${baseURL}/api/master-academic`, {
     });
   }, [validateEntry]);
 
-  // ─── Blur ─────────────────────────────────────────────────
   const handleEntryBlur = useCallback((id, field) => {
     touchedRef.current = {
       ...touchedRef.current,
-      [id]: { ...(touchedRef.current[id] || {}), [field]: true }
+      [id]: { ...(touchedRef.current[id] || {}), [field]: true },
     };
     setAcademicEntries(prev => {
       const entry = prev.find(e => e.id === id);
@@ -209,15 +361,13 @@ const response = await fetch(`${baseURL}/api/master-academic`, {
     });
   }, [validateEntry]);
 
-  // ─── Add entry ────────────────────────────────────────────
   const addNewEntry = useCallback(() => {
-    setAcademicEntries(prev => [...prev, {
-      degree: '', university: '', country: '', fieldOfStudy: '',
-      startDate: '', endDate: '', gpa: '', id: Date.now()
-    }]);
+    setAcademicEntries(prev => [
+      ...prev,
+      { degree: '', university: '', country: '', fieldOfStudy: '', startDate: '', endDate: '', gpa: '', id: Date.now() },
+    ]);
   }, []);
 
-  // ─── Remove entry ─────────────────────────────────────────
   const removeEntry = useCallback((id) => {
     setAcademicEntries(prev => {
       if (prev.length === 1) { alert('At least one academic entry is required'); return prev; }
@@ -230,148 +380,68 @@ const response = await fetch(`${baseURL}/api/master-academic`, {
     });
   }, []);
 
-  // ─── Save to backend ──────────────────────────────────────
-  const saveToBackend = useCallback(async (entries) => {
-    const userId = getUserId();
-    if (!userId) return;
-
-    setIsSaving(true);
-    setSaveStatus('');
-
-    try {
-      const token        = localStorage.getItem('token');
-      const cleanEntries = entries.map(({ id, ...rest }) => rest);
-
-     const baseURL  = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
-const response = await fetch(`${baseURL}/api/master-academic`, {
-  method:  'POST',
-  headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-  body:    JSON.stringify({ userId, academics: cleanEntries })
-});
-
-      const result = await response.json();
-
-      if (result.success) {
-        setSaveStatus('saved');
-        setTimeout(() => setSaveStatus(''), 3000);
-      } else {
-        setSaveStatus('error');
-        console.error('Save failed:', result.message);
-      }
-    } catch (error) {
-      setSaveStatus('error');
-      console.error('Error saving:', error);
-    } finally {
-      setIsSaving(false);
-    }
-  }, []);
-
-  // ─── Notify parent + auto-save ────────────────────────────
-  useEffect(() => {
-    const isValid       = checkIsValid(academicEntries);
-    const entriesToSave = academicEntries.map(({ id, ...rest }) => rest);
-
-    // ✅ FIX: use object shape consistently — matches what fetch useEffect sends
-    const payload    = { academics: entriesToSave, _isValid: isValid };
-    const nextUpdate = JSON.stringify(payload);
-
-    if (lastUpdatedRef.current === nextUpdate) return;
-    lastUpdatedRef.current = nextUpdate;
-
-    updateData(payload);
-    if (isValid) saveToBackend(academicEntries);
-  }, [academicEntries, checkIsValid, updateData, saveToBackend]);
-
-  // ─── Custom dropdown component ────────────────────────────
+  // ─── Custom dropdown ──────────────────────────────────────────────────────────
   const CustomSelect = ({ entryId, field, value, options, placeholder, hasError }) => {
     const dropdownKey = `${field}-${entryId}`;
     const isOpen      = openDropdown === dropdownKey;
 
     const handleToggle = (e) => {
       e.stopPropagation();
-      setOpenDropdown(isOpen ? null : dropdownKey);
+      setOpenDropdown(prev => (prev === dropdownKey ? null : dropdownKey));
     };
 
     const handleSelect = (optionValue) => {
       handleEntryChange(entryId, field, optionValue);
       touchedRef.current = {
         ...touchedRef.current,
-        [entryId]: { ...(touchedRef.current[entryId] || {}), [field]: true }
+        [entryId]: { ...(touchedRef.current[entryId] || {}), [field]: true },
       };
       setOpenDropdown(null);
     };
 
     return (
-      <div
-        style={{ position: 'relative', width: '100%', boxSizing: 'border-box' }}
-        ref={isOpen ? dropdownRef : null}
-      >
+      <div style={{ position: 'relative', width: '100%', boxSizing: 'border-box' }}>
         <button
           type="button"
           onClick={handleToggle}
           className={`masteracademic-input ${hasError ? 'error' : ''}`}
           style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            cursor: 'pointer',
-            textAlign: 'left',
-            background: 'white',
-            color: value ? '#0f172a' : '#94a3b8',
+            width: '100%', display: 'flex', alignItems: 'center',
+            justifyContent: 'space-between', cursor: 'pointer', textAlign: 'left',
+            background: 'white', color: value ? '#0f172a' : '#94a3b8',
             fontFamily: "'Poppins', sans-serif",
           }}
         >
           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {value || placeholder}
           </span>
-          <svg
-            width="12" height="8" viewBox="0 0 12 8" fill="none"
-            style={{
-              flexShrink: 0,
-              marginLeft: '8px',
-              transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-              transition: 'transform 0.2s ease'
-            }}
+          <svg width="12" height="8" viewBox="0 0 12 8" fill="none"
+            style={{ flexShrink: 0, marginLeft: '8px', transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease' }}
           >
             <path d="M1 1l5 5 5-5" stroke="#64748b" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
         </button>
 
         {isOpen && (
-          <div
-            style={{
-              position: 'absolute',
-              top: 'calc(100% + 6px)',
-              left: 0,
-              right: 0,
-              background: '#ffffff',
-              border: '1.5px solid #0891b2',
-              borderRadius: '12px',
-              boxShadow: '0 8px 24px rgba(8, 145, 178, 0.15)',
-              zIndex: 9999,
-              overflow: 'hidden',
-              maxHeight: '240px',
-              overflowY: 'auto',
-            }}
-          >
+          <div style={{
+            position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0,
+            background: '#ffffff', border: '1.5px solid #0891b2', borderRadius: '12px',
+            boxShadow: '0 8px 24px rgba(8, 145, 178, 0.15)', zIndex: 9999,
+            overflow: 'hidden', maxHeight: '240px', overflowY: 'auto',
+          }}>
             {options.map((option) => (
               <div
                 key={option}
                 onMouseDown={(e) => { e.preventDefault(); handleSelect(option); }}
                 onTouchEnd={(e)  => { e.preventDefault(); handleSelect(option); }}
                 style={{
-                  padding: '12px 16px',
-                  fontSize: '14px',
-                  color: value === option ? '#0891b2' : '#0f172a',
+                  padding: '12px 16px', fontSize: '14px',
+                  color:      value === option ? '#0891b2' : '#0f172a',
                   fontWeight: value === option ? '600' : '400',
                   background: value === option ? '#f0f9ff' : 'transparent',
-                  cursor: 'pointer',
-                  borderBottom: '1px solid #f1f5f9',
-                  transition: 'background 0.15s ease',
-                  fontFamily: "'Poppins', sans-serif",
-                  userSelect: 'none',
-                  WebkitUserSelect: 'none',
+                  cursor: 'pointer', borderBottom: '1px solid #f1f5f9',
+                  transition: 'background 0.15s ease', fontFamily: "'Poppins', sans-serif",
+                  userSelect: 'none', WebkitUserSelect: 'none',
                 }}
                 onMouseEnter={e => { if (value !== option) e.currentTarget.style.background = '#f8fafc'; }}
                 onMouseLeave={e => { if (value !== option) e.currentTarget.style.background = 'transparent'; }}
@@ -385,20 +455,27 @@ const response = await fetch(`${baseURL}/api/master-academic`, {
     );
   };
 
-  // ─── Render ───────────────────────────────────────────────
+  // ─── Render ───────────────────────────────────────────────────────────────────
   return (
-    <div className="masteracademic-form">
+    <div className="masteracademic-form" ref={dropdownWrapRef}>
       <div className="masteracademic-header">
         <h2 className="masteracademic-title">Academic History</h2>
         <p className="masteracademic-subtitle">
           Add all your academic qualifications starting from the most recent
         </p>
 
+        {/* Cross-tab saving warning */}
+        {otherTabSaving && (
+          <div className="masteracademic-save-status success" style={{ background: '#fef3c7', color: '#92400e', borderColor: '#fcd34d' }}>
+            ⚠️ Another tab is saving — please wait…
+          </div>
+        )}
+
         {(isSaving || saveStatus) && (
           <div className={`masteracademic-save-status ${saveStatus === 'error' ? 'error' : 'success'}`}>
             {isSaving && 'Saving…'}
-            {!isSaving && saveStatus === 'saved' && '✓ Saved successfully'}
-            {!isSaving && saveStatus === 'error' && '✕ Save failed — please try again'}
+            {!isSaving && saveStatus === 'saved'  && '✓ Saved successfully'}
+            {!isSaving && saveStatus === 'error'  && '✕ Save failed — please check all fields and try again'}
           </div>
         )}
       </div>
@@ -408,11 +485,7 @@ const response = await fetch(`${baseURL}/api/master-academic`, {
           <div className="masteracademic-entry-header">
             <h3 className="masteracademic-entry-title">Education #{index + 1}</h3>
             {academicEntries.length > 1 && (
-              <button
-                type="button"
-                className="masteracademic-remove-btn"
-                onClick={() => removeEntry(entry.id)}
-              >
+              <button type="button" className="masteracademic-remove-btn" onClick={() => removeEntry(entry.id)}>
                 Remove
               </button>
             )}
@@ -426,11 +499,8 @@ const response = await fetch(`${baseURL}/api/master-academic`, {
                 Degree <span className="masteracademic-required">*</span>
               </label>
               <CustomSelect
-                entryId={entry.id}
-                field="degree"
-                value={entry.degree}
-                options={degrees}
-                placeholder="Select Degree"
+                entryId={entry.id} field="degree" value={entry.degree}
+                options={degrees} placeholder="Select Degree"
                 hasError={!!errors[entry.id]?.degree}
               />
               {errors[entry.id]?.degree && (
@@ -444,8 +514,7 @@ const response = await fetch(`${baseURL}/api/master-academic`, {
                 University/College Name <span className="masteracademic-required">*</span>
               </label>
               <input
-                type="text"
-                value={entry.university || ''}
+                type="text" value={entry.university || ''}
                 onChange={(e) => handleEntryChange(entry.id, 'university', e.target.value)}
                 onBlur={() => handleEntryBlur(entry.id, 'university')}
                 placeholder="University name"
@@ -462,11 +531,8 @@ const response = await fetch(`${baseURL}/api/master-academic`, {
                 Country <span className="masteracademic-required">*</span>
               </label>
               <CustomSelect
-                entryId={entry.id}
-                field="country"
-                value={entry.country}
-                options={countries}
-                placeholder="Select Country"
+                entryId={entry.id} field="country" value={entry.country}
+                options={countries} placeholder="Select Country"
                 hasError={!!errors[entry.id]?.country}
               />
               {errors[entry.id]?.country && (
@@ -480,8 +546,7 @@ const response = await fetch(`${baseURL}/api/master-academic`, {
                 Field of Study <span className="masteracademic-required">*</span>
               </label>
               <input
-                type="text"
-                value={entry.fieldOfStudy || ''}
+                type="text" value={entry.fieldOfStudy || ''}
                 onChange={(e) => handleEntryChange(entry.id, 'fieldOfStudy', e.target.value)}
                 onBlur={() => handleEntryBlur(entry.id, 'fieldOfStudy')}
                 placeholder="e.g., Computer Science, Business Administration"
@@ -498,8 +563,7 @@ const response = await fetch(`${baseURL}/api/master-academic`, {
                 Start Date <span className="masteracademic-required">*</span>
               </label>
               <input
-                type="month"
-                value={entry.startDate || ''}
+                type="month" value={entry.startDate || ''}
                 onChange={(e) => handleEntryChange(entry.id, 'startDate', e.target.value)}
                 onBlur={() => handleEntryBlur(entry.id, 'startDate')}
                 className={`masteracademic-input ${errors[entry.id]?.startDate ? 'error' : ''}`}
@@ -515,8 +579,7 @@ const response = await fetch(`${baseURL}/api/master-academic`, {
                 End Date <span className="masteracademic-required">*</span>
               </label>
               <input
-                type="month"
-                value={entry.endDate || ''}
+                type="month" value={entry.endDate || ''}
                 onChange={(e) => handleEntryChange(entry.id, 'endDate', e.target.value)}
                 onBlur={() => handleEntryBlur(entry.id, 'endDate')}
                 className={`masteracademic-input ${errors[entry.id]?.endDate ? 'error' : ''}`}
@@ -530,11 +593,10 @@ const response = await fetch(`${baseURL}/api/master-academic`, {
             <div className="masteracademic-group">
               <label className="masteracademic-label">GPA / Percentage (Optional)</label>
               <input
-                type="text"
-                value={entry.gpa || ''}
+                type="text" value={entry.gpa || ''}
                 onChange={(e) => handleEntryChange(entry.id, 'gpa', e.target.value)}
                 onBlur={() => handleEntryBlur(entry.id, 'gpa')}
-                placeholder="e.g., 3.5/4.0 or 85%"
+                placeholder="e.g., 8.5/10 or 85%"
                 className={`masteracademic-input ${errors[entry.id]?.gpa ? 'error' : ''}`}
               />
               {errors[entry.id]?.gpa && (
@@ -550,19 +612,39 @@ const response = await fetch(`${baseURL}/api/master-academic`, {
         + Add Another Qualification
       </button>
 
-      {/* Bachelor's Degree warning */}
       {!academicEntries.some(e => e.degree === "Bachelor's Degree") && (
         <div className="masteracademic-bachelor-warning">
           <div>
-            <p className="masteracademic-bachelor-warning-title">
-              Bachelor's Degree Required
-            </p>
+            <p className="masteracademic-bachelor-warning-title">Bachelor's Degree Required</p>
             <p className="masteracademic-bachelor-warning-text">
               You must add at least one Bachelor's Degree to be eligible for a master's program application.
             </p>
           </div>
         </div>
       )}
+
+      {/* Manual Save Button */}
+      <button
+        type="button"
+        onClick={handleManualSave}
+        disabled={isSaving || otherTabSaving}
+        style={{
+          marginTop: '24px',
+          width: '100%',
+          padding: '14px 24px',
+          background: (isSaving || otherTabSaving) ? '#94a3b8' : '#0891b2',
+          color: '#ffffff',
+          border: 'none',
+          borderRadius: '12px',
+          fontSize: '15px',
+          fontWeight: '600',
+          fontFamily: "'Poppins', sans-serif",
+          cursor: (isSaving || otherTabSaving) ? 'not-allowed' : 'pointer',
+          transition: 'background 0.2s ease',
+        }}
+      >
+        {isSaving ? 'Saving…' : otherTabSaving ? 'Another tab is saving…' : 'Save Academic History'}
+      </button>
 
     </div>
   );

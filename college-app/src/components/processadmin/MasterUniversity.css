@@ -481,9 +481,8 @@
   letter-spacing: -0.5px;
 }
 
-/* Stat card accent colors */
-.stat-card-total    { border-left: 3px solid var(--primary); }
-.stat-card-completed { border-left: 3px solid var(--green); }
+.stat-card-total      { border-left: 3px solid var(--primary); }
+.stat-card-completed  { border-left: 3px solid var(--green); }
 .stat-card-incomplete { border-left: 3px solid var(--amber); }
 .stat-card-inprogress { border-left: 3px solid var(--violet); }
 
@@ -498,7 +497,6 @@
   overflow: hidden;
 }
 
-/* ── Filter Search Bar ──────────────────────────────────── */
 .filter-search-bar {
   display: flex;
   align-items: center;
@@ -746,7 +744,6 @@
   margin-top: 1px;
 }
 
-/* Action buttons — View + PDF side by side */
 .action-btns {
   display: flex;
   align-items: center;
@@ -869,7 +866,6 @@
   transform: translateY(-1px);
 }
 
-/* Footer showing label */
 .table-footer-inner {
   display: flex;
   align-items: center;
@@ -982,7 +978,6 @@
   border-color: var(--primary-bd);
 }
 
-/* Card header */
 .mobile-card-header {
   display: flex;
   align-items: center;
@@ -1003,7 +998,6 @@
   font-family: monospace;
 }
 
-/* Card body */
 .mobile-card-body {
   padding: 10px 11px;
 }
@@ -1061,7 +1055,6 @@
   margin-top: 1px;
 }
 
-/* Meta grid */
 .mobile-meta-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1134,7 +1127,6 @@
   display: block;
 }
 
-/* Card footer — two buttons */
 .mobile-card-footer {
   padding: 8px 11px;
   border-top: 1px solid var(--border-lt);
@@ -1181,7 +1173,6 @@
   border-color: var(--primary);
 }
 
-/* "Showing X of X" below cards */
 .mobile-showing-label {
   text-align: right;
   font-size: 11.5px;
@@ -1364,6 +1355,9 @@
   overflow-y: auto;
   flex: 1;
   scrollbar-width: thin;
+  /* ✅ FIX: ensures the tab content area actually scrolls on mobile */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .modal-content::-webkit-scrollbar { width: 4px; }
@@ -1418,26 +1412,38 @@
   letter-spacing: 0.06em;
 }
 
+/* ══════════════════════════════════════════════════════════
+   DOCUMENT ROW — Desktop (base styles)
+══════════════════════════════════════════════════════════ */
+.doc-list {
+  position: relative;
+}
+
 .modal-doc-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 20px;
+ padding: 16px 20px;
   border-bottom: 1px solid var(--border-lt);
   gap: 10px;
+  min-height: 48px;
 }
 
 .modal-doc-label {
-  font-size: 12.5px;
+  flex: 1;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text);
-  flex: 1;
+  min-width: 0;
+  line-height: 1.4;
 }
 
-.modal-doc-status {
+/* ✅ FIX: Actions container — always inline on desktop, wraps on mobile */
+.modal-doc-actions {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 7px;
+  flex-shrink: 0;
 }
 
 .modal-doc-uploaded {
@@ -1447,6 +1453,7 @@
   border-radius: 99px;
   font-size: 9.5px;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .modal-doc-missing {
@@ -1456,18 +1463,54 @@
   border-radius: 99px;
   font-size: 9.5px;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .modal-doc-link {
-  font-size: 10.5px;
+  font-size: 11px;
   color: var(--primary);
   text-decoration: underline;
   cursor: pointer;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .modal-doc-link:hover { color: var(--primary-dk); }
 
+/* ── Email button ── */
+.doc-email-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #4361ee;
+  background: #eef0fd;
+  border: 1px solid #c5caff;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.1s;
+  line-height: 1;
+  flex-shrink: 0;
+  font-family: 'Outfit', sans-serif;
+}
+
+.doc-email-btn:hover {
+  background: #4361ee;
+  color: #fff;
+  border-color: #4361ee;
+  transform: translateY(-1px);
+}
+
+.doc-email-btn:active {
+  transform: translateY(0);
+}
+
+/* ══════════════════════════════════════════════════════════
+   MODAL FOOTER
+══════════════════════════════════════════════════════════ */
 .modal-footer {
   padding: 12px 20px 16px;
   border-top: 1px solid var(--border-lt);
@@ -1493,6 +1536,382 @@
   background: var(--bg);
   color: var(--text);
   border-color: var(--text-mid);
+}
+
+/* ══════════════════════════════════════════════════════════
+   EMAIL MODAL
+══════════════════════════════════════════════════════════ */
+.email-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: rgba(10, 10, 30, 0.55);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeIn 0.15s ease;
+}
+
+.email-modal-box {
+  background: #fff;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  animation: slideUp 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.email-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px;
+  background: linear-gradient(135deg, #4361ee 0%, #7209b7 100%);
+  color: #fff;
+}
+
+.email-modal-header-icon {
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.email-modal-header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.email-modal-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.email-modal-subtitle {
+  font-size: 12px;
+  opacity: 0.82;
+  margin-top: 1px;
+}
+
+.email-modal-close {
+  background: rgba(255, 255, 255, 0.18);
+  border: none;
+  color: #fff;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.email-modal-close:hover {
+  background: rgba(255, 255, 255, 0.32);
+}
+
+.email-modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  /* ✅ FIX: allow body to scroll if too tall on small screens */
+  overflow-y: auto;
+  max-height: calc(90vh - 80px);
+  -webkit-overflow-scrolling: touch;
+}
+
+.email-info-strip {
+  background: #f6f7fb;
+  border: 1px solid #e4e7f0;
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.email-info-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.email-info-label {
+  font-weight: 600;
+  color: #6b7280;
+  width: 68px;
+  flex-shrink: 0;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.email-info-value {
+  color: #1a1a2e;
+  font-size: 13px;
+  word-break: break-all;
+}
+
+.email-doc-name {
+  font-weight: 600;
+  color: #4361ee;
+}
+
+.email-doc-status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.pill-uploaded {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.pill-missing {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.email-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.email-field-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #374151;
+  letter-spacing: 0.01em;
+}
+
+.email-optional {
+  font-weight: 400;
+  color: #9ca3af;
+  font-size: 11.5px;
+}
+
+.email-select {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 13.5px;
+  color: #1a1a2e;
+  background: #fff;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+  font-family: 'Outfit', sans-serif;
+}
+
+.email-select:focus {
+  border-color: #4361ee;
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.12);
+}
+
+.email-textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #1a1a2e;
+  background: #fff;
+  resize: vertical;
+  font-family: 'Outfit', sans-serif;
+  line-height: 1.5;
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.email-textarea:focus {
+  border-color: #4361ee;
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.12);
+}
+
+.email-textarea::placeholder {
+  color: #b0b7c3;
+}
+
+.email-deadline-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.email-deadline-chip {
+  padding: 6px 14px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 20px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #6b7280;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'Outfit', sans-serif;
+}
+
+.email-deadline-chip:hover {
+  border-color: #4361ee;
+  color: #4361ee;
+  background: #eef0fd;
+}
+
+.deadline-chip-active {
+  border-color: #4361ee !important;
+  background: #4361ee !important;
+  color: #fff !important;
+}
+
+.email-error-box {
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  color: #be123c;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+}
+
+.email-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
+.email-modal-btn-cancel {
+  padding: 9px 18px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  color: #6b7280;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'Outfit', sans-serif;
+}
+
+.email-modal-btn-cancel:hover:not(:disabled) {
+  border-color: #9ca3af;
+  color: #374151;
+}
+
+.email-modal-btn-cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.email-modal-btn-primary {
+  padding: 9px 20px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #4361ee 0%, #7209b7 100%);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Outfit', sans-serif;
+}
+
+.email-modal-btn-primary:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.email-modal-btn-primary:active {
+  transform: translateY(0);
+}
+
+.email-modal-btn-primary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.email-sending-spinner {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spinner-dot {
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.65s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.email-modal-success {
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.email-success-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  font-size: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.32);
+  animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes popIn {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+.email-success-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #065f46;
+}
+
+.email-success-msg {
+  font-size: 13.5px;
+  color: #6b7280;
+  line-height: 1.6;
+  max-width: 340px;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -1561,7 +1980,6 @@
     --topbar-h: 50px;
   }
 
-  /* Stats — 2 col */
   .stats-row {
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
@@ -1573,15 +1991,9 @@
     gap: 9px;
   }
 
-  .stat-value {
-    font-size: 22px;
-  }
+  .stat-value { font-size: 22px; }
+  .stat-label { font-size: 8.5px; }
 
-  .stat-label {
-    font-size: 8.5px;
-  }
-
-  /* Filter */
   .filter-section {
     margin: 0 12px 12px;
   }
@@ -1599,17 +2011,14 @@
     font-size: 11px;
   }
 
-  /* Hide desktop table */
   .desktop-table-view {
     display: none;
   }
 
-  /* Show mobile cards */
   .mobile-cards {
     display: flex;
   }
 
-  /* Banner */
   .mu-banner {
     padding: 9px 12px;
   }
@@ -1624,7 +2033,6 @@
     max-width: 140px;
   }
 
-  /* Hide desktop btns, show mobile btns */
   .btn-primary,
   .btn-outline {
     display: none;
@@ -1655,7 +2063,6 @@
     color: var(--primary);
   }
 
-  /* Topbar */
   .mu-topbar {
     padding: 0 10px;
     gap: 7px;
@@ -1676,14 +2083,13 @@
     display: flex;
   }
 
-  /* Error */
   .error-box {
     margin: 0 12px 10px;
     padding: 8px 12px;
     font-size: 11.5px;
   }
 
-  /* Modal — bottom sheet */
+  /* ── Modal bottom-sheet on mobile ── */
   .modal-overlay {
     align-items: flex-end;
     padding: 0;
@@ -1699,17 +2105,9 @@
     padding: 13px 15px;
   }
 
-  .modal-header-name {
-    font-size: 14px;
-  }
-
-  .modal-header-eyebrow {
-    font-size: 8.5px;
-  }
-
-  .modal-header-meta {
-    font-size: 9.5px;
-  }
+  .modal-header-name    { font-size: 14px; }
+  .modal-header-eyebrow { font-size: 8.5px; }
+  .modal-header-meta    { font-size: 9.5px; }
 
   .modal-field {
     flex-direction: column;
@@ -1726,11 +2124,46 @@
     font-size: 10.5px;
   }
 
+  /* ✅ KEY FIX: Document rows stack label then actions on mobile */
   .modal-doc-row {
     flex-direction: column;
     align-items: flex-start;
-    gap: 5px;
-    padding: 9px 13px;
+    gap: 8px;
+  padding: 14px 13px;
+  }
+
+  .modal-doc-label {
+    font-size: 12.5px;
+    font-weight: 600;
+    width: 100%;
+  }
+
+  /* ✅ KEY FIX: Actions row wraps nicely, never overflows */
+  .modal-doc-actions {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* ✅ FIX: Make View link visible and tappable */
+  .modal-doc-link {
+    font-size: 11.5px;
+    padding: 4px 10px;
+    background: var(--primary-lt);
+    border: 1px solid var(--primary-bd);
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--primary);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* ✅ FIX: Email button full-accessible size on mobile */
+  .doc-email-btn {
+    padding: 5px 12px;
+    font-size: 11.5px;
   }
 
   .modal-progress-strip {
@@ -1757,6 +2190,39 @@
   .modal-footer {
     padding: 10px 13px 14px;
   }
+
+  /* ── Email modal bottom-sheet on mobile ── */
+  .email-modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .email-modal-box {
+    max-width: 100%;
+    border-radius: 16px 16px 0 0;
+    max-height: 92vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .email-modal-body {
+    padding: 16px;
+    gap: 13px;
+    max-height: none; /* let the outer box control height */
+  }
+
+  .email-modal-actions {
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .email-modal-btn-cancel,
+  .email-modal-btn-primary {
+    flex: 1;
+    justify-content: center;
+    padding: 11px 14px;
+    font-size: 13px;
+  }
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -1773,26 +2239,12 @@
     gap: 7px;
   }
 
-  .stat-value {
-    font-size: 20px;
-  }
+  .stat-value { font-size: 20px; }
+  .stat-label { font-size: 8px; }
 
-  .stat-label {
-    font-size: 8px;
-  }
-
-  .mobile-card-header {
-    padding: 7px 10px;
-  }
-
-  .mobile-card-id {
-    font-size: 10px;
-    padding: 1px 6px;
-  }
-
-  .mobile-card-body {
-    padding: 9px 10px;
-  }
+  .mobile-card-header  { padding: 7px 10px; }
+  .mobile-card-id      { font-size: 10px; padding: 1px 6px; }
+  .mobile-card-body    { padding: 9px 10px; }
 
   .avatar-small {
     width: 34px;
@@ -1800,39 +2252,19 @@
     font-size: 11px;
   }
 
-  .mobile-student-name {
-    font-size: 12.5px;
-  }
+  .mobile-student-name  { font-size: 12.5px; }
+  .mobile-student-email { font-size: 10px; }
+  .mobile-meta-label    { font-size: 8.5px; }
+  .mobile-meta-value    { font-size: 11.5px; }
 
-  .mobile-student-email {
-    font-size: 10px;
-  }
-
-  .mobile-meta-label {
-    font-size: 8.5px;
-  }
-
-  .mobile-meta-value {
-    font-size: 11.5px;
-  }
-
-  .mobile-card-footer {
-    padding: 7px 10px;
-  }
+  .mobile-card-footer { padding: 7px 10px; }
 
   .btn-view-mobile {
     padding: 7px;
     font-size: 11.5px;
   }
 
-  .filter-btns-scroll {
-    padding: 7px 10px;
-    gap: 6px;
-  }
-
-  .uni-tabs-scroll {
-    padding: 0 8px;
-  }
+  .filter-btns-scroll { padding: 7px 10px; gap: 6px; }
 
   .modal-footer {
     padding: 9px 13px 12px;
@@ -1843,12 +2275,33 @@
     font-size: 11.5px;
   }
 
-  .mu-banner-title {
-    font-size: 13px;
+  .mu-banner-title  { font-size: 13px; }
+  .mu-banner        { padding: 8px 10px; }
+
+  /* ✅ FIX: Tighter doc rows on small screens */
+  .modal-doc-row {
+     padding: 13px 11px;
+    gap: 6px;
   }
 
-  .mu-banner {
-    padding: 8px 10px;
+  .modal-doc-label {
+    font-size: 12px;
+  }
+
+  .modal-doc-uploaded,
+  .modal-doc-missing {
+    font-size: 9px;
+    padding: 2px 7px;
+  }
+
+  .doc-email-btn {
+    font-size: 11px;
+    padding: 4px 9px;
+  }
+
+  .modal-doc-link {
+    font-size: 11px;
+    padding: 3px 8px;
   }
 }
 
@@ -1871,18 +2324,10 @@
     border-radius: 8px;
   }
 
-  .stat-value {
-    font-size: 18px;
-  }
+  .stat-value { font-size: 18px; }
+  .stat-label { font-size: 7.5px; margin-bottom: 1px; }
 
-  .stat-label {
-    font-size: 7.5px;
-    margin-bottom: 1px;
-  }
-
-  .mobile-card {
-    border-radius: 8px;
-  }
+  .mobile-card        { border-radius: 8px; }
 
   .mobile-student-row {
     gap: 7px;
@@ -1896,26 +2341,14 @@
     font-size: 10px;
   }
 
-  .mobile-student-name {
-    font-size: 12px;
-  }
-
-  .mobile-meta-grid {
-    gap: 4px;
-  }
-
-  .mobile-meta-item {
-    padding: 5px 0;
-  }
+  .mobile-student-name { font-size: 12px; }
+  .mobile-meta-grid    { gap: 4px; }
+  .mobile-meta-item    { padding: 5px 0; }
 
   .mu-topbar-label,
-  .mu-topbar-sub {
-    font-size: 12px;
-  }
+  .mu-topbar-sub { font-size: 12px; }
 
-  .mu-banner-title {
-    font-size: 12.5px;
-  }
+  .mu-banner-title { font-size: 12.5px; }
 
   .mu-banner-uni-badge {
     max-width: 110px;
@@ -1933,15 +2366,9 @@
     gap: 6px;
   }
 
-  .filter-section {
-    margin: 0 8px 10px;
-  }
+  .filter-section { margin: 0 8px 10px; }
+  .error-box       { margin: 0 8px 8px; }
 
-  .error-box {
-    margin: 0 8px 8px;
-  }
-
-  /* Modal full-height on tiny screens */
   .modal-box {
     max-height: 96vh;
   }
@@ -1950,9 +2377,7 @@
     padding: 11px 12px;
   }
 
-  .modal-header-name {
-    font-size: 13px;
-  }
+  .modal-header-name { font-size: 13px; }
 
   .modal-tab {
     padding: 7px 9px;
@@ -1963,487 +2388,25 @@
     min-width: 26px;
     font-size: 9.5px;
   }
-}
-/* ─────────────────────────────────────────────────────────────────────────────
-   DOCUMENT ROW — updated layout to fit Email button
-   Add these rules to your existing MasterUniversity.css
-───────────────────────────────────────────────────────────────────────────── */
 
-/* Wrap both the status badges AND the action buttons in one flex row */
-.modal-doc-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--border, #e8eaf0);
-  gap: 8px;
-}
-
-.modal-doc-label {
-  flex: 1;
-  font-size: 13.5px;
-  font-weight: 500;
-  color: var(--text, #1a1a2e);
-  min-width: 0;
-}
-
-/* New wrapper for status + view + email */
-.modal-doc-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-/* ── Email button on each document row ── */
-.doc-email-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #4361ee;
-  background: #eef0fd;
-  border: 1px solid #c5caff;
-  border-radius: 6px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.1s;
-  line-height: 1;
-}
-
-.doc-email-btn:hover {
-  background: #4361ee;
-  color: #fff;
-  border-color: #4361ee;
-  transform: translateY(-1px);
-}
-
-.doc-email-btn:active {
-  transform: translateY(0);
-}
-
-/* doc list wrapper */
-.doc-list {
-  position: relative;
-}
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   EMAIL MODAL OVERLAY + BOX
-───────────────────────────────────────────────────────────────────────────── */
-.email-modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1100;              /* above DetailModal (z-index ~1000) */
-  background: rgba(10, 10, 30, 0.55);
-  backdrop-filter: blur(3px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  animation: fadeIn 0.15s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-.email-modal-box {
-  background: #fff;
-  border-radius: 14px;
-  width: 100%;
-  max-width: 480px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
-  overflow: hidden;
-  animation: slideUp 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes slideUp {
-  from { transform: translateY(24px); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
-}
-
-/* ── Modal Header ── */
-.email-modal-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 18px 20px;
-  background: linear-gradient(135deg, #4361ee 0%, #7209b7 100%);
-  color: #fff;
-}
-
-.email-modal-header-icon {
-  font-size: 22px;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-.email-modal-header-text {
-  flex: 1;
-  min-width: 0;
-}
-
-.email-modal-title {
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-}
-
-.email-modal-subtitle {
-  font-size: 12px;
-  opacity: 0.82;
-  margin-top: 1px;
-}
-
-.email-modal-close {
-  background: rgba(255, 255, 255, 0.18);
-  border: none;
-  color: #fff;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  font-size: 18px;
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: background 0.15s;
-}
-
-.email-modal-close:hover {
-  background: rgba(255, 255, 255, 0.32);
-}
-
-/* ── Modal Body ── */
-.email-modal-body {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* Info strip — To / Document / Status */
-.email-info-strip {
-  background: #f6f7fb;
-  border: 1px solid #e4e7f0;
-  border-radius: 8px;
-  padding: 12px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-
-.email-info-row {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  font-size: 13px;
-}
-
-.email-info-label {
-  font-weight: 600;
-  color: #6b7280;
-  width: 68px;
-  flex-shrink: 0;
-  font-size: 11.5px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.email-info-value {
-  color: #1a1a2e;
-  font-size: 13px;
-  word-break: break-all;
-}
-
-.email-doc-name {
-  font-weight: 600;
-  color: #4361ee;
-}
-
-/* Upload status pills inside info strip */
-.email-doc-status-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 10px;
-  border-radius: 20px;
-  font-size: 11.5px;
-  font-weight: 600;
-}
-
-.pill-uploaded {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.pill-missing {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-/* ── Form fields ── */
-.email-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.email-field-label {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: #374151;
-  letter-spacing: 0.01em;
-}
-
-.email-optional {
-  font-weight: 400;
-  color: #9ca3af;
-  font-size: 11.5px;
-}
-
-.email-select {
-  width: 100%;
-  padding: 9px 12px;
-  border: 1.5px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 13.5px;
-  color: #1a1a2e;
-  background: #fff;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 32px;
-  cursor: pointer;
-  outline: none;
-  transition: border-color 0.15s;
-}
-
-.email-select:focus {
-  border-color: #4361ee;
-  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.12);
-}
-
-.email-textarea {
-  width: 100%;
-  padding: 9px 12px;
-  border: 1.5px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 13px;
-  color: #1a1a2e;
-  background: #fff;
-  resize: vertical;
-  font-family: inherit;
-  line-height: 1.5;
-  outline: none;
-  transition: border-color 0.15s;
-  box-sizing: border-box;
-}
-
-.email-textarea:focus {
-  border-color: #4361ee;
-  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.12);
-}
-
-.email-textarea::placeholder {
-  color: #b0b7c3;
-}
-
-/* ── Deadline chips ── */
-.email-deadline-row {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.email-deadline-chip {
-  padding: 6px 14px;
-  border: 1.5px solid #d1d5db;
-  border-radius: 20px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: #6b7280;
-  background: #fff;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.email-deadline-chip:hover {
-  border-color: #4361ee;
-  color: #4361ee;
-  background: #eef0fd;
-}
-
-.deadline-chip-active {
-  border-color: #4361ee !important;
-  background: #4361ee !important;
-  color: #fff !important;
-}
-
-/* ── Error box ── */
-.email-error-box {
-  background: #fff1f2;
-  border: 1px solid #fecdd3;
-  color: #be123c;
-  border-radius: 8px;
-  padding: 10px 14px;
-  font-size: 13px;
-}
-
-/* ── Action buttons ── */
-.email-modal-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  padding-top: 4px;
-}
-
-.email-modal-btn-cancel {
-  padding: 9px 18px;
-  border: 1.5px solid #d1d5db;
-  border-radius: 8px;
-  background: #fff;
-  color: #6b7280;
-  font-size: 13.5px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.email-modal-btn-cancel:hover:not(:disabled) {
-  border-color: #9ca3af;
-  color: #374151;
-}
-
-.email-modal-btn-cancel:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.email-modal-btn-primary {
-  padding: 9px 20px;
-  border: none;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #4361ee 0%, #7209b7 100%);
-  color: #fff;
-  font-size: 13.5px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: opacity 0.15s, transform 0.1s;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.email-modal-btn-primary:hover:not(:disabled) {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
-
-.email-modal-btn-primary:active {
-  transform: translateY(0);
-}
-
-.email-modal-btn-primary:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-}
-
-/* Sending spinner */
-.email-sending-spinner {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.spinner-dot {
-  width: 12px;
-  height: 12px;
-  border: 2px solid rgba(255,255,255,0.4);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin 0.65s linear infinite;
-  display: inline-block;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* ── Success state ── */
-.email-modal-success {
-  padding: 32px 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  text-align: center;
-}
-
-.email-success-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: #fff;
-  font-size: 26px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.32);
-  animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes popIn {
-  from { transform: scale(0); opacity: 0; }
-  to   { transform: scale(1); opacity: 1; }
-}
-
-.email-success-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: #065f46;
-}
-
-.email-success-msg {
-  font-size: 13.5px;
-  color: #6b7280;
-  line-height: 1.6;
-  max-width: 340px;
-}
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   RESPONSIVE — mobile adjustments
-───────────────────────────────────────────────────────────────────────────── */
-@media (max-width: 560px) {
-  .modal-doc-row {
-    flex-wrap: wrap;
-  }
-  .modal-doc-label {
-    width: 100%;
-    margin-bottom: 4px;
-  }
+  /* ✅ FIX: Email button fits on 360px screens */
   .modal-doc-actions {
-    width: 100%;
-    justify-content: flex-start;
+    gap: 15px;
   }
-  .email-modal-box {
-    max-width: 100%;
-    border-radius: 16px 16px 0 0;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    max-height: 90vh;
-    overflow-y: auto;
+
+  .doc-email-btn {
+    font-size: 10.5px;
+    padding: 4px 8px;
   }
-  .email-modal-overlay {
-    align-items: flex-end;
-    padding: 0;
+
+  .modal-doc-uploaded,
+  .modal-doc-missing {
+    font-size: 8.5px;
+    padding: 1px 6px;
+  }
+
+  .modal-doc-link {
+    font-size: 10.5px;
+    padding: 3px 7px;
   }
 }

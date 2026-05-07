@@ -3,43 +3,86 @@ import MasterAcademic from "../models/masteracademicmodel.js";
 
 const QUALIFYING_DEGREES = ["Bachelor's Degree"];
 
-const getRawUserId = (req) =>
-  req.userId       ||
-  req.user?.userId ||
-  req.user?.id     ||
-  req.user?._id    ||
-  "";
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const getRawUserId = (req) => {
+  const id =
+    req.userId ||
+    req.user?.id ||
+    req.user?.userId ||
+    req.user?._id ||
+    req.user?.sub ||
+    "";
+  console.log("🔹 getRawUserId →", JSON.stringify(id));
+  return id;
+};
 
 const resolveUserId = (rawId) => {
-  if (!rawId) return null;
+  if (!rawId) {
+    console.error("❌ resolveUserId: rawId is empty/null");
+    return null;
+  }
+  if (rawId instanceof mongoose.Types.ObjectId) return rawId;
   const str = rawId.toString().trim();
-  if (!mongoose.Types.ObjectId.isValid(str)) return null;
+  if (!mongoose.Types.ObjectId.isValid(str)) {
+    console.error(`❌ resolveUserId: "${str}" is NOT a valid ObjectId`);
+    return null;
+  }
   return new mongoose.Types.ObjectId(str);
 };
 
-// CREATE OR UPDATE (UPSERT)
+const validateGpa = (gpaStr) => {
+  if (!gpaStr?.trim()) return true;
+  const cleaned = gpaStr.trim();
+  if (cleaned.endsWith("%")) {
+    const num = parseFloat(cleaned);
+    return !isNaN(num) && num >= 0 && num <= 100;
+  }
+  if (cleaned.includes("/")) {
+    const parts = cleaned.split("/");
+    if (parts.length !== 2) return false;
+    const num = parseFloat(parts[0]);
+    const den = parseFloat(parts[1]);
+    return !isNaN(num) && !isNaN(den) && den > 0 && den <= 100 && num >= 0 && num <= den;
+  }
+  const num = parseFloat(cleaned);
+  return !isNaN(num) && num >= 0 && num <= 10;
+};
+
+// ─── SAVE (UPSERT) ────────────────────────────────────────────────────────────
+
 export const saveMasterAcademic = async (req, res) => {
   try {
-    // FIX: get userId from token, never from req.body
-    const userId = resolveUserId(getRawUserId(req));
+    console.log("\n📥 ── saveMasterAcademic ──────────────────────────");
+    console.log("   req.userId      :", req.userId);
+    console.log("   req.user        :", JSON.stringify(req.user));
+    console.log("   academics count :", req.body?.academics?.length);
+
+    const rawId  = getRawUserId(req);
+    const userId = resolveUserId(rawId);
+
     if (!userId) {
       return res.status(401).json({
         success: false,
-        message: "Unauthorized: user ID not found in token.",
+        message: `Unauthorized: could not resolve ObjectId from token. Raw value: "${rawId}"`,
       });
     }
 
-    const { academics } = req.body;   // ← only take academics from body
+    const { academics } = req.body;
 
+    // ── 1. Must be a non-empty array ──────────────────────────
     if (!Array.isArray(academics) || academics.length === 0) {
       return res.status(400).json({
         success: false,
-        message: "At least one academic entry is required",
+        message: "At least one academic entry is required.",
       });
     }
 
-    const hasBachelor = academics.some((entry) =>
-      QUALIFYING_DEGREES.includes(entry.degree)
+    // ── 2. Bachelor's check done HERE in controller (not schema) ──
+    // Reason: Mongoose array-level validators don't fire on findOneAndUpdate
+    // upserts reliably, so we enforce this rule before touching the DB.
+    const hasBachelor = academics.some((e) =>
+      QUALIFYING_DEGREES.includes(e.degree)
     );
     if (!hasBachelor) {
       return res.status(400).json({
@@ -49,8 +92,10 @@ export const saveMasterAcademic = async (req, res) => {
       });
     }
 
+    // ── 3. Per-entry field validation ─────────────────────────
     for (let i = 0; i < academics.length; i++) {
-      const entry   = academics[i];
+      const entry = academics[i];
+
       const missing = [];
       if (!entry.degree?.trim())       missing.push("degree");
       if (!entry.university?.trim())   missing.push("university");
@@ -65,83 +110,119 @@ export const saveMasterAcademic = async (req, res) => {
           message: `Entry #${i + 1} is missing: ${missing.join(", ")}`,
         });
       }
+
       if (new Date(entry.startDate) > new Date(entry.endDate)) {
         return res.status(400).json({
           success: false,
-          message: `Entry #${i + 1}: End date must be after start date`,
+          message: `Entry #${i + 1}: End date must be after start date.`,
         });
       }
-      if (entry.gpa?.trim()) {
-        const gpaNum = parseFloat(entry.gpa);
-        if (isNaN(gpaNum) || gpaNum < 0 || gpaNum > 4.0) {
-          return res.status(400).json({
-            success: false,
-            message: `Entry #${i + 1}: GPA must be between 0 and 4.0`,
-          });
-        }
+
+      if (!validateGpa(entry.gpa)) {
+        return res.status(400).json({
+          success: false,
+          message: `Entry #${i + 1}: Invalid GPA. Use number ≤ 10 (e.g. 8.5), fraction (e.g. 8.5/10 or 3.5/4.0), or percentage (e.g. 85%).`,
+        });
       }
     }
 
+    // ── 4. Strip any client-side id fields ────────────────────
     const cleanAcademics = academics.map(({ _id, id, ...rest }) => rest);
 
-    // FIX: upsert filtered by userId from token — never from body
+    console.log("💾 Upserting — userId:", userId.toString(), "| entries:", cleanAcademics.length);
+    console.log("   Data:", JSON.stringify(cleanAcademics));
+
+    // ── 5. Upsert ─────────────────────────────────────────────
+    // FIX: runValidators removed — Mongoose subdocument validators on
+    // findOneAndUpdate upserts are unreliable and caused silent save failures.
+    // All validation is already done above in the controller.
     const saved = await MasterAcademic.findOneAndUpdate(
-      { userId },                                        // ← scope to THIS user
-      { $set: { academics: cleanAcademics, userId } },   // ← stamp userId
-      { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true }
+      { userId },
+      { $set: { academics: cleanAcademics } },
+      {
+        new: true,
+        upsert: true,
+        setDefaultsOnInsert: true,
+      }
     );
 
-    console.log(`✅ Academic saved — userId: ${userId} | _id: ${saved._id}`);
+    console.log("✅ Saved — doc._id:", saved._id.toString());
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      message: "Academic data saved successfully",
+      message: "Academic data saved successfully.",
       data: saved,
     });
-
   } catch (error) {
     console.error("❌ SAVE ERROR:", error.message);
-    res.status(500).json({ success: false, message: error.message });
+    console.error(error.stack);
+
+    if (error.name === "ValidationError") {
+      const messages = Object.values(error.errors).map((e) => e.message);
+      return res.status(400).json({
+        success: false,
+        message: messages.join(". "),
+        errorCode: "VALIDATION_ERROR",
+      });
+    }
+
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// GET BY USER — from token, not URL param
+// ─── GET ──────────────────────────────────────────────────────────────────────
+
 export const getMasterAcademicByUser = async (req, res) => {
   try {
-    // FIX: read userId from token, not from req.params
-    const userId = resolveUserId(getRawUserId(req));
+    console.log("\n📥 ── getMasterAcademicByUser ─────────────────────");
+
+    const rawId  = getRawUserId(req);
+    const userId = resolveUserId(rawId);
+
     if (!userId) {
-      return res.status(401).json({ success: false, message: "Unauthorized." });
+      return res.status(401).json({
+        success: false,
+        message: `Unauthorized: could not resolve ObjectId. Raw value: "${rawId}"`,
+      });
     }
 
-    const data = await MasterAcademic.findOne({ userId });
+    const data = await MasterAcademic.findOne({ userId }).lean();
+
     if (!data) {
-      return res.status(200).json({ success: true, data: null });
+      console.log("ℹ️  No record for userId:", userId.toString());
+      return res.status(404).json({
+        success: false,
+        message: "No academic record found.",
+      });
     }
 
-    res.status(200).json({ success: true, data });
+    console.log("✅ Found — academics count:", data.academics?.length);
+    return res.status(200).json({ success: true, data });
   } catch (error) {
     console.error("❌ FETCH ERROR:", error.message);
-    res.status(500).json({ success: false, message: error.message });
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// DELETE — scoped to logged-in user
+// ─── DELETE ───────────────────────────────────────────────────────────────────
+
 export const deleteMasterAcademic = async (req, res) => {
   try {
-    const userId = resolveUserId(getRawUserId(req));
+    const rawId  = getRawUserId(req);
+    const userId = resolveUserId(rawId);
+
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized." });
     }
 
     const deleted = await MasterAcademic.findOneAndDelete({ userId });
     if (!deleted) {
-      return res.status(404).json({ success: false, message: "Record not found" });
+      return res.status(404).json({ success: false, message: "Record not found." });
     }
 
-    res.status(200).json({ success: true, message: "Deleted successfully" });
+    return res.status(200).json({ success: true, message: "Deleted successfully." });
   } catch (error) {
     console.error("❌ DELETE ERROR:", error.message);
-    res.status(500).json({ success: false, message: error.message });
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
