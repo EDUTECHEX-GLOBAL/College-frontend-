@@ -1,4 +1,4 @@
-export const DEFAULT_API_BASE_URL = "https://college-backend-render-u2g5.onrender.com/";
+export const DEFAULT_API_BASE_URL = "https://college-backend-render-u2g5.onrender.com";
 
 export const resolveApiBaseUrl = (value = process.env.REACT_APP_API_BASE_URL) => {
   const normalized = String(value || "").trim();
