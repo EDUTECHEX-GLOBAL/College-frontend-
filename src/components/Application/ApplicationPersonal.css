@@ -1,0 +1,861 @@
+/* ApplicationPersonal.css */
+/* Complete styles for GUS portal personal information section with Plalite colour scheme */
+
+/* Main Container */
+.applicationpersonal {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+    background-color: #f5f7fa;
+    min-height: calc(100vh - 80px);
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+/* Header Styles */
+.applicationpersonal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 20px 24px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(8, 145, 178, 0.08);
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #0891b2;
+}
+
+.applicationpersonal-header-left h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 4px;
+    font-family: 'Sora', 'Poppins', sans-serif;
+}
+
+.applicationpersonal-application-id {
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+.applicationpersonal-progress-indicator {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.applicationpersonal-progress-circle {
+    width: 60px;
+    height: 60px;
+    position: relative;
+}
+
+.applicationpersonal-circular-chart {
+    width: 100%;
+    height: 100%;
+}
+
+.applicationpersonal-circle-bg {
+    stroke: #e2e8f0;
+    stroke-width: 2.8;
+    fill: none;
+}
+
+.applicationpersonal-circle {
+    stroke: #0891b2;
+    stroke-width: 2.8;
+    fill: none;
+    stroke-linecap: round;
+    transition: stroke-dasharray 0.3s ease;
+}
+
+.applicationpersonal-percentage {
+    fill: #0f172a;
+    font-size: 6px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: middle;
+}
+
+.applicationpersonal-progress-badge {
+    background: #f0f9ff;
+    color: #0891b2;
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Navigation Steps */
+.applicationpersonal-steps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 24px;
+    padding: 16px 20px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(8, 145, 178, 0.08);
+    overflow-x: auto;
+    border: 1px solid #e2e8f0;
+}
+
+.applicationpersonal-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 12px;
+    color: #64748b;
+    background: #f1f5f9;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.applicationpersonal-step.completed {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.applicationpersonal-step.active {
+    background: #0891b2;
+    color: white;
+}
+
+.applicationpersonal-step-number {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.applicationpersonal-step.active .applicationpersonal-step-number {
+    background: white;
+    color: #0891b2;
+}
+
+.applicationpersonal-step-name {
+    font-weight: 500;
+    font-size: 12px;
+}
+
+/* Error Banner */
+.applicationpersonal-error-banner {
+    background-color: #fef2f2;
+    border-left: 4px solid #ef4444;
+    color: #991b1b;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 10px;
+}
+
+.applicationpersonal-error-icon {
+    margin-right: 10px;
+    font-weight: 600;
+}
+
+.applicationpersonal-error-close-btn {
+    background: none;
+    border: none;
+    color: #991b1b;
+    cursor: pointer;
+    font-size: 20px;
+    padding: 0 8px;
+    font-weight: 600;
+}
+
+.applicationpersonal-error-close-btn:hover {
+    background-color: rgba(153, 27, 27, 0.1);
+    border-radius: 50%;
+}
+
+/* Form Container */
+.applicationpersonal-form-container {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 2px 8px rgba(8, 145, 178, 0.08);
+    border: 1px solid #e2e8f0;
+}
+
+.applicationpersonal-form-header {
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e0f2fe;
+}
+
+.applicationpersonal-form-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 8px;
+    font-family: 'Sora', 'Poppins', sans-serif;
+}
+
+.applicationpersonal-form-subtitle {
+    font-size: 14px;
+    color: #64748b;
+    line-height: 1.5;
+}
+
+/* Form Sections */
+.applicationpersonal-form-section {
+    margin-bottom: 32px;
+    padding: 24px;
+    background: #fafcff;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+.applicationpersonal-form-section:hover {
+    border-color: #bae6fd;
+    box-shadow: 0 2px 8px rgba(8, 145, 178, 0.05);
+}
+
+.applicationpersonal-section-heading {
+    font-size: 17px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #0891b2;
+    display: inline-block;
+    font-family: 'Sora', 'Poppins', sans-serif;
+}
+
+/* Form Grid */
+.applicationpersonal-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.applicationpersonal-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.applicationpersonal-form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.applicationpersonal-form-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.applicationpersonal-form-label.required::after {
+    content: " *";
+    color: #ef4444;
+}
+
+.applicationpersonal-field-hint {
+    font-size: 11px;
+    font-weight: normal;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+.applicationpersonal-form-input,
+.applicationpersonal-form-select {
+    padding: 12px 14px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    background-color: white;
+    width: 100%;
+    font-family: 'Poppins', sans-serif;
+}
+
+.applicationpersonal-form-input:focus,
+.applicationpersonal-form-select:focus {
+    outline: none;
+    border-color: #0891b2;
+    box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+}
+
+.applicationpersonal-form-input:disabled,
+.applicationpersonal-form-select:disabled {
+    background-color: #f8fafc;
+    cursor: not-allowed;
+    color: #94a3b8;
+}
+
+/* Radio Group */
+.applicationpersonal-radio-group {
+    display: flex;
+    gap: 24px;
+    padding: 8px 0;
+    flex-wrap: wrap;
+}
+
+.applicationpersonal-radio-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #334155;
+    cursor: pointer;
+}
+
+.applicationpersonal-radio-label input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #0891b2;
+}
+
+.applicationpersonal-radio-text {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Phone Input */
+.applicationpersonal-phone-input {
+    display: flex;
+    align-items: center;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: white;
+    transition: all 0.2s ease;
+}
+
+.applicationpersonal-phone-input:focus-within {
+    border-color: #0891b2;
+    box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+}
+
+.applicationpersonal-country-code {
+    padding: 12px 14px;
+    background-color: #f8fafc;
+    border-right: 1.5px solid #e2e8f0;
+    font-size: 14px;
+    color: #334155;
+    font-weight: 500;
+}
+
+.applicationpersonal-phone-number {
+    border: none;
+    border-radius: 0;
+    flex: 1;
+    padding: 12px 14px;
+}
+
+.applicationpersonal-phone-number:focus {
+    box-shadow: none;
+    outline: none;
+}
+
+/* Upload Area Styles */
+.applicationpersonal-upload-area {
+    border: 2px dashed #cbd5e1;
+    border-radius: 14px;
+    padding: 24px;
+    text-align: center;
+    background: #fafcff;
+    transition: all 0.3s ease;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.applicationpersonal-upload-area:hover {
+    border-color: #0891b2;
+    background-color: #f0f9ff;
+}
+
+.applicationpersonal-upload-instruction {
+    font-size: 14px;
+    font-weight: 500;
+    color: #334155;
+    margin-bottom: 8px;
+}
+
+.applicationpersonal-upload-hint {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-bottom: 20px;
+}
+
+.applicationpersonal-upload-button {
+    background: linear-gradient(135deg, #0891b2, #0e7490);
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.applicationpersonal-upload-button:hover {
+    background: linear-gradient(135deg, #0e7490, #0891b2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(8, 145, 178, 0.25);
+}
+
+.applicationpersonal-upload-button:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* File Info */
+.applicationpersonal-file-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #f1f5f9;
+    border-radius: 10px;
+    margin: 12px 0;
+    width: 100%;
+    border: 1px solid #e2e8f0;
+}
+
+.applicationpersonal-file-details {
+    flex: 1;
+    text-align: left;
+}
+
+.applicationpersonal-file-name {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #0f172a;
+    word-break: break-all;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.applicationpersonal-file-size {
+    display: block;
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+/* Image Preview */
+.applicationpersonal-image-preview {
+    position: relative;
+    margin: 16px 0;
+    max-width: 200px;
+}
+
+.applicationpersonal-image-preview img {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    border: 2px solid #e2e8f0;
+}
+
+.applicationpersonal-remove-image-btn {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #ef4444;
+    color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.applicationpersonal-remove-image-btn:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+
+.applicationpersonal-remove-file-btn {
+    background: none;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    font-size: 20px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.applicationpersonal-remove-file-btn:hover {
+    background-color: #fef2f2;
+}
+
+.applicationpersonal-remove-file-btn:disabled {
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
+/* File Input Hidden */
+.applicationpersonal-file-input-hidden {
+    display: none;
+}
+
+/* Visa Question */
+.visa-question {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 2px solid #e2e8f0;
+}
+
+/* Form Actions */
+.applicationpersonal-form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 2px solid #e2e8f0;
+}
+
+.applicationpersonal-btn-secondary,
+.applicationpersonal-btn-primary {
+    padding: 12px 32px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.applicationpersonal-btn-secondary {
+    background: white;
+    border: 1.5px solid #e2e8f0;
+    color: #334155;
+}
+
+.applicationpersonal-btn-secondary:hover:not(:disabled) {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+}
+
+.applicationpersonal-btn-primary {
+    background: linear-gradient(135deg, #0891b2, #0e7490);
+    color: white;
+}
+
+.applicationpersonal-btn-primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, #0e7490, #0891b2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3);
+}
+
+.applicationpersonal-btn-secondary:disabled,
+.applicationpersonal-btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Language Selector */
+.applicationpersonal-language-selector {
+    text-align: right;
+    margin-top: 20px;
+    padding-top: 16px;
+    font-size: 13px;
+    color: #64748b;
+    cursor: pointer;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.applicationpersonal-language-selector span {
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.applicationpersonal-language-selector span:hover {
+    background-color: #f0f9ff;
+    color: #0891b2;
+}
+
+/* Loading State */
+.applicationpersonal-loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    text-align: center;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(8, 145, 178, 0.08);
+    border: 1px solid #e2e8f0;
+}
+
+.applicationpersonal-loading-spinner {
+    border: 4px solid #e2e8f0;
+    border-top: 4px solid #0891b2;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .applicationpersonal {
+        padding: 20px;
+    }
+    
+    .applicationpersonal-steps {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding: 12px;
+    }
+    
+    .applicationpersonal-step {
+        flex-shrink: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .applicationpersonal {
+        padding: 16px;
+    }
+
+    .applicationpersonal-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+        padding: 16px;
+    }
+
+    .applicationpersonal-header-left h1 {
+        font-size: 20px;
+    }
+
+    .applicationpersonal-progress-indicator {
+        align-self: flex-start;
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .applicationpersonal-progress-circle {
+        width: 50px;
+        height: 50px;
+    }
+
+    .applicationpersonal-progress-badge {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+
+    .applicationpersonal-form-container {
+        padding: 20px;
+    }
+
+    .applicationpersonal-form-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .applicationpersonal-form-section {
+        padding: 16px;
+    }
+
+    .applicationpersonal-section-heading {
+        font-size: 16px;
+    }
+
+    .applicationpersonal-upload-area {
+        min-height: 180px;
+        padding: 20px;
+    }
+
+    .applicationpersonal-form-actions {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .applicationpersonal-btn-secondary,
+    .applicationpersonal-btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .applicationpersonal-radio-group {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .applicationpersonal-phone-input {
+        flex-direction: column;
+        border: none;
+        gap: 8px;
+    }
+
+    .applicationpersonal-country-code {
+        width: 100%;
+        border-right: none;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+    }
+
+    .applicationpersonal-phone-number {
+        width: 100%;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+    }
+
+    .applicationpersonal-file-name {
+        max-width: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+    .applicationpersonal {
+        padding: 12px;
+    }
+
+    .applicationpersonal-form-container {
+        padding: 16px;
+    }
+
+    .applicationpersonal-form-section {
+        padding: 12px;
+    }
+
+    .applicationpersonal-form-input,
+    .applicationpersonal-form-select {
+        padding: 10px 12px;
+    }
+
+    .applicationpersonal-upload-area {
+        min-height: 160px;
+        padding: 16px;
+    }
+
+    .applicationpersonal-upload-instruction {
+        font-size: 13px;
+    }
+
+    .applicationpersonal-upload-hint {
+        font-size: 10px;
+    }
+
+    .applicationpersonal-steps {
+        padding: 8px;
+    }
+
+    .applicationpersonal-step {
+        padding: 4px 10px;
+        font-size: 10px;
+    }
+
+    .applicationpersonal-step-number {
+        width: 18px;
+        height: 18px;
+        font-size: 10px;
+    }
+
+    .applicationpersonal-form-label {
+        font-size: 12px;
+    }
+
+    .applicationpersonal-field-hint {
+        font-size: 10px;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .applicationpersonal {
+        background: white;
+        padding: 0;
+    }
+
+    .applicationpersonal-header,
+    .applicationpersonal-steps,
+    .applicationpersonal-form-actions,
+    .applicationpersonal-language-selector,
+    .applicationpersonal-upload-button,
+    .applicationpersonal-remove-file-btn,
+    .applicationpersonal-remove-image-btn {
+        display: none;
+    }
+
+    .applicationpersonal-form-container {
+        box-shadow: none;
+        padding: 0;
+    }
+
+    .applicationpersonal-form-section {
+        break-inside: avoid;
+        border: 1px solid #ddd;
+        background: white;
+    }
+}
+
+/* Hover Effects */
+.applicationpersonal-form-input:hover:not(:disabled),
+.applicationpersonal-form-select:hover:not(:disabled) {
+    border-color: #94a3b8;
+}
+
+/* Focus Visible for Accessibility */
+.applicationpersonal-form-input:focus-visible,
+.applicationpersonal-form-select:focus-visible,
+.applicationpersonal-btn-secondary:focus-visible,
+.applicationpersonal-btn-primary:focus-visible {
+    outline: 2px solid #0891b2;
+    outline-offset: 2px;
+}

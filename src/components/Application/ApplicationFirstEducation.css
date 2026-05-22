@@ -1,0 +1,756 @@
+/* ============================================================
+   ApplicationFirstEducation.css — EDUTECH MODERN UI — PLALITE COLOUR SCHEME
+   Primary: #0891b2  |  Navy/Dark Text: #0f172a  |  Background: white/light
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+/* ── CSS Variables — Plalite Colour Theme ── */
+:root {
+  /* Plalite Primary (Teal/Cyan) */
+  --primary: #0891b2;
+  --primary-dark: #0e7490;
+  --primary-light: #22d3ee;
+  --primary-pale: #f0f9ff;
+  --primary-gradient: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+
+  /* Navy for text */
+  --navy: #0f172a;
+  --navy-light: #1e293b;
+  --navy-pale: #f8fafc;
+
+  /* Sidebar — white bg, navy text, light blue accents */
+  --sidebar-bg: #ffffff;
+  --sidebar-border: #e2e8f0;
+  --sidebar-hover-bg: #f0f9ff;
+  --sidebar-text: #0f172a;
+  --sidebar-muted: #64748b;
+  --sidebar-section-color: #0891b2;
+
+  /* Status */
+  --success: #10b981;
+  --success-light: #34d399;
+  --success-pale: #ecfdf5;
+  --warning: #f59e0b;
+  --warning-pale: #fffbeb;
+  --danger: #ef4444;
+  --danger-pale: #fef2f2;
+
+  /* Page Backgrounds */
+  --bg-primary: #f5f7fa;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f8fafc;
+  --bg-hover: #f0f9ff;
+
+  /* Text */
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-tertiary: #64748b;
+  --text-muted: #94a3b8;
+
+  /* Borders */
+  --border-light: #e2e8f0;
+  --border-medium: #cbd5e1;
+  --border-primary: rgba(8, 145, 178, 0.22);
+
+  /* Shadows */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.07);
+  --shadow-md: 0 4px 12px -1px rgb(0 0 0 / 0.08);
+  --shadow-lg: 0 10px 24px -3px rgb(0 0 0 / 0.09);
+  --shadow-xl: 0 20px 40px -5px rgb(0 0 0 / 0.11);
+  --shadow-primary: 0 4px 16px rgba(8, 145, 178, 0.26);
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Font */
+  --font: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-head: 'Sora', 'Poppins', sans-serif;
+}
+
+/* ─── Reset ─── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Animations ─── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ============================================================
+   MAIN CONTAINER
+   ============================================================ */
+.applicationfirsteducation {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+  background: var(--bg-primary);
+  min-height: calc(100vh - 80px);
+  font-family: var(--font);
+}
+
+/* ============================================================
+   LOADING STATE
+   ============================================================ */
+.applicationfirsteducation-loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  gap: 16px;
+}
+
+.applicationfirsteducation-loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--border-light);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.applicationfirsteducation-loading-text {
+  color: var(--text-tertiary);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ============================================================
+   PAGE HEADER
+   ============================================================ */
+.applicationfirsteducation-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 20px 28px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  border-left: 4px solid var(--primary);
+}
+
+.applicationfirsteducation-header-content h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  font-family: var(--font-head);
+}
+
+.applicationfirsteducation-application-id {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.applicationfirsteducation-progress-indicator {
+  background: var(--primary-pale);
+  padding: 8px 20px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-primary);
+  text-align: center;
+}
+
+.applicationfirsteducation-progress-value {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--primary);
+  display: block;
+}
+
+.applicationfirsteducation-progress-label {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-weight: 600;
+}
+
+/* ============================================================
+   STEPS CONTAINER
+   ============================================================ */
+.applicationfirsteducation-steps-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding: 16px 20px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  overflow-x: auto;
+}
+
+.applicationfirsteducation-step-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  color: var(--text-tertiary);
+  background: var(--bg-tertiary);
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.applicationfirsteducation-step-item.completed {
+  background: var(--success-pale);
+  color: var(--success);
+}
+
+.applicationfirsteducation-step-item.active {
+  background: var(--primary-gradient);
+  color: white;
+}
+
+.applicationfirsteducation-step-marker {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.applicationfirsteducation-step-item.active .applicationfirsteducation-step-marker {
+  background: white;
+  color: var(--primary);
+}
+
+.applicationfirsteducation-step-text {
+  font-weight: 500;
+}
+
+/* ============================================================
+   ERROR NOTICE
+   ============================================================ */
+.applicationfirsteducation-error-notice {
+  background-color: var(--danger-pale);
+  border-left: 4px solid var(--danger);
+  color: var(--danger);
+  padding: 14px 18px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: var(--radius-lg);
+}
+
+.applicationfirsteducation-error-message-text {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.applicationfirsteducation-error-dismiss {
+  background: none;
+  border: none;
+  color: var(--danger);
+  cursor: pointer;
+  font-size: 20px;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.applicationfirsteducation-error-dismiss:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* ============================================================
+   FORM WRAPPER
+   ============================================================ */
+.applicationfirsteducation-form-wrapper {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-xl);
+  padding: 32px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+}
+
+.applicationfirsteducation-form-header-section {
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--primary-pale);
+}
+
+.applicationfirsteducation-form-main-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  font-family: var(--font-head);
+}
+
+.applicationfirsteducation-form-description {
+  font-size: 14px;
+  color: var(--text-tertiary);
+  line-height: 1.5;
+}
+
+/* ============================================================
+   FORM CARD
+   ============================================================ */
+.applicationfirsteducation-form-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 24px;
+  transition: all var(--transition-fast);
+}
+
+.applicationfirsteducation-form-card:hover {
+  border-color: var(--primary-light);
+  box-shadow: var(--shadow-md);
+}
+
+.applicationfirsteducation-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.applicationfirsteducation-card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  font-family: var(--font-head);
+}
+
+.applicationfirsteducation-remove-button {
+  background: var(--danger-pale);
+  color: var(--danger);
+  border: 1px solid #fecaca;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.applicationfirsteducation-remove-button:hover {
+  background: var(--danger);
+  color: white;
+  border-color: transparent;
+}
+
+/* ============================================================
+   FIELD GROUP
+   ============================================================ */
+.applicationfirsteducation-field-group {
+  margin-bottom: 24px;
+}
+
+.applicationfirsteducation-field-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.applicationfirsteducation-field-label.required::after {
+  content: " *";
+  color: var(--danger);
+}
+
+/* ============================================================
+   RADIO OPTIONS
+   ============================================================ */
+.applicationfirsteducation-radio-options {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.applicationfirsteducation-radio-choice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.applicationfirsteducation-radio-choice input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--primary);
+}
+
+.applicationfirsteducation-radio-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   FORM GRID
+   ============================================================ */
+.applicationfirsteducation-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.applicationfirsteducation-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.applicationfirsteducation-input-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.applicationfirsteducation-input-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.applicationfirsteducation-input-label.required::after {
+  content: " *";
+  color: var(--danger);
+}
+
+.applicationfirsteducation-input-field,
+.applicationfirsteducation-input-select,
+.applicationfirsteducation-input-textarea {
+  padding: 12px 14px;
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  transition: all var(--transition-fast);
+  background: var(--bg-secondary);
+  font-family: var(--font);
+}
+
+.applicationfirsteducation-input-field:focus,
+.applicationfirsteducation-input-select:focus,
+.applicationfirsteducation-input-textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+}
+
+.applicationfirsteducation-input-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* ============================================================
+   ADD ENTRY BUTTON
+   ============================================================ */
+.applicationfirsteducation-add-entry-container {
+  margin: 24px 0 16px;
+  text-align: center;
+}
+
+.applicationfirsteducation-add-button {
+  background: var(--primary-pale);
+  color: var(--primary);
+  border: 1.5px solid var(--border-primary);
+  padding: 12px 28px;
+  border-radius: var(--radius-full);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-family: var(--font);
+}
+
+.applicationfirsteducation-add-button:hover {
+  background: var(--primary-gradient);
+  color: white;
+  border-color: transparent;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-primary);
+}
+
+/* ============================================================
+   ACTION BUTTONS
+   ============================================================ */
+.applicationfirsteducation-action-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-light);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.applicationfirsteducation-button {
+  padding: 12px 32px;
+  border-radius: var(--radius-full);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-family: var(--font);
+  border: none;
+}
+
+.button-secondary {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1.5px solid var(--border-light);
+}
+
+.button-secondary:hover:not(:disabled) {
+  background: var(--bg-tertiary);
+  border-color: var(--border-medium);
+  transform: translateY(-1px);
+}
+
+.button-primary {
+  background: var(--primary-gradient);
+  color: white;
+  box-shadow: var(--shadow-primary);
+}
+
+.button-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.applicationfirsteducation-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ============================================================
+   LANGUAGE SELECTOR
+   ============================================================ */
+.applicationfirsteducation-language-selector {
+  text-align: right;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-light);
+}
+
+.applicationfirsteducation-language-button {
+  background: none;
+  border: 1.5px solid var(--border-light);
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all var(--transition-fast);
+  font-family: var(--font);
+}
+
+.applicationfirsteducation-language-button:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-pale);
+}
+
+.applicationfirsteducation-dropdown-arrow {
+  font-size: 10px;
+}
+
+/* ============================================================
+   RESPONSIVE DESIGN
+   ============================================================ */
+@media (max-width: 768px) {
+  .applicationfirsteducation {
+    padding: 16px;
+  }
+
+  .applicationfirsteducation-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .applicationfirsteducation-progress-indicator {
+    align-self: flex-start;
+  }
+
+  .applicationfirsteducation-steps-container {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 12px 16px;
+  }
+
+  .applicationfirsteducation-step-item {
+    flex-shrink: 0;
+  }
+
+  .applicationfirsteducation-form-wrapper {
+    padding: 20px;
+  }
+
+  .applicationfirsteducation-form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .applicationfirsteducation-form-card {
+    padding: 16px;
+  }
+
+  .applicationfirsteducation-card-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .applicationfirsteducation-action-buttons {
+    flex-direction: column;
+  }
+
+  .applicationfirsteducation-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .applicationfirsteducation-radio-options {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .applicationfirsteducation {
+    padding: 12px;
+  }
+
+  .applicationfirsteducation-page-header {
+    padding: 12px;
+  }
+
+  .applicationfirsteducation-header-content h1 {
+    font-size: 20px;
+  }
+
+  .applicationfirsteducation-form-main-title {
+    font-size: 18px;
+  }
+
+  .applicationfirsteducation-form-description {
+    font-size: 13px;
+  }
+
+  .applicationfirsteducation-card-title {
+    font-size: 16px;
+  }
+
+  .applicationfirsteducation-input-field,
+  .applicationfirsteducation-input-select,
+  .applicationfirsteducation-input-textarea {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .applicationfirsteducation-button {
+    padding: 10px 24px;
+    font-size: 13px;
+  }
+}
+
+/* ============================================================
+   UTILITY CLASSES
+   ============================================================ */
+.applicationfirsteducation-text-primary {
+  color: var(--primary);
+}
+
+.applicationfirsteducation-bg-primary {
+  background: var(--primary-gradient);
+}
+
+.applicationfirsteducation-text-success {
+  color: var(--success);
+}
+
+.applicationfirsteducation-bg-success {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+/* ============================================================
+   ACCESSIBILITY - REDUCED MOTION
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================
+   PRINT STYLES
+   ============================================================ */
+@media print {
+  .applicationfirsteducation {
+    background: white;
+    padding: 0;
+  }
+
+  .applicationfirsteducation-steps-container,
+  .applicationfirsteducation-action-buttons,
+  .applicationfirsteducation-language-selector,
+  .applicationfirsteducation-add-entry-container,
+  .applicationfirsteducation-remove-button {
+    display: none;
+  }
+
+  .applicationfirsteducation-form-card {
+    break-inside: avoid;
+    border: 1px solid var(--border-light);
+    box-shadow: none;
+  }
+
+  .applicationfirsteducation-form-wrapper {
+    box-shadow: none;
+    border: 1px solid var(--border-light);
+  }
+}

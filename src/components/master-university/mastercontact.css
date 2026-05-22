@@ -1,0 +1,356 @@
+/* mastercontact.css - Contact Details Styles - Plalite Colour Scheme */
+
+.mastercontact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  animation: mastercontact-fadeIn 0.3s ease-in-out;
+}
+
+@keyframes mastercontact-fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.mastercontact-header { margin-bottom: 8px; }
+
+.mastercontact-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8px;
+  font-family: 'Sora', 'Poppins', sans-serif;
+}
+
+.mastercontact-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.mastercontact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.mastercontact-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mastercontact-group-full { grid-column: span 2; }
+
+.mastercontact-label {
+  font-weight: 700;
+  font-size: 14px;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mastercontact-required { color: #ef4444; font-size: 14px; }
+
+.mastercontact-input {
+  padding: 12px 16px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.3s ease;
+  background: white;
+  color: #0f172a;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.mastercontact-input:hover { border-color: #cbd5e1; }
+
+.mastercontact-input:focus {
+  outline: none;
+  border-color: #0891b2;
+  box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+}
+
+.mastercontact-input::placeholder { color: #94a3b8; }
+
+.mastercontact-error { border-color: #ef4444 !important; }
+
+.mastercontact-error-text {
+  color: #ef4444;
+  font-size: 12px;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ============================================================
+   CUSTOM COUNTRY DROPDOWN
+============================================================ */
+.mastercontact-custom-select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.mastercontact-custom-select-trigger {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  background: white;
+  color: #0f172a;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.mastercontact-custom-select-trigger:hover { border-color: #cbd5e1; }
+
+.mastercontact-custom-select-trigger:focus {
+  outline: none;
+  border-color: #0891b2;
+  box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+}
+
+.mastercontact-placeholder span { color: #94a3b8; }
+
+.mastercontact-chevron {
+  color: #94a3b8;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.mastercontact-chevron-open { transform: rotate(180deg); }
+
+/* Contained, scrollable, never overflows viewport */
+.mastercontact-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  z-index: 999;
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+}
+
+.mastercontact-dropdown-item {
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  color: #0f172a;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.mastercontact-dropdown-item:hover { background: #f1f5f9; }
+
+.mastercontact-dropdown-item-active {
+  background: #e0f2fe;
+  color: #0891b2;
+  font-weight: 600;
+}
+
+/* ============================================================
+   RESPONSIVE — TABLET
+============================================================ */
+@media (max-width: 768px) {
+  .mastercontact-form { gap: 20px; }
+
+  .mastercontact-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .mastercontact-group-full { grid-column: span 1; }
+  .mastercontact-title { font-size: 20px; }
+  .mastercontact-subtitle { font-size: 13px; }
+}
+
+/* ============================================================
+   RESPONSIVE — MOBILE COMPACT (≤ 480px)
+============================================================ */
+@media (max-width: 480px) {
+  .mastercontact-form { gap: 14px; }
+  .mastercontact-header { margin-bottom: 4px; }
+  .mastercontact-title { font-size: 16px; margin-bottom: 4px; }
+  .mastercontact-subtitle { font-size: 11px; line-height: 1.4; }
+  .mastercontact-grid { gap: 10px; }
+  .mastercontact-group { gap: 4px; }
+  .mastercontact-label { font-size: 12px; }
+  .mastercontact-required { font-size: 12px; }
+
+  .mastercontact-input,
+  .mastercontact-custom-select-trigger {
+    padding: 9px 12px;
+    font-size: 13px;
+    border-radius: 10px;
+  }
+
+  .mastercontact-dropdown {
+    border-radius: 10px;
+    max-height: 180px;
+  }
+
+  .mastercontact-dropdown-item {
+    padding: 9px 10px;
+    font-size: 13px;
+  }
+
+  .mastercontact-error-text { font-size: 11px; margin-top: 2px; }
+}
+
+/* ============================================================
+   ACCESSIBILITY — REDUCED MOTION
+============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  @keyframes mastercontact-fadeIn {
+    from { opacity: 1; transform: translateY(0); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+}
+
+/* ============================================================
+   PRINT
+============================================================ */
+@media print {
+  .mastercontact-form { animation: none; }
+
+  .mastercontact-input,
+  .mastercontact-custom-select-trigger {
+    border: 1px solid #cbd5e1;
+    background: white;
+  }
+
+  .mastercontact-dropdown { display: none; }
+}
+/* ─── ADD THESE to your existing mastercontact.css ─────────────────────────── */
+
+/* Dropdown container — wraps search + list */
+.mastercontact-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+/* Search input wrapper */
+.mastercontact-dropdown-search-wrap {
+  padding: 8px 8px 4px;
+  border-bottom: 1px solid #f1f5f9;
+  background: #f8fafc;
+}
+
+/* Search input */
+.mastercontact-dropdown-search {
+  width: 100%;
+  padding: 7px 10px;
+  font-size: 13px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  outline: none;
+  background: #fff;
+  color: #111827;
+  transition: border-color 0.15s;
+}
+
+.mastercontact-dropdown-search:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+}
+
+/* Scrollable list */
+.mastercontact-dropdown-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  max-height: 220px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.mastercontact-dropdown-list::-webkit-scrollbar {
+  width: 5px;
+}
+.mastercontact-dropdown-list::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+.mastercontact-dropdown-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+/* Each item */
+.mastercontact-dropdown-item {
+  padding: 8px 14px 8px 32px;
+  font-size: 13px;
+  color: #374151;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.1s;
+}
+
+.mastercontact-dropdown-item:hover {
+  background: #eff6ff;
+  color: #1e40af;
+}
+
+/* Active/selected item */
+.mastercontact-dropdown-item-active {
+  background: #eff6ff;
+  color: #1e40af;
+  font-weight: 600;
+}
+
+/* Checkmark for selected */
+.mastercontact-dropdown-check {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* No results */
+.mastercontact-dropdown-no-results {
+  color: #9ca3af;
+  font-style: italic;
+  cursor: default;
+  padding-left: 14px;
+}
+.mastercontact-dropdown-no-results:hover {
+  background: transparent;
+  color: #9ca3af;
+}

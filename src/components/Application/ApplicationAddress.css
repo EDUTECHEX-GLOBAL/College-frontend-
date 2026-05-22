@@ -1,0 +1,915 @@
+/* ApplicationAddress.css - Plalite Colour Scheme */
+
+.applicationaddress {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+  background-color: #f5f7fa;
+  min-height: calc(100vh - 80px);
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+/* Loading State */
+.applicationaddress-loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(8, 145, 178, 0.08);
+  border: 1px solid #e2e8f0;
+}
+
+.applicationaddress-loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid #0891b2;
+  border-radius: 50%;
+  animation: applicationaddress-spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes applicationaddress-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Header Styles */
+.applicationaddress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 20px 24px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(8, 145, 178, 0.08);
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #0891b2;
+}
+
+.applicationaddress-header-left h1 {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  font-family: 'Sora', 'Poppins', sans-serif;
+}
+
+.applicationaddress-application-id {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.applicationaddress-id-label {
+  color: #64748b;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.applicationaddress-id-value {
+  background: #f0f9ff;
+  color: #0891b2;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+/* Progress Indicator */
+.applicationaddress-progress-indicator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f8fafc;
+  padding: 8px 20px;
+  border-radius: 40px;
+  border: 1px solid #e2e8f0;
+}
+
+.applicationaddress-progress-circle {
+  width: 50px;
+  height: 50px;
+}
+
+.applicationaddress-circular-chart {
+  width: 100%;
+  height: 100%;
+}
+
+.applicationaddress-circle-bg {
+  stroke: #e2e8f0;
+  stroke-width: 2.8;
+  fill: none;
+}
+
+.applicationaddress-circle {
+  stroke: #0891b2;
+  stroke-width: 2.8;
+  fill: none;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.3s ease;
+}
+
+.applicationaddress-percentage {
+  fill: #0f172a;
+  font-size: 7px;
+  text-anchor: middle;
+  font-weight: 700;
+}
+
+.applicationaddress-progress-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0891b2;
+}
+
+/* Steps Navigation */
+.applicationaddress-steps {
+  display: flex;
+  overflow-x: auto;
+  padding: 16px 0;
+  margin-bottom: 24px;
+  gap: 8px;
+  background: white;
+  border-radius: 16px;
+  padding: 16px 20px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(8, 145, 178, 0.05);
+}
+
+.applicationaddress-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #f1f5f9;
+  border-radius: 30px;
+  font-size: 12px;
+  color: #64748b;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.applicationaddress-step.completed {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.applicationaddress-step.completed .applicationaddress-step-number {
+  background: #065f46;
+  color: white;
+}
+
+.applicationaddress-step.active {
+  background: #0891b2;
+  color: white;
+  font-weight: 500;
+}
+
+.applicationaddress-step.active .applicationaddress-step-number {
+  background: white;
+  color: #0891b2;
+}
+
+.applicationaddress-step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: #e2e8f0;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.applicationaddress-step-name {
+  font-weight: 500;
+}
+
+/* Error Banner */
+.applicationaddress-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  margin-bottom: 24px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-left: 4px solid #ef4444;
+  border-radius: 10px;
+  color: #991b1b;
+}
+
+.applicationaddress-error-icon {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.applicationaddress-error-close-btn {
+  margin-left: auto;
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #991b1b;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.applicationaddress-error-close-btn:hover {
+  background: rgba(153, 27, 27, 0.1);
+}
+
+/* Form Container */
+.applicationaddress-form-container {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(8, 145, 178, 0.08);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.applicationaddress-form-header {
+  padding: 24px 28px;
+  border-bottom: 2px solid #e0f2fe;
+  background: #fafcff;
+}
+
+.applicationaddress-form-header h2 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  font-family: 'Sora', 'Poppins', sans-serif;
+}
+
+.applicationaddress-form-subtitle {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Form Sections */
+.applicationaddress-form-section {
+  padding: 24px 28px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.applicationaddress-form-section:last-child {
+  border-bottom: none;
+}
+
+.applicationaddress-section-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #0891b2;
+  display: inline-flex;
+}
+
+.applicationaddress-section-title h3 {
+  margin: 0;
+  font-size: 17px;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.applicationaddress-required-badge {
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.applicationaddress-optional-badge {
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+/* Form Groups */
+.applicationaddress-form-group {
+  margin-bottom: 20px;
+}
+
+.applicationaddress-form-group.full-width {
+  width: 100%;
+}
+
+.applicationaddress-form-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.applicationaddress-form-label.required::after {
+  content: '*';
+  color: #ef4444;
+  margin-left: 4px;
+}
+
+.applicationaddress-label-hint {
+  font-size: 11px;
+  font-weight: normal;
+  color: #94a3b8;
+}
+
+.applicationaddress-field-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+/* Form Inputs */
+.applicationaddress-form-input,
+.applicationaddress-form-select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  background: white;
+  font-family: 'Poppins', sans-serif;
+}
+
+.applicationaddress-form-input:hover,
+.applicationaddress-form-select:hover {
+  border-color: #94a3b8;
+}
+
+.applicationaddress-form-input:focus,
+.applicationaddress-form-select:focus {
+  outline: none;
+  border-color: #0891b2;
+  box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+}
+
+.applicationaddress-form-input.error,
+.applicationaddress-form-select.error {
+  border-color: #ef4444;
+}
+
+.applicationaddress-form-input:disabled,
+.applicationaddress-form-select:disabled {
+  background: #f8fafc;
+  cursor: not-allowed;
+  color: #94a3b8;
+}
+
+.applicationaddress-error-message {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: #ef4444;
+}
+
+/* Form Row */
+.applicationaddress-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* Radio Group */
+.applicationaddress-radio-group {
+  display: flex;
+  gap: 24px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.applicationaddress-radio-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  position: relative;
+}
+
+.applicationaddress-radio-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.applicationaddress-radio-custom {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #cbd5e1;
+  border-radius: 50%;
+  position: relative;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.applicationaddress-radio-option.selected .applicationaddress-radio-custom {
+  border-color: #0891b2;
+}
+
+.applicationaddress-radio-option.selected .applicationaddress-radio-custom::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  background: #0891b2;
+  border-radius: 50%;
+}
+
+.applicationaddress-radio-label-text {
+  font-size: 14px;
+  color: #334155;
+  font-weight: 500;
+}
+
+/* Correspondence Address Fields */
+.applicationaddress-correspondence-fields {
+  margin-top: 24px;
+  padding: 24px;
+  background: #fafcff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  animation: applicationaddress-slideIn 0.3s ease;
+}
+
+@keyframes applicationaddress-slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Upload Area */
+.applicationaddress-upload-area {
+  position: relative;
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 32px;
+  text-align: center;
+  background: #fafcff;
+  transition: all 0.3s ease;
+}
+
+.applicationaddress-upload-area:hover {
+  border-color: #0891b2;
+  background: #f0f9ff;
+}
+
+.applicationaddress-upload-area.uploading {
+  border-color: #0891b2;
+  background: #f0f9ff;
+}
+
+.applicationaddress-upload-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.applicationaddress-upload-instruction {
+  margin: 0;
+  font-size: 14px;
+  color: #334155;
+  font-weight: 500;
+}
+
+.applicationaddress-upload-hint {
+  margin: 0;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.applicationaddress-upload-button {
+  background: linear-gradient(135deg, #0891b2, #0e7490);
+  color: white;
+  border: none;
+  padding: 10px 28px;
+  border-radius: 30px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Poppins', sans-serif;
+}
+
+.applicationaddress-upload-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0e7490, #0891b2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(8, 145, 178, 0.25);
+}
+
+.applicationaddress-upload-button:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Upload Progress */
+.applicationaddress-upload-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  z-index: 1;
+}
+
+.applicationaddress-progress-bar {
+  width: 80%;
+  height: 4px;
+  background: #e2e8f0;
+  border-radius: 2px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.applicationaddress-progress-fill {
+  height: 100%;
+  background: #0891b2;
+  animation: applicationaddress-progress 2s infinite;
+}
+
+@keyframes applicationaddress-progress {
+  0% { width: 0%; }
+  50% { width: 70%; }
+  100% { width: 100%; }
+}
+
+/* File Info */
+.applicationaddress-file-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+.applicationaddress-file-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.applicationaddress-file-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 4px;
+  word-break: break-word;
+}
+
+.applicationaddress-file-size {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.applicationaddress-remove-file-btn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 8px;
+  color: #ef4444;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.applicationaddress-remove-file-btn:hover:not(:disabled) {
+  background: #fef2f2;
+  transform: scale(1.05);
+}
+
+.applicationaddress-remove-file-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.applicationaddress-upload-warning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0 0 0;
+  padding: 12px 16px;
+  background: #fffbeb;
+  border-left: 3px solid #f59e0b;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #92400e;
+}
+
+/* Form Actions */
+.applicationaddress-form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 28px;
+  background: #fafcff;
+  border-top: 1px solid #e2e8f0;
+}
+
+.applicationaddress-action-group {
+  display: flex;
+  gap: 12px;
+}
+
+/* Buttons */
+.applicationaddress-btn-primary,
+.applicationaddress-btn-secondary,
+.applicationaddress-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  font-family: 'Poppins', sans-serif;
+}
+
+.applicationaddress-btn-primary {
+  background: linear-gradient(135deg, #0891b2, #0e7490);
+  color: white;
+}
+
+.applicationaddress-btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0e7490, #0891b2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3);
+}
+
+.applicationaddress-btn-secondary {
+  background: white;
+  color: #334155;
+  border: 1.5px solid #e2e8f0;
+}
+
+.applicationaddress-btn-secondary:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
+.applicationaddress-btn-outline {
+  background: transparent;
+  color: #0891b2;
+  border: 1.5px solid #0891b2;
+}
+
+.applicationaddress-btn-outline:hover:not(:disabled) {
+  background: #f0f9ff;
+  transform: translateY(-1px);
+}
+
+.applicationaddress-btn-primary:disabled,
+.applicationaddress-btn-secondary:disabled,
+.applicationaddress-btn-outline:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.applicationaddress-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: applicationaddress-spin 0.8s linear infinite;
+}
+
+/* Toasts */
+.success-toast,
+.error-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 14px 24px;
+  border-radius: 10px;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  z-index: 1000;
+  animation: applicationaddress-slideInRight 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.success-toast {
+  background: #10b981;
+}
+
+.error-toast {
+  background: #ef4444;
+}
+
+@keyframes applicationaddress-slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .applicationaddress {
+    padding: 16px;
+  }
+
+  .applicationaddress-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .applicationaddress-header-left {
+    width: 100%;
+  }
+
+  .applicationaddress-progress-indicator {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .applicationaddress-steps {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 12px 16px;
+    gap: 8px;
+  }
+
+  .applicationaddress-step {
+    flex-shrink: 0;
+  }
+
+  .applicationaddress-form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .applicationaddress-radio-group {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .applicationaddress-form-actions {
+    flex-direction: column-reverse;
+    gap: 12px;
+  }
+
+  .applicationaddress-action-group {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .applicationaddress-btn-primary,
+  .applicationaddress-btn-secondary,
+  .applicationaddress-btn-outline {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .applicationaddress-correspondence-fields {
+    padding: 16px;
+  }
+
+  .applicationaddress-form-section {
+    padding: 20px;
+  }
+
+  .applicationaddress-form-header {
+    padding: 20px;
+  }
+
+  .success-toast,
+  .error-toast {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .applicationaddress {
+    padding: 12px;
+  }
+
+  .applicationaddress-header {
+    padding: 16px;
+  }
+
+  .applicationaddress-header-left h1 {
+    font-size: 20px;
+  }
+
+  .applicationaddress-progress-circle {
+    width: 40px;
+    height: 40px;
+  }
+
+  .applicationaddress-progress-text {
+    font-size: 12px;
+  }
+
+  .applicationaddress-form-input,
+  .applicationaddress-form-select {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .applicationaddress-upload-area {
+    padding: 20px;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .applicationaddress-steps,
+  .applicationaddress-form-actions,
+  .applicationaddress-upload-button,
+  .applicationaddress-remove-file-btn,
+  .applicationaddress-error-banner,
+  .applicationaddress-progress-indicator {
+    display: none;
+  }
+
+  .applicationaddress-form-container {
+    box-shadow: none;
+    border: 1px solid #e2e8f0;
+  }
+
+  .applicationaddress-header {
+    background: white;
+    border: 1px solid #e2e8f0;
+    color: black;
+  }
+
+  .applicationaddress-header-left h1 {
+    color: black;
+  }
+
+  .applicationaddress-id-value {
+    background: #f1f5f9;
+    color: #334155;
+  }
+}
+
+/* Accessibility - Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,123 @@
+/* Parent 1 Form Specific Styles */
+.parent1-form .form-field {
+  margin-bottom: 28px;
+}
+
+.parent1-form .radio-group.vertical {
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Form row - default multi-column */
+.form-row {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+/* Personal information section */
+.parent1form-personal-info-section {
+  background: #f8fafc;
+  padding: 24px;
+  border-radius: 8px;
+  margin: 24px 0;
+  border: 1px solid #e2e8f0;
+}
+
+/* Name fields - prefix / name / initial */
+.name-fields {
+  display: grid;
+  grid-template-columns: 120px 1fr 80px;
+  gap: 12px;
+}
+
+/* Occupation and education section */
+.occupation-education-section {
+  background: #f8fafc;
+  padding: 24px;
+  border-radius: 8px;
+  margin: 24px 0;
+  border: 1px solid #e2e8f0;
+}
+
+/* Limited information notice */
+.limited-info-notice {
+  background: #fffaf0;
+  border: 1px solid #fed7d7;
+  border-radius: 6px;
+  padding: 16px;
+  margin: 16px 0;
+}
+
+.limited-info-notice p {
+  margin: 0;
+  color: #c53030;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Deceased parent styles */
+.deceased-parent-notice {
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 16px;
+  margin: 16px 0;
+}
+
+.deceased-parent-notice p {
+  margin: 0;
+  color: #718096;
+  font-size: 14px;
+  font-style: italic;
+}
+
+/* Two-column field group */
+.form-field-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* ─── Responsive: Tablet ─────────────────────────────────── */
+@media (max-width: 768px) {
+  .parent1form-personal-info-section,
+  .occupation-education-section {
+    padding: 16px;
+  }
+
+  .name-fields {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .form-field-group {
+    grid-template-columns: 1fr;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ─── Responsive: Mobile Portrait ────────────────────────── */
+@media (max-width: 480px) {
+  .parent1form-personal-info-section,
+  .occupation-education-section {
+    padding: 12px;
+    margin: 16px 0;
+  }
+
+  .name-fields {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .form-field-group {
+    grid-template-columns: 1fr;
+  }
+
+  .parent1-form .form-field {
+    margin-bottom: 20px;
+  }
+}

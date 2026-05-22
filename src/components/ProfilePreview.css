@@ -1,0 +1,274 @@
+/* ProfilePreview.css */
+
+.profile-preview {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  padding: 32px;
+  margin: 20px 40px;
+}
+
+.preview-header {
+  text-align: center;
+  margin-bottom: 32px;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 20px;
+}
+
+.preview-header h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0 0 8px 0;
+}
+
+.preview-header p {
+  color: #718096;
+  margin: 0;
+}
+
+.preview-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.preview-section {
+  background: #f8f9fa;
+  border-radius: 6px;
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+}
+
+.preview-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.preview-section-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0;
+}
+
+.edit-section-btn {
+  background: #2C5AA0;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.edit-section-btn:hover {
+  background: #1E3D6F;
+}
+
+.preview-content p {
+  margin: 8px 0;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.preview-content strong {
+  color: #1a202c;
+  min-width: 150px;
+  display: inline-block;
+}
+
+.preview-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* ── Buttons ── */
+.preview-primary-button {
+  background: #2C5AA0;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.preview-primary-button:hover {
+  background: #1E3D6F;
+}
+
+.preview-primary-button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.preview-secondary-button {
+  background: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.preview-secondary-button:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+/* ── Tablet (≤ 1023px) ── */
+@media (max-width: 1023px) {
+  .profile-preview {
+    margin: 20px 30px;
+    padding: 24px;
+  }
+  .preview-sections {
+    gap: 20px;
+  }
+}
+
+/* ── Mobile (≤ 767px) ── */
+@media (max-width: 767px) {
+  .profile-preview {
+    padding: 20px;
+    margin: 15px 16px;
+    border-radius: 6px;
+  }
+  .preview-sections {
+    gap: 16px;
+  }
+  .preview-section {
+    padding: 16px;
+  }
+  .preview-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  /* FIX: edit button was missing width:100% when header stacks */
+  .edit-section-btn {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+  .preview-actions {
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 24px;
+  }
+  .preview-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ── Small mobile (≤ 480px) ── */
+@media (max-width: 480px) {
+  .profile-preview {
+    padding: 15px;
+    margin: 10px 12px;
+  }
+  .preview-header {
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+  }
+  .preview-header h2 {
+    font-size: 20px;
+  }
+  .preview-header p {
+    font-size: 13px;
+  }
+  /* FIX: missing gap reduction at 480px */
+  .preview-sections {
+    gap: 12px;
+  }
+  .preview-section {
+    padding: 14px;
+  }
+  .preview-section-header h3 {
+    font-size: 16px;
+  }
+  .preview-content p {
+    font-size: 13px;
+  }
+  /* FIX: min-width was causing overflow on small screens */
+  .preview-content strong {
+    min-width: 110px;
+    font-size: 13px;
+  }
+  .preview-primary-button,
+  .preview-secondary-button {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+  .edit-section-btn {
+    padding: 7px 12px;
+    font-size: 13px;
+  }
+}
+
+/* ── Very small (≤ 320px) ── */
+@media (max-width: 320px) {
+  .profile-preview {
+    padding: 12px;
+    margin: 8px 8px;
+  }
+  .preview-header h2 {
+    font-size: 17px;
+  }
+  .preview-header p {
+    font-size: 12px;
+  }
+  .preview-sections {
+    gap: 10px;
+  }
+  .preview-section {
+    padding: 12px;
+  }
+  .preview-section-header h3 {
+    font-size: 15px;
+  }
+  /* FIX: min-width removed on very small to prevent overflow */
+  .preview-content strong {
+    min-width: unset;
+    display: block;
+    font-size: 12px;
+    margin-bottom: 2px;
+  }
+  .preview-content p {
+    font-size: 12px;
+    flex-direction: column;
+  }
+  .preview-primary-button,
+  .preview-secondary-button {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  .edit-section-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  .preview-actions {
+    margin-top: 16px;
+    padding-top: 14px;
+  }
+}

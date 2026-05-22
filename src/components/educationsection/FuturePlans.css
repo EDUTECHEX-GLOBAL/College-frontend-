@@ -1,0 +1,163 @@
+/* src/components/education-sections/FuturePlansSection.css */
+.future-plans-section {
+  background: white;
+  margin: 20px 40px;
+  padding: 32px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.future-plans-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.future-plans-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a202c;
+  margin-bottom: 8px;
+}
+
+.future-plans-status {
+  font-size: 14px;
+  color: #2C5AA0;
+  font-weight: 500;
+  background: #e8f0fe;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.future-plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.future-plans-full-width {
+  grid-column: 1 / -1;
+}
+
+.future-plans-form-group {
+  margin-bottom: 24px;
+}
+
+.future-plans-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.future-plans-required::after {
+  content: " *";
+  color: #dc2626;
+}
+
+.future-plans-select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+  background: white;
+}
+
+.future-plans-select:focus {
+  outline: none;
+  border-color: #2C5AA0;
+  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+}
+
+.future-plans-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.future-plans-radio-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.future-plans-radio-input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  margin-top: 2px;
+}
+
+.future-plans-radio-label {
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.future-plans-checkbox-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.future-plans-checkbox-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.future-plans-checkbox-input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.future-plans-checkbox-label {
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .future-plans-section {
+    margin: 15px 20px;
+    padding: 24px;
+  }
+  
+  .future-plans-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .future-plans-checkbox-group {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .future-plans-section {
+    margin: 10px 15px;
+    padding: 20px;
+  }
+  
+  .future-plans-title {
+    font-size: 18px;
+  }
+  
+  .future-plans-radio-option {
+    align-items: flex-start;
+  }
+  
+  .future-plans-radio-label {
+    font-size: 13px;
+  }
+}
