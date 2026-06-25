@@ -1,0 +1,477 @@
+/* src/components/DemographicsSection.css */
+/* ============================================================
+   DemographicsSection.css — EDUTECH-X Modern UI
+   Primary Teal: #0ba5a0 | Clean White | Minimalist Design
+   ============================================================ */
+
+:root {
+  --primary: #0ba5a0;
+  --primary-dark: #088a85;
+  --primary-light: #4fd1cb;
+  --primary-pale: #f0fdfa;
+  --success: #10b981;
+  --success-pale: #ecfdf5;
+  --error: #ef4444;
+  --gray-50: #fafafa;
+  --gray-100: #f5f5f5;
+  --gray-200: #e5e5e5;
+  --gray-300: #d4d4d4;
+  --gray-400: #a3a3a3;
+  --gray-500: #737373;
+  --gray-600: #525252;
+  --gray-700: #404040;
+  --bg-secondary: #ffffff;
+  --text-primary: #171717;
+  --text-secondary: #404040;
+  --text-tertiary: #737373;
+  --text-muted: #a3a3a3;
+  --border-light: #e5e5e5;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+  --transition-fast: 150ms ease;
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
+}
+
+/* Main Container */
+.demographics-section {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  max-width: 100%;
+  border: 1px solid var(--border-light);
+  overflow: hidden;
+  margin: 20px 32px;
+  font-family: var(--font);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Header */
+.demographics-header {
+  padding: 24px 28px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.demographics-section h2 {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+  letter-spacing: -0.3px;
+}
+
+.section-description {
+  font-size: 14px;
+  color: var(--text-tertiary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Section Status Badge */
+.section-status-wrapper {
+  padding: 0 28px;
+  margin: 16px 0 8px;
+}
+
+.demographics-section .section-status {
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+}
+
+.demographics-section .section-status.in-progress {
+  background: var(--primary-pale);
+  color: var(--primary-dark);
+}
+
+.demographics-section .section-status.complete {
+  background: var(--success-pale);
+  color: var(--success);
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.section-status.in-progress .status-indicator {
+  background: var(--primary);
+}
+
+.section-status.complete .status-indicator {
+  background: var(--success);
+}
+
+/* Form Content */
+.demographics-section .form-content {
+  padding: 28px;
+}
+
+/* Form Group */
+.demographics-section .form-group {
+  margin-bottom: 32px;
+  position: relative;
+}
+
+.demographics-section .form-group:last-child {
+  margin-bottom: 0;
+}
+
+.demographics-section .form-group label {
+  display: block;
+  margin-bottom: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.demographics-section .form-group label.required::after {
+  content: " *";
+  color: var(--error);
+}
+
+/* Radio Group */
+.demographics-section .radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.demographics-section .radio-group label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: normal;
+  cursor: pointer;
+  margin-bottom: 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+  transition: color var(--transition-fast);
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+}
+
+.demographics-section .radio-group label:hover {
+  background: var(--gray-50);
+  color: var(--primary);
+}
+
+.demographics-section .radio-group input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--primary);
+}
+
+.radio-label {
+  flex: 1;
+}
+
+/* Checkbox Group */
+.checkbox-description {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+
+.demographics-section .checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.demographics-section .checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: normal;
+  cursor: pointer;
+  margin-bottom: 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+}
+
+.demographics-section .checkbox-group label:hover {
+  background: var(--gray-50);
+  color: var(--primary);
+}
+
+.demographics-section .checkbox-group input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--primary);
+}
+
+.checkbox-label {
+  flex: 1;
+}
+
+/* Clear Link */
+.clear-link {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 8px 12px;
+  text-decoration: underline;
+  transition: color var(--transition-fast);
+  margin-top: 8px;
+  display: inline-block;
+  border-radius: var(--radius-sm);
+}
+
+.clear-link:hover {
+  color: var(--primary-dark);
+  background: var(--gray-50);
+}
+
+/* Clear All Container */
+.clear-all-container {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-light);
+  text-align: right;
+}
+
+.clear-all-link {
+  background: none;
+  border: none;
+  color: var(--error);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 8px 16px;
+  text-decoration: underline;
+  transition: all var(--transition-fast);
+  border-radius: var(--radius-sm);
+}
+
+.clear-all-link:hover {
+  color: #dc2626;
+  background: #fef2f2;
+}
+
+/* Focus States */
+.demographics-section .radio-group input[type="radio"]:focus,
+.demographics-section .checkbox-group input[type="checkbox"]:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(11, 165, 160, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 1023px) {
+  .demographics-section {
+    margin: 20px 24px;
+  }
+  
+  .demographics-header {
+    padding: 20px 24px;
+  }
+  
+  .demographics-section h2 {
+    font-size: 20px;
+  }
+  
+  .section-status-wrapper {
+    padding: 0 24px;
+  }
+  
+  .demographics-section .form-content {
+    padding: 24px;
+  }
+}
+
+@media (max-width: 767px) {
+  .demographics-section {
+    margin: 16px;
+  }
+  
+  .demographics-header {
+    padding: 18px 20px;
+  }
+  
+  .demographics-section h2 {
+    font-size: 18px;
+  }
+  
+  .section-description {
+    font-size: 13px;
+  }
+  
+  .section-status-wrapper {
+    padding: 0 20px;
+    margin: 12px 0 6px;
+  }
+  
+  .demographics-section .section-status {
+    font-size: 12px;
+    padding: 5px 12px;
+  }
+  
+  .demographics-section .form-content {
+    padding: 20px;
+  }
+  
+  .demographics-section .form-group {
+    margin-bottom: 28px;
+  }
+  
+  .demographics-section .form-group label {
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+  
+  .demographics-section .radio-group label,
+  .demographics-section .checkbox-group label {
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+  
+  .checkbox-description {
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .demographics-section {
+    margin: 12px;
+  }
+  
+  .demographics-header {
+    padding: 14px 16px;
+  }
+  
+  .demographics-section h2 {
+    font-size: 16px;
+  }
+  
+  .section-description {
+    font-size: 12px;
+  }
+  
+  .section-status-wrapper {
+    padding: 0 16px;
+  }
+  
+  .demographics-section .section-status {
+    font-size: 11px;
+    padding: 4px 10px;
+  }
+  
+  .demographics-section .form-content {
+    padding: 16px;
+  }
+  
+  .demographics-section .form-group {
+    margin-bottom: 24px;
+  }
+  
+  .demographics-section .form-group label {
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+  
+  .demographics-section .radio-group label,
+  .demographics-section .checkbox-group label {
+    font-size: 12px;
+    padding: 5px 8px;
+  }
+  
+  .demographics-section .radio-group input[type="radio"],
+  .demographics-section .checkbox-group input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .checkbox-description {
+    font-size: 11px;
+    margin-bottom: 10px;
+  }
+  
+  .clear-link,
+  .clear-all-link {
+    font-size: 11px;
+  }
+  
+  .clear-all-container {
+    margin-top: 20px;
+    padding-top: 16px;
+  }
+}
+
+@media (max-width: 320px) {
+  .demographics-section {
+    margin: 8px;
+  }
+  
+  .demographics-header {
+    padding: 12px 14px;
+  }
+  
+  .demographics-section h2 {
+    font-size: 15px;
+  }
+  
+  .section-description {
+    font-size: 11px;
+  }
+  
+  .demographics-section .form-content {
+    padding: 14px;
+  }
+  
+  .demographics-section .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .demographics-section .form-group label {
+    font-size: 11px;
+  }
+  
+  .demographics-section .radio-group label,
+  .demographics-section .checkbox-group label {
+    font-size: 11px;
+    padding: 4px 6px;
+  }
+  
+  .checkbox-description {
+    font-size: 10px;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .demographics-section {
+    margin: 0;
+    background: white;
+    border: 1px solid var(--border-light);
+    box-shadow: none;
+  }
+  
+  .section-status-wrapper,
+  .clear-all-container,
+  .clear-link {
+    display: none;
+  }
+  
+  .demographics-section .radio-group input[type="radio"],
+  .demographics-section .checkbox-group input[type="checkbox"] {
+    accent-color: black;
+  }
+}

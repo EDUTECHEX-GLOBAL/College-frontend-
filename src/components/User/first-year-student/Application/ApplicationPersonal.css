@@ -1,0 +1,1286 @@
+/* ApplicationPersonal.css */
+/* Complete styles for GUS portal personal information section with Plalite colour scheme */
+
+/* Main Container */
+.applicationpersonal {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+    background-color: #f5f7fa;
+    min-height: calc(100vh - 80px);
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+.applicationpersonal *,
+.applicationpersonal *::before,
+.applicationpersonal *::after {
+    box-sizing: border-box;
+}
+
+/* Header Styles */
+.applicationpersonal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 20px 24px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(8, 145, 178, 0.08);
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #0891b2;
+}
+
+.applicationpersonal-header-left h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 4px;
+    font-family: 'Sora', 'Poppins', sans-serif;
+}
+
+.applicationpersonal-application-id {
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+.applicationpersonal-progress-indicator {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.applicationpersonal-progress-circle {
+    width: 60px;
+    height: 60px;
+    position: relative;
+}
+
+.applicationpersonal-circular-chart {
+    width: 100%;
+    height: 100%;
+}
+
+.applicationpersonal-circle-bg {
+    stroke: #e2e8f0;
+    stroke-width: 2.8;
+    fill: none;
+}
+
+.applicationpersonal-circle {
+    stroke: #0891b2;
+    stroke-width: 2.8;
+    fill: none;
+    stroke-linecap: round;
+    transition: stroke-dasharray 0.3s ease;
+}
+
+.applicationpersonal-percentage {
+    fill: #0f172a;
+    font-size: 6px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: middle;
+}
+
+.applicationpersonal-progress-badge {
+    background: #f0f9ff;
+    color: #0891b2;
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Navigation Steps */
+.applicationpersonal-steps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 24px;
+    padding: 16px 20px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(8, 145, 178, 0.08);
+    overflow-x: auto;
+    border: 1px solid #e2e8f0;
+}
+
+.applicationpersonal-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 12px;
+    color: #64748b;
+    background: #f1f5f9;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.applicationpersonal-step.completed {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.applicationpersonal-step.active {
+    background: #0891b2;
+    color: white;
+}
+
+.applicationpersonal-step-number {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.applicationpersonal-step.active .applicationpersonal-step-number {
+    background: white;
+    color: #0891b2;
+}
+
+.applicationpersonal-step-name {
+    font-weight: 500;
+    font-size: 12px;
+}
+
+/* Error Banner */
+.applicationpersonal-error-banner {
+    background-color: #fef2f2;
+    border-left: 4px solid #ef4444;
+    color: #991b1b;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 10px;
+}
+
+.applicationpersonal-error-icon {
+    margin-right: 10px;
+    font-weight: 600;
+}
+
+.applicationpersonal-error-close-btn {
+    background: none;
+    border: none;
+    color: #991b1b;
+    cursor: pointer;
+    font-size: 20px;
+    padding: 0 8px;
+    font-weight: 600;
+}
+
+.applicationpersonal-error-close-btn:hover {
+    background-color: rgba(153, 27, 27, 0.1);
+    border-radius: 50%;
+}
+
+/* Form Container */
+.applicationpersonal-form-container {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 2px 8px rgba(8, 145, 178, 0.08);
+    border: 1px solid #e2e8f0;
+}
+
+.applicationpersonal-form-header {
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e0f2fe;
+}
+
+.applicationpersonal-form-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 8px;
+    font-family: 'Sora', 'Poppins', sans-serif;
+}
+
+.applicationpersonal-form-subtitle {
+    font-size: 14px;
+    color: #64748b;
+    line-height: 1.5;
+}
+
+/* Form Sections */
+.applicationpersonal-form-section {
+    margin-bottom: 32px;
+    padding: 24px;
+    background: #fafcff;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+.applicationpersonal-form-section:hover {
+    border-color: #bae6fd;
+    box-shadow: 0 2px 8px rgba(8, 145, 178, 0.05);
+}
+
+.applicationpersonal-section-heading {
+    font-size: 17px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #0891b2;
+    display: inline-block;
+    font-family: 'Sora', 'Poppins', sans-serif;
+}
+
+/* Form Grid */
+.applicationpersonal-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.applicationpersonal-document-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    align-items: stretch;
+}
+
+.applicationpersonal-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.applicationpersonal-form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.applicationpersonal-form-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.applicationpersonal-form-label.required::after {
+    content: " *";
+    color: #ef4444;
+}
+
+.applicationpersonal-field-hint {
+    font-size: 11px;
+    font-weight: normal;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+.applicationpersonal-form-input,
+.applicationpersonal-form-select {
+    padding: 12px 14px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    background-color: white;
+    width: 100%;
+    min-width: 0;
+    font-family: 'Poppins', sans-serif;
+}
+
+.applicationpersonal-form-input:focus,
+.applicationpersonal-form-select:focus {
+    outline: none;
+    border-color: #0891b2;
+    box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+}
+
+.applicationpersonal-form-has-errors .applicationpersonal-form-input:required:invalid,
+.applicationpersonal-form-has-errors .applicationpersonal-form-select:required:invalid {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+}
+
+.applicationpersonal-form-input:disabled,
+.applicationpersonal-form-select:disabled {
+    background-color: #f8fafc;
+    cursor: not-allowed;
+    color: #94a3b8;
+}
+
+/* Compact Custom Select */
+.applicationpersonal-custom-select {
+    position: relative;
+    width: 100%;
+}
+
+.applicationpersonal-custom-select-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 46px;
+    color: #0f172a;
+    cursor: pointer;
+    text-align: left;
+}
+
+.applicationpersonal-custom-select-trigger.is-placeholder {
+    color: #64748b;
+}
+
+.applicationpersonal-custom-select-trigger span:first-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.applicationpersonal-custom-select-arrow {
+    flex: 0 0 auto;
+    color: #64748b;
+    font-size: 16px;
+    line-height: 1;
+    transition: transform 0.2s ease;
+}
+
+.applicationpersonal-custom-select.is-open .applicationpersonal-custom-select-arrow {
+    transform: rotate(180deg);
+}
+
+.applicationpersonal-custom-select-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: 40;
+    overflow: hidden;
+    border: 1.5px solid #bae6fd;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.16);
+}
+
+.applicationpersonal-custom-select-search {
+    width: calc(100% - 16px);
+    margin: 8px;
+    padding: 9px 10px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 13px;
+    outline: none;
+}
+
+.applicationpersonal-custom-select-search:focus {
+    border-color: #0891b2;
+    box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+}
+
+.applicationpersonal-custom-select-options {
+    max-height: min(260px, 42vh);
+    overflow-y: auto;
+    padding: 4px;
+}
+
+.applicationpersonal-custom-select-option {
+    width: 100%;
+    min-height: 38px;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #0f172a;
+    cursor: pointer;
+    font: inherit;
+    font-size: 14px;
+    text-align: left;
+}
+
+.applicationpersonal-custom-select-option:hover,
+.applicationpersonal-custom-select-option:focus {
+    outline: none;
+    background: #e0f2fe;
+}
+
+.applicationpersonal-custom-select-option.is-selected {
+    background: #bae6fd;
+    color: #075985;
+    font-weight: 600;
+}
+
+.applicationpersonal-custom-select-empty {
+    padding: 12px;
+    color: #64748b;
+    font-size: 13px;
+    text-align: center;
+}
+
+.applicationpersonal-form-has-errors .applicationpersonal-custom-select.is-invalid .applicationpersonal-custom-select-trigger {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+}
+
+/* Radio Group */
+.applicationpersonal-radio-group {
+    display: flex;
+    gap: 24px;
+    padding: 8px 0;
+    flex-wrap: wrap;
+}
+
+.applicationpersonal-radio-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #334155;
+    cursor: pointer;
+}
+
+.applicationpersonal-radio-label input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #0891b2;
+}
+
+.applicationpersonal-radio-text {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Phone Input */
+.applicationpersonal-phone-input {
+    display: flex;
+    align-items: center;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: white;
+    transition: all 0.2s ease;
+}
+
+.applicationpersonal-phone-input:focus-within {
+    border-color: #0891b2;
+    box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+}
+
+.applicationpersonal-country-code {
+    padding: 12px 14px;
+    background-color: #f8fafc;
+    border-right: 1.5px solid #e2e8f0;
+    font-size: 14px;
+    color: #334155;
+    font-weight: 500;
+}
+
+.applicationpersonal-phone-number {
+    border: none;
+    border-radius: 0;
+    flex: 1;
+    min-width: 0;
+    padding: 12px 14px;
+}
+
+.applicationpersonal-phone-number:focus {
+    box-shadow: none;
+    outline: none;
+}
+
+/* Upload Area Styles */
+.applicationpersonal-upload-area {
+    border: 2px dashed #cbd5e1;
+    border-radius: 14px;
+    padding: 24px;
+    text-align: center;
+    background: #fafcff;
+    transition: all 0.3s ease;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.applicationpersonal-upload-area:hover {
+    border-color: #0891b2;
+    background-color: #f0f9ff;
+}
+
+.applicationpersonal-form-group.is-invalid .applicationpersonal-upload-area {
+    border-color: #ef4444;
+    background-color: #fef2f2;
+}
+
+.applicationpersonal-field-error {
+    color: #b91c1c;
+    font-size: 12px;
+    font-weight: 500;
+    margin-top: 8px;
+}
+
+.applicationpersonal-upload-instruction {
+    font-size: 14px;
+    font-weight: 500;
+    color: #334155;
+    margin-bottom: 8px;
+}
+
+.applicationpersonal-upload-hint {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-bottom: 20px;
+}
+
+.applicationpersonal-photo-requirements {
+    width: 100%;
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    font-size: 10px;
+    line-height: 1.35;
+    color: #64748b;
+    text-align: left;
+}
+
+.applicationpersonal-photo-requirements strong {
+    display: block;
+    margin-bottom: 3px;
+    color: #334155;
+    font-weight: 600;
+}
+
+.applicationpersonal-photo-requirements ul {
+    margin: 0;
+    padding-left: 14px;
+}
+
+.applicationpersonal-upload-button {
+    background: linear-gradient(135deg, #0891b2, #0e7490);
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.applicationpersonal-upload-button:hover {
+    background: linear-gradient(135deg, #0e7490, #0891b2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(8, 145, 178, 0.25);
+}
+
+.applicationpersonal-upload-button:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* File Info */
+.applicationpersonal-file-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #f1f5f9;
+    border-radius: 10px;
+    margin: 12px 0;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    border: 1px solid #e2e8f0;
+    box-sizing: border-box;
+}
+
+.applicationpersonal-uploaded-file-card {
+    background: #ffffff;
+    border: 1px solid #dbeafe;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.applicationpersonal-file-icon {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    border-radius: 10px;
+    background: #e0f2fe;
+    color: #0e7490;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.applicationpersonal-file-details {
+    flex: 1;
+    text-align: left;
+    min-width: 0;
+}
+
+.applicationpersonal-file-name {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #0f172a;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.applicationpersonal-file-size {
+    display: block;
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+.applicationpersonal-preview-file-details {
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* Image Preview */
+.applicationpersonal-image-preview {
+    position: relative;
+    margin: 16px 0;
+    max-width: 200px;
+    width: 100%;
+}
+
+.applicationpersonal-image-preview img {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    border: 2px solid #e2e8f0;
+}
+
+.applicationpersonal-remove-image-btn {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #ef4444;
+    color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.applicationpersonal-remove-image-btn:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+
+.applicationpersonal-remove-file-btn {
+    background: #fff1f2;
+    border: 1px solid #fecdd3;
+    color: #ef4444;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 7px 10px;
+    border-radius: 999px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
+    flex: 0 0 auto;
+}
+
+.applicationpersonal-remove-file-btn:hover {
+    background-color: #ffe4e6;
+}
+
+.applicationpersonal-remove-file-btn:disabled {
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
+/* File Input Hidden */
+.applicationpersonal-file-input-hidden {
+    display: none;
+}
+
+/* Visa Question */
+.visa-question {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 2px solid #e2e8f0;
+}
+
+/* Form Actions */
+.applicationpersonal-form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 2px solid #e2e8f0;
+}
+
+.applicationpersonal-btn-secondary,
+.applicationpersonal-btn-primary {
+    padding: 12px 32px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.applicationpersonal-btn-secondary {
+    background: white;
+    border: 1.5px solid #e2e8f0;
+    color: #334155;
+}
+
+.applicationpersonal-btn-secondary:hover:not(:disabled) {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+}
+
+.applicationpersonal-btn-primary {
+    background: linear-gradient(135deg, #0891b2, #0e7490);
+    color: white;
+}
+
+.applicationpersonal-btn-primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, #0e7490, #0891b2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3);
+}
+
+.applicationpersonal-btn-secondary:disabled,
+.applicationpersonal-btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Language Selector */
+.applicationpersonal-language-selector {
+    text-align: right;
+    margin-top: 20px;
+    padding-top: 16px;
+    font-size: 13px;
+    color: #64748b;
+    cursor: pointer;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.applicationpersonal-language-selector span {
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.applicationpersonal-language-selector span:hover {
+    background-color: #f0f9ff;
+    color: #0891b2;
+}
+
+/* Loading State */
+.applicationpersonal-loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    text-align: center;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(8, 145, 178, 0.08);
+    border: 1px solid #e2e8f0;
+}
+
+.applicationpersonal-loading-spinner {
+    border: 4px solid #e2e8f0;
+    border-top: 4px solid #0891b2;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .applicationpersonal {
+        padding: 20px;
+    }
+
+    .applicationpersonal-document-grid {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+    
+    .applicationpersonal-steps {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding: 12px;
+    }
+    
+    .applicationpersonal-step {
+        flex-shrink: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .applicationpersonal {
+        padding: 12px;
+        min-height: calc(100vh - 64px);
+    }
+
+    .applicationpersonal-header {
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+        padding: 12px 14px;
+        border-radius: 12px;
+    }
+
+    .applicationpersonal-header-left h1 {
+        font-size: 18px;
+        margin-bottom: 2px;
+    }
+
+    .applicationpersonal-application-id {
+        font-size: 11px;
+    }
+
+    .applicationpersonal-progress-indicator {
+        flex-shrink: 0;
+        gap: 8px;
+    }
+
+    .applicationpersonal-progress-circle {
+        width: 44px;
+        height: 44px;
+    }
+
+    .applicationpersonal-progress-badge {
+        font-size: 11px;
+        padding: 6px 10px;
+    }
+
+    .applicationpersonal-form-container {
+        padding: 14px;
+        border-radius: 12px;
+    }
+
+    .applicationpersonal-form-header {
+        margin-bottom: 18px;
+        padding-bottom: 12px;
+    }
+
+    .applicationpersonal-form-header h2 {
+        font-size: 18px;
+        margin-bottom: 4px;
+    }
+
+    .applicationpersonal-form-subtitle {
+        font-size: 12px;
+        line-height: 1.4;
+    }
+
+    .applicationpersonal-form-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .applicationpersonal-document-grid {
+        gap: 16px;
+    }
+
+    .applicationpersonal-document-grid .applicationpersonal-form-group {
+        max-height: none;
+    }
+
+    .applicationpersonal-form-section {
+        margin-bottom: 16px;
+        padding: 14px;
+        border-radius: 12px;
+    }
+
+    .applicationpersonal-section-heading {
+        font-size: 15px;
+        margin-bottom: 14px;
+        padding-bottom: 8px;
+    }
+
+    .applicationpersonal-form-group {
+        gap: 5px;
+    }
+
+    .applicationpersonal-form-label {
+        font-size: 12px;
+        line-height: 1.3;
+    }
+
+    .applicationpersonal-form-input,
+    .applicationpersonal-form-select {
+        min-height: 42px;
+        padding: 9px 11px;
+        border-radius: 8px;
+        font-size: 13px;
+    }
+
+    .applicationpersonal-custom-select-trigger {
+        min-height: 42px;
+    }
+
+    .applicationpersonal-custom-select-menu {
+        border-radius: 10px;
+    }
+
+    .applicationpersonal-custom-select-options {
+        max-height: min(220px, 38vh);
+    }
+
+    .applicationpersonal-custom-select-option {
+        min-height: 36px;
+        padding: 7px 10px;
+        font-size: 13px;
+    }
+
+    .applicationpersonal-upload-area {
+        min-height: 150px;
+        padding: 14px;
+        border-radius: 12px;
+    }
+
+    .applicationpersonal-file-info {
+        flex-wrap: wrap;
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .applicationpersonal-file-details {
+        flex: 1 1 calc(100% - 52px);
+    }
+
+    .applicationpersonal-remove-file-btn {
+        width: 100%;
+    }
+
+    .applicationpersonal-upload-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .applicationpersonal-photo-requirements {
+        font-size: 10px;
+        padding: 9px 10px;
+    }
+
+    .applicationpersonal-form-actions {
+        margin-top: 18px;
+        padding-top: 16px;
+        gap: 12px;
+    }
+
+    .applicationpersonal-btn-secondary,
+    .applicationpersonal-btn-primary {
+        min-height: 42px;
+        padding: 10px 22px;
+        justify-content: center;
+    }
+
+    .applicationpersonal-radio-group {
+        gap: 14px;
+        padding: 4px 0;
+    }
+
+    .applicationpersonal-radio-label {
+        font-size: 13px;
+    }
+
+    .applicationpersonal-radio-label input[type="radio"] {
+        width: 16px;
+        height: 16px;
+    }
+
+    .applicationpersonal-radio-text {
+        font-size: 13px;
+    }
+
+    .applicationpersonal-phone-input {
+        flex-direction: row;
+        border: 1.5px solid #e2e8f0;
+        gap: 0;
+    }
+
+    .applicationpersonal-country-code {
+        width: auto;
+        flex: 0 0 auto;
+        padding: 9px 11px;
+        border: 0;
+        border-right: 1.5px solid #e2e8f0;
+        border-radius: 0;
+        font-size: 13px;
+    }
+
+    .applicationpersonal-phone-number {
+        width: auto;
+        border: 0;
+        border-radius: 0;
+        padding: 9px 11px;
+    }
+
+    .applicationpersonal-file-name {
+        max-width: 100%;
+    }
+
+    .applicationpersonal-language-selector {
+        margin-top: 14px;
+        padding-top: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .applicationpersonal {
+        padding: 8px;
+    }
+
+    .applicationpersonal-header {
+        padding: 10px 12px;
+    }
+
+    .applicationpersonal-header-left h1 {
+        font-size: 16px;
+    }
+
+    .applicationpersonal-progress-circle {
+        display: none;
+    }
+
+    .applicationpersonal-form-container {
+        padding: 10px;
+        border-radius: 10px;
+    }
+
+    .applicationpersonal-form-section {
+        padding: 10px;
+        margin-bottom: 12px;
+        border-radius: 10px;
+    }
+
+    .applicationpersonal-form-input,
+    .applicationpersonal-form-select {
+        min-height: 40px;
+        padding: 8px 10px;
+    }
+
+    .applicationpersonal-custom-select-trigger {
+        min-height: 40px;
+    }
+
+    .applicationpersonal-custom-select-options {
+        max-height: min(205px, 36vh);
+    }
+
+    .applicationpersonal-upload-area {
+        min-height: 132px;
+        padding: 12px;
+    }
+
+    .applicationpersonal-file-info {
+        margin: 10px 0;
+        padding: 9px;
+        gap: 8px;
+    }
+
+    .applicationpersonal-file-icon {
+        width: 34px;
+        height: 34px;
+        flex-basis: 34px;
+        font-size: 15px;
+    }
+
+    .applicationpersonal-file-name {
+        font-size: 12px;
+    }
+
+    .applicationpersonal-file-size,
+    .applicationpersonal-photo-requirements {
+        font-size: 10px;
+    }
+
+    .applicationpersonal-photo-requirements {
+        padding: 8px;
+    }
+
+    .applicationpersonal-upload-instruction {
+        font-size: 12px;
+        margin-bottom: 4px;
+    }
+
+    .applicationpersonal-upload-hint {
+        font-size: 10px;
+        margin-bottom: 12px;
+    }
+
+    .applicationpersonal-steps {
+        margin-bottom: 12px;
+        padding: 8px;
+        border-radius: 10px;
+    }
+
+    .applicationpersonal-step {
+        padding: 4px 10px;
+        font-size: 10px;
+    }
+
+    .applicationpersonal-step-number {
+        width: 18px;
+        height: 18px;
+        font-size: 10px;
+    }
+
+    .applicationpersonal-form-label {
+        font-size: 12px;
+    }
+
+    .applicationpersonal-field-hint {
+        font-size: 10px;
+    }
+
+    .applicationpersonal-form-actions {
+        flex-direction: column;
+    }
+
+    .applicationpersonal-btn-secondary,
+    .applicationpersonal-btn-primary {
+        width: 100%;
+    }
+}
+
+@media (max-width: 380px) {
+    .applicationpersonal {
+        padding: 6px;
+    }
+
+    .applicationpersonal-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .applicationpersonal-progress-indicator {
+        width: 100%;
+    }
+
+    .applicationpersonal-progress-badge {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .applicationpersonal-form-container {
+        padding: 8px;
+    }
+
+    .applicationpersonal-form-section {
+        padding: 9px;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .applicationpersonal {
+        background: white;
+        padding: 0;
+    }
+
+    .applicationpersonal-header,
+    .applicationpersonal-steps,
+    .applicationpersonal-form-actions,
+    .applicationpersonal-language-selector,
+    .applicationpersonal-upload-button,
+    .applicationpersonal-remove-file-btn,
+    .applicationpersonal-remove-image-btn {
+        display: none;
+    }
+
+    .applicationpersonal-form-container {
+        box-shadow: none;
+        padding: 0;
+    }
+
+    .applicationpersonal-form-section {
+        break-inside: avoid;
+        border: 1px solid #ddd;
+        background: white;
+    }
+}
+
+/* Hover Effects */
+.applicationpersonal-form-input:hover:not(:disabled),
+.applicationpersonal-form-select:hover:not(:disabled) {
+    border-color: #94a3b8;
+}
+
+/* Focus Visible for Accessibility */
+.applicationpersonal-form-input:focus-visible,
+.applicationpersonal-form-select:focus-visible,
+.applicationpersonal-btn-secondary:focus-visible,
+.applicationpersonal-btn-primary:focus-visible {
+    outline: 2px solid #0891b2;
+    outline-offset: 2px;
+}

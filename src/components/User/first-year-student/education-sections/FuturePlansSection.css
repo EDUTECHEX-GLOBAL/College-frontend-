@@ -1,0 +1,345 @@
+/* src/components/education-sections/FuturePlansSection.css */
+
+.future-plans-section {
+  background: white;
+  margin: 20px 40px;
+  padding: 32px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.future-plans-section *,
+.future-plans-section *::before,
+.future-plans-section *::after {
+  box-sizing: border-box;
+}
+
+/* ── Header ── */
+.future-plans-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.future-plans-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a202c;
+  margin-bottom: 8px;
+}
+
+.future-plans-status {
+  font-size: 14px;
+  color: #2C5AA0;
+  font-weight: 500;
+  background: #e8f0fe;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+/* ── Grid & Form Groups ── */
+.future-plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.future-plans-full-width {
+  grid-column: 1 / -1;
+}
+
+.future-plans-form-group {
+  margin-bottom: 24px;
+}
+
+.future-plans-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.future-plans-required::after {
+  content: " *";
+  color: #dc2626;
+}
+
+/* ── Select ── */
+.future-plans-select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+  background: white;
+  box-sizing: border-box;
+}
+
+.future-plans-select:focus {
+  outline: none;
+  border-color: #2C5AA0;
+  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+}
+
+.future-plans-custom-select {
+  position: relative;
+  width: 100%;
+}
+
+.future-plans-custom-select.is-open {
+  z-index: 300;
+}
+
+.future-plans-select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #374151;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+
+.future-plans-select-trigger.is-placeholder {
+  color: #9ca3af;
+}
+
+.future-plans-select-trigger span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.future-plans-select-arrow {
+  flex: 0 0 auto;
+  color: #6b7280;
+  font-size: 11px;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.future-plans-custom-select.is-open .future-plans-select-arrow {
+  transform: rotate(180deg);
+}
+
+.future-plans-select-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 320;
+  max-height: min(240px, 40vh);
+  overflow-y: auto;
+  padding: 4px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 14px 30px rgba(31, 41, 55, 0.16);
+}
+
+.future-plans-custom-select.is-upward .future-plans-select-menu {
+  top: auto;
+  bottom: calc(100% + 6px);
+}
+
+.future-plans-select-option {
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #374151;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  text-align: left;
+}
+
+.future-plans-select-option:hover,
+.future-plans-select-option.is-selected {
+  background: #e0f2fe;
+  color: #0f172a;
+}
+
+/* ── Student Type Radio Group ── */
+.future-plans-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.future-plans-radio-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.future-plans-radio-input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.future-plans-radio-label {
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+/* ── Additional Interests Checkbox Grid ── */
+.future-plans-checkbox-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.future-plans-checkbox-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.future-plans-checkbox-input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.future-plans-checkbox-label {
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Tablet  ≤ 1023px
+════════════════════════════════════════ */
+@media (max-width: 1023px) {
+  .future-plans-section {
+    margin: 20px 24px;
+    padding: 28px;
+  }
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Mobile  ≤ 767px
+════════════════════════════════════════ */
+@media (max-width: 767px) {
+  .future-plans-section {
+    margin: 15px 16px;
+    padding: 20px;
+    border-radius: 6px;
+  }
+
+  .future-plans-title {
+    font-size: 18px;
+  }
+
+  .future-plans-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .future-plans-full-width {
+    grid-column: 1;
+  }
+
+  .future-plans-form-group {
+    margin-bottom: 18px;
+  }
+
+  .future-plans-checkbox-group {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Small Mobile  ≤ 480px
+════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .future-plans-section {
+    margin: 10px 12px;
+    padding: 16px;
+  }
+
+  .future-plans-title {
+    font-size: 17px;
+  }
+
+  .future-plans-select {
+    min-height: 42px;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .future-plans-select-menu {
+    max-height: min(220px, 38vh);
+  }
+
+  .future-plans-select-option {
+    min-height: 36px;
+    padding: 7px 10px;
+    font-size: 13px;
+  }
+
+  .future-plans-radio-label {
+    font-size: 13px;
+  }
+
+  .future-plans-checkbox-group {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .future-plans-checkbox-label {
+    font-size: 13px;
+  }
+
+  .future-plans-form-group {
+    margin-bottom: 14px;
+  }
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — Very Small  ≤ 360px
+════════════════════════════════════════ */
+@media (max-width: 360px) {
+  .future-plans-section {
+    margin: 8px;
+    padding: 12px;
+  }
+
+  .future-plans-title {
+    font-size: 16px;
+  }
+
+  .future-plans-select {
+    min-height: 40px;
+    font-size: 12px;
+    padding: 9px 10px;
+  }
+
+  .future-plans-select-menu {
+    max-height: min(205px, 36vh);
+  }
+
+  .future-plans-radio-label,
+  .future-plans-checkbox-label {
+    font-size: 12px;
+  }
+}

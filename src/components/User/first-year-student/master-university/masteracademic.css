@@ -1,0 +1,341 @@
+/* masteracademic.css - Academic Section Styles - Palite Colour Scheme */
+
+.masteracademic-form {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.masteracademic-header {
+  margin-bottom: 24px;
+}
+
+.masteracademic-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8px;
+  font-family: 'Sora', 'Poppins', sans-serif;
+}
+
+.masteracademic-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* ── Academic Entry Card ─────────────────────────────────── */
+.masteracademic-entry {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  width: 100%;
+  overflow: hidden;
+}
+
+.masteracademic-entry:hover {
+  border-color: #bae6fd;
+  box-shadow: 0 4px 12px rgba(8, 145, 178, 0.08);
+}
+
+.masteracademic-entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.masteracademic-entry-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.masteracademic-remove-btn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  font-family: 'Poppins', sans-serif;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.masteracademic-remove-btn:hover {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+/* ── Form Grid Layout ────────────────────────────────────── */
+.masteracademic-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.masteracademic-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0; /* prevents grid blowout */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.masteracademic-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.masteracademic-required {
+  color: #ef4444;
+}
+
+/* ── Inputs & Selects ────────────────────────────────────── */
+.masteracademic-input,
+.masteracademic-select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  background: white;
+  color: #0f172a;
+  font-family: 'Poppins', sans-serif;
+
+  /* Mobile: prevent zoom on focus (iOS) */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Custom dropdown arrow for select */
+.masteracademic-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+.masteracademic-input:focus,
+.masteracademic-select:focus {
+  outline: none;
+  border-color: #0891b2;
+  box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+}
+
+.masteracademic-input.error,
+.masteracademic-select.error {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08);
+}
+
+.masteracademic-input::placeholder {
+  color: #94a3b8;
+}
+
+/* ── Error Text ──────────────────────────────────────────── */
+.masteracademic-error-text {
+  font-size: 11px;
+  color: #ef4444;
+  margin-top: 2px;
+}
+
+/* ── Add Button ──────────────────────────────────────────── */
+.masteracademic-add-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #0891b2, #0e7490);
+  color: white;
+  border: none;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 8px;
+  font-family: 'Poppins', sans-serif;
+  box-sizing: border-box;
+}
+
+.masteracademic-add-btn:hover {
+  background: linear-gradient(135deg, #0e7490, #0891b2);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(8, 145, 178, 0.35);
+}
+
+/* ── Save Status ─────────────────────────────────────────── */
+.masteracademic-save-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: opacity 0.3s ease;
+}
+
+.masteracademic-save-status.success {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.masteracademic-save-status.error {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+/* ── Tablet (max 768px) ──────────────────────────────────── */
+@media (max-width: 768px) {
+  .masteracademic-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .masteracademic-entry {
+    padding: 18px;
+  }
+
+  .masteracademic-entry-header {
+    flex-direction: row;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .masteracademic-title {
+    font-size: 20px;
+  }
+
+  .masteracademic-input,
+  .masteracademic-select {
+    font-size: 16px; /* prevents iOS zoom on focus */
+    padding: 12px 14px;
+  }
+
+  .masteracademic-select {
+    padding-right: 38px;
+  }
+}
+
+/* ── Mobile (max 480px) ──────────────────────────────────── */
+@media (max-width: 480px) {
+  .masteracademic-form {
+    padding: 0;
+  }
+
+  .masteracademic-entry {
+    padding: 14px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+  }
+
+  .masteracademic-entry-header {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 10px;
+    margin-bottom: 16px;
+  }
+
+  .masteracademic-entry-title {
+    font-size: 14px;
+  }
+
+  .masteracademic-remove-btn {
+    font-size: 12px;
+    padding: 4px 10px;
+  }
+
+  .masteracademic-label {
+    font-size: 12px;
+  }
+
+  .masteracademic-input,
+  .masteracademic-select {
+    font-size: 16px; /* critical — prevents iOS zoom */
+    padding: 11px 12px;
+    border-radius: 8px;
+  }
+
+  .masteracademic-select {
+    padding-right: 36px;
+  }
+
+  .masteracademic-add-btn {
+    padding: 12px 16px;
+    font-size: 13px;
+    border-radius: 10px;
+  }
+
+  .masteracademic-title {
+    font-size: 18px;
+  }
+
+  .masteracademic-subtitle {
+    font-size: 12px;
+  }
+
+  .masteracademic-error-text {
+    font-size: 11px;
+  }
+}
+
+/* ── Accessibility — Reduced Motion ──────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+.masteracademic-bachelor-warning {
+  background: #fef3c7;
+  border: 1.5px solid #f59e0b;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-top: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.masteracademic-bachelor-warning-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.masteracademic-bachelor-warning-title {
+  margin: 0;
+  font-weight: 600;
+  color: #92400e;
+  font-size: 14px;
+}
+
+.masteracademic-bachelor-warning-text {
+  margin: 4px 0 0;
+  color: #b45309;
+  font-size: 13px;
+}

@@ -1,0 +1,670 @@
+/* src/components/testing-sections/SATSubjectTestsSection.css */
+/* ============================================================
+   SATSubjectTestsSection.css — Plalite Colour Scheme
+   Primary: #0891b2 | Accent: #f59e0b
+   ============================================================ */
+
+:root {
+  --sat-primary:          #0891b2;
+  --sat-primary-dark:     #0e7490;
+  --sat-primary-light:    #22d3ee;
+  --sat-primary-pale:     #f0f9ff;
+  --sat-primary-border:   #bae6fd;
+  --sat-primary-gradient: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+
+  --sat-success:          #10b981;
+  --sat-success-bg:       #ecfdf5;
+  --sat-error:            #ef4444;
+  --sat-error-bg:         #fef2f2;
+  --sat-warning:          #f59e0b;
+
+  --sat-white:            #ffffff;
+  --sat-bg:               #f5f7fa;
+  --sat-gray-50:          #fafafa;
+  --sat-gray-100:         #f5f5f5;
+  --sat-gray-200:         #e5e5e5;
+  --sat-gray-300:         #d4d4d4;
+  --sat-gray-400:         #a3a3a3;
+  --sat-gray-600:         #525252;
+  --sat-gray-700:         #404040;
+  --sat-gray-900:         #171717;
+
+  --sat-shadow-sm:        0 1px 3px rgba(0,0,0,0.05);
+  --sat-shadow-md:        0 4px 14px rgba(0,0,0,0.07);
+  --sat-shadow-teal:      0 4px 18px rgba(8,145,178,0.18);
+
+  --sat-radius-sm:        8px;
+  --sat-radius:           12px;
+  --sat-radius-full:      9999px;
+
+  --sat-font:             'Poppins', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --sat-font-display:     'Sora', 'Poppins', Georgia, serif;
+  --sat-transition:       150ms ease;
+}
+
+/* Main Container */
+.satsubjecttestssection-container {
+  min-height: 100vh;
+  background: var(--sat-bg);
+  font-family: var(--sat-font);
+  padding: 0 0 80px;
+}
+
+.satsubjecttestssection-container *,
+.satsubjecttestssection-container *::before,
+.satsubjecttestssection-container *::after {
+  box-sizing: border-box;
+}
+
+/* Main Card */
+.satsubjecttestssection-card {
+  background: var(--sat-white);
+  border-radius: var(--sat-radius);
+  border: 1px solid var(--sat-gray-200);
+  box-shadow: var(--sat-shadow-sm);
+  margin: 20px 32px;
+  overflow: hidden;
+}
+
+/* Card Header */
+.satsubjecttestssection-card-header {
+  background: var(--sat-white);
+  padding: 24px 28px;
+  border-bottom: 1px solid var(--sat-gray-200);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.satsubjecttestssection-card-title {
+  font-family: var(--sat-font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--sat-gray-900);
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+/* Status Badge */
+.satsubjecttestssection-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--sat-primary-pale);
+  color: var(--sat-primary-dark);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: var(--sat-radius-full);
+}
+
+.satsubjecttestssection-status-badge::before {
+  content: "●";
+  font-size: 10px;
+  color: var(--sat-primary);
+}
+
+/* Form Content */
+.satsubjecttestssection-form-content {
+  padding: 28px;
+}
+
+/* Form Groups */
+.satsubjecttestssection-form-group {
+  margin-bottom: 28px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--sat-gray-200);
+}
+
+.satsubjecttestssection-form-group:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.satsubjecttestssection-question-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--sat-gray-700);
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.satsubjecttestssection-question-label.required::after {
+  content: "*";
+  color: var(--sat-primary);
+  margin-left: 4px;
+}
+
+/* Select Group */
+.satsubjecttestssection-select-group {
+  margin-bottom: 8px;
+}
+
+.satsubjecttestssection-select {
+  width: 100%;
+  max-width: 300px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--sat-gray-200);
+  border-radius: var(--sat-radius-sm);
+  font-size: 14px;
+  font-family: var(--sat-font);
+  background: var(--sat-white);
+  color: var(--sat-gray-900);
+  cursor: pointer;
+  transition: all var(--sat-transition);
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230891b2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+}
+
+.satsubjecttestssection-select:focus {
+  border-color: var(--sat-primary);
+  box-shadow: 0 0 0 3px rgba(8,145,178,0.12);
+}
+
+.satsubjecttestssection-select.error {
+  border-color: var(--sat-error);
+}
+
+.satsubjecttestssection-custom-select {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+}
+
+.satsubjecttestssection-custom-select.is-open {
+  z-index: 300;
+}
+
+.satsubjecttestssection-select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background-image: none;
+  color: var(--sat-gray-900);
+  text-align: left;
+}
+
+.satsubjecttestssection-select-trigger.is-placeholder {
+  color: var(--sat-gray-400);
+}
+
+.satsubjecttestssection-select-trigger span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.satsubjecttestssection-select-arrow {
+  flex: 0 0 auto;
+  color: var(--sat-primary);
+  font-size: 11px;
+  line-height: 1;
+  transition: transform var(--sat-transition);
+}
+
+.satsubjecttestssection-custom-select.is-open .satsubjecttestssection-select-arrow {
+  transform: rotate(180deg);
+}
+
+.satsubjecttestssection-select-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 320;
+  max-height: min(240px, 40vh);
+  overflow-y: auto;
+  padding: 4px;
+  border: 1px solid var(--sat-primary-border);
+  border-radius: var(--sat-radius-sm);
+  background: var(--sat-white);
+  box-shadow: var(--sat-shadow-md);
+}
+
+.satsubjecttestssection-custom-select.is-upward .satsubjecttestssection-select-menu {
+  top: auto;
+  bottom: calc(100% + 6px);
+}
+
+.satsubjecttestssection-select-option {
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--sat-gray-700);
+  cursor: pointer;
+  font-family: var(--sat-font);
+  font-size: 14px;
+  text-align: left;
+}
+
+.satsubjecttestssection-select-option:hover,
+.satsubjecttestssection-select-option.is-selected {
+  background: var(--sat-primary-pale);
+  color: var(--sat-primary-dark);
+}
+
+/* Clear Links and Buttons */
+.satsubjecttestssection-clear-link {
+  display: inline-block;
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: var(--sat-gray-400);
+  text-decoration: underline;
+  cursor: pointer;
+  font-family: var(--sat-font);
+  padding: 4px 0;
+  transition: color var(--sat-transition);
+  margin-top: 8px;
+}
+
+.satsubjecttestssection-clear-link:hover:not(:disabled) {
+  color: var(--sat-primary);
+}
+
+.satsubjecttestssection-clear-link:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Tests Container */
+.satsubjecttestssection-tests-container {
+  margin-top: 24px;
+  border-top: 1px solid var(--sat-gray-200);
+  padding-top: 24px;
+}
+
+.satsubjecttestssection-test-entry {
+  background: var(--sat-gray-50);
+  border: 1px solid var(--sat-gray-200);
+  border-radius: var(--sat-radius);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.satsubjecttestssection-test-entry:last-child {
+  margin-bottom: 0;
+}
+
+.satsubjecttestssection-test-entry h3 {
+  margin: 0 0 20px 0;
+  font-size: 16px;
+  color: var(--sat-gray-900);
+  font-weight: 700;
+  border-bottom: 1px solid var(--sat-gray-200);
+  padding-bottom: 12px;
+  font-family: var(--sat-font);
+}
+
+/* Input Container for Date Picker */
+.satsubjecttestssection-input-container {
+  position: relative;
+}
+
+/* Selected Date Display */
+.satsubjecttestssection-selected-date {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--sat-gray-200);
+  border-radius: var(--sat-radius-sm);
+  background: var(--sat-gray-50);
+  font-size: 14px;
+  color: var(--sat-gray-700);
+  max-width: 300px;
+}
+
+.satsubjecttestssection-change-date {
+  background: none;
+  border: none;
+  color: var(--sat-primary);
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  margin-left: auto;
+  white-space: nowrap;
+  transition: color var(--sat-transition);
+}
+
+.satsubjecttestssection-change-date:hover {
+  color: var(--sat-primary-dark);
+}
+
+/* Field Note / Helper Text */
+.satsubjecttestssection-field-note {
+  font-size: 12px;
+  color: var(--sat-gray-400);
+  margin-top: 6px;
+  font-style: italic;
+}
+
+/* Calendar Popup */
+.satsubjecttestssection-calendar-container {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 200;
+  background: var(--sat-white);
+  border: 1px solid var(--sat-gray-200);
+  border-radius: var(--sat-radius);
+  padding: 16px;
+  box-shadow: var(--sat-shadow-md);
+  min-width: 280px;
+}
+
+.satsubjecttestssection-calendar-header {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--sat-gray-900);
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.satsubjecttestssection-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.satsubjecttestssection-calendar-month {
+  background: var(--sat-gray-100);
+  border: 1px solid var(--sat-gray-200);
+  border-radius: var(--sat-radius-sm);
+  padding: 8px 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sat-gray-700);
+  cursor: pointer;
+  transition: all var(--sat-transition);
+  text-align: center;
+}
+
+.satsubjecttestssection-calendar-month:hover {
+  background: var(--sat-primary);
+  color: white;
+  border-color: var(--sat-primary);
+}
+
+.satsubjecttestssection-calendar-month.selected {
+  background: var(--sat-primary);
+  color: white;
+  border-color: var(--sat-primary);
+}
+
+.satsubjecttestssection-calendar-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.satsubjecttestssection-calendar-confirm {
+  flex: 1;
+  background: var(--sat-primary);
+  border: none;
+  border-radius: var(--sat-radius-sm);
+  padding: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+  transition: all var(--sat-transition);
+}
+
+.satsubjecttestssection-calendar-confirm:hover:not(:disabled) {
+  background: var(--sat-primary-dark);
+}
+
+.satsubjecttestssection-calendar-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.satsubjecttestssection-calendar-cancel {
+  flex: 1;
+  background: none;
+  border: 1px solid var(--sat-gray-200);
+  border-radius: var(--sat-radius-sm);
+  padding: 8px;
+  font-size: 13px;
+  color: var(--sat-gray-600);
+  cursor: pointer;
+  transition: all var(--sat-transition);
+}
+
+.satsubjecttestssection-calendar-cancel:hover {
+  background: var(--sat-gray-100);
+  color: var(--sat-gray-900);
+}
+
+/* Error Messages */
+.satsubjecttestssection-error-message {
+  color: var(--sat-error);
+  font-size: 12px;
+  margin-top: 6px;
+  font-style: italic;
+}
+
+/* Animation */
+@keyframes sat-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.satsubjecttestssection-calendar-container {
+  animation: sat-fadeIn 0.2s ease-out;
+}
+
+/* Responsive Design */
+@media (max-width: 1023px) {
+  .satsubjecttestssection-card {
+    margin: 20px 24px;
+  }
+  
+  .satsubjecttestssection-card-header {
+    padding: 20px 24px;
+  }
+  
+  .satsubjecttestssection-form-content {
+    padding: 24px;
+  }
+  
+  .satsubjecttestssection-select,
+  .satsubjecttestssection-custom-select,
+  .satsubjecttestssection-selected-date {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 767px) {
+  .satsubjecttestssection-card {
+    margin: 16px;
+  }
+  
+  .satsubjecttestssection-card-header {
+    padding: 16px 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .satsubjecttestssection-card-title {
+    font-size: 19px;
+  }
+  
+  .satsubjecttestssection-form-content {
+    padding: 20px;
+  }
+  
+  .satsubjecttestssection-test-entry {
+    padding: 20px;
+  }
+  
+  .satsubjecttestssection-test-entry h3 {
+    font-size: 15px;
+    margin-bottom: 16px;
+  }
+  
+  .satsubjecttestssection-select {
+    min-height: 42px;
+    max-width: 100%;
+  }
+
+  .satsubjecttestssection-custom-select {
+    max-width: 100%;
+  }
+
+  .satsubjecttestssection-select-menu {
+    max-height: min(220px, 38vh);
+  }
+
+  .satsubjecttestssection-select-option {
+    min-height: 36px;
+    padding: 7px 10px;
+    font-size: 13px;
+  }
+  
+  .satsubjecttestssection-selected-date {
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+  
+  .satsubjecttestssection-change-date {
+    margin-left: 0;
+  }
+  
+  .satsubjecttestssection-calendar-container {
+    min-width: 0;
+    width: 100%;
+    left: 0;
+    right: 0;
+  }
+  
+  .satsubjecttestssection-calendar-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .satsubjecttestssection-card {
+    margin: 12px;
+  }
+  
+  .satsubjecttestssection-card-header {
+    padding: 14px 16px;
+  }
+  
+  .satsubjecttestssection-card-title {
+    font-size: 18px;
+  }
+  
+  .satsubjecttestssection-form-content {
+    padding: 16px;
+  }
+  
+  .satsubjecttestssection-form-group {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+  }
+  
+  .satsubjecttestssection-question-label {
+    font-size: 13px;
+  }
+  
+  .satsubjecttestssection-test-entry {
+    padding: 16px;
+  }
+  
+  .satsubjecttestssection-test-entry h3 {
+    font-size: 14px;
+  }
+  
+  .satsubjecttestssection-select {
+    min-height: 40px;
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .satsubjecttestssection-select-menu {
+    max-height: min(205px, 36vh);
+  }
+  
+  .satsubjecttestssection-selected-date {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  
+  .satsubjecttestssection-calendar-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .satsubjecttestssection-calendar-month {
+    padding: 6px 4px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .satsubjecttestssection-card {
+    margin: 8px;
+  }
+  
+  .satsubjecttestssection-form-content {
+    padding: 12px;
+  }
+  
+  .satsubjecttestssection-card-header {
+    padding: 12px;
+  }
+  
+  .satsubjecttestssection-card-title {
+    font-size: 16px;
+  }
+  
+  .satsubjecttestssection-test-entry {
+    padding: 12px;
+  }
+  
+  .satsubjecttestssection-calendar-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .satsubjecttestssection-calendar-month {
+    font-size: 11px;
+    padding: 6px 2px;
+  }
+}
+
+/* ============================================================
+   ACCESSIBILITY - REDUCED MOTION
+============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

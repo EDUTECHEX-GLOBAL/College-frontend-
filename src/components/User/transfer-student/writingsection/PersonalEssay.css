@@ -1,0 +1,319 @@
+/* src/components/writing-sections/PersonalEssaySection.css */
+
+.personal-essay-section {
+  background: white;
+  margin: 20px 40px;
+  padding: 32px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.personal-essay-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.personal-essay-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0;
+}
+
+.personal-essay-status {
+  font-size: 14px;
+  color: #16a34a;
+  font-weight: 500;
+  background: #dcfce7;
+  padding: 4px 12px;
+  border-radius: 4px;
+}
+
+.personal-essay-description {
+  margin-bottom: 24px;
+}
+
+.essay-warning {
+  background: #fef2f2;
+  border: 1px solid #ffffff;
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 16px;
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.personal-essay-description p {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+.essay-requirement {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 4px;
+}
+
+.essay-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+
+.essay-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #2C5AA0;
+}
+
+.essay-requirement-text {
+  font-size: 13px;
+  color: #fdfdfd;
+  margin: 0;
+}
+
+.college-lists {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.college-list-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 12px;
+}
+
+.college-list-empty {
+  padding: 16px;
+  background: #f9fafb;
+  border: 1px solid #ffffff;
+  border-radius: 4px;
+  color: #6b7280;
+  font-size: 14px;
+  text-align: center;
+}
+
+.college-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.college-list li {
+  padding: 12px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.essay-instructions {
+  margin-bottom: 32px;
+  padding: 16px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 4px;
+}
+
+.essay-instructions p {
+  font-size: 14px;
+  color: #0369a1;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.essay-topics {
+  margin-bottom: 24px;
+}
+
+.essay-topics-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 16px;
+}
+
+.essay-topic-option {
+  margin-bottom: 16px;
+  padding: 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.essay-topic-option:hover {
+  border-color: #2C5AA0;
+  background: #f9fafb;
+}
+
+.essay-topic-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.essay-topic-radio {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  cursor: pointer;
+  accent-color: #2C5AA0;
+  flex-shrink: 0;
+}
+
+.essay-topic-text {
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.6;
+}
+
+.clear-answer-btn {
+  background: white;
+  color: #2C5AA0;
+  border: 1px solid #2C5AA0;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  margin-bottom: 32px;
+}
+
+.clear-answer-btn:hover {
+  background: #2C5AA0;
+  color: white;
+}
+
+.essay-text-area-section {
+  margin-top: 32px;
+}
+
+.essay-text-area-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 12px;
+}
+
+.essay-text-instructions {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.essay-keyboard-shortcuts {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 16px;
+}
+
+.keyboard-link {
+  color: #2C5AA0;
+  text-decoration: underline;
+}
+
+.essay-editor {
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.essay-toolbar {
+  display: flex;
+  gap: 4px;
+  padding: 8px;
+  background: #f9fafb;
+  border-bottom: 1px solid #d1d5db;
+}
+
+.toolbar-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.toolbar-btn:hover {
+  background: #e5e7eb;
+}
+
+.essay-textarea {
+  width: 100%;
+  min-height: 400px;
+  padding: 16px;
+  border: none;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+}
+
+.essay-word-count {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: #f9fafb;
+  border-top: 1px solid #d1d5db;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.word-count-display {
+  font-weight: 500;
+}
+
+.min-max-text {
+  color: #9ca3af;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .personal-essay-section {
+    margin: 15px 20px;
+    padding: 24px;
+  }
+
+  .college-lists {
+    grid-template-columns: 1fr;
+  }
+
+  .essay-textarea {
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .personal-essay-section {
+    margin: 10px 15px;
+    padding: 20px;
+  }
+
+  .personal-essay-title {
+    font-size: 18px;
+  }
+}

@@ -1,0 +1,120 @@
+/* ApplicationCourse.css */
+.subsection-title {
+    color: #1a237e;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 30px 0 20px 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e8eaf6;
+}
+
+.course-summary {
+    margin-top: 30px;
+}
+
+.summary-card {
+    background: #f8f9fe;
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid #e0e0e0;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.summary-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.summary-label {
+    color: #666;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.summary-value {
+    color: #333;
+    font-weight: 500;
+    font-size: 14px;
+    text-align: right;
+}
+
+/* University dropdown styling */
+select:disabled {
+    background-color: #f5f5f5;
+    color: #999;
+    cursor: not-allowed;
+}
+
+/* Radio group styling for study mode */
+.radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 8px;
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.radio-option input[type="radio"] {
+    width: auto;
+    margin: 0;
+}
+
+/* Form grid for course selection */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+/* Alternative preferences styling */
+#secondPreference, #thirdPreference {
+    background: #f8f9fa;
+    border: 1px dashed #ccc;
+}
+
+#secondPreference:focus, #thirdPreference:focus {
+    background: white;
+    border-color: #1a237e;
+}
+
+/* Section divider */
+.subsection-title::before {
+    content: "";
+    display: inline-block;
+    width: 4px;
+    height: 18px;
+    background: #1a237e;
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .summary-item {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .summary-value {
+        text-align: left;
+    }
+    
+    .radio-group {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
